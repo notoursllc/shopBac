@@ -3,7 +3,6 @@
 const Joi = require('joi');
 const Boom = require('boom');
 const helperService = require('../../helpers.service');
-const globalTypes = require('../../../client_server_shared/global_types.js');
 const queryString = require('query-string');
 
 let server = null;
