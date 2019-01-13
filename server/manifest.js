@@ -5,6 +5,8 @@ const Config = require('./config');
 
 const routePrefix = '/api/v1';
 
+console.log("PATH TO NUXT CONFIG", path.resolve(__dirname, '../../nuxt.config.js'))
+
 const webManifest = {
     server: {
         // cache: 'redis',
@@ -15,7 +17,7 @@ const webManifest = {
             // https://github.com/nuxt-community/hapi-nuxt/issues/14
             {
                 plugin: 'hapi-nuxt',
-                options: path.resolve(__dirname, '../nuxt.config.js')
+                options: path.resolve(__dirname, '../../nuxt.config.js')
             },
             { plugin: 'inert' },
             { plugin: 'vision' },
