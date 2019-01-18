@@ -749,8 +749,10 @@ async function cartCheckoutHandler(request, h) {
         }
 
         // Sending the purchase emails:
-        sendPurchaseConfirmationEmails(cartToken, Payment.get('id'))
-
+        if(process.env.NODE_ENV !== 'test') {
+            sendPurchaseConfirmationEmails(cartToken, Payment.get('id'))
+        }
+        
         // Successful transactions return the transaction id
         if(transactionObj.success) {
             return h.apiSuccess({
