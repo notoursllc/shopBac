@@ -5,8 +5,6 @@ const Config = require('./config');
 
 const routePrefix = '/api/v1';
 
-console.log("PATH TO NUXT CONFIG", path.resolve(__dirname, '../../nuxt.config.js'))
-
 const webManifest = {
     server: {
         // cache: 'redis',
