@@ -77,7 +77,6 @@ exports.seed = (knex) => {
                             sub_type: subType,
                             material_type: materialType,
                             shipping_package_type: shippingPackageType,
-                            inventory_count: (100 + i),
                             hide_if_out_of_stock: true,
                             created_at: d,
                             updated_at: d,

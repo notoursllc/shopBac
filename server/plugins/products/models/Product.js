@@ -30,6 +30,16 @@ module.exports = function (baseModel, bookshelf) {
             },
 
             virtuals: {
+                total_inventory_count: function() {
+                    let totalCount = 0;
+
+                    this.related('sizes').forEach((sizeModel) => {
+                        totalCount += parseInt(sizeModel.get('inventory_count') || 0, 10);
+                    });
+
+                    return totalCount;
+                },
+
                 display_price: function() {
                     let price = 0;
                     let salePrice = this.get('sale_price') || 0;

@@ -62,7 +62,7 @@ function queryHelper(request) {
         response.where = parsed.where;
 
         // and where:
-        // andWhere: [ 'product_type_id,=,3', 'inventory_count,>,0' ]
+        // andWhere: [ 'product_type_id,=,3', 'total_inventory_count,>,0' ]
         if(parsed.andWhere) {
             let andWhere = [];
 

@@ -20,9 +20,9 @@ describe('Testing route: GET /products', () => {
             {
                 where: ['is_available', '=', true],
                 whereRaw: ['sub_type & ? > 0', [2]],
-                andWhere: [
-                    ['inventory_count', '>', 0]
-                ],
+                // andWhere: [
+                //     ['total_inventory_count', '>', 0]
+                // ],
                 orderBy: 'updated_at',
                 orderDir: 'DESC'
             },
