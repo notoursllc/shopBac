@@ -38,6 +38,7 @@
     "hapi-auth-basic": "^5.0.0",
     "hapi-nuxt": "^1.0.1",
     "hoek": "^6.0.4",
+    "inert": "^5.1.2",
     "joi": "^14.3.0",
     "jsonwebtoken": "^8.4.0",
     "knex": "^0.15.2",
@@ -63,9 +64,7 @@
   },
   "devDependencies": {
     "code": "^5.2.4",
-    "cross-env": "^5.2.0",
     "faker": "^4.1.0",
-    "inert": "^5.1.2",
     "lab": "^17.3.0",
     "nodemon": "^1.18.6"
   }
