@@ -446,7 +446,7 @@ async function cartShippingSetAddressHandler(request, h) {
             { method: 'update', patch: true }
         );
 
-        console.log("UpdatedShoppingCart", UpdatedShoppingCart.toJSON())
+        // console.log("UpdatedShoppingCart", UpdatedShoppingCart.toJSON())
 
         // This may change in the future when we offer the user the choice of several
         // different shipping rates, but for now the user doesn't get to choose and
