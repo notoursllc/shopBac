@@ -77,7 +77,7 @@ function getJwtHeaders(server, callback) {
         callback(headers);
     })
     .catch((err) => {
-        console.error("ERROR GETTING JWT", err)
+        // console.error("ERROR GETTING JWT", err)
     });
 }
 

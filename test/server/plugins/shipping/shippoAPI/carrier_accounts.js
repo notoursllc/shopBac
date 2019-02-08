@@ -19,7 +19,7 @@ describe('ShippoAPI: listCarrierAccounts', () => {
         }
         catch(err) {
             error = err;
-            console.log(err);
+            // console.log(err);
         }
 
         // console.log("CARRIER ACCOUNTS", res)
@@ -43,7 +43,7 @@ describe('ShippoAPI: getCarrierAccount', () => {
         }
         catch(err) {
             error = err;
-            console.log(err);
+            // console.log(err);
         }
 
         // console.log("GET CARRIER ACCOUNT", res)

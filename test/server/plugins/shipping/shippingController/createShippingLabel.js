@@ -99,10 +99,8 @@ describe('ShippoAPI: createShippingLabelFromShipment', () => {
         }
         catch(err) {
             error = err;
-            console.log("ERR", err)
+            // console.log("ERR", err)
         }
-
-        console.log("SHIPMENT", shipment)
 
         expect( shipment ).to.be.an.object();
         // expect( error ).not.to.be.an.object();

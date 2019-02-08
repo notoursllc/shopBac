@@ -17,7 +17,7 @@ describe('Shipping Orders: listAllOrders()', () => {
         }
         catch(err) {
             error = err;
-            console.log(err)
+            // console.log(err)
         }
 
         expect( orders ).to.be.an.array();
@@ -76,7 +76,7 @@ describe('Shipping Orders: createOrder()', () => {
         }
         catch(err) {
             error = err;
-            console.log(err)
+            // console.log(err)
         }
 
         expect( order ).to.be.an.object();
@@ -98,7 +98,7 @@ describe('Shipping Orders: getOrder()', () => {
         }
         catch(err) {
             error = err;
-            console.log(err)
+            // console.log(err)
         }
 
         expect( order ).to.be.an.object();

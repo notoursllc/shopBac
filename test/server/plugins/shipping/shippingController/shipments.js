@@ -199,7 +199,7 @@ describe('ShippoAPI: createShipment()', () => {
         }
         catch(err) {
             error = err;
-            console.log(err)
+            // console.log(err)
         }
 
         // console.log("PARCELS", parcels)
@@ -260,7 +260,7 @@ describe('ShippoAPI: createShipment()', () => {
         }
         catch(err) {
             error = err;
-            console.log(err)
+            // console.log(err)
         }
 
         // console.log("PARCELS", parcels)

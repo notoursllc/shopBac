@@ -44,7 +44,7 @@ describe('ShippoAPI: listCustomsDeclarations', () => {
         }
         catch(err) {
             error = err;
-            console.log(err);
+            // console.log(err);
         }
 
         expect( res ).to.be.an.array();
@@ -130,7 +130,7 @@ describe('ShippoAPI: createCustomsItem()', () => {
         }
         catch(err) {
             error = err;
-            console.log(err);
+            // console.log(err);
         }
 
         expect( customsItem ).to.be.an.object();
@@ -148,10 +148,8 @@ describe('ShippoAPI: createCustomsItem()', () => {
         }
         catch(err) {
             error = err;
-            console.log(err);
+            // console.log(err);
         }
-
-        // console.log("CUSTOMS ITEM", customsItem)
 
         expect( customsItem ).to.be.an.object();
         expect( error ).not.to.be.an.object();
