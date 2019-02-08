@@ -153,7 +153,7 @@ async function resizeAndWrite(req, width) {
 
                         s3.upload(s3Config, (err, data) => {
                             if (err) {
-                                console.log(err);
+                                global.logger.error('IMAGE UPLOAD FAILURE', err);
                                 return reject(err);
                             }
 

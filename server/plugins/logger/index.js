@@ -56,7 +56,7 @@ exports.plugin = {
             transports.push(logglyTransport);
             exceptionHandlers.push(logglyTransport);
         }
-        else {
+        else if(process.env.NODE_ENV === 'development') {
             transports.push(
                 new (winston.transports.Console)({
                     level: 'debug',
