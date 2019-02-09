@@ -65,7 +65,7 @@ async function healthzHandler(request, h) {
         const result = await server.app.knex.raw('SELECT * FROM products WHERE id != ? LIMIT 1', ['aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'])
 
         if(!result) {
-            throw new Error('Health check: Product does not exist.');
+            throw new Error('Health check: Error getting product.');
         }
 
         const response = h.response('success');
