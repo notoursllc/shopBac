@@ -60,6 +60,26 @@ function loggerHandler(request, h) {
 }
 
 
+function healthzHandler(request, h) {
+    try {
+        const Product = await server.app.bookshelf.model('Product').query((qb) => {
+            qb.where('id', '!=', 'foo');  
+            qb.limit(1);
+        })
+        .fetch();
+
+        if(!Product) {
+            throw new Error('Health check: Product does not exist.')
+        }
+
+        h.apiSuccess();
+    }
+    catch(err) {
+        throw Boom.badRequest(err);
+    }
+}
+
+
 function faviconHandler(request, h) {
     // TODO: not sure if this is right
     h.response(fs.createReadStream(path.resolve(__dirname, '../../../dist/static/favicon.ico'))).code(200).type('image/x-icon');
@@ -70,5 +90,6 @@ module.exports = {
     setServer,
     getClientJwtHandler,
     loggerHandler,
+    healthzHandler,
     faviconHandler
 }

@@ -53,7 +53,7 @@ describe('Testing route: GET /product/{id}', () => {
 
         const { statusCode } = await server.inject({
             method: 'GET',
-            url: '${routePrefix}/product?id='
+            url: `${routePrefix}/product?id=`
         });
 
         expect(statusCode, 'Status code').to.equal(400);
@@ -65,7 +65,7 @@ describe('Testing route: GET /product/{id}', () => {
 
         const { statusCode } = await server.inject({
             method: 'GET',
-            url: '${routePrefix}/product?id=123',
+            url: `${routePrefix}/product?id=123`,
         })
 
         expect(statusCode, 'Status code').to.equal(400);
@@ -77,7 +77,7 @@ describe('Testing route: GET /product/{id}', () => {
 
         const { statusCode } = await server.inject({
             method: 'GET',
-            url: '${routePrefix}/product?id=abc',
+            url: `${routePrefix}/product?id=abc`,
         });
 
         expect(statusCode, 'Status code').to.equal(400);

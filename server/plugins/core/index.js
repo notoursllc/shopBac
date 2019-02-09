@@ -28,6 +28,14 @@ const after = function(server) {
                 },
                 handler: coreController.loggerHandler
             }
+        },
+        {
+            method: 'GET',
+            path: '/api/v1/healthz',
+            options: {
+                description: 'Simple health check',
+                handler: coreController.healthzHandler
+            }
         }
 
         // commentig out to get nuxt working (?)
