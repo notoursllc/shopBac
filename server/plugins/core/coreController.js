@@ -60,19 +60,17 @@ function loggerHandler(request, h) {
 }
 
 
-function healthzHandler(request, h) {
+async function healthzHandler(request, h) {
     try {
-        const Product = await server.app.bookshelf.model('Product').query((qb) => {
-            qb.where('id', '!=', 'foo');  
-            qb.limit(1);
-        })
-        .fetch();
+        const result = await server.app.knex.raw('SELECT * FROM products WHERE id != ? LIMIT 1', ['aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'])
 
-        if(!Product) {
-            throw new Error('Health check: Product does not exist.')
+        if(!result) {
+            throw new Error('Health check: Product does not exist.');
         }
 
-        h.apiSuccess();
+        const response = h.response('success');
+        response.type('text/plain');
+        return response;
     }
     catch(err) {
         throw Boom.badRequest(err);
