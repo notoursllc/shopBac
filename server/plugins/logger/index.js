@@ -1,9 +1,7 @@
-const winston = require('winston');
+const { createLogger, format, transports } = require('winston');
 const bugsnag = require('bugsnag');
-const { Loggly } = require('winston-loggly-bulk');
+const logdna = require('logdna-winston');
 
-// NOTE: 7/7/18 - Loggly does not work with Winston 3.0 yet:
-// https://github.com/loggly/winston-loggly-bulk/issues/32
 
 exports.plugin = {
     once: true,
@@ -22,66 +20,52 @@ exports.plugin = {
             }
         }
 
-        // Winston setup:
-        winston.setLevels({
-            debug: 0,
-            info: 1,
-            warn: 2,
-            error: 3
+        const myCustomLevels = {
+            levels: {
+                debug: 0,
+                info: 1,
+                warn: 2,
+                error: 3
+            },
+            colors: {
+                debug: 'blue',
+                info: 'cyan',
+                warn: 'yellow',
+                error: 'red'
+            }
+        };
+
+        const logger = createLogger({
+            format: format.combine(
+                format.timestamp({
+                    format: 'YYYY-MM-DD HH:mm:ss'
+                }),
+                format.errors({ stack: true }),
+                format.splat(),
+                format.json()
+            ),
+            level: process.env.LOG_LEVEL || 'info',
+            levels: myCustomLevels.levels,
+            transports: []
         });
-
-        winston.addColors({
-            debug: 'blue',
-            info: 'cyan',
-            warn: 'yellow',
-            error: 'red'
-        });
-
-
-        // https://github.com/loggly/winston-loggly-bulk
-        const logglyTransport = new Loggly({
-            token: process.env.LOGGLY_PRIVATE_KEY,
-            subdomain: "notours",
-            tags: ["backend"],
-            json: true,
-            level: 'info',
-            networkErrorsOnConsole: true
-        });
-
-
-        let transports = [];
-        let exceptionHandlers = [];
 
         if(process.env.NODE_ENV === 'production') {
-            transports.push(logglyTransport);
-            exceptionHandlers.push(logglyTransport);
+            logger.add(new transports.Logdna({
+                key: process.env.LOG_DNA_INGESTION_KEY,
+                hostname: process.env.DOMAIN_NAME,
+                env: process.env.NODE_ENV,
+                index_meta: false,  // when true ensures meta object will be searchable
+                handleExceptions: true
+            }));
         }
         else if(process.env.NODE_ENV === 'development') {
-            transports.push(
-                new (winston.transports.Console)({
-                    level: 'debug',
-                    prettyPrint: true,
-                    colorize: true,
-                    silent: false
-                })
-            );
-
-            exceptionHandlers.push(
-                new (winston.transports.Console)({
-                    prettyPrint: true,
-                    colorize: true,
-                    silent: false,
-                    handleExceptions: true,
-                    humanReadableUnhandledException: true
-                })
-            )
+            logger.add(new transports.Console({
+                format: format.combine(
+                  format.colorize({ all: true }),
+                  format.simple()
+                )
+            }));
         }
-
-        const logger = new (winston.Logger)({
-            transports,
-            exceptionHandlers,
-            exitOnError: false
-        });
 
         global.logger = logger
     }
