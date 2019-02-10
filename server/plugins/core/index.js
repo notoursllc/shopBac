@@ -33,6 +33,7 @@ const after = function(server) {
             method: 'GET',
             path: '/api/v1/healthz',
             options: {
+                auth: false,
                 description: 'Simple health check',
                 handler: coreController.healthzHandler
             }
