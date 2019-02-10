@@ -45,14 +45,14 @@ let common = {
 // if(process.env.NODE_ENV === 'production') {
 
 // I think this is a reliable way to determine if were running nanobox for development...
-if(process.env.NODE_ENV === 'development' && process.env.DATA_DB_USERS === 'nanobox') {
-    common.connection.host = '172.21.0.18';
-    common.connection.user = process.env.DATA_DB_USERS;
-    common.connection.password = process.env.DATA_DB_NANOBOX_PASS;
-    common.connection.port = 5432;
-    common.connection.ssl = false;
-    common.connection.database = 'gonano';
-}
+// if(process.env.NODE_ENV === 'development' && process.env.DATA_DB_USERS === 'nanobox') {
+//     common.connection.host = '172.21.0.18';
+//     common.connection.user = process.env.DATA_DB_USERS;
+//     common.connection.password = process.env.DATA_DB_NANOBOX_PASS;
+//     common.connection.port = 5432;
+//     common.connection.ssl = false;
+//     common.connection.database = 'gonano';
+// }
 
 let config = {
     development: cloneDeep(common),
