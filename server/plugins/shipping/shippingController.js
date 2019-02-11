@@ -346,7 +346,12 @@ async function rates(request, h) {
         };
 
         const { res, payload } = await wreck.post('/rates', { payload: config });
-        global.logger.info("SHIPPING RATES RESPONSE", payload);
+
+        global.logger.info('SHIPPING RATES RESPONSE', {
+            meta: {
+                payload
+            }
+        });
 
         return h.apiSuccess(
             parseShippingRateResponse(payload)
@@ -371,7 +376,11 @@ async function createCustomsItemFromShoppingCart(ShoppingCart) {
             throw new Error('Can not create customs item from Shopping Cart because the cart contains zero items')
         }
 
-        global.logger.debug("In createCustomsItemFromShoppingCart", cartJson);
+        global.logger.debug('In createCustomsItemFromShoppingCart', {
+            meta: {
+                cartJson
+            }
+        });
 
         if(cartJson.shipping_countryCodeAlpha2 !== 'US') {
             return await createCustomsItem({
@@ -399,7 +408,11 @@ async function createCustomsItemFromShoppingCart(ShoppingCart) {
  * @param {*} ShoppingCart
  */
 async function createShipmentFromShoppingCart(ShoppingCart) {
-    global.logger.debug("In createShipmentFromShoppingCart", ShoppingCart.toJSON());
+    global.logger.debug('In createShipmentFromShoppingCart', {
+        meta: {
+            cart: ShoppingCart.toJSON()
+        }
+    });
 
     let data = {
         async: false

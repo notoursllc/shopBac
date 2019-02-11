@@ -26,14 +26,23 @@ async function getOrder(orderObjectId) {
  * DOCS: https://goshippo.com/docs/orders/#retrieve-order
  */
 async function createOrder(data) {
-    global.logger.debug("CREATING SHIPPO ORDER", data);
+    global.logger.debug('CREATING SHIPPO ORDER', {
+        meta: {
+            data
+        }
+    });
     return await postCreate(basePath, data)
 }
 
 
 async function getPackingSlipForOrder(orderObjectId) {
     const response = await getAxios().get(`${basePath}/${orderObjectId}/packingslip`);
-    global.logger.debug(`PACKING SLIP FOR ORDER_ID ${orderObjectId}`, response.data)
+    global.logger.debug('PACKING SLIP FOR ORDER_ID', {
+        meta: {
+            orderObjectId,
+            response: response.data
+        }
+    });
     return response.data;
 }
 

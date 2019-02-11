@@ -1,6 +1,6 @@
-const { createLogger, format, transports } = require('winston');
-const bugsnag = require('bugsnag');
 const logdna = require('logdna-winston');
+const winston = require('winston');
+const bugsnag = require('bugsnag');
 
 
 exports.plugin = {
@@ -20,52 +20,51 @@ exports.plugin = {
             }
         }
 
-        const myCustomLevels = {
-            levels: {
-                debug: 0,
-                info: 1,
-                warn: 2,
-                error: 3
-            },
-            colors: {
-                debug: 'blue',
-                info: 'cyan',
-                warn: 'yellow',
-                error: 'red'
-            }
-        };
-
-        const logger = createLogger({
-            format: format.combine(
-                format.timestamp({
-                    format: 'YYYY-MM-DD HH:mm:ss'
-                }),
-                format.errors({ stack: true }),
-                format.splat(),
-                format.json()
-            ),
-            level: process.env.LOG_LEVEL || 'info',
-            levels: myCustomLevels.levels,
-            transports: []
+        winston.setLevels({
+            debug: 0,
+            info: 1,
+            warn: 2,
+            error: 3
         });
 
+        winston.addColors({
+            debug: 'blue',
+            info: 'cyan',
+            warn: 'yellow',
+            error: 'red'
+        });
+
+        let transports = [
+            new (winston.transports.Console)({
+                level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+                handleExceptions: true,
+                humanReadableUnhandledException: true,
+                prettyPrint: true,
+                colorize: true,
+                silent: false
+            })
+        ];
+        let exceptionHandlers = [];
+
+
+        // Adding LogDNA transport for production only
         if(process.env.NODE_ENV === 'production') {
-            logger.add(new transports.Logdna({
-                key: process.env.LOG_DNA_INGESTION_KEY,
-                hostname: process.env.DOMAIN_NAME,
-                env: process.env.NODE_ENV,
-                index_meta: false,  // when true ensures meta object will be searchable
-                handleExceptions: true
-            }));
+            transports.push(
+                new (logdna.WinstonTransport)({
+                    key: process.env.LOG_DNA_INGESTION_KEY,
+                    hostname: process.env.DOMAIN_NAME,
+                    env: process.env.NODE_ENV,
+                    index_meta: false,  // when true ensures meta object will be searchable
+                    // level: 'info'
+                })
+            )
         }
-        else if(process.env.NODE_ENV === 'development') {
-            logger.add(new transports.Console({
-                format: format.combine(
-                  format.colorize({ all: true }),
-                  format.simple()
-                )
-            }));
-        }
+
+        const logger = new (winston.Logger)({
+            transports,
+            exceptionHandlers,
+            exitOnError: false
+        });
 
         global.logger = logger
     }

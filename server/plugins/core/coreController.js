@@ -49,7 +49,9 @@ function loggerHandler(request, h) {
     switch(request.payload.type) {
         // Only supportig the 'error' and 'info' types for now
         case 'error':
-            global.logger.error(request.payload.message);
+            global.logger.error(
+                new Error(request.payload.message)
+            );
             break;
 
         default:

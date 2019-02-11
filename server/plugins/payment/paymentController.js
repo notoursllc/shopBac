@@ -41,7 +41,13 @@ async function getPaymentByAttribute(attrName, attrValue, withRelatedArr) {
     })
     .fetch(fetchObj);
 
-    global.logger.debug("PAYMENT BY ATTRIBUTE", attrName, attrValue, (Payment ? Payment.toJSON() : ''));
+    global.logger.debug('PAYMENT BY ATTRIBUTE', {
+        meta: {
+            attrName,
+            attrValue,
+            payment: (Payment ? Payment.toJSON() : '')
+        }
+    });
 
     return Payment;
 }
@@ -60,7 +66,11 @@ async function getPaymentByAttribute(attrName, attrValue, withRelatedArr) {
  * @returns {Promise}
  */
 async function savePayment(cart_id, transactionJson) {
-    global.logger.debug("SAVE PAYMENT - TRANSACTION", transactionJson);
+    global.logger.debug('SAVE PAYMENT - TRANSACTION', {
+        meta: {
+            transactionJson
+        }
+    });
 
     if(!isObject(transactionJson) || !isObject(transactionJson.transaction)) {
         throw new Error('An error occurred while processing the transaction: transactionJson.transaction is not an object');
@@ -74,7 +84,12 @@ async function savePayment(cart_id, transactionJson) {
         { method: 'insert' }
     );
 
-    global.logger.debug("SAVE PAYMENT RESULT", Payment ? Payment.toJSON() : Payment)
+    global.logger.debug('SAVE PAYMENT RESULT', {
+        meta: {
+            payment: Payment ? Payment.toJSON() : Payment
+        }
+    });
+
     return Payment;
 }
 
@@ -251,7 +266,11 @@ async function purchaseShippingLabelHandler(request, h) {
         delete request.payload.id;
 
         const response = await shippoTransactionsAPI.createShippingLabel(request.payload);
-        global.logger.debug('CREATE SHIPPING LABEL RESPONSE', response);
+        global.logger.debug('CREATE SHIPPING LABEL RESPONSE', {
+            meta: {
+                response
+            }
+        });
 
         // no need to await here:
         Payment.save(
@@ -280,7 +299,12 @@ async function purchaseShippingLabelHandler(request, h) {
 async function getShippingLabelHandler(request, h) {
     try {
         const response = await shippoTransactionsAPI.getShippingLabel(request.query.id);
-        global.logger.debug('GET SHIPPING LABEL RESPONSE', response);
+
+        global.logger.debug('GET SHIPPING LABEL RESPONSE', {
+            meta: {
+                response
+            }
+        });
 
         return h.apiSuccess(
             response

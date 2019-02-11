@@ -173,7 +173,13 @@ async function getCartByAttribute(attrName, attrValue, withRelatedArr) {
     })
     .fetch(fetchObj);
 
-    global.logger.debug("CART BY ATTRIBUTE", attrName, attrValue, (ShoppingCart ? ShoppingCart.toJSON() : null));
+    global.logger.debug('CART BY ATTRIBUTE', {
+        meta: {
+            attribute: attrName,
+            value: attrValue,
+            cart: (ShoppingCart ? ShoppingCart.toJSON() : null)
+        }
+    });
 
     return ShoppingCart;
 }
@@ -369,7 +375,11 @@ async function cartItemRemoveHandler(request, h) {
         const cartToken = request.pre.m1.cartToken;
         const ShoppingCartItem = await getShoppingCartItemModel().findById(request.payload.id);
 
-        global.logger.debug("REMOVING CART ITEM", ShoppingCartItem ? ShoppingCartItem.toJSON() : ShoppingCartItem);
+        global.logger.debug('REMOVING CART ITEM', {
+            meta: {
+                item: ShoppingCartItem ? ShoppingCartItem.toJSON() : ShoppingCartItem
+            }
+        });
 
         if(ShoppingCartItem) {
             await ShoppingCartItem.destroy();
@@ -435,7 +445,11 @@ async function cartShippingSetAddressHandler(request, h) {
         updateData.sub_total = ShoppingCart.get('sub_total');
         updateData.sales_tax = salesTaxService.getSalesTaxAmount(updateData);
 
-        global.logger.debug("cartShippingSetAddressHandler - CART UPDATE PARAMS", updateData);
+        global.logger.debug('cartShippingSetAddressHandler - CART UPDATE PARAMS', {
+            meta: {
+                updateData
+            }
+        });
 
         // Save the shipping params and the sales tax value in the model:
         // Kind of awkward, but need to update the ShoppingCart twice in this
@@ -461,7 +475,11 @@ async function cartShippingSetAddressHandler(request, h) {
             { method: 'update', patch: true }
         );
 
-        global.logger.debug("Updated cart with shipping rate", UpdatedShoppingCart2.toJSON());
+        global.logger.debug('Updated cart with shipping rate', {
+            meta: {
+                cart: UpdatedShoppingCart2.toJSON()
+            }
+        });
 
         // Response contains the cart token in the header
         // plus the shopping cart payload
@@ -535,7 +553,11 @@ async function getLowestShippingRate(ShoppingCart) {
         };
     }
 
-    global.logger.debug("LOWEST SHIPPING RATE", lowestRate)
+    global.logger.debug('LOWEST SHIPPING RATE', {
+        meta: {
+            lowestRate
+        }
+    });
 
     return lowestRate;
 }
@@ -630,7 +652,12 @@ async function createShippoOrderFromShoppingCart(ShoppingCart) {
     data.weight = totalWeight;
 
     let shippoOrderJSON = await shippoOrdersAPI.createOrder(data);
-    global.logger.debug("CREATE SHIPPO ORDER FROM SHOPPING CART RESPONSE", shippoOrderJSON);
+
+    global.logger.debug('CREATE SHIPPO ORDER FROM SHOPPING CART RESPONSE', {
+        meta: {
+            shippoOrderJSON
+        }
+    });
 
     return shippoOrderJSON;
 }
@@ -752,7 +779,7 @@ async function cartCheckoutHandler(request, h) {
         if(process.env.NODE_ENV !== 'test') {
             sendPurchaseConfirmationEmails(cartToken, Payment.get('id'))
         }
-        
+
         // Successful transactions return the transaction id
         if(transactionObj.success) {
             return h.apiSuccess({

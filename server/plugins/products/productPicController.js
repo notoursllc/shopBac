@@ -157,7 +157,11 @@ async function resizeAndWrite(req, width) {
                                 return reject(err);
                             }
 
-                            global.logger.info('IMAGE SUCCESSFULLY UPLOADED', data);
+                            global.logger.info('IMAGE SUCCESSFULLY UPLOADED', {
+                                meta: {
+                                    data
+                                }
+                            });
 
                             return resolve({
                                 url: `${getCloudUrl()}/${fileKey}`,
@@ -218,13 +222,21 @@ async function unlinkFileAndVariants(id) {
     if(json.url) {
         // Unlink the main product pic
         await deleteFile(json.url)
-        global.logger.info('PRODUCT PIC - FILE DELETED', json.url);
+        global.logger.info('PRODUCT PIC - FILE DELETED', {
+            meta: {
+                jsonUrl: json.url
+            }
+        });
 
         // Unlink the product pic variants
         if(Array.isArray(json.pic_variants)) {
             json.pic_variants.forEach(async (obj) => {
                 await deleteFile(obj.url);
-                global.logger.info('PRODUCT PIC VARIANT - FILE DELETED', obj.url);
+                global.logger.info('PRODUCT PIC VARIANT - FILE DELETED', {
+                    meta: {
+                        fileUrl: obj.url
+                    }
+                });
             });
         }
 
@@ -242,7 +254,11 @@ function deleteVariants(ProductPic) {
 
     if(Array.isArray(json.pic_variants)) {
         json.pic_variants.forEach((obj) => {
-            global.logger.info('DELETING PRODUCT PIC VARIANT FROM DB', obj.id);
+            global.logger.info('DELETING PRODUCT PIC VARIANT FROM DB', {
+                meta: {
+                    id: obj.id
+                }
+            });
 
             getProductPicVariantModel().destroy({
                 id: obj.id
@@ -275,10 +291,11 @@ async function upsertPic(request) {
 
     const resizeResponse = await resizeAndWrite(request, 600);
 
-    global.logger.info(
-        'PRODUCT PIC - FILE RESIZED (600)',
-        resizeResponse
-    );
+    global.logger.info('PRODUCT PIC - FILE RESIZED (600)', {
+        meta: {
+            resizeResponse
+        }
+    });
 
     // update or create the ProductPic
     const createParams = {
@@ -303,10 +320,11 @@ async function upsertPic(request) {
         ProductPic = await getProductPicModel().create(createParams);
     }
 
-    global.logger.info(
-        'PRODUCT PIC UPSERTED',
-        ProductPic.get('id')
-    );
+    global.logger.info('PRODUCT PIC UPSERTED', {
+        meta: {
+            picture_id: ProductPic.get('id')
+        }
+    });
 
     let ProductPicVariant = await createPicVariant(request, ProductPic.get('id'), 1000);
     return ProductPicVariant.get('product_pic_id');
@@ -317,10 +335,11 @@ async function createPicVariant(request, productPicId, width) {
     const picWidth = width || 1000;
     const resizeResponse = await resizeAndWrite(request, picWidth);
 
-    global.logger.info(
-        `PRODUCT PIC VARIANT - FILE RESIZED (${picWidth})`,
-        resizeResponse
-    );
+    global.logger.info(`PRODUCT PIC VARIANT - FILE RESIZED (${picWidth})`, {
+        meta: {
+            resizeResponse
+        }
+    });
 
     const createParams = {
         product_pic_id: productPicId,
@@ -333,17 +352,19 @@ async function createPicVariant(request, productPicId, width) {
         createParams.height = resizeResponse.height || null;
     }
 
-    global.logger.info(
-        'PRODUCT PIC VARIANT - CREATING BEGIN',
-        createParams
-    );
+    global.logger.info('PRODUCT PIC VARIANT - CREATING BEGIN', {
+        meta: {
+            createParams
+        }
+    });
 
     const ProductPicVariant = getProductPicVariantModel().create(createParams);
 
-    global.logger.info(
-        'PRODUCT PIC VARIANT - CREATING END',
-        ProductPicVariant.get('product_pic_id')
-    );
+    global.logger.info('PRODUCT PIC VARIANT - CREATING END', {
+        meta: {
+            product_pic_id: ProductPicVariant.get('product_pic_id')
+        }
+    });
 
     return ProductPicVariant;
 }
@@ -384,7 +405,11 @@ function featuredProductPic(productJson) {
 
         global.logger.info(
             request.payload.id ? 'PRODUCT PIC - DB UPDATED' : 'PRODUCT PIC - DB CREATED',
-            productPicId
+            {
+                meta: {
+                    productPicId
+                }
+            }
         );
 
         return h.apiSuccess({
@@ -420,8 +445,12 @@ async function productPicDeleteHandler(request, h) {
             { id: request.payload.id }
         );
 
-        global.logger.info('DELETE FILE PRODUCT PIC SHOULD HAVE VARIANTS', ProductPic.toJSON())
-        global.logger.info('PRODUCT PIC - DB DELETED2', request.payload.id);
+        global.logger.info('DELETE FILE PRODUCT PIC SHOULD HAVE VARIANTS', {
+            meta: {
+                id: request.payload.id,
+                product_pic: ProductPic.toJSON()
+            }
+        });
 
         return h.apiSuccess({
             id: request.payload.id

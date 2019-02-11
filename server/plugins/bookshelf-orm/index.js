@@ -20,7 +20,9 @@ exports.plugin = {
 
         const validateOptions = schema.validate(options);
         if (validateOptions.error) {
-            global.logger.error(validateOptions.error);
+            global.logger.error(
+                new Error(validateOptions.error)
+            );
             throw new Error(validateOptions.error);
         }
 
