@@ -34,18 +34,8 @@ exports.plugin = {
             error: 'red'
         });
 
-        let transports = [
-            new (winston.transports.Console)({
-                level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-                handleExceptions: true,
-                humanReadableUnhandledException: true,
-                prettyPrint: true,
-                colorize: true,
-                silent: false
-            })
-        ];
+        let transports = [];
         let exceptionHandlers = [];
-
 
         // Adding LogDNA transport for production only
         if(process.env.NODE_ENV === 'production') {
@@ -56,6 +46,19 @@ exports.plugin = {
                     env: process.env.NODE_ENV,
                     index_meta: false,  // when true ensures meta object will be searchable
                     // level: 'info'
+                })
+            )
+        }
+        // no logging for NODE_ENV = "test".  Not sure if this is the right thing to do.
+        else if(process.env.NODE_ENV === 'development') {
+            transports.push(
+                new (winston.transports.Console)({
+                    level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+                    handleExceptions: true,
+                    humanReadableUnhandledException: true,
+                    prettyPrint: true,
+                    colorize: true,
+                    silent: false
                 })
             )
         }
