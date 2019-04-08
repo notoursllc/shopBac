@@ -688,9 +688,127 @@ function sendPurchaseConfirmationEmails(cartToken, payment_id) {
 }
 
 
+async function cartCheckoutHandler(request, h) {
+    const { runPayment, savePayment } = require('../payment/paymentController');
+
+
+    try {
+        const cartToken = request.pre.m1.cartToken;
+        const ShoppingCart = await getCart(cartToken);
+        const idempotency_key = require('crypto').randomBytes(64).toString('hex');
+
+        // throws Error
+        // The argument to runPayment is a Square ChargeRequest object:
+        // https://github.com/square/connect-javascript-sdk/blob/master/docs/ChargeRequest.md#squareconnectchargerequest
+
+        let transactionObj = await runPayment({
+            idempotency_key: idempotency_key,
+            amount_money: {
+                // https://github.com/square/connect-javascript-sdk/blob/master/docs/Money.md
+                amount: ShoppingCart.get('grand_total') * 100,  // square needs this converted to cents
+                currency: 'USD'
+            },
+            card_nonce: request.payload.nonce,
+            billing_address: {
+                // https://github.com/square/connect-javascript-sdk/blob/master/docs/Address.md
+                address_line_1: request.payload.billing_streetAddress,
+                address_line_2: request.payload.billing_extendedAddress || null,
+                locality: request.payload.billing_city,
+                administrative_district_level_1: request.payload.billing_state,
+                postal_code: request.payload.billing_postalCode,
+                country: request.payload.billing_countryCodeAlpha2,
+                first_name: request.payload.billing_firstName,
+                last_name: request.payload.billing_lastName,
+                organization: request.payload.billing_company || null
+            },
+            shipping_address: {
+                address_line_1: ShoppingCart.get('shipping_streetAddress'),
+                address_line_2: ShoppingCart.get('shipping_extendedAddress') || null,
+                locality: ShoppingCart.get('shipping_city'),
+                administrative_district_level_1: ShoppingCart.get('shipping_state'),
+                postal_code: ShoppingCart.get('shipping_postalCode'),
+                country: ShoppingCart.get('shipping_countryCodeAlpha2'),
+                first_name: ShoppingCart.get('shipping_firstName'),
+                last_name: ShoppingCart.get('shipping_lastName'),
+                organization: ShoppingCart.get('shipping_company')
+            },
+            buyer_email_address: ShoppingCart.get('shipping_email')
+        });
+
+        global.logger.debug('PaymentController.runPayment: SUCCESS', transactionObj);
+
+        // Saving the payment transaction whether it was successful (transactionObj.success === true)
+        // or not (transactionObj.success === false)
+        // NOTE: Originally I was not raising any errors to the user that happen while saving to the DB.
+        // However I think it's worth doing so because immediately after the transaction we display
+        // the transaction summary to the user, and we would have nothing to display if there
+        // was an error saving that data, giving the impression that the order was not successful.
+        // Therefore any errors that happen here (promise is rejected) will be caught below
+
+        const Payment = await savePayment(ShoppingCart.get('id'), transactionObj);
+
+        // NOTE: Any failures that happen after this do not affect the braintree transaction
+        // and thus should fail silently (catching and logging errors), as the user has already been changed
+        // and we can't give the impression of an overall transaction failure that may prompt them
+        // to re-do the purchase.
+
+        // Updating the cart with the billing params and the 'closed_at'
+        // timestamp if transaction was successful:
+        let updateParams = cloneDeep(request.payload);
+        delete updateParams.nonce;
+
+        // Create the Order in Shippo so a shipping label can be created in the future.
+        // let shippoOrder = await createShippoOrderFromShoppingCart(ShoppingCart);
+        // updateParams.shippo_order_id = shippoOrder.object_id;
+
+        // This will cause the cart not to be re-used
+        // (See ShoppingCart -> getCart())
+        updateParams.closed_at = new Date();
+
+        // The products controller catches this and descrments the product size inventory count
+        // Errors do not need to be caught here because any failures should not affect the transaction
+        server.events.emit('SHOPPING_CART_CHECKOUT_SUCCESS', ShoppingCart);
+
+        // Update the cart with the billing info and the closed_at value
+        try {
+            await ShoppingCart.save(
+                updateParams,
+                { method: 'update', patch: true }
+            );
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+        }
+
+        // Sending the purchase emails:
+        if(process.env.NODE_ENV !== 'test') {
+            sendPurchaseConfirmationEmails(cartToken, Payment.get('id'))
+        }
+
+        // Successful transactions return the transaction id
+        if(transactionObj.success) {
+            return h.apiSuccess({
+                transactionId: Payment.get('id')
+            });
+        }
+        else {
+            throw new Error(transactionObj.message || 'An error occurred when saving the payment transaction data.')
+        }
+    }
+    catch(err) {
+        let msg = err instanceof Error ? err.message : err;
+
+        global.logger.error(msg);
+        global.bugsnag(msg);
+        throw Boom.badData(msg);
+    }
+};
+
+
 // TODO: this function uses shoppingCartEmailService
 // Note: route handler calles the defined 'pre' method before it gets here
-async function cartCheckoutHandler(request, h) {
+async function cartCheckoutHandler_BRAINTREE(request, h) {
     const { runPayment, savePayment } = require('../payment/paymentController');
 
     try {
@@ -761,6 +879,10 @@ async function cartCheckoutHandler(request, h) {
             // This will cause the cart not to be re-used
             // (See ShoppingCart -> getCart())
             updateParams.closed_at = new Date();
+
+            // The products controller catches this and descrments the product size inventory count
+            // Errors do not need to be caught here because any failures should not affect the transaction
+            server.events.emit('SHOPPING_CART_CHECKOUT_SUCCESS', ShoppingCart);
         }
 
         // Update the cart with the billing info and the closed_at value

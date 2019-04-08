@@ -285,6 +285,16 @@ const after = function (server) {
     ]);
 
 
+    // registering events:
+    server.event('SHOPPING_CART_CHECKOUT_SUCCESS');
+
+    // defining event handlers:
+    server.events.on(
+        'SHOPPING_CART_CHECKOUT_SUCCESS',
+        productSizeController.decrementInventoryCount
+    );
+
+
     // LOADING BOOKSHELF MODELS:
     let baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
 

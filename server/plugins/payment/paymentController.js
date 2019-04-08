@@ -3,11 +3,18 @@
 const Joi = require('joi');
 const Boom = require('boom');
 const isObject = require('lodash.isobject');
+const SquareConnect = require('square-connect');
 const HelperService = require('../../helpers.service');
 const cartController = require('../shopping-cart/shoppingCartController')
 const shippoOrdersAPI = require('../shipping/shippoAPI/orders');
 const shippoTransactionsAPI = require('../shipping/shippoAPI/transactions');
+const squareHelper = require('./squareHelper');
 let server = null;
+
+// Configure OAuth2 access token for authorization: oauth2
+const defaultClient = SquareConnect.ApiClient.instance;
+const oauth2 = defaultClient.authentications['oauth2'];
+oauth2.accessToken = squareHelper.getAccessToken()
 
 
 function getPaymentModel() {
@@ -363,6 +370,56 @@ async function deleteShippingLabelHandler(request, h) {
  * @returns {Promise}
  */
 async function runPayment(opts) {
+    global.logger.debug('PAYMENT: runPayment opts', opts);
+
+    let schema = Joi.object().keys({
+        idempotency_key: Joi.string().trim().required(),
+        amount_money: Joi.object().keys({
+            amount: Joi.number().positive().required(),
+            currency: Joi.string().trim().required()
+        }),
+        card_nonce: Joi.string().trim().required(),
+        billing_address: Joi.object().unknown().required(),
+        shipping_address: Joi.object().unknown().required(),
+        buyer_email_address: Joi.string().email()
+    });
+
+    const validateResult = schema.validate(opts);
+    if (validateResult.error) {
+        throw new Error(validateResult.error);
+    }
+
+    // CHARGE API:
+    // https://github.com/square/connect-javascript-sdk/blob/master/docs/TransactionsApi.md#charge
+    try {
+        const transactions_api = new SquareConnect.TransactionsApi();
+
+        let data = await transactions_api.charge(
+            squareHelper.getLocationId(),
+            opts
+        );
+
+        return data;
+    }
+    catch(error) {
+        // trying to build a more coherent error message from the Square API error
+        const errorJson = JSON.parse(error.response.text);
+
+        if(isObject(errorJson) && errorJson.errors) {
+            let errors = [];
+            errorJson.errors.forEach((obj) => {
+                errors.push(obj.detail || 'Invalid request');
+            })
+            throw new Error(errors.join(', '))
+        }
+
+        throw new Error('Invalid request');
+    }
+}
+
+
+
+async function runPayment_BRAINTREE(opts) {
     let schema = Joi.object().keys({
         paymentMethodNonce: Joi.string().trim().required(),
         amount: Joi.number().precision(2).positive().required(),
