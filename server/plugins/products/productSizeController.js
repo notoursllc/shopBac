@@ -100,7 +100,7 @@ async function productSizeDeleteHandler(request, h) {
 async function decrementInventoryCount(ShoppingCart) {
     try {
         let cart = ShoppingCart.toJSON();
-        global.logger.debug("IN DECREMENT INVENTORY COUNT", cart)
+        // global.logger.debug("IN DECREMENT INVENTORY COUNT", cart)
 
         // async/await will work in for/of loops
         // https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
@@ -120,7 +120,7 @@ async function decrementInventoryCount(ShoppingCart) {
                     { inventory_count: newInventoryCount },
                     { id: ProductSize.get('id') }
                 );
-                global.logger.debug("PRODUCT SIZE UPDATED", UpdatedProductSize.toJSON())
+                // global.logger.debug("PRODUCT SIZE UPDATED", UpdatedProductSize.toJSON())
             }
         }
     }

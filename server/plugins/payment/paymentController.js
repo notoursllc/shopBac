@@ -48,13 +48,13 @@ async function getPaymentByAttribute(attrName, attrValue, withRelatedArr) {
     })
     .fetch(fetchObj);
 
-    global.logger.debug('PAYMENT BY ATTRIBUTE', {
-        meta: {
-            attrName,
-            attrValue,
-            payment: (Payment ? Payment.toJSON() : '')
-        }
-    });
+    // global.logger.debug('PAYMENT BY ATTRIBUTE', {
+    //     meta: {
+    //         attrName,
+    //         attrValue,
+    //         payment: (Payment ? Payment.toJSON() : '')
+    //     }
+    // });
 
     return Payment;
 }
@@ -73,29 +73,25 @@ async function getPaymentByAttribute(attrName, attrValue, withRelatedArr) {
  * @returns {Promise}
  */
 async function savePayment(cart_id, transactionJson) {
-    global.logger.debug('SAVE PAYMENT - TRANSACTION', {
-        meta: {
-            transactionJson
-        }
-    });
-
-    if(!isObject(transactionJson) || !isObject(transactionJson.transaction)) {
-        throw new Error('An error occurred while processing the transaction: transactionJson.transaction is not an object');
-    }
+    // global.logger.debug('SAVE PAYMENT - TRANSACTION', {
+    //     meta: {
+    //         transactionJson
+    //     }
+    // });
 
     const Payment = await getPaymentModel().forge().save(
         {
             cart_id: cart_id,
-            transaction: transactionJson.transaction,
+            transaction: transactionJson,
         },
         { method: 'insert' }
     );
 
-    global.logger.debug('SAVE PAYMENT RESULT', {
-        meta: {
-            payment: Payment ? Payment.toJSON() : Payment
-        }
-    });
+    // global.logger.debug('SAVE PAYMENT RESULT', {
+    //     meta: {
+    //         payment: Payment ? Payment.toJSON() : Payment
+    //     }
+    // });
 
     return Payment;
 }
@@ -273,11 +269,11 @@ async function purchaseShippingLabelHandler(request, h) {
         delete request.payload.id;
 
         const response = await shippoTransactionsAPI.createShippingLabel(request.payload);
-        global.logger.debug('CREATE SHIPPING LABEL RESPONSE', {
-            meta: {
-                response
-            }
-        });
+        // global.logger.debug('CREATE SHIPPING LABEL RESPONSE', {
+        //     meta: {
+        //         response
+        //     }
+        // });
 
         // no need to await here:
         Payment.save(
@@ -307,11 +303,11 @@ async function getShippingLabelHandler(request, h) {
     try {
         const response = await shippoTransactionsAPI.getShippingLabel(request.query.id);
 
-        global.logger.debug('GET SHIPPING LABEL RESPONSE', {
-            meta: {
-                response
-            }
-        });
+        // global.logger.debug('GET SHIPPING LABEL RESPONSE', {
+        //     meta: {
+        //         response
+        //     }
+        // });
 
         return h.apiSuccess(
             response
@@ -370,7 +366,7 @@ async function deleteShippingLabelHandler(request, h) {
  * @returns {Promise}
  */
 async function runPayment(opts) {
-    global.logger.debug('PAYMENT: runPayment opts', opts);
+    // global.logger.debug('PAYMENT: runPayment opts', opts);
 
     let schema = Joi.object().keys({
         idempotency_key: Joi.string().trim().required(),
@@ -398,6 +394,10 @@ async function runPayment(opts) {
             squareHelper.getLocationId(),
             opts
         );
+
+        // global.logger.debug('SquareConnect.TransactionsApi charge() response', {
+        //     meta: data
+        // });
 
         return data;
     }

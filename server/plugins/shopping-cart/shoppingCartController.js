@@ -173,13 +173,13 @@ async function getCartByAttribute(attrName, attrValue, withRelatedArr) {
     })
     .fetch(fetchObj);
 
-    global.logger.debug('CART BY ATTRIBUTE', {
-        meta: {
-            attribute: attrName,
-            value: attrValue,
-            cart: (ShoppingCart ? ShoppingCart.toJSON() : null)
-        }
-    });
+    // global.logger.debug('CART BY ATTRIBUTE', {
+    //     meta: {
+    //         attribute: attrName,
+    //         value: attrValue,
+    //         cart: (ShoppingCart ? ShoppingCart.toJSON() : null)
+    //     }
+    // });
 
     return ShoppingCart;
 }
@@ -375,11 +375,11 @@ async function cartItemRemoveHandler(request, h) {
         const cartToken = request.pre.m1.cartToken;
         const ShoppingCartItem = await getShoppingCartItemModel().findById(request.payload.id);
 
-        global.logger.debug('REMOVING CART ITEM', {
-            meta: {
-                item: ShoppingCartItem ? ShoppingCartItem.toJSON() : ShoppingCartItem
-            }
-        });
+        // global.logger.debug('REMOVING CART ITEM', {
+        //     meta: {
+        //         item: ShoppingCartItem ? ShoppingCartItem.toJSON() : ShoppingCartItem
+        //     }
+        // });
 
         if(ShoppingCartItem) {
             await ShoppingCartItem.destroy();
@@ -445,11 +445,11 @@ async function cartShippingSetAddressHandler(request, h) {
         updateData.sub_total = ShoppingCart.get('sub_total');
         updateData.sales_tax = salesTaxService.getSalesTaxAmount(updateData);
 
-        global.logger.debug('cartShippingSetAddressHandler - CART UPDATE PARAMS', {
-            meta: {
-                updateData
-            }
-        });
+        // global.logger.debug('cartShippingSetAddressHandler - CART UPDATE PARAMS', {
+        //     meta: {
+        //         updateData
+        //     }
+        // });
 
         // Save the shipping params and the sales tax value in the model:
         // Kind of awkward, but need to update the ShoppingCart twice in this
@@ -475,11 +475,11 @@ async function cartShippingSetAddressHandler(request, h) {
             { method: 'update', patch: true }
         );
 
-        global.logger.debug('Updated cart with shipping rate', {
-            meta: {
-                cart: UpdatedShoppingCart2.toJSON()
-            }
-        });
+        // global.logger.debug('Updated cart with shipping rate', {
+        //     meta: {
+        //         cart: UpdatedShoppingCart2.toJSON()
+        //     }
+        // });
 
         // Response contains the cart token in the header
         // plus the shopping cart payload
@@ -553,11 +553,11 @@ async function getLowestShippingRate(ShoppingCart) {
         };
     }
 
-    global.logger.debug('LOWEST SHIPPING RATE', {
-        meta: {
-            lowestRate
-        }
-    });
+    // global.logger.debug('LOWEST SHIPPING RATE', {
+    //     meta: {
+    //         lowestRate
+    //     }
+    // });
 
     return lowestRate;
 }
@@ -653,11 +653,11 @@ async function createShippoOrderFromShoppingCart(ShoppingCart) {
 
     let shippoOrderJSON = await shippoOrdersAPI.createOrder(data);
 
-    global.logger.debug('CREATE SHIPPO ORDER FROM SHOPPING CART RESPONSE', {
-        meta: {
-            shippoOrderJSON
-        }
-    });
+    // global.logger.debug('CREATE SHIPPO ORDER FROM SHOPPING CART RESPONSE', {
+    //     meta: {
+    //         shippoOrderJSON
+    //     }
+    // });
 
     return shippoOrderJSON;
 }
@@ -691,7 +691,6 @@ function sendPurchaseConfirmationEmails(cartToken, payment_id) {
 async function cartCheckoutHandler(request, h) {
     const { runPayment, savePayment } = require('../payment/paymentController');
 
-
     try {
         const cartToken = request.pre.m1.cartToken;
         const ShoppingCart = await getCart(cartToken);
@@ -700,7 +699,6 @@ async function cartCheckoutHandler(request, h) {
         // throws Error
         // The argument to runPayment is a Square ChargeRequest object:
         // https://github.com/square/connect-javascript-sdk/blob/master/docs/ChargeRequest.md#squareconnectchargerequest
-
         let transactionObj = await runPayment({
             idempotency_key: idempotency_key,
             amount_money: {
@@ -735,7 +733,7 @@ async function cartCheckoutHandler(request, h) {
             buyer_email_address: ShoppingCart.get('shipping_email')
         });
 
-        global.logger.debug('PaymentController.runPayment: SUCCESS', transactionObj);
+        // global.logger.debug('PaymentController.runPayment: SUCCESS', transactionObj);
 
         // Saving the payment transaction whether it was successful (transactionObj.success === true)
         // or not (transactionObj.success === false)
@@ -781,20 +779,11 @@ async function cartCheckoutHandler(request, h) {
             global.bugsnag(err);
         }
 
-        // Sending the purchase emails:
-        if(process.env.NODE_ENV !== 'test') {
-            sendPurchaseConfirmationEmails(cartToken, Payment.get('id'))
-        }
+        sendPurchaseConfirmationEmails(cartToken, Payment.get('id'))
 
-        // Successful transactions return the transaction id
-        if(transactionObj.success) {
-            return h.apiSuccess({
-                transactionId: Payment.get('id')
-            });
-        }
-        else {
-            throw new Error(transactionObj.message || 'An error occurred when saving the payment transaction data.')
-        }
+        return h.apiSuccess({
+            transactionId: Payment.get('id')
+        });
     }
     catch(err) {
         let msg = err instanceof Error ? err.message : err;

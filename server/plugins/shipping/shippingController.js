@@ -376,11 +376,11 @@ async function createCustomsItemFromShoppingCart(ShoppingCart) {
             throw new Error('Can not create customs item from Shopping Cart because the cart contains zero items')
         }
 
-        global.logger.debug('In createCustomsItemFromShoppingCart', {
-            meta: {
-                cartJson
-            }
-        });
+        // global.logger.debug('In createCustomsItemFromShoppingCart', {
+        //     meta: {
+        //         cartJson
+        //     }
+        // });
 
         if(cartJson.shipping_countryCodeAlpha2 !== 'US') {
             return await createCustomsItem({
