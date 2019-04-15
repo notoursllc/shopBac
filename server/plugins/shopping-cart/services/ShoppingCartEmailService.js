@@ -1,47 +1,54 @@
-'use strict';
-
-const Promise = require('bluebird');
 const path = require('path');
 const Config = require('../../../config');
-const mailgun = require('mailgun-js')({apiKey: Config.get('/mailgun/apiKey'), domain: Config.get('/mailgun/domain')});
-const MailComposer = require('nodemailer/lib/mail-composer');
 const pug = require('pug');
 const isObject = require('lodash.isobject');
 const helpers = require('../../../helpers.service');
 
+// https://www.npmjs.com/package/mailgun-js
+const mailgun = require('mailgun-js')({
+    apiKey: Config.get('/mailgun/apiKey'),
+    domain: Config.get('/mailgun/domain'),
+    testMode: process.env.NODE_ENV === 'test'
+});
+const MailComposer = require('nodemailer/lib/mail-composer');
 
 
-async function send(config) {
+function send(config) {
     return new Promise((resolve, reject) => {
-        let domainName = helpers.getDomainName();
-
-        // https://www.npmjs.com/package/mailgun-js
-        let mail = new MailComposer({
-            from: `${process.env.DOMAIN_NAME || domainName} <${process.env.EMAIL_INFO || 'info@'+domainName}>`,
+        const mailComposerConfig = {
+            from: `${process.env.DOMAIN_NAME} <${process.env.EMAIL_INFO}>`,
             to: config.to,
             subject: config.subject,
             body: config.text,
             html: config.html
+        }
+
+        global.logger.debug('ShoppingCartEmailService -> send() MailComposer config', {
+            meta: mailComposerConfig
         });
 
-        mail.compile().build(async (err, message) => {
+        // https://www.npmjs.com/package/mailgun-js
+        const mail = new MailComposer(mailComposerConfig);
+
+        mail.compile().build((err, message) => {
             if(err) {
-                global.logger.error(err);
-                global.bugsnag(err);
                 reject(err);
                 return;
             }
 
-            try {
-                let body = await mailgun.messages().sendMime({
-                    to: config.to,
-                    message: message.toString('ascii')
-                });
+            const dataToSend = {
+                to: config.to,
+                message: message.toString('ascii')
+            }
+
+            mailgun.messages().sendMime(dataToSend, (sendError, body) => {
+                if (sendError) {
+                    reject(sendError);
+                    return;
+                }
+
                 resolve(body);
-            }
-            catch(err) {
-                reject(err)
-            }
+            });
         });
     });
 }
@@ -158,44 +165,55 @@ function emailPurchaseReceiptToBuyer(ShoppingCart, payment_id, orderTitle) {
 
 
 function emailPurchaseAlertToAdmin(ShoppingCart, payment_id, orderTitle) {
-    let html = pug.renderFile(
-        path.join(__dirname, '../email-templates', 'admin-purchase-alert.pug'),
-        {
-            orderTitle,
-            baseUrl: helpers.getSiteUrl(true),
-            id: payment_id,
-            shipping_firstName: ShoppingCart.get('shipping_firstName'),
-            shipping_lastName: ShoppingCart.get('shipping_lastName'),
-            shipping_streetAddress: ShoppingCart.get('shipping_streetAddress'),
-            shipping_extendedAddress: ShoppingCart.get('shipping_extendedAddress'),
-            shipping_company: ShoppingCart.get('shipping_company'),
-            shipping_city: ShoppingCart.get('shipping_city'),
-            shipping_state: ShoppingCart.get('shipping_state'),
-            shipping_postalCode: ShoppingCart.get('shipping_postalCode'),
-            shipping_countryCodeAlpha2: ShoppingCart.get('shipping_countryCodeAlpha2'),
-            shipping_email: ShoppingCart.get('shipping_email'),
-            sub_total: ShoppingCart.get('sub_total'),
-            shipping_total: ShoppingCart.get('shipping_total'),
-            sales_tax: ShoppingCart.get('sales_tax'),
-            grand_total: ShoppingCart.get('grand_total')
-        }
-    );
+    try {
+        let html = pug.renderFile(
+            path.join(__dirname, '../email-templates', 'admin-purchase-alert.pug'),
+            {
+                orderTitle,
+                baseUrl: helpers.getSiteUrl(true),
+                id: payment_id,
+                shipping_firstName: ShoppingCart.get('shipping_firstName'),
+                shipping_lastName: ShoppingCart.get('shipping_lastName'),
+                shipping_streetAddress: ShoppingCart.get('shipping_streetAddress'),
+                shipping_extendedAddress: ShoppingCart.get('shipping_extendedAddress'),
+                shipping_company: ShoppingCart.get('shipping_company'),
+                shipping_city: ShoppingCart.get('shipping_city'),
+                shipping_state: ShoppingCart.get('shipping_state'),
+                shipping_postalCode: ShoppingCart.get('shipping_postalCode'),
+                shipping_countryCodeAlpha2: ShoppingCart.get('shipping_countryCodeAlpha2'),
+                shipping_email: ShoppingCart.get('shipping_email'),
+                sub_total: ShoppingCart.get('sub_total'),
+                shipping_total: ShoppingCart.get('shipping_total'),
+                sales_tax: ShoppingCart.get('sales_tax'),
+                grand_total: ShoppingCart.get('grand_total')
+            }
+        );
 
-    return send({
-        to: process.env.EMAIL_ADMIN,
-        subject: `NEW ORDER: ${orderTitle}`,
-        html: html
-    });
+        return send({
+            to: process.env.EMAIL_ADMIN,
+            subject: `NEW ORDER: ${orderTitle}`,
+            html: html
+        });
+    }
+    catch(err) {
+        global.logger.error(err);
+        global.bugsnag(err);
+    }
 }
 
 
 function sendPurchaseEmails(ShoppingCart, payment_id) {
     let orderTitle = getPurchaseDescription(ShoppingCart);
 
-    Promise.all([
-        emailPurchaseReceiptToBuyer(ShoppingCart, payment_id, orderTitle),
-        emailPurchaseAlertToAdmin(ShoppingCart, payment_id, orderTitle)
-    ]);
+    Promise
+        .all([
+            emailPurchaseReceiptToBuyer(ShoppingCart, payment_id, orderTitle),
+            emailPurchaseAlertToAdmin(ShoppingCart, payment_id, orderTitle)
+        ])
+        .catch((err) => {
+            global.logger.error(err);
+            global.bugsnag(err);
+        });
 }
 
 
