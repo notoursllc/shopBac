@@ -29,19 +29,6 @@ const after = function (server) {
             }
         },
         {
-            method: 'GET',
-            path: '/payment/summary',
-            options: {
-                description: 'Basic transaction results for a given order',
-                validate: {
-                    query: {
-                        id: Joi.string().max(50)
-                    }
-                },
-                handler: PaymentController.getPaymentSummaryHandler
-            }
-        },
-        {
             method: 'POST',
             path: '/payment/shipping/packingslip',
             options: {

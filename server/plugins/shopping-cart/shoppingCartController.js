@@ -743,7 +743,7 @@ async function cartCheckoutHandler(request, h) {
         // was an error saving that data, giving the impression that the order was not successful.
         // Therefore any errors that happen here (promise is rejected) will be caught below
 
-        const Payment = await savePayment(ShoppingCart.get('id'), transactionObj);
+        const Payment = await savePayment(ShoppingCart.get('id'), transactionObj.transaction);
 
         // NOTE: Any failures that happen after this do not affect the braintree transaction
         // and thus should fail silently (catching and logging errors), as the user has already been changed

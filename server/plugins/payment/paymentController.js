@@ -117,55 +117,6 @@ async function getPaymentsHandler(request, h) {
 }
 
 
-async function getPaymentSummaryHandler(request, h) {
-    try {
-        const Payment = await getPaymentByAttribute(
-            'id',
-            request.query.id,
-            ['shoppingCart.cart_items.product']
-        );
-
-        if(!Payment) {
-            throw Boom.notFound('Payment not found');
-        }
-
-        let p = Payment.toJSON();
-
-        let response = {
-            id: p.id,
-            created: p.created_at,
-            shipping: p.transaction.shipping,
-            shoppingCart: {
-                num_items: p.shoppingCart.num_items,
-                shipping_email: p.shoppingCart.shipping_email
-            },
-            transaction: {
-                id: p.transaction.id,
-                amount: p.transaction.amount,
-                payment: {
-                    type: p.transaction.paymentInstrumentType
-                }
-            }
-        };
-
-        if(p.transaction.paymentInstrumentType === 'credit_card') {
-            response.transaction.payment.last4 = p.transaction.creditCard.last4;
-            response.transaction.payment.cardType = p.transaction.creditCard.cardType;
-        }
-        else {
-            response.transaction.payment.payerEmail = p.transaction.paypalAccount.payerEmail;
-        }
-
-        return h.apiSuccess(response);
-    }
-    catch(err) {
-        global.logger.error(err);
-        global.bugsnag(err);
-        throw Boom.badRequest(err);
-    }
-}
-
-
 async function getPaymentHandler(request, h) {
     try {
         const Payment = await getPaymentByAttribute(
@@ -493,7 +444,6 @@ module.exports = {
 
     // route handlers
     getPaymentsHandler,
-    getPaymentSummaryHandler,
     getPaymentHandler,
     getPaymentClientTokenHandler,
     shippingPackingSlipHandler,
