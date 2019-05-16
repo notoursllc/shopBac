@@ -61,12 +61,7 @@ async function getPaymentByAttribute(attrName, attrValue, withRelatedArr) {
 
 
 /**
- * Persists some of the Braintree transaction data
- *
- * Since the Braintree API allows searching for transaction data (https://developers.braintreepayments.com/reference/general/searching/search-fields/node)
- * it seems redundant and perhaps a bit insecure to store the entire transaction JSON here as well.
- * Therefore, pulling out only a few relevant transaction attributes (most importantly the transaction id)
- * and persisting those only.
+ * Persists some of the transaction data
  *
  * @param cart_id
  * @param transactionJson
@@ -311,7 +306,7 @@ async function deleteShippingLabelHandler(request, h) {
 
 
 /**
- * Submits a payment 'sale' to Braintree
+ * Submits a payment to Square
  *
  * @param opts  Options object to pass to braintree.transaction.sale
  * @returns {Promise}
@@ -370,72 +365,6 @@ async function runPayment(opts) {
 
 
 
-async function runPayment_BRAINTREE(opts) {
-    let schema = Joi.object().keys({
-        paymentMethodNonce: Joi.string().trim().required(),
-        amount: Joi.number().precision(2).positive().required(),
-        shipping: Joi.object().unknown().required(),
-        customer: Joi.object().unknown(),
-        billing: Joi.object().unknown(),
-        options: Joi.object().unknown()
-    });
-
-    const validateResult = schema.validate(opts);
-    if (validateResult.error) {
-        throw new Error(validateResult.error);
-    }
-
-    const result = await global.braintreeGateway.transaction.sale(opts);
-
-    if (result.success) {
-        return result
-    }
-
-    throw new Error(result.message);
-}
-
-
-/**
-* From Braintree docs:
-* "A client token is a signed data blob that includes configuration and authorization information
-* required by the Braintree Client SDK. These should not be reused; a new client token should be
-* generated for each customer request that's sent to Braintree.
-* For security, we will revoke client tokens if they are reused excessively within a short time period."
-*
-* https://developers.braintreepayments.com/start/overview
-* https://developers.braintreepayments.com/reference/request/client-token/generate/node
-*
-* @returns {Promise}
-*/
-async function getPaymentClientTokenHandler(request, h) {
-    try {
-        // just verifyig that a shopping cart exists for this user.
-        // If not, no need to generate the token
-        let ShoppingCart = await cartController.getActiveCart(
-            cartController.getValidCartTokenFromRequest(request)
-        );
-
-        if(!ShoppingCart) {
-            throw new Error('Shopping cart does not exist.')
-        }
-
-        const response = await global.braintreeGateway.clientToken.generate({});
-
-        if(!response.clientToken) {
-            throw new Error('Error generating payment token.')
-        }
-
-        return h.apiSuccess(
-            response.clientToken
-        );
-    }
-    catch(err) {
-        global.logger.error(err);
-        global.bugsnag(err);
-        throw Boom.badRequest(err);
-    }
-}
-
 module.exports = {
     setServer,
     getPaymentByAttribute,
@@ -445,7 +374,6 @@ module.exports = {
     // route handlers
     getPaymentsHandler,
     getPaymentHandler,
-    getPaymentClientTokenHandler,
     shippingPackingSlipHandler,
     purchaseShippingLabelHandler,
     getShippingLabelHandler,

@@ -1,7 +1,6 @@
 'use strict';
 
 const Joi = require('joi');
-const braintree = require('braintree');
 const PaymentController = require('./paymentController');
 
 
@@ -88,14 +87,6 @@ const after = function (server) {
                 },
                 handler: PaymentController.deleteShippingLabelHandler
             }
-        },
-        {
-            method: 'GET',
-            path: '/payment/token',
-            options: {
-                description: 'Returns the Braintree client token',
-                handler: PaymentController.getPaymentClientTokenHandler
-            }
         }
     ]);
 
@@ -116,21 +107,6 @@ exports.plugin = {
     pkg: require('./package.json'),
     register: function (server, options) {
         PaymentController.setServer(server);
-
-        let env;
-        if(process.env.NODE_ENV === 'test' || process.env.BRAINTREE_USE_SANDBOX) {
-            env = braintree.Environment.Sandbox;
-        }
-        else {
-            env = braintree.Environment.Production;
-        }
-
-        global.braintreeGateway = braintree.connect({
-            environment: env,
-            merchantId: process.env.BRAINTREE_MERCHANT_ID,
-            publicKey: process.env.BRAINTREE_PUBLIC_KEY,
-            privateKey: process.env.BRAINTREE_PRIVATE_KEY
-        });
 
         server.dependency(['BookshelfOrm', 'Core'], after);
     }

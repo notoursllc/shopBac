@@ -1,28 +1,4 @@
 const paypalSdk = require('@paypal/checkout-server-sdk');
-const axios = require('axios');
-
-function getPalPalAxios() {
-    // return axios;
-    try {
-        if(!getPalPalAxios.$axios) {
-            getPalPalAxios.$axios = axios.create({
-                baseURL: 'https://api.sandbox.paypal.com',
-                timeout: 10000,
-                headers: {
-                    'Authorization':  `Bearer ${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`,
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                }
-            });
-        }
-
-        return getPalPalAxios.$axios;
-    }
-    catch(err) {
-        console.log("Axios create error", err)
-    }
-}
-
 
 /**
  *
@@ -55,6 +31,5 @@ function getPaypalEnvironment() {
 
 
 module.exports = {
-    getPaypalClient,
-    getPalPalAxios
+    getPaypalClient
 }

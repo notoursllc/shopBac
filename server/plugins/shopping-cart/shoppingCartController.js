@@ -16,19 +16,7 @@ const shippoOrdersAPI = require('../shipping/shippoAPI/orders');
 
 // Paypal
 const paypal = require('@paypal/checkout-server-sdk');
-const { getPaypalClient, getPalPalAxios } = require('./paypal_helpers');
-
-// another paypal try
-const paypalSdk = require('paypal-rest-sdk');
-const axios = require('axios');
-
-// configure paypal
-paypalSdk.configure({
-    // mode: process.env.PAYPAL_MODE || 'sandbox', //sandbox or live
-    mode: 'sandbox', //sandbox or live
-    client_id: process.env.PAYPAL_CLIENT_ID,
-    client_secret: process.env.PAYPAL_CLIENT_SECRET
-});
+const { getPaypalClient } = require('./paypal_helpers');
 
 
 let server = null;
@@ -60,7 +48,7 @@ function getShippingAttributesSchema() {
         shipping_city: Joi.string().trim().max(255).required(),
         shipping_state: Joi.string().trim().max(255).required(),
         shipping_postalCode: Joi.string().trim().max(10).required(),
-        shipping_countryCodeAlpha2: Joi.string().trim().max(2).required(),  // alpha2 is required by PayPal:  https://developers.braintreepayments.com/reference/request/transaction/sale/node#billing.country_code_alpha2
+        shipping_countryCodeAlpha2: Joi.string().trim().max(2).required(),  // alpha2 is required by PayPal
         shipping_email: Joi.string().email().max(50).label('Shipping: Email').required()
     }
 }
@@ -116,14 +104,10 @@ function getDefaultWithRelated() {
 
 /**
  * Joi definitions for the ShoppingCart model
- *
- * NOTE:
- * The 'max' values are based on what is accepted by Braintree:
- * https://developers.braintreepayments.com/reference/request/transaction/sale/node
  */
 function getShoppingCartModelSchema() {
     return Joi.object().keys({
-        token: Joi.string().trim().max(100).required(),
+        token: Joi.string().trim().required(),
         billing: Joi.object().keys(getBillingAttributesSchema()),
         shipping: Joi.object().keys(getShippingAttributesSchema()),
         shipping_rate: Joi.object().unknown()
@@ -762,7 +746,7 @@ async function cartCheckoutHandler(request, h) {
 
         const Payment = await savePayment(ShoppingCart.get('id'), transactionObj.transaction);
 
-        // NOTE: Any failures that happen after this do not affect the braintree transaction
+        // NOTE: Any failures that happen after this do not affect the Square transaction
         // and thus should fail silently (catching and logging errors), as the user has already been changed
         // and we can't give the impression of an overall transaction failure that may prompt them
         // to re-do the purchase.
@@ -821,9 +805,34 @@ async function paypalCreatePayment(request, h) {
         const req = new paypal.orders.OrdersCreateRequest();
         req.prefer("return=representation");
 
+        // Building the items array for the requestConfig object
+        let cart = ShoppingCart.toJSON();
+        let items = [];
+
+        cart.cart_items.forEach((obj) => {
+            // https://developer.paypal.com/docs/api/orders/v2/#definition-item
+            let item = {
+                name: obj.product.title,
+                description: obj.product.description_short,
+                sku: obj.product.id,
+                unit_amount: {
+                    currency_code: 'USD',
+                    value: obj.total_item_price
+                },
+                // tax: {
+                //     currency_code: "USD",
+                //     value: "10.00"
+                // },
+                quantity: obj.qty,
+                category: 'PHYSICAL_GOODS'
+            };
+
+            items.push(item);
+        });
+
         // Full set of params here:
         // https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/#on-the-server
-        req.requestBody({
+        let requestConfig = {
             intent: 'CAPTURE',
 
             // https://developer.paypal.com/docs/api/orders/v2/#definition-application_context
@@ -835,26 +844,53 @@ async function paypalCreatePayment(request, h) {
                 user_action: 'PAY_NOW'
             },
             purchase_units: [{
+                // https://developer.paypal.com/docs/api/orders/v2/#definition-amount_with_breakdown
                 amount: {
                     currency_code: 'USD',
-                    value: ShoppingCart.get('grand_total')
+                    value: cart.grand_total,
+                    breakdown: {
+                        item_total: {
+                            currency_code: 'USD',
+                            value: cart.sub_total
+                        },
+                        shipping: {
+                            currency_code: 'USD',
+                            value: cart.shipping_total
+                        },
+                        // handling: {
+                        //     currency_code: 'USD',
+                        //     value: '10.00'
+                        // },
+                        tax_total: {
+                            currency_code: 'USD',
+                            value: cart.sales_tax
+                        },
+                        // shipping_discount: {
+                        //     currency_code: 'USD',
+                        //     value: '10'
+                        // }
+                    }
                 },
-                // shipping: {
-                //     // method: "United States Postal Service",
-                //     name: {
-                //         full_name: ShoppingCart.get('shipping_fullName')
-                //     },
-                //     address: {
-                //         address_line_1: ShoppingCart.get('shipping_streetAddress'),
-                //         address_line_2: ShoppingCart.get('shipping_extendedAddress') || null,
-                //         admin_area_2: ShoppingCart.get('shipping_city'),
-                //         admin_area_1: ShoppingCart.get('shipping_state'),
-                //         postal_code: ShoppingCart.get('shipping_postalCode'),
-                //         country_code: ShoppingCart.get('shipping_countryCodeAlpha2'),
-                //     }
-                // }
+                items: items,
+                shipping: {
+                    // method: "United States Postal Service",
+                    name: {
+                        full_name: cart.shipping_fullName
+                    },
+                    // https://developer.paypal.com/docs/api/orders/v2/#definition-shipping_detail.address_portable
+                    address: {
+                        address_line_1: cart.shipping_streetAddress,
+                        address_line_2: cart.shipping_extendedAddress || null,
+                        admin_area_2: cart.shipping_city,
+                        admin_area_1: cart.shipping_state,
+                        postal_code: cart.shipping_postalCode,
+                        country_code: cart.shipping_countryCodeAlpha2,
+                    }
+                }
             }]
-        });
+        };
+
+        req.requestBody(requestConfig);
 
         let order = await getPaypalClient().execute(req);
 
@@ -890,249 +926,6 @@ async function paypalExecutePayment(request, h) {
 }
 
 
-// async function paypalCreatePayment(request, h) {
-//     try {
-//         const response = await getPalPalAxios().post('/v1/payments/payment', {
-//         // const response = await axios.post('https://api.sandbox.paypal.com/v1/payments/payment', {
-//             // auth: {
-//             //     user: process.env.PAYPAL_CLIENT_ID,
-//             //     pass: process.env.PAYPAL_CLIENT_SECRET
-//             // },
-//             auth: {
-//                 user: 'Aba80Q0HmPEcELAmJqhxHsBJIMC_Kg_AnLPxeBZRGn-7K3XY_ppWkqaVGHrLQH8TBcENTtxdYm2yQxzK',
-//                 pass: 'EABB5MeIqkcFhcmQpydWDn3hDX5eVt50eR4vL7sNNIl5xt764UGm8lGj0sU9vvjWHlc153vZjjyWQRnR'
-//             },
-//             body: {
-//                 intent: 'sale',
-//                 payer: {
-//                     payment_method: 'paypal'
-//                 },
-//                 transactions: [
-//                     {
-//                         amount: {
-//                             total: '5.99',
-//                             currency: 'USD'
-//                         }
-//                     }
-//                 ],
-//                 redirect_urls: {
-//                     return_url: 'https://example.com',
-//                     cancel_url: 'https://example.com'
-//                 }
-//             },
-//             json: true
-//         });
-
-//         console.log("paypalCreatePayment response", response)
-
-//         return h.apiSuccess({
-//             id: response.body.id
-//         });
-//     }
-//     catch(err) {
-//         global.logger.error(err);
-//         global.bugsnag(err);
-//         throw Boom.badData(err);
-//     }
-// }
-
-// async function paypalExecutePayment(request, h) {
-//     try {
-//         const response = await getPalPalAxios().post(`/v1/payments/payment/${request.payload.paymentID}/execute`, {
-//             auth: {
-//                 user: process.env.PAYPAL_CLIENT_ID,
-//                 pass: process.env.PAYPAL_CLIENT_SECRET
-//             },
-//             body: {
-//                 payer_id: request.payload.payerID,
-//                 transactions: [
-//                     {
-//                         amount: {
-//                             total: '10.99',
-//                             currency: 'USD'
-//                         }
-//                     }
-//                 ]
-//             },
-//             json: true
-//         });
-
-//         console.log("paypalExecutePayment response", response)
-
-//         return h.apiSuccess({
-//             status: 'success'
-//         });
-//     }
-//     catch(err) {
-//         global.logger.error(err);
-//         global.bugsnag(err);
-//         throw Boom.badData(err);
-//     }
-// }
-
-// async function paypalCheckout(request, h) {
-//     try {
-//         var create_payment_json = {
-//             "intent": "sale",
-//             "payer": {
-//                 "payment_method": "paypal"
-//             },
-//             "redirect_urls": {
-//                 "return_url": "http://return.url",
-//                 "cancel_url": "http://cancel.url"
-//             },
-//             "transactions": [{
-//                 "item_list": {
-//                     "items": [{
-//                         "name": "item",
-//                         "sku": "item",
-//                         "price": "1.00",
-//                         "currency": "USD",
-//                         "quantity": 1
-//                     }]
-//                 },
-//                 "amount": {
-//                     "currency": "USD",
-//                     "total": "1.00"
-//                 },
-//                 "description": "This is the payment description."
-//             }]
-//         };
-
-//         paypal.payment.create(create_payment_json, function (error, payment) {
-//             if (error) {
-//                 throw error;
-//             }
-
-//             console.log("Create Payment Response", payment);
-
-//             return h.apiSuccess({
-//                 payment: payment
-//             });
-//         });
-//     }
-//     catch(err) {
-//         global.logger.error(err);
-//         global.bugsnag(err);
-//         throw Boom.badData(err);
-//     }
-// }
-
-// TODO: this function uses shoppingCartEmailService
-// Note: route handler calles the defined 'pre' method before it gets here
-async function cartCheckoutHandler_BRAINTREE(request, h) {
-    const { runPayment, savePayment } = require('../payment/paymentController');
-
-    try {
-        const cartToken = request.pre.m1.cartToken;
-        const ShoppingCart = await getCart(cartToken);
-
-        // throws Error
-        let transactionObj = await runPayment({
-            paymentMethodNonce: request.payload.nonce,
-            amount: ShoppingCart.get('grand_total'),
-            customer: {
-                // NOTE: Braintree requires that this email has a '.' in the domain name (i.e test@test.com)
-                // which technically isn't correct. This fails validation: test@test
-                email: ShoppingCart.get('shipping_email')
-            },
-            shipping: {
-                company: ShoppingCart.get('shipping_company'),
-                countryCodeAlpha2: ShoppingCart.get('shipping_countryCodeAlpha2'),
-                extendedAddress: ShoppingCart.get('shipping_extendedAddress') || null,
-                firstName: ShoppingCart.get('shipping_firstName'),
-                lastName: ShoppingCart.get('shipping_lastName'),
-                locality: ShoppingCart.get('shipping_city'),
-                postalCode: ShoppingCart.get('shipping_postalCode'),
-                region: ShoppingCart.get('shipping_state'),
-                streetAddress: ShoppingCart.get('shipping_streetAddress')
-            },
-            billing: {
-                company: request.payload.billing_company,
-                countryCodeAlpha2: request.payload.billing_countryCodeAlpha2,
-                extendedAddress: request.payload.billing_extendedAddress || null,
-                firstName: request.payload.billing_firstName,
-                lastName: request.payload.billing_lastName,
-                locality: request.payload.billing_city,
-                postalCode: request.payload.billing_postalCode,
-                region: request.payload.billing_state,
-                streetAddress: request.payload.billing_streetAddress
-            },
-            options: {
-                submitForSettlement: true
-            }
-        });
-
-        // Saving the payment transaction whether it was successful (transactionObj.success === true)
-        // or not (transactionObj.success === false)
-        // NOTE: Originally I was not raising any errors to the user that happen while saving to the DB.
-        // However I think it's worth doing so because immediately after the transaction we display
-        // the transaction summary to the user, and we would have nothing to display if there
-        // was an error saving that data, giving the impression that the order was not successful.
-        // Therefore any errors that happen here (promise is rejected) will be caught below
-
-        const Payment = await savePayment(ShoppingCart.get('id'), transactionObj);
-
-        // NOTE: Any failures that happen after this do not affect the braintree transaction
-        // and thus should fail silently (catching and logging errors), as the user has already been changed
-        // and we can't give the impression of an overall transaction failure that may prompt them
-        // to re-do the purchase.
-
-        // Updating the cart with the billing params and the 'closed_at'
-        // timestamp if transaction was successful:
-        let updateParams = cloneDeep(request.payload);
-        delete updateParams.nonce;
-
-         // Create the Order in Shippo so a shipping label can be created in the future.
-        // let shippoOrder = await createShippoOrderFromShoppingCart(ShoppingCart);
-        // updateParams.shippo_order_id = shippoOrder.object_id;
-
-        if(transactionObj.success) {
-            // This will cause the cart not to be re-used
-            // (See ShoppingCart -> getCart())
-            updateParams.closed_at = new Date();
-
-            // The products controller catches this and descrments the product size inventory count
-            // Errors do not need to be caught here because any failures should not affect the transaction
-            server.events.emit('SHOPPING_CART_CHECKOUT_SUCCESS', ShoppingCart);
-        }
-
-        // Update the cart with the billing info and the closed_at value
-        try {
-            await ShoppingCart.save(
-                updateParams,
-                { method: 'update', patch: true }
-            );
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-        }
-
-        // Sending the purchase emails:
-        if(process.env.NODE_ENV !== 'test') {
-            sendPurchaseConfirmationEmails(cartToken, Payment.get('id'))
-        }
-
-        // Successful transactions return the transaction id
-        if(transactionObj.success) {
-            return h.apiSuccess({
-                transactionId: Payment.get('id')
-            });
-        }
-        else {
-            throw new Error(transactionObj.message || 'An error occurred when saving the payment transaction data.')
-        }
-    }
-    catch(err) {
-        let msg = err instanceof Error ? err.message : err;
-        global.logger.error(msg);
-        global.bugsnag(msg);
-        throw Boom.badData(msg);
-    }
-};
-
-
 module.exports = {
     setServer,
     pre_cart,
@@ -1157,8 +950,5 @@ module.exports = {
     cartShippingRateHandler,
     cartCheckoutHandler,
     paypalCreatePayment,
-    paypalExecutePayment,
-
-    // paypalCreatePayment,
-    // paypalCheckout
+    paypalExecutePayment
 }
