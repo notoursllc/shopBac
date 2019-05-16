@@ -14,6 +14,23 @@ const productsController = require('../products/productsController')
 const shippingController = require('../shipping/shippingController');
 const shippoOrdersAPI = require('../shipping/shippoAPI/orders');
 
+// Paypal
+const paypal = require('@paypal/checkout-server-sdk');
+const { getPaypalClient, getPalPalAxios } = require('./paypal_helpers');
+
+// another paypal try
+const paypalSdk = require('paypal-rest-sdk');
+const axios = require('axios');
+
+// configure paypal
+paypalSdk.configure({
+    // mode: process.env.PAYPAL_MODE || 'sandbox', //sandbox or live
+    mode: 'sandbox', //sandbox or live
+    client_id: process.env.PAYPAL_CLIENT_ID,
+    client_secret: process.env.PAYPAL_CLIENT_SECRET
+});
+
+
 let server = null;
 
 
@@ -795,6 +812,212 @@ async function cartCheckoutHandler(request, h) {
 };
 
 
+// https://github.com/paypal/Checkout-NodeJS-SDK/blob/master/samples/CaptureIntentExamples/createOrder.js
+async function paypalCreatePayment(request, h) {
+    try {
+        const cartToken = request.pre.m1.cartToken;
+        const ShoppingCart = await getCart(cartToken);
+
+        const req = new paypal.orders.OrdersCreateRequest();
+        req.prefer("return=representation");
+
+        // Full set of params here:
+        // https://developer.paypal.com/docs/checkout/reference/server-integration/set-up-transaction/#on-the-server
+        req.requestBody({
+            intent: 'CAPTURE',
+
+            // https://developer.paypal.com/docs/api/orders/v2/#definition-application_context
+            application_context: {
+                brand_name: 'BreadVan',
+                locale: 'en-US',
+                shipping_preference: 'NO_SHIPPING',
+                // shipping_preference: 'SET_PROVIDED_ADDRESS',
+                user_action: 'PAY_NOW'
+            },
+            purchase_units: [{
+                amount: {
+                    currency_code: 'USD',
+                    value: ShoppingCart.get('grand_total')
+                },
+                // shipping: {
+                //     // method: "United States Postal Service",
+                //     name: {
+                //         full_name: ShoppingCart.get('shipping_fullName')
+                //     },
+                //     address: {
+                //         address_line_1: ShoppingCart.get('shipping_streetAddress'),
+                //         address_line_2: ShoppingCart.get('shipping_extendedAddress') || null,
+                //         admin_area_2: ShoppingCart.get('shipping_city'),
+                //         admin_area_1: ShoppingCart.get('shipping_state'),
+                //         postal_code: ShoppingCart.get('shipping_postalCode'),
+                //         country_code: ShoppingCart.get('shipping_countryCodeAlpha2'),
+                //     }
+                // }
+            }]
+        });
+
+        let order = await getPaypalClient().execute(req);
+
+        return h.apiSuccess({
+            paymentToken: order.result.id
+        });
+    }
+    catch(err) {
+        global.logger.error(err);
+        global.bugsnag(err);
+        throw Boom.badData(err);
+    }
+}
+
+
+// https://github.com/paypal/Checkout-NodeJS-SDK/blob/master/samples/CaptureIntentExamples/captureOrder.js
+async function paypalExecutePayment(request, h) {
+    try {
+        const req = new paypal.orders.OrdersCaptureRequest(request.payload.paymentToken);
+        req.requestBody({});
+
+        const response = await getPaypalClient().execute(req);
+
+        return h.apiSuccess({
+            response: response
+        });
+    }
+    catch(err) {
+        global.logger.error(err);
+        global.bugsnag(err);
+        throw Boom.badData(err);
+    }
+}
+
+
+// async function paypalCreatePayment(request, h) {
+//     try {
+//         const response = await getPalPalAxios().post('/v1/payments/payment', {
+//         // const response = await axios.post('https://api.sandbox.paypal.com/v1/payments/payment', {
+//             // auth: {
+//             //     user: process.env.PAYPAL_CLIENT_ID,
+//             //     pass: process.env.PAYPAL_CLIENT_SECRET
+//             // },
+//             auth: {
+//                 user: 'Aba80Q0HmPEcELAmJqhxHsBJIMC_Kg_AnLPxeBZRGn-7K3XY_ppWkqaVGHrLQH8TBcENTtxdYm2yQxzK',
+//                 pass: 'EABB5MeIqkcFhcmQpydWDn3hDX5eVt50eR4vL7sNNIl5xt764UGm8lGj0sU9vvjWHlc153vZjjyWQRnR'
+//             },
+//             body: {
+//                 intent: 'sale',
+//                 payer: {
+//                     payment_method: 'paypal'
+//                 },
+//                 transactions: [
+//                     {
+//                         amount: {
+//                             total: '5.99',
+//                             currency: 'USD'
+//                         }
+//                     }
+//                 ],
+//                 redirect_urls: {
+//                     return_url: 'https://example.com',
+//                     cancel_url: 'https://example.com'
+//                 }
+//             },
+//             json: true
+//         });
+
+//         console.log("paypalCreatePayment response", response)
+
+//         return h.apiSuccess({
+//             id: response.body.id
+//         });
+//     }
+//     catch(err) {
+//         global.logger.error(err);
+//         global.bugsnag(err);
+//         throw Boom.badData(err);
+//     }
+// }
+
+// async function paypalExecutePayment(request, h) {
+//     try {
+//         const response = await getPalPalAxios().post(`/v1/payments/payment/${request.payload.paymentID}/execute`, {
+//             auth: {
+//                 user: process.env.PAYPAL_CLIENT_ID,
+//                 pass: process.env.PAYPAL_CLIENT_SECRET
+//             },
+//             body: {
+//                 payer_id: request.payload.payerID,
+//                 transactions: [
+//                     {
+//                         amount: {
+//                             total: '10.99',
+//                             currency: 'USD'
+//                         }
+//                     }
+//                 ]
+//             },
+//             json: true
+//         });
+
+//         console.log("paypalExecutePayment response", response)
+
+//         return h.apiSuccess({
+//             status: 'success'
+//         });
+//     }
+//     catch(err) {
+//         global.logger.error(err);
+//         global.bugsnag(err);
+//         throw Boom.badData(err);
+//     }
+// }
+
+// async function paypalCheckout(request, h) {
+//     try {
+//         var create_payment_json = {
+//             "intent": "sale",
+//             "payer": {
+//                 "payment_method": "paypal"
+//             },
+//             "redirect_urls": {
+//                 "return_url": "http://return.url",
+//                 "cancel_url": "http://cancel.url"
+//             },
+//             "transactions": [{
+//                 "item_list": {
+//                     "items": [{
+//                         "name": "item",
+//                         "sku": "item",
+//                         "price": "1.00",
+//                         "currency": "USD",
+//                         "quantity": 1
+//                     }]
+//                 },
+//                 "amount": {
+//                     "currency": "USD",
+//                     "total": "1.00"
+//                 },
+//                 "description": "This is the payment description."
+//             }]
+//         };
+
+//         paypal.payment.create(create_payment_json, function (error, payment) {
+//             if (error) {
+//                 throw error;
+//             }
+
+//             console.log("Create Payment Response", payment);
+
+//             return h.apiSuccess({
+//                 payment: payment
+//             });
+//         });
+//     }
+//     catch(err) {
+//         global.logger.error(err);
+//         global.bugsnag(err);
+//         throw Boom.badData(err);
+//     }
+// }
+
 // TODO: this function uses shoppingCartEmailService
 // Note: route handler calles the defined 'pre' method before it gets here
 async function cartCheckoutHandler_BRAINTREE(request, h) {
@@ -932,5 +1155,10 @@ module.exports = {
     cartShippingSetAddressHandler,
     getCartShippingRatesHandler,
     cartShippingRateHandler,
-    cartCheckoutHandler
+    cartCheckoutHandler,
+    paypalCreatePayment,
+    paypalExecutePayment,
+
+    // paypalCreatePayment,
+    // paypalCheckout
 }

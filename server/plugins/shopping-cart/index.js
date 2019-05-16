@@ -127,6 +127,57 @@ const after = function (server) {
                 handler: ShoppingCartController.cartCheckoutHandler
             }
         },
+
+        // PAYPAL
+        // {
+        //     method: 'POST',
+        //     path: '/cart/paypal/create',
+        //     options: {
+        //         description: 'Returns a paypal transaction id', // is this the right description?
+        //         handler: ShoppingCartController.paypalCreate
+        //     }
+        // },
+        // {
+        //     method: 'POST',
+        //     path: '/cart/paypal/checkout',
+        //     options: {
+        //         description: 'Checkout using PayPal', // is this the right description?
+        //         validate: {
+        //             payload: Joi.object({
+        //                 orderId: Joi.string().required(),  // cart item id
+        //                 // orderId: Joi.number().min(1).required()
+        //             })
+        //         },
+        //         handler: ShoppingCartController.paypalCaptureOrder
+        //     }
+        // },
+
+        {
+            method: 'POST',
+            path: '/cart/paypal/create-payment',
+            options: {
+                description: 'Returns a paypal transaction id', // is this the right description?
+                pre: [
+                    { method: ShoppingCartController.pre_cart, assign: 'm1' },
+                ],
+                handler: ShoppingCartController.paypalCreatePayment  // working
+            }
+        },
+        {
+            method: 'POST',
+            path: '/cart/paypal/execute-payment',
+            options: {
+                description: 'Executes a PayPal payment',
+                validate: {
+                    payload: Joi.object({
+                        paymentToken: Joi.string().required()
+                    })
+                },
+
+                handler: ShoppingCartController.paypalExecutePayment
+            }
+        },
+
         {
             method: 'GET',
             path: '/cart/{param*}',
