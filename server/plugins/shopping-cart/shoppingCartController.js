@@ -817,7 +817,7 @@ async function paypalCreatePayment(request, h) {
                 sku: obj.product.id,
                 unit_amount: {
                     currency_code: 'USD',
-                    value: obj.total_item_price
+                    value: obj.product.display_price
                 },
                 // tax: {
                 //     currency_code: "USD",
