@@ -770,7 +770,7 @@ async function cartCheckoutHandler(request, h) {
         // throws Error
         // The argument to runPayment is a Square ChargeRequest object:
         // https://github.com/square/connect-javascript-sdk/blob/master/docs/ChargeRequest.md#squareconnectchargerequest
-        let transactionObj = await runPayment({
+        const chargeRequest = {
             idempotency_key: idempotency_key,
             amount_money: {
                 // https://github.com/square/connect-javascript-sdk/blob/master/docs/Money.md
@@ -802,8 +802,11 @@ async function cartCheckoutHandler(request, h) {
                 organization: ShoppingCart.get('shipping_company')
             },
             buyer_email_address: ShoppingCart.get('shipping_email')
-        });
+        };
 
+        // global.logger.debug('PaymentController.runPayment: chargeRequest', chargeRequest);
+
+        let transactionObj = await runPayment(chargeRequest);
         // global.logger.debug('PaymentController.runPayment: SUCCESS', transactionObj);
 
         const Payment = await processTransaction(

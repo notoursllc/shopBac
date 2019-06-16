@@ -111,7 +111,7 @@ const after = function (server) {
             method: 'POST',
             path: '/cart/checkout',
             options: {
-                description: 'Braintree nonce received by the client. Complete the transaction',
+                description: 'Complete the transaction',
                 validate: {
                     // NOTE: shipping is not required here because the 'cart/shipping/address' route
                     // should have been called before this route, which persists the shipping info.

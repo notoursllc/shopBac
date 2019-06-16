@@ -153,10 +153,11 @@ describe('Testing route: POST /cart/checkout', () => {
                 url: '/cart/checkout',
                 headers: testHelpers.getRequestHeader(),
                 payload: {
-                    nonce: 'fake-valid-nonce',
+                    nonce: 'fake-card-nonce-ok', // https://developer.squareup.com/docs/testing/test-values#charge-and-createcustomercard-endpoint-test-values
                     ...checkoutPayload
                 }
             });
+
             expect(checkoutResponse).to.be.an.object();
             expect(checkoutResponse.statusCode, 'Status code').to.equal(200);
 
