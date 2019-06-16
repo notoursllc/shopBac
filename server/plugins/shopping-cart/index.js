@@ -173,7 +173,9 @@ const after = function (server) {
                         paymentToken: Joi.string().required()
                     })
                 },
-
+                pre: [
+                    { method: ShoppingCartController.pre_cart, assign: 'm1' },
+                ],
                 handler: ShoppingCartController.paypalExecutePayment
             }
         },

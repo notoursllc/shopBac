@@ -11,6 +11,9 @@ const shippoTransactionsAPI = require('../shipping/shippoAPI/transactions');
 const squareHelper = require('./squareHelper');
 let server = null;
 
+const PAYMENT_TYPE_CREDIT_CARD = 1;
+const PAYMENT_TYPE_PAYPAL = 2;
+
 // Configure OAuth2 access token for authorization: oauth2
 const defaultClient = SquareConnect.ApiClient.instance;
 const oauth2 = defaultClient.authentications['oauth2'];
@@ -64,10 +67,11 @@ async function getPaymentByAttribute(attrName, attrValue, withRelatedArr) {
  * Persists some of the transaction data
  *
  * @param cart_id
+ * @param payment_type
  * @param transactionJson
  * @returns {Promise}
  */
-async function savePayment(cart_id, transactionJson) {
+async function savePayment(cart_id, payment_type, transactionJson) {
     // global.logger.debug('SAVE PAYMENT - TRANSACTION', {
     //     meta: {
     //         transactionJson
@@ -77,6 +81,7 @@ async function savePayment(cart_id, transactionJson) {
     const Payment = await getPaymentModel().forge().save(
         {
             cart_id: cart_id,
+            payment_type: payment_type,
             transaction: transactionJson,
         },
         { method: 'insert' }
@@ -366,6 +371,8 @@ async function runPayment(opts) {
 
 
 module.exports = {
+    PAYMENT_TYPE_CREDIT_CARD,
+    PAYMENT_TYPE_PAYPAL,
     setServer,
     getPaymentByAttribute,
     savePayment,

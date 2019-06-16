@@ -2,6 +2,7 @@
 const Joi = require('joi');
 const Boom = require('boom');
 const cloneDeep = require('lodash.clonedeep');
+const forEach = require('lodash.foreach');
 
 const uuidV4 = require('uuid/v4');
 const uuidValidate = require('uuid-validate');
@@ -10,7 +11,7 @@ const accounting = require('accounting');
 
 const salesTaxService = require('./services/SalesTaxService');
 const shoppingCartEmailService = require('./services/ShoppingCartEmailService');
-const productsController = require('../products/productsController')
+const productsController = require('../products/productsController');
 const shippingController = require('../shipping/shippingController');
 const shippoOrdersAPI = require('../shipping/shippoAPI/orders');
 
@@ -689,8 +690,77 @@ function sendPurchaseConfirmationEmails(cartToken, payment_id) {
 }
 
 
+async function processTransaction(request, paymentType, transactionData) {
+    const { savePayment } = require('../payment/paymentController');
+
+    const cartToken = request.pre.m1.cartToken;
+    const ShoppingCart = await getCart(cartToken);
+
+    // Saving the payment transaction whether it was successful (transactionObj.success === true)
+    // or not (transactionObj.success === false)
+    // NOTE: Originally I was not raising any errors to the user that happen while saving to the DB.
+    // However I think it's worth doing so because immediately after the transaction we display
+    // the transaction summary to the user, and we would have nothing to display if there
+    // was an error saving that data, giving the impression that the order was not successful.
+    // Therefore any errors that happen here (promise is rejected) will be caught below
+
+    const Payment = await savePayment(
+        ShoppingCart.get('id'),
+        paymentType,
+        transactionData
+    );
+
+    // NOTE: Any failures that happen after this do not affect the Square transaction
+    // and thus should fail silently (catching and logging errors), as the user has already been changed
+    // and we can't give the impression of an overall transaction failure that may prompt them
+    // to re-do the purchase.
+
+    // Updating the cart with the billing params and the 'closed_at'
+    // timestamp if transaction was successful:
+    let updateParams = cloneDeep(request.payload);
+
+    // Making sure only the billing address attributes are in the db update
+    // (only applicable for credit card transactions, not paypal, because the paypal
+    // transaction response does not contain billing data)
+    const billingKeys = Object.keys(getBillingAttributesSchema());
+    forEach(updateParams, (val, key) => {
+        if(billingKeys.indexOf(key) === -1) {
+            delete updateParams[key];
+        }
+    });
+
+    // This will cause the cart not to be re-used (See ShoppingCart -> getCart())
+    updateParams.closed_at = new Date();
+
+    // global.logger.debug('ShoppingCartController.processTransaction updateParams', updateParams);
+
+    // Create the Order in Shippo so a shipping label can be created in the future.
+    // let shippoOrder = await createShippoOrderFromShoppingCart(ShoppingCart);
+    // updateParams.shippo_order_id = shippoOrder.object_id;
+
+    // The products controller catches this and descrments the product size inventory count
+    // Errors do not need to be caught here because any failures should not affect the transaction
+    server.events.emit('SHOPPING_CART_CHECKOUT_SUCCESS', ShoppingCart);
+
+    try {
+        await ShoppingCart.save(
+            updateParams,
+            { method: 'update', patch: true }
+        );
+    }
+    catch(err) {
+        global.logger.error(err);
+        global.bugsnag(err);
+    }
+
+    sendPurchaseConfirmationEmails(cartToken, Payment.get('id'));
+
+    return Payment;
+}
+
+
 async function cartCheckoutHandler(request, h) {
-    const { runPayment, savePayment } = require('../payment/paymentController');
+    const { PAYMENT_TYPE_CREDIT_CARD, runPayment } = require('../payment/paymentController');
 
     try {
         const cartToken = request.pre.m1.cartToken;
@@ -736,55 +806,13 @@ async function cartCheckoutHandler(request, h) {
 
         // global.logger.debug('PaymentController.runPayment: SUCCESS', transactionObj);
 
-        // Saving the payment transaction whether it was successful (transactionObj.success === true)
-        // or not (transactionObj.success === false)
-        // NOTE: Originally I was not raising any errors to the user that happen while saving to the DB.
-        // However I think it's worth doing so because immediately after the transaction we display
-        // the transaction summary to the user, and we would have nothing to display if there
-        // was an error saving that data, giving the impression that the order was not successful.
-        // Therefore any errors that happen here (promise is rejected) will be caught below
+        const Payment = await processTransaction(
+            request,
+            PAYMENT_TYPE_CREDIT_CARD,
+            transactionObj.transaction
+        );
 
-        const Payment = await savePayment(ShoppingCart.get('id'), transactionObj.transaction);
-
-        // NOTE: Any failures that happen after this do not affect the Square transaction
-        // and thus should fail silently (catching and logging errors), as the user has already been changed
-        // and we can't give the impression of an overall transaction failure that may prompt them
-        // to re-do the purchase.
-
-        // Updating the cart with the billing params and the 'closed_at'
-        // timestamp if transaction was successful:
-        let updateParams = cloneDeep(request.payload);
-        delete updateParams.nonce;
-
-        // Create the Order in Shippo so a shipping label can be created in the future.
-        // let shippoOrder = await createShippoOrderFromShoppingCart(ShoppingCart);
-        // updateParams.shippo_order_id = shippoOrder.object_id;
-
-        // This will cause the cart not to be re-used
-        // (See ShoppingCart -> getCart())
-        updateParams.closed_at = new Date();
-
-        // The products controller catches this and descrments the product size inventory count
-        // Errors do not need to be caught here because any failures should not affect the transaction
-        server.events.emit('SHOPPING_CART_CHECKOUT_SUCCESS', ShoppingCart);
-
-        // Update the cart with the billing info and the closed_at value
-        try {
-            await ShoppingCart.save(
-                updateParams,
-                { method: 'update', patch: true }
-            );
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-        }
-
-        sendPurchaseConfirmationEmails(cartToken, Payment.get('id'))
-
-        return h.apiSuccess({
-            transactionId: Payment.get('id')
-        });
+        return onPaymentSuccess(h, Payment);
     }
     catch(err) {
         let msg = err instanceof Error ? err.message : err;
@@ -908,21 +936,34 @@ async function paypalCreatePayment(request, h) {
 
 // https://github.com/paypal/Checkout-NodeJS-SDK/blob/master/samples/CaptureIntentExamples/captureOrder.js
 async function paypalExecutePayment(request, h) {
+    const { PAYMENT_TYPE_PAYPAL } = require('../payment/paymentController');
+
     try {
         const req = new paypal.orders.OrdersCaptureRequest(request.payload.paymentToken);
         req.requestBody({});
 
-        const response = await getPaypalClient().execute(req);
+        const paypalTransaction = await getPaypalClient().execute(req);
 
-        return h.apiSuccess({
-            response: response
-        });
+        const Payment = await processTransaction(
+            request,
+            PAYMENT_TYPE_PAYPAL,
+            paypalTransaction
+        );
+
+        return onPaymentSuccess(h, Payment);
     }
     catch(err) {
         global.logger.error(err);
         global.bugsnag(err);
         throw Boom.badData(err);
     }
+}
+
+
+function onPaymentSuccess(h, Payment) {
+    return h.apiSuccess({
+        transactionId: Payment.get('id')
+    });
 }
 
 
