@@ -1,5 +1,6 @@
 const server = require('./index');
 const manifest = require('./manifest');
+const Config = require('./config');
 
 
 const startServer = async function() {
@@ -9,7 +10,7 @@ const startServer = async function() {
         };
 
         await server.init(manifest, options);
-        console.log('API server started!');
+        console.log('API server started, port:', Config.get('/port/api'));
     }
     catch(err) {
         console.log("ERROR STARTING SERVER:", err);

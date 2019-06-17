@@ -6,17 +6,17 @@ const Confidence = require('confidence');
  */
 function normalizePort(val) {
     var port = parseInt(val, 10);
-  
+
     if (isNaN(port)) {
         // named pipe
         return val;
     }
-  
+
     if (port >= 0) {
         // port number
         return port;
     }
-  
+
     return false;
 }
 
@@ -33,8 +33,8 @@ const config = {
         api: {
             $filter: 'env',
             test: 8080,
-            production: normalizePort(process.env.PORT || 3000),
-            $default: normalizePort(process.env.PORT || 3000)
+            production: normalizePort(process.env.API_PORT || 3000),
+            $default: normalizePort(process.env.API_PORT || 3000)
         }
     },
     db: {
