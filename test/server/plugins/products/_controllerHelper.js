@@ -1,6 +1,6 @@
 'use strict';
 
-const Hoek = require('hoek');
+const Hoek = require('@hapi/hoek');
 const testHelpers = require('../../testHelpers');
 const serverSetup = require('./_serverSetup');
 const productsController = require('../../../../server/plugins/products/productsController');

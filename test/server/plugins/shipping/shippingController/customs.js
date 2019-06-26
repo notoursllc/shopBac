@@ -1,5 +1,5 @@
-const { expect } = require('code');
-const Lab = require('lab');
+const { expect } = require('@hapi/code');
+const Lab = require('@hapi/lab');
 const { after, before, describe, it } = exports.lab = Lab.script();
 const ShoppingCartMock = require('../../shopping-cart/ShoppingCartMock');
 const customs_declarations = require('../../../../../server/plugins/shipping/shippoAPI/customs_declarations.js');

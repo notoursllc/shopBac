@@ -1,10 +1,10 @@
 'use strict';
 
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 const JWT = require('jsonwebtoken');
 const Cookie = require('cookie');
 const isObject = require('lodash.isobject');
-const Hoek = require('hoek');
+const Hoek = require('@hapi/hoek');
 
 
 /**

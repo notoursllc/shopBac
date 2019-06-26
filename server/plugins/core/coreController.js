@@ -2,7 +2,7 @@
 
 const path = require('path');
 const fs = require('fs');
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 const uuidV4 = require('uuid/v4');
 const jwt = require('jsonwebtoken');
 const helperService = require('../../helpers.service');

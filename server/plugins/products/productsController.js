@@ -1,7 +1,7 @@
 'use strict';
 
 const isObject = require('lodash.isobject');
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 const helperService = require('../../helpers.service');
 const productPicController = require('./productPicController');
 const globalTypes = require('../../global_types.js');

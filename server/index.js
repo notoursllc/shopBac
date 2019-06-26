@@ -1,4 +1,4 @@
-const Glue = require('glue');
+const Glue = require('@hapi/glue');
 
 if(process.env.NODE_ENV === 'development') {
     require('dotenv').config();

@@ -1,8 +1,8 @@
 require('dotenv').config();
 
-const Hapi = require('hapi');
-const Code = require('code');
-const Lab = require('lab');
+const Hapi = require('@hapi/hapi');
+const Code = require('@hapi/code');
+const Lab = require('@hapi/lab');
 // const App = require('../server');
 const Path = require('path');
 

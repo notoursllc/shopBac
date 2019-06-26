@@ -12,13 +12,12 @@ const webManifest = {
     },
     register: {
         plugins: [
-            // https://github.com/nuxt-community/hapi-nuxt/issues/14
             {
-                plugin: 'hapi-nuxt',
+                plugin: '@nuxtjs/hapi',
                 options: path.resolve(__dirname, '../../nuxt.config.js')
             },
-            { plugin: 'inert' },
-            { plugin: 'vision' },
+            { plugin: '@hapi/inert' },
+            { plugin: '@hapi/vision' },
             { plugin: './plugins/logger' },
             {
                 plugin: './plugins/bookshelf-orm',

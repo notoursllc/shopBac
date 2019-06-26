@@ -1,6 +1,6 @@
 'use strict';
 
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 const globalTypes = require('../../global_types.js')
 
 let server = null;

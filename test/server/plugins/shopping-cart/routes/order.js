@@ -2,8 +2,8 @@
 
 // const queryString = require('query-string');
 // const Promise = require('bluebird');
-// const Lab = require('lab');
-// const Code = require('code');
+// const Lab = require('@hapi/lab');
+// const Code = require('@hapi/code');
 // const testHelpers = require('../../../testHelpers');
 // const serverSetup = require('../../payments/_serverSetup');
 

@@ -1,6 +1,6 @@
 'use strict';
 
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 const axios = require('axios');
 const isObject = require('lodash.isobject');
 

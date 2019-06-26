@@ -1,7 +1,7 @@
 'use strict';
 
-const Joi = require('joi');
-const Boom = require('boom');
+const Joi = require('@hapi/joi');
+const Boom = require('@hapi/boom');
 const isObject = require('lodash.isobject');
 const SquareConnect = require('square-connect');
 const HelperService = require('../../helpers.service');

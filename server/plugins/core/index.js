@@ -1,5 +1,5 @@
 const path = require('path');
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 const isObject = require('lodash.isobject');
 const coreController = require('./coreController');
 

@@ -1,8 +1,8 @@
-const { expect } = require('code');
-const Lab = require('lab');
+const { expect } = require('@hapi/code');
+const Lab = require('@hapi/lab');
 const { after, before, describe, it } = exports.lab = Lab.script();
 
-const Hoek = require('hoek');
+const Hoek = require('@hapi/hoek');
 const testHelpers = require('../../../testHelpers');
 const serverSetup = require('../_serverSetup');
 

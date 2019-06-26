@@ -1,4 +1,4 @@
-const Joi = require('joi');
+const Joi = require('@hapi/joi');
 const path = require('path');
 const productsController = require('./productsController');
 const productPicController = require('./productPicController');

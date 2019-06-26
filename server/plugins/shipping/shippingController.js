@@ -1,8 +1,8 @@
 'use strict';
 
-const Wreck = require('wreck');
-const Boom = require('boom');
-const Joi = require('joi');
+const Wreck = require('@hapi/wreck');
+const Boom = require('@hapi/boom');
+const Joi = require('@hapi/joi');
 const isObject = require('lodash.isobject');
 const forEach = require('lodash.foreach');
 const helpers = require('../../helpers.service');

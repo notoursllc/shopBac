@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const Boom = require('boom');
+const Boom = require('@hapi/boom');
 const Promise = require('bluebird');
 const isObject = require('lodash.isobject');
 const cloneDeep = require('lodash.clonedeep');

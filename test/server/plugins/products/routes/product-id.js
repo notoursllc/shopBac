@@ -1,5 +1,5 @@
-const Lab = require('lab');
-const Code = require('code');
+const Lab = require('@hapi/lab');
+const Code = require('@hapi/code');
 const _ = require('lodash');
 const testHelpers = require('../../../testHelpers');
 const { initProductsController } = require('../_controllerHelper');

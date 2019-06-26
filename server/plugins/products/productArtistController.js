@@ -1,7 +1,7 @@
 'use strict';
 
-const Joi = require('joi');
-const Boom = require('boom');
+const Joi = require('@hapi/joi');
+const Boom = require('@hapi/boom');
 const helperService = require('../../helpers.service');
 const queryString = require('query-string');
 

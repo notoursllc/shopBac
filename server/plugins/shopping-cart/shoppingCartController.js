@@ -1,6 +1,6 @@
 'use strict';
-const Joi = require('joi');
-const Boom = require('boom');
+const Joi = require('@hapi/joi');
+const Boom = require('@hapi/boom');
 const cloneDeep = require('lodash.clonedeep');
 const forEach = require('lodash.foreach');
 

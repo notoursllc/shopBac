@@ -1,7 +1,7 @@
 require('dotenv').config();
 
-const { expect } = require('code');
-const Lab = require('lab');
+const { expect } = require('@hapi/code');
+const Lab = require('@hapi/lab');
 const { after, before, describe, it } = exports.lab = Lab.script();
 
 const { getCarrierAccount } = require('../shippingController/_shippingControllerHelper');
