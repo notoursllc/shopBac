@@ -51,9 +51,9 @@ exports.seed = (knex) => {
                 let uuid = faker.random.uuid();
                 global.productSeedUuids.push(uuid);
 
-                let subType = i % 2 ? globalTypes.product.subtypes.PRODUCT_SUBTYPE_TOP : globalTypes.product.subtypes.PRODUCT_SUBTYPE_HAT;
+                let subType = i % 2 ? globalTypes.product.subtypes.PRODUCT_SUBTYPE_TOPS : globalTypes.product.subtypes.PRODUCT_SUBTYPE_HATS;
                 let materialType = i % 2 ? globalTypes.product.material_types.MATERIAL_TYPE_COTTON : globalTypes.product.material_types.MATERIAL_TYPE_TRI_BLEND;
-                let shippingPackageType = (subType === globalTypes.product.subtypes.PRODUCT_SUBTYPE_TOP ? 0x01 : 0x04);
+                let shippingPackageType = (subType === globalTypes.product.subtypes.TOPS ? 0x01 : 0x04);
 
                 promises.push(
                     knex(CoreService.DB_TABLES.products)

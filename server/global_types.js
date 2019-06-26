@@ -25,8 +25,9 @@ const globalTypes = {
         ],
 
         subtypes: {
-            PRODUCT_SUBTYPE_HAT: 0x01, // 00000001
-            PRODUCT_SUBTYPE_TOP: 0x02  // 00000010
+            PRODUCT_SUBTYPE_HATS: 0x01, // 00000001
+            PRODUCT_SUBTYPE_TOPS: 0x02,  // 00000010
+            PRODUCT_SUBTYPE_SOCKS: 0x04  // 00000100
         },
 
         types: {
