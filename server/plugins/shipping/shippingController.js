@@ -9,6 +9,7 @@ const helpers = require('../../helpers.service');
 const { createCustomsItem } = require('./shippoAPI/customs_items.js');
 const { createShipment } = require('./shippoAPI/shipments.js');
 const { createParcel } = require('./shippoAPI/parcels.js');
+const { validateNewAddress } = require('./shippoAPI/address');
 
 
 const wreck = Wreck.defaults({
@@ -310,8 +311,12 @@ function parseShippingRateResponse(response) {
  */
 async function validateAddress(request, h) {
     try {
-        const { res, payload } = await wreck.post('/addresses/validate', { payload: helpers.makeArray(request.payload) });
-        return h.apiSuccess(payload);
+        const res = await validateNewAddress(request.payload);
+
+        // global.logger.debug('In validateAddress - REQUEST', request.payload);
+        // global.logger.debug('In validateAddress - RESPONSE', res);
+
+        return h.apiSuccess(res);
     }
     catch(err) {
         const error = new Error('ERROR VALIDATING SHIPPING ADDRESS: ' + getShipEngineErrorMessage(err));

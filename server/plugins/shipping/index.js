@@ -12,14 +12,14 @@ const after = function (server) {
                 validate: {
                     payload: {
                         name: Joi.string(),
-                        company_name: Joi.string().allow(null),
-                        address_line1: Joi.string().required(),
-                        address_line2: Joi.string().allow(''),
-                        address_line3: Joi.string().allow(''),
-                        city_locality: Joi.string().required(),
-                        state_province: Joi.string().required(),
-                        postal_code: Joi.string().required(),
-                        country_code: Joi.string().max(3).regex(/^[A-z]+$/).required()
+                        company: Joi.string().allow(null),
+                        street1: Joi.string().required(),
+                        street2: Joi.string().allow(''),
+                        street3: Joi.string().allow(''),
+                        city: Joi.string().required(),
+                        state: Joi.string().required(),
+                        zip: Joi.string().required(),
+                        country: Joi.string().max(3).regex(/^[A-z]+$/).required()
                     }
                 },
                 handler: ShippingController.validateAddress
