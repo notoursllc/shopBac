@@ -26,6 +26,8 @@ AWS.config.update({
     accessKeyId: process.env.DIGITAL_OCEAN_SPACES_ACCESS_KEY,
     secretAccessKey: process.env.DIGITAL_OCEAN_SPACES_SECRET
 });
+
+// https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html
 const s3 = new AWS.S3();
 
 let server = null;
@@ -125,15 +127,23 @@ async function resizeAndWrite(req, width) {
                 // resize,
                 // emit an 'info' event with calculated dimensions
                 // and finally write image data to writableStream
+                // http://sharp.pixelplumbing.com/en/stable/api-resize/
+                // http://sharp.pixelplumbing.com/en/stable/api-output/#tobuffer
                 let transformer = sharp()
-                    .resize(w)
-                    .max()
-                    .withoutEnlargement(true)
-                    .toBuffer(function(err, buffer) {
+                    .resize({
+                        width: w
+                    })
+                    .toBuffer(function(err, buffer, info) {
                         if (err) {
                             reject(err);
                             return;
                         }
+
+                        global.logger.info('IMAGE RESIZING', {
+                            meta: {
+                                info
+                            }
+                        });
 
                         let fileKey = getCloudImagePath(fileName);
                         let { mime } = fileType(buffer);
