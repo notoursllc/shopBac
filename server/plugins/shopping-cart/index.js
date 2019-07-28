@@ -3,7 +3,6 @@
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const ShoppingCartController = require('./shoppingCartController');
-const { routeErrorHandler } = require('../../helpers.service');
 
 
 const after = function (server) {
@@ -31,8 +30,7 @@ const after = function (server) {
                             size: Joi.string().uppercase().min(6), // 'SIZE_?'
                             qty: Joi.number().min(1).required()
                         }).required()
-                    }),
-                    failAction: routeErrorHandler
+                    })
                 },
                 handler: ShoppingCartController.cartItemAddHandler
             }
@@ -45,8 +43,7 @@ const after = function (server) {
                 validate: {
                     payload: {
                         id: Joi.string().uuid().required()
-                    },
-                    failAction: routeErrorHandler
+                    }
                 },
                 pre: [
                     { method: ShoppingCartController.pre_cart, assign: 'm1' },
@@ -63,8 +60,7 @@ const after = function (server) {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),  // cart item id
                         qty: Joi.number().min(1).required()
-                    }),
-                    failAction: routeErrorHandler
+                    })
                 },
                 pre: [
                     { method: ShoppingCartController.pre_cart, assign: 'm1' },
@@ -78,8 +74,7 @@ const after = function (server) {
             options: {
                 description: 'Sets the shipping address for the cart and calculates the sales tax',
                 validate: {
-                    payload: Joi.reach(ShoppingCartController.getShoppingCartModelSchema(), 'shipping'),
-                    failAction: routeErrorHandler
+                    payload: Joi.reach(ShoppingCartController.getShoppingCartModelSchema(), 'shipping')
                 },
                 pre: [
                     { method: ShoppingCartController.pre_cart, assign: 'm1' },
@@ -104,8 +99,7 @@ const after = function (server) {
             options: {
                 description: 'Sets the selected shipping rate for the cart',
                 validate: {
-                    payload: Joi.reach(ShoppingCartController.getShoppingCartModelSchema(), 'shipping_rate'),
-                    failAction: routeErrorHandler
+                    payload: Joi.reach(ShoppingCartController.getShoppingCartModelSchema(), 'shipping_rate')
                 },
                 pre: [
                     { method: ShoppingCartController.pre_cart, assign: 'm1' },
@@ -125,8 +119,7 @@ const after = function (server) {
                         {},
                         { nonce: Joi.string().trim().required() },
                         ShoppingCartController.getBillingAttributesSchema()
-                    ),
-                    failAction: routeErrorHandler
+                    )
                 },
                 pre: [
                     { method: ShoppingCartController.pre_cart, assign: 'm1' },
@@ -178,8 +171,7 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         paymentToken: Joi.string().required()
-                    }),
-                    failAction: routeErrorHandler
+                    })
                 },
                 pre: [
                     { method: ShoppingCartController.pre_cart, assign: 'm1' },

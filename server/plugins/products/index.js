@@ -4,7 +4,6 @@ const productsController = require('./productsController');
 const productPicController = require('./productPicController');
 const productSizeController = require('./productSizeController');
 const productArtistController = require('./productArtistController');
-const { routeErrorHandler } = require('../../helpers.service');
 
 const routePrefix = '/api/v1';
 
@@ -67,8 +66,7 @@ const after = function (server) {
                     query: {
                         id: Joi.string().uuid(),
                         viewAllRelated: Joi.boolean().optional()
-                    },
-                    failAction: routeErrorHandler
+                    }
                 },
                 handler: productsController.getProductByIdHandler
             }
@@ -81,8 +79,7 @@ const after = function (server) {
                 validate: {
                     query: {
                         uri: Joi.string()
-                    },
-                    failAction: routeErrorHandler
+                    }
                 }
             },
             handler: productsController.productShareHandler
@@ -95,8 +92,7 @@ const after = function (server) {
                 validate: {
                     query: {
                         id: Joi.string().max(100)
-                    },
-                    failAction: routeErrorHandler
+                    }
                 },
                 handler: productsController.productSeoHandler
             }
@@ -125,8 +121,7 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         ...schema
-                    }),
-                    failAction: routeErrorHandler
+                    })
                 },
                 handler: productsController.productCreateHandler
             }
@@ -140,8 +135,7 @@ const after = function (server) {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
                         ...schema
-                    }),
-                    failAction: routeErrorHandler
+                    })
                 },
                 handler: productsController.productUpdateHandler
             }
@@ -172,8 +166,7 @@ const after = function (server) {
                 validate: {
                     payload: {
                         id: Joi.string().uuid()
-                    },
-                    failAction: routeErrorHandler
+                    }
                 },
                 handler: productSizeController.productSizeDeleteHandler
             }
@@ -195,8 +188,7 @@ const after = function (server) {
                     payload: {
                         file: Joi.object(),
                         ...productPicSchema
-                    },
-                    failAction: routeErrorHandler
+                    }
                 },
                 handler: productPicController.productPicUpsertHandler
             }
@@ -209,8 +201,7 @@ const after = function (server) {
                 validate: {
                     payload: {
                         id: Joi.string().uuid()
-                    },
-                    failAction: routeErrorHandler
+                    }
                 },
                 handler: productPicController.productPicDeleteHandler
             }
@@ -233,8 +224,7 @@ const after = function (server) {
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required()  // artist ID
-                    }),
-                    failAction: routeErrorHandler
+                    })
                 },
                 handler: productArtistController.getProductArtistByIdHandler
             }
@@ -247,8 +237,7 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         ...productArtistController.getProductArtistSchema()
-                    }),
-                    failAction: routeErrorHandler
+                    })
                 },
                 handler: productArtistController.artistCreateHandler
             }
@@ -262,8 +251,7 @@ const after = function (server) {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
                         ...productArtistController.getProductArtistSchema()
-                    }),
-                    failAction: routeErrorHandler
+                    })
                 },
                 handler: productArtistController.artistUpdateHandler
             }
@@ -276,8 +264,7 @@ const after = function (server) {
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required()  // payment ID
-                    }),
-                    failAction: routeErrorHandler
+                    })
                 },
                 handler: productArtistController.artistDeleteHandler
             }
@@ -290,8 +277,7 @@ const after = function (server) {
                 validate: {
                     query: {
                         id: Joi.string().max(100)
-                    },
-                    failAction: routeErrorHandler
+                    }
                 },
                 handler: productArtistController.artistGetProductsHandler
             }
