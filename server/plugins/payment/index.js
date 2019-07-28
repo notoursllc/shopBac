@@ -2,6 +2,7 @@
 
 const Joi = require('@hapi/joi');
 const PaymentController = require('./paymentController');
+const { routeErrorHandler } = require('../../helpers.service');
 
 
 const after = function (server) {
@@ -14,7 +15,8 @@ const after = function (server) {
                 validate: {
                     query: {
                         id: Joi.string().max(50),
-                    }
+                    },
+                    failAction: routeErrorHandler
                 },
                 handler: PaymentController.getPaymentHandler
             }
@@ -35,7 +37,8 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required()
-                    })
+                    }),
+                    failAction: routeErrorHandler
                 },
                 handler: PaymentController.shippingPackingSlipHandler
             }
@@ -57,7 +60,8 @@ const after = function (server) {
                         servicelevel_token: Joi.string().required(),
                         label_file_type: Joi.string().optional(),
                         metadata: Joi.string().optional(),
-                    })
+                    }),
+                    failAction: routeErrorHandler
                 },
                 handler: PaymentController.purchaseShippingLabelHandler
             }
@@ -70,7 +74,8 @@ const after = function (server) {
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required()
-                    })
+                    }),
+                    failAction: routeErrorHandler
                 },
                 handler: PaymentController.getShippingLabelHandler
             }
@@ -83,7 +88,8 @@ const after = function (server) {
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required()  // payment ID
-                    })
+                    }),
+                    failAction: routeErrorHandler
                 },
                 handler: PaymentController.deleteShippingLabelHandler
             }

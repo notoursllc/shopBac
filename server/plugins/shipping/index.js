@@ -1,6 +1,6 @@
 const Joi = require('@hapi/joi');
 const ShippingController = require('./shippingController');
-
+const { routeErrorHandler } = require('../../helpers.service');
 
 const after = function (server) {
     server.route([
@@ -20,7 +20,8 @@ const after = function (server) {
                         state: Joi.string().required(),
                         zip: Joi.string().required(),
                         country: Joi.string().max(3).regex(/^[A-z]+$/).required()
-                    }
+                    },
+                    failAction: routeErrorHandler
                 },
                 handler: ShippingController.validateAddress
             }
@@ -34,7 +35,8 @@ const after = function (server) {
                 validate: {
                     query: {
                         id: Joi.string().uuid()
-                    }
+                    },
+                    failAction: routeErrorHandler
                 },
                 handler: ShippingController.getPackageTypeByIdHandler
             }
@@ -55,7 +57,8 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         ...ShippingController.getPackageTypeSchema()
-                    })
+                    }),
+                    failAction: routeErrorHandler
                 },
                 handler: ShippingController.packageTypeCreateHandler
             }
@@ -69,7 +72,8 @@ const after = function (server) {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
                         ...ShippingController.getPackageTypeSchema()
-                    })
+                    }),
+                    failAction: routeErrorHandler
                 },
                 handler: ShippingController.packageTypeUpdateHandler
             }
@@ -82,7 +86,8 @@ const after = function (server) {
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required(),
-                    })
+                    }),
+                    failAction: routeErrorHandler
                 },
                 handler: ShippingController.packageTypeDeleteHandler
             }

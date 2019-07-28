@@ -2,6 +2,7 @@ const path = require('path');
 const Joi = require('@hapi/joi');
 const isObject = require('lodash.isobject');
 const coreController = require('./coreController');
+const { routeErrorHandler } = require('../../helpers.service');
 
 
 const after = function(server) {
@@ -24,7 +25,8 @@ const after = function(server) {
                     payload: Joi.object({
                         type: Joi.string(),
                         message: Joi.string()
-                    })
+                    }),
+                    failAction: routeErrorHandler
                 },
                 handler: coreController.loggerHandler
             }
