@@ -1,5 +1,6 @@
 'use strict';
 
+const Boom = require('@hapi/boom');
 const path = require('path');
 const Config = require('./config');
 
