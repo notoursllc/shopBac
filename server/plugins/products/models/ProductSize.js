@@ -17,15 +17,15 @@ module.exports = function (baseModel, bookshelf) {
 
         validate: {
             size: Joi.string().max(100),
-            sort: Joi.number().integer().min(0),
-            cost: Joi.number().precision(2).max(99999999.99),
-            base_price: Joi.number().precision(2).max(99999999.99),
-            sale_price: Joi.number().precision(2).max(99999999.99),
-            is_on_sale: Joi.boolean(),
-            is_visible: Joi.boolean(),
-            inventory_count: Joi.number().integer().min(0),
+            sort: Joi.number().integer().min(0).allow(null),
+            cost: Joi.number().precision(2).max(99999999.99).allow(null),
+            base_price: Joi.number().precision(2).max(99999999.99).allow(null),
+            sale_price: Joi.number().precision(2).max(99999999.99).allow(null),
+            is_on_sale: Joi.boolean().default(false),
+            is_visible: Joi.boolean().default(false),
+            inventory_count: Joi.number().integer().min(0).allow(null),
             product_id: Joi.string().uuid(),
-            weight_oz: Joi.number().precision(1).max(99999999.9).min(0)
+            weight_oz: Joi.number().precision(1).max(99999999.9).min(0).allow(null)
         }
     });
 };

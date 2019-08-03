@@ -8,28 +8,28 @@ const productArtistController = require('./productArtistController');
 const routePrefix = '/api/v1';
 
 const schema = {
-    title: Joi.string().max(100),
+    title: Joi.string().max(100).allow(null),
     description_short: Joi.string().max(500).allow(null),
     description_long: Joi.string().max(750).allow(null),
     sku: Joi.string().max(50).allow(null),
     seo_uri: Joi.string().max(50).allow(null),
-    cost: Joi.number().precision(2).min(0).max(99999999.99),
-    weight_oz: Joi.number().precision(2).min(0).max(99999999.99),
-    base_price: Joi.number().precision(2).min(0).max(99999999.99),
-    sale_price: Joi.number().precision(2).min(0).max(99999999.99),
-    is_on_sale: Joi.boolean(),
-    is_available: Joi.boolean(),
+    cost: Joi.number().precision(2).min(0).max(99999999.99).default(null),
+    weight_oz: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
+    base_price: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
+    sale_price: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
+    is_on_sale: Joi.boolean().default(false),
+    is_available: Joi.boolean().default(false),
     tax_code: Joi.number().allow(null),
     video_url: Joi.string().max(500).allow(null),
-    fit: Joi.number().integer().positive(),
-    type: Joi.number().integer().positive(),
-    sub_type: Joi.number().integer().positive(),
-    shipping_package_type: Joi.number().integer().positive(),
-    hide_if_out_of_stock: Joi.boolean(),
+    fit: Joi.number().integer().positive().allow(null),
+    type: Joi.number().integer().positive().default(1),
+    sub_type: Joi.number().integer().positive().allow(null),
+    shipping_package_type: Joi.number().integer().positive().allow(null),
+    hide_if_out_of_stock: Joi.boolean().default(true),
     product_artist_id: Joi.string().uuid().allow(null),
     created_at: Joi.date().optional(),
     updated_at: Joi.date().optional(),
-    material_type: Joi.number().integer().positive(),
+    material_type: Joi.number().integer().positive().allow(null)
 };
 
 const productPicSchema = {
