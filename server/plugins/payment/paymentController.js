@@ -72,11 +72,13 @@ async function getPaymentByAttribute(attrName, attrValue, withRelatedArr) {
  * @returns {Promise}
  */
 async function savePayment(cart_id, payment_type, transactionJson) {
-    // global.logger.debug('SAVE PAYMENT - TRANSACTION', {
-    //     meta: {
-    //         transactionJson
-    //     }
-    // });
+    global.logger.info('REQUEST: savePayment', {
+        meta: {
+            cart_id,
+            payment_type,
+            transactionJson
+        }
+    });
 
     const Payment = await getPaymentModel().forge().save(
         {
@@ -87,23 +89,31 @@ async function savePayment(cart_id, payment_type, transactionJson) {
         { method: 'insert' }
     );
 
-    // global.logger.debug('SAVE PAYMENT RESULT', {
-    //     meta: {
-    //         payment: Payment ? Payment.toJSON() : Payment
-    //     }
-    // });
+    global.logger.info('RESPONSE: savePayment', {
+        meta: {
+            payment: Payment ? Payment.toJSON() : Payment
+        }
+    });
 
     return Payment;
 }
 
 
 async function getPaymentsHandler(request, h) {
+    global.logger.info('REQUEST: getPaymentsHandler', {
+        meta: request.query
+    });
+
     try {
         const payments = await HelperService.fetchPage(
             request,
             getPaymentModel(),
             ['shoppingCart.cart_items.product']
         );
+
+        global.logger.info('RESPONSE: getPaymentsHandler', {
+            meta: payments
+        });
 
         return h.apiSuccess(
             payments, payments.pagination
@@ -317,7 +327,9 @@ async function deleteShippingLabelHandler(request, h) {
  * @returns {Promise}
  */
 async function runPayment(opts) {
-    // global.logger.debug('PAYMENT: runPayment opts', opts);
+    global.logger.info('REQUEST: runPayment', {
+        meta: opts
+    });
 
     let schema = Joi.object().keys({
         idempotency_key: Joi.string().trim().required(),
@@ -346,9 +358,9 @@ async function runPayment(opts) {
             opts
         );
 
-        // global.logger.debug('SquareConnect.TransactionsApi charge() response', {
-        //     meta: data
-        // });
+        global.logger.info('RESPONSE: runPayment', {
+            meta: data
+        });
 
         return data;
     }

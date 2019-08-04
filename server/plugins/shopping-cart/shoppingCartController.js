@@ -266,9 +266,6 @@ async function pre_cart(request, h) {
 }
 
 
-
-
-
 async function cartGetHandler(request, h) {
     try {
         const cartToken = request.pre.m1.cartToken;
@@ -300,6 +297,10 @@ async function cartGetHandler(request, h) {
  * @param {*} h
  */
 async function cartItemAddHandler(request, h) {
+    global.logger.info('REQUEST: cartItemAddHandler', {
+        meta: request.payload
+    });
+
     try {
         let cartToken = getValidCartTokenFromRequest(request);
         let ShoppingCart = await getActiveCart(cartToken);
@@ -357,10 +358,16 @@ async function cartItemAddHandler(request, h) {
             throw new Error("Error getting the shopping cart");
         }
 
+        let cartJson = ShoppingCart.toJSON();
+
+        global.logger.info('RESPONSE: cartItemAddHandler', {
+            meta: cartJson
+        });
+
         // Response contains the cart token in the header
         // plus the shopping cart payload
         return h.apiSuccess(
-            ShoppingCart.toJSON()
+            cartJson
         ).header('X-Cart-Token', cartToken);
     }
     catch(err) {
@@ -373,6 +380,10 @@ async function cartItemAddHandler(request, h) {
 
 // Note: route handler calles the defined 'pre' method before it gets here
 async function cartItemRemoveHandler(request, h) {
+    global.logger.info('REQUEST: cartItemRemoveHandler', {
+        meta: request.payload
+    });
+
     try {
         const cartToken = request.pre.m1.cartToken;
         const ShoppingCartItem = await getShoppingCartItemModel().findById(request.payload.id);
@@ -389,11 +400,16 @@ async function cartItemRemoveHandler(request, h) {
 
         // Get a fresh cart for the response with all of the relations
         const ShoppingCart = await getCart(cartToken);
+        const cartJson = ShoppingCart.toJSON();
+
+        global.logger.info('RESPONSE: cartItemRemoveHandler', {
+            meta: cartJson
+        });
 
         // Response contains the cart token in the header
         // plus the shopping cart payload
         return h.apiSuccess(
-            ShoppingCart.toJSON()
+            cartJson
         ).header('X-Cart-Token', cartToken);
 
     }
@@ -407,6 +423,10 @@ async function cartItemRemoveHandler(request, h) {
 
 // Note: route handler calles the defined 'pre' method before it gets here
 async function cartItemQtyHandler(request, h) {
+    global.logger.info('REQUEST: cartItemQtyHandler', {
+        meta: request.payload
+    });
+
     try {
         const cartToken = request.pre.m1.cartToken;
         const ShoppingCartItem = await getShoppingCartItemModel().findById(request.payload.id);
@@ -422,9 +442,14 @@ async function cartItemQtyHandler(request, h) {
 
         // Get a fresh cart for the response with all of the relations
         const ShoppingCart = await getCart(cartToken);
+        const cartJson = ShoppingCart.toJSON();
+
+        global.logger.info('RESPONSE: cartItemQtyHandler', {
+            meta: cartJson
+        });
 
         return h.apiSuccess(
-            ShoppingCart.toJSON()
+            cartJson
         ).header('X-Cart-Token', cartToken);
     }
     catch(err) {
@@ -437,6 +462,10 @@ async function cartItemQtyHandler(request, h) {
 
 // Note: route handler calles the defined 'pre' method before it gets here
 async function cartShippingSetAddressHandler(request, h) {
+    global.logger.info('REQUEST: cartShippingSetAddressHandler', {
+        meta: request.payload
+    });
+
     try {
         const cartToken = request.pre.m1.cartToken;
 
@@ -483,10 +512,16 @@ async function cartShippingSetAddressHandler(request, h) {
         //     }
         // });
 
+        const updatedCartJson = UpdatedShoppingCart2.toJSON();
+
+        global.logger.info('RESPONSE: cartShippingSetAddressHandler', {
+            meta: updatedCartJson
+        });
+
         // Response contains the cart token in the header
         // plus the shopping cart payload
         return h.apiSuccess(
-            UpdatedShoppingCart2.toJSON()
+            updatedCartJson
         ).header('X-Cart-Token', cartToken);
     }
     catch(err) {
@@ -498,10 +533,20 @@ async function cartShippingSetAddressHandler(request, h) {
 
 
 async function getCartShippingRatesHandler(request, h) {
+    global.logger.info('REQUEST: getCartShippingRatesHandler', {
+        meta: {
+            cartToken: request.pre.m1.cartToken
+        }
+    });
+
     try {
         const cartToken = request.pre.m1.cartToken;
         const ShoppingCart = await getCart(cartToken);
         const shipment = await shippingController.createShipmentFromShoppingCart(ShoppingCart);
+
+        global.logger.info('RESPONSE: getCartShippingRatesHandler', {
+            meta: shipment.rates
+        });
 
         return h.apiSuccess(
             shipment.rates
@@ -567,6 +612,10 @@ async function getLowestShippingRate(ShoppingCart) {
 
 // Note: route handler calles the defined 'pre' method before it gets here
 async function cartShippingRateHandler(request, h) {
+    global.logger.info('REQUEST: cartShippingRateHandler', {
+        meta: request.payload
+    });
+
     try {
         const cartToken = request.pre.m1.cartToken;
         await request.pre.m1.ShoppingCart.save(
@@ -576,11 +625,16 @@ async function cartShippingRateHandler(request, h) {
 
         // Get a fresh cart for the response with all of the relations
         const ShoppingCart = await getCart(cartToken);
+        const cartJson = ShoppingCart.toJSON();
+
+        global.logger.info('RESPONSE: cartShippingRateHandler', {
+            meta: cartJson
+        });
 
         // Response contains the cart token in the header
         // plus the shopping cart payload
         return h.apiSuccess(
-            ShoppingCart.toJSON()
+            cartJson
         ).header('X-Cart-Token', cartToken);
     }
     catch(err) {
@@ -691,6 +745,14 @@ function sendPurchaseConfirmationEmails(cartToken, payment_id) {
 
 
 async function processTransaction(request, paymentType, transactionData) {
+    global.logger.info('REQUEST: processTransaction', {
+        meta: {
+            cartToken: request.pre.m1.cartToken,
+            paymentType,
+            transactionData
+        }
+    });
+
     const { savePayment } = require('../payment/paymentController');
 
     const cartToken = request.pre.m1.cartToken;
@@ -742,6 +804,12 @@ async function processTransaction(request, paymentType, transactionData) {
     // Errors do not need to be caught here because any failures should not affect the transaction
     server.events.emit('SHOPPING_CART_CHECKOUT_SUCCESS', ShoppingCart);
 
+    global.logger.info('processTransaction - Updating Shopping Cart', {
+        meta: {
+            updateParams
+        }
+    });
+
     try {
         await ShoppingCart.save(
             updateParams,
@@ -755,12 +823,20 @@ async function processTransaction(request, paymentType, transactionData) {
 
     sendPurchaseConfirmationEmails(cartToken, Payment.get('id'));
 
+    global.logger.info('RESPONSE: processTransaction', {
+        meta: Payment.toJSON()
+    });
+
     return Payment;
 }
 
 
 async function cartCheckoutHandler(request, h) {
     const { PAYMENT_TYPE_CREDIT_CARD, runPayment } = require('../payment/paymentController');
+
+    global.logger.info('REQUEST: cartCheckoutHandler', {
+        meta: request.payload
+    });
 
     try {
         const cartToken = request.pre.m1.cartToken;
@@ -815,12 +891,16 @@ async function cartCheckoutHandler(request, h) {
             transactionObj.transaction
         );
 
+        global.logger.info('RESPONSE: cartCheckoutHandler', {
+            meta: Payment.toJSON()
+        });
+
         return onPaymentSuccess(h, Payment);
     }
     catch(err) {
         let msg = err instanceof Error ? err.message : err;
 
-        global.logger.error(msg);
+        global.logger.error(err);
         global.bugsnag(msg);
         throw Boom.badData(msg);
     }
@@ -829,8 +909,15 @@ async function cartCheckoutHandler(request, h) {
 
 // https://github.com/paypal/Checkout-NodeJS-SDK/blob/master/samples/CaptureIntentExamples/createOrder.js
 async function paypalCreatePayment(request, h) {
+    const cartToken = request.pre.m1.cartToken;
+
+    global.logger.info('REQUEST: paypalCreatePayment', {
+        meta: {
+            cartToken
+        }
+    });
+
     try {
-        const cartToken = request.pre.m1.cartToken;
         const ShoppingCart = await getCart(cartToken);
 
         const req = new paypal.orders.OrdersCreateRequest();
@@ -925,6 +1012,10 @@ async function paypalCreatePayment(request, h) {
 
         let order = await getPaypalClient().execute(req);
 
+        global.logger.info('RESPONSE: paypalCreatePayment', {
+            meta: order
+        });
+
         return h.apiSuccess({
             paymentToken: order.result.id
         });
@@ -941,6 +1032,10 @@ async function paypalCreatePayment(request, h) {
 async function paypalExecutePayment(request, h) {
     const { PAYMENT_TYPE_PAYPAL } = require('../payment/paymentController');
 
+    global.logger.info('REQUEST: paypalExecutePayment', {
+        meta: request.payload
+    });
+
     try {
         const req = new paypal.orders.OrdersCaptureRequest(request.payload.paymentToken);
         req.requestBody({});
@@ -952,6 +1047,10 @@ async function paypalExecutePayment(request, h) {
             PAYMENT_TYPE_PAYPAL,
             paypalTransaction
         );
+
+        global.logger.info('RESPONSE: paypalExecutePayment', {
+            meta: Payment.toJSON()
+        });
 
         return onPaymentSuccess(h, Payment);
     }

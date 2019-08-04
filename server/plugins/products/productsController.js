@@ -97,11 +97,19 @@ async function productShareHandler(request, h) {
 
 async function getProductByIdHandler(request, h) {
     try {
+        global.logger.info('REQUEST: getProductByIdHandler', {
+            meta: request.query
+        });
+
         const Products = await getModel()
             .forge({ id: request.query.id })
             .fetch({
                 withRelated: getWithRelated(request.query)
             });
+
+        global.logger.info('RESPONSE: getProductByIdHandler', {
+            meta: Products.toJSON()
+        });
 
         return h.apiSuccess(Products);
     }
@@ -118,6 +126,10 @@ async function productSeoHandler(request, h) {
         let withRelated = getWithRelated();
         withRelated.push('pics.pic_variants');
 
+        global.logger.info('REQUEST: productSeoHandler', {
+            meta: request.query
+        });
+
         const Products = await getModel()
             .forge({
                 'seo_uri': request.query.id
@@ -125,6 +137,10 @@ async function productSeoHandler(request, h) {
             .fetch({
                 withRelated
             });
+
+        global.logger.info('RESPONSE: productSeoHandler', {
+            meta: Products.toJSON()
+        });
 
         return h.apiSuccess(Products);
     }
@@ -148,11 +164,23 @@ function productInfoHandler(request, h) {
 
 async function getProductsHandler(request, h) {
     try {
+        global.logger.info('REQUEST: getProductsHandler', {
+            meta: request.query
+        });
+
         const Products = await helperService.fetchPage(
             request,
             getModel(),
             getWithRelated()
         );
+
+        global.logger.info('RESPONSE: getProductsHandler', {
+            meta: {
+                // logging the entire products json can be quite large,
+                // so avoiding it for now, and just logging the pagination data
+                pagination: Products.pagination
+            }
+        });
 
         return h.apiSuccess(
             Products,
