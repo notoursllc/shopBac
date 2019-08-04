@@ -1,6 +1,7 @@
-const logdna = require('logdna-winston');
+const logdnaWinston = require('logdna-winston');
 const winston = require('winston');
 const bugsnag = require('bugsnag');
+const isObject = require('lodash.isobject');
 
 
 exports.plugin = {
@@ -20,55 +21,60 @@ exports.plugin = {
             }
         }
 
-        winston.setLevels({
-            debug: 0,
-            info: 1,
-            warn: 2,
-            error: 3
+        let logger = null;
+
+        let prettyJson = winston.format.printf((info) => {
+            if (isObject(info.meta)) {
+                info.meta = `- ${JSON.stringify(info.meta)}`
+            }
+            return `${info.timestamp} [${info.level}]: ${info.message} ${info.meta}`;
         });
 
-        winston.addColors({
-            debug: 'blue',
-            info: 'cyan',
-            warn: 'yellow',
-            error: 'red'
-        });
+        if(process.env.NODE_ENV === 'development') {
+            logger = winston.createLogger({
+                transports: [
+                    new winston.transports.Console({
+                        level: 'info'
+                    })
+                ],
+                format: winston.format.combine(
+                    winston.format.colorize(),
+                    winston.format.timestamp(),
+                    winston.format.prettyPrint(),
+                    // winston.format.json(),
+                    // winston.format.splat(),
+                    // winston.format.simple(),
+                    prettyJson
+                )
+            });
+        }
 
-        let transports = [];
-        let exceptionHandlers = [];
-
-        // Adding LogDNA transport for production only
+        // Log DNA setup:
         if(process.env.NODE_ENV === 'production') {
-            transports.push(
-                new (logdna.WinstonTransport)({
-                    key: process.env.LOG_DNA_INGESTION_KEY,
-                    hostname: process.env.DOMAIN_NAME,
-                    env: process.env.NODE_ENV,
-                    index_meta: false,  // when true ensures meta object will be searchable
-                    // level: 'info'
-                })
-            )
-        }
-        // no logging for NODE_ENV = "test".  Not sure if this is the right thing to do.
-        else if(process.env.NODE_ENV === 'development') {
-            transports.push(
-                new (winston.transports.Console)({
-                    level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-                    handleExceptions: true,
-                    humanReadableUnhandledException: true,
-                    prettyPrint: true,
-                    colorize: true,
-                    silent: false
-                })
-            )
+            logger = winston.createLogger({
+                transports: [
+                    new logdnaWinston({
+                        key: process.env.LOG_DNA_INGESTION_KEY,
+                        hostname: process.env.DOMAIN_NAME,
+                        // ip: ipAddress,
+                        // mac: macAddress,
+                        app: 'web',
+                        env: process.env.NODE_ENV,
+                        level: 'info', // Default to debug, maximum level of log, doc: https://github.com/winstonjs/winston#logging-levels
+                        index_meta: false, // Defaults to false, when true ensures meta object will be searchable
+                        handleExceptions: true,
+                        exitOnError: false
+                    })
+                ],
+                format: winston.format.combine(
+                    // This doesn't acutally format the results in LogDNA, except that it does cause
+                    // the 'meta' object to be stringified in the LogDNA UI, which is all I really want.
+                    // A 'prettiefied' meta object in LogDNA is kind of annoying read, I think.
+                    prettyJson
+                )
+            });
         }
 
-        const logger = new (winston.Logger)({
-            transports,
-            exceptionHandlers,
-            exitOnError: false
-        });
-
-        global.logger = logger
+        global.logger = logger;
     }
 };
