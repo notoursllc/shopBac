@@ -101,17 +101,19 @@ async function getProductByIdHandler(request, h) {
             meta: request.query
         });
 
-        const Products = await getModel()
+        const Product = await getModel()
             .forge({ id: request.query.id })
             .fetch({
                 withRelated: getWithRelated(request.query)
             });
 
+        const productJson = Product ? Product.toJSON() : null;
+
         global.logger.info('RESPONSE: getProductByIdHandler', {
-            meta: Products.toJSON()
+            meta: productJson
         });
 
-        return h.apiSuccess(Products);
+        return h.apiSuccess(productJson);
     }
     catch(err) {
         global.logger.error(err);
@@ -138,11 +140,13 @@ async function productSeoHandler(request, h) {
                 withRelated
             });
 
+        const productsJson = Products ? Products.toJSON() : null;
+
         global.logger.info('RESPONSE: productSeoHandler', {
-            meta: Products.toJSON()
+            meta: productsJson
         });
 
-        return h.apiSuccess(Products);
+        return h.apiSuccess(productsJson);
     }
     catch(err) {
         global.logger.error(err);
@@ -174,17 +178,19 @@ async function getProductsHandler(request, h) {
             getWithRelated()
         );
 
+        const pagination = Products ? Products.pagination : null;
+
         global.logger.info('RESPONSE: getProductsHandler', {
             meta: {
                 // logging the entire products json can be quite large,
                 // so avoiding it for now, and just logging the pagination data
-                pagination: Products.pagination
+                pagination
             }
         });
 
         return h.apiSuccess(
             Products,
-            Products.pagination
+            pagination
         );
     }
     catch(err) {

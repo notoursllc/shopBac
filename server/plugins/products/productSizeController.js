@@ -120,7 +120,6 @@ async function decrementInventoryCount(ShoppingCart) {
                     { inventory_count: newInventoryCount },
                     { id: ProductSize.get('id') }
                 );
-                // global.logger.debug("PRODUCT SIZE UPDATED", UpdatedProductSize.toJSON())
             }
         }
     }

@@ -175,14 +175,6 @@ async function getCartByAttribute(attrName, attrValue, withRelatedArr) {
     })
     .fetch(fetchObj);
 
-    // global.logger.debug('CART BY ATTRIBUTE', {
-    //     meta: {
-    //         attribute: attrName,
-    //         value: attrValue,
-    //         cart: (ShoppingCart ? ShoppingCart.toJSON() : null)
-    //     }
-    // });
-
     return ShoppingCart;
 }
 
@@ -247,7 +239,7 @@ async function pre_cart(request, h) {
             ShoppingCart = await createCart(cartToken);
 
             return h.apiSuccess(
-                ShoppingCart.toJSON()
+                ShoppingCart ? ShoppingCart.toJSON() : null
             )
             .header('X-Cart-Token', cartToken)
             .takeover();
@@ -276,7 +268,7 @@ async function cartGetHandler(request, h) {
         // Response contains the cart token in the header
         // plus the shopping cart payload
         return h.apiSuccess(
-            ShoppingCart.toJSON()
+            ShoppingCart ? ShoppingCart.toJSON() : null
         ).header('X-Cart-Token', cartToken);
     }
     catch(err) {
@@ -366,9 +358,9 @@ async function cartItemAddHandler(request, h) {
 
         // Response contains the cart token in the header
         // plus the shopping cart payload
-        return h.apiSuccess(
-            cartJson
-        ).header('X-Cart-Token', cartToken);
+        return h
+            .apiSuccess(cartJson)
+            .header('X-Cart-Token', cartToken);
     }
     catch(err) {
         global.logger.error(err);
@@ -388,19 +380,13 @@ async function cartItemRemoveHandler(request, h) {
         const cartToken = request.pre.m1.cartToken;
         const ShoppingCartItem = await getShoppingCartItemModel().findById(request.payload.id);
 
-        // global.logger.debug('REMOVING CART ITEM', {
-        //     meta: {
-        //         item: ShoppingCartItem ? ShoppingCartItem.toJSON() : ShoppingCartItem
-        //     }
-        // });
-
         if(ShoppingCartItem) {
             await ShoppingCartItem.destroy();
         }
 
         // Get a fresh cart for the response with all of the relations
         const ShoppingCart = await getCart(cartToken);
-        const cartJson = ShoppingCart.toJSON();
+        const cartJson = ShoppingCart ? ShoppingCart.toJSON() : null;
 
         global.logger.info('RESPONSE: cartItemRemoveHandler', {
             meta: cartJson
@@ -408,9 +394,9 @@ async function cartItemRemoveHandler(request, h) {
 
         // Response contains the cart token in the header
         // plus the shopping cart payload
-        return h.apiSuccess(
-            cartJson
-        ).header('X-Cart-Token', cartToken);
+        return h
+            .apiSuccess(cartJson)
+            .header('X-Cart-Token', cartToken);
 
     }
     catch(err) {
@@ -442,15 +428,15 @@ async function cartItemQtyHandler(request, h) {
 
         // Get a fresh cart for the response with all of the relations
         const ShoppingCart = await getCart(cartToken);
-        const cartJson = ShoppingCart.toJSON();
+        const cartJson = ShoppingCart ? ShoppingCart.toJSON() : null;
 
         global.logger.info('RESPONSE: cartItemQtyHandler', {
             meta: cartJson
         });
 
-        return h.apiSuccess(
-            cartJson
-        ).header('X-Cart-Token', cartToken);
+        return h
+            .apiSuccess(cartJson)
+            .header('X-Cart-Token', cartToken);
     }
     catch(err) {
         global.logger.error(err);
@@ -491,8 +477,6 @@ async function cartShippingSetAddressHandler(request, h) {
             { method: 'update', patch: true }
         );
 
-        // console.log("UpdatedShoppingCart", UpdatedShoppingCart.toJSON())
-
         // This may change in the future when we offer the user the choice of several
         // different shipping rates, but for now the user doesn't get to choose and
         // we are fetching the lowest shipping rate and saving it in the shopping cart
@@ -506,13 +490,7 @@ async function cartShippingSetAddressHandler(request, h) {
             { method: 'update', patch: true }
         );
 
-        // global.logger.debug('Updated cart with shipping rate', {
-        //     meta: {
-        //         cart: UpdatedShoppingCart2.toJSON()
-        //     }
-        // });
-
-        const updatedCartJson = UpdatedShoppingCart2.toJSON();
+        const updatedCartJson = UpdatedShoppingCart2 ? UpdatedShoppingCart2.toJSON() : null;
 
         global.logger.info('RESPONSE: cartShippingSetAddressHandler', {
             meta: updatedCartJson
@@ -520,9 +498,9 @@ async function cartShippingSetAddressHandler(request, h) {
 
         // Response contains the cart token in the header
         // plus the shopping cart payload
-        return h.apiSuccess(
-            updatedCartJson
-        ).header('X-Cart-Token', cartToken);
+        return h
+            .apiSuccess(updatedCartJson)
+            .header('X-Cart-Token', cartToken);
     }
     catch(err) {
         global.logger.error(err);
@@ -543,14 +521,15 @@ async function getCartShippingRatesHandler(request, h) {
         const cartToken = request.pre.m1.cartToken;
         const ShoppingCart = await getCart(cartToken);
         const shipment = await shippingController.createShipmentFromShoppingCart(ShoppingCart);
+        const rates = shipment ? shipment.rates : null;
 
         global.logger.info('RESPONSE: getCartShippingRatesHandler', {
-            meta: shipment.rates
+            meta: rates
         });
 
-        return h.apiSuccess(
-            shipment.rates
-        ).header('X-Cart-Token', cartToken);
+        return h
+            .apiSuccess(rates)
+            .header('X-Cart-Token', cartToken);
     }
     catch(err) {
         global.logger.error(err);
@@ -625,7 +604,7 @@ async function cartShippingRateHandler(request, h) {
 
         // Get a fresh cart for the response with all of the relations
         const ShoppingCart = await getCart(cartToken);
-        const cartJson = ShoppingCart.toJSON();
+        const cartJson = ShoppingCart ? ShoppingCart.toJSON() : null;
 
         global.logger.info('RESPONSE: cartShippingRateHandler', {
             meta: cartJson
@@ -633,9 +612,9 @@ async function cartShippingRateHandler(request, h) {
 
         // Response contains the cart token in the header
         // plus the shopping cart payload
-        return h.apiSuccess(
-            cartJson
-        ).header('X-Cart-Token', cartToken);
+        return h
+            .apiSuccess(cartJson)
+            .header('X-Cart-Token', cartToken);
     }
     catch(err) {
         global.logger.error(err);
@@ -708,13 +687,6 @@ async function createShippoOrderFromShoppingCart(ShoppingCart) {
     data.weight = totalWeight;
 
     let shippoOrderJSON = await shippoOrdersAPI.createOrder(data);
-
-    // global.logger.debug('CREATE SHIPPO ORDER FROM SHOPPING CART RESPONSE', {
-    //     meta: {
-    //         shippoOrderJSON
-    //     }
-    // });
-
     return shippoOrderJSON;
 }
 
@@ -824,7 +796,7 @@ async function processTransaction(request, paymentType, transactionData) {
     sendPurchaseConfirmationEmails(cartToken, Payment.get('id'));
 
     global.logger.info('RESPONSE: processTransaction', {
-        meta: Payment.toJSON()
+        meta:  Payment ? Payment.toJSON() : null
     });
 
     return Payment;
@@ -892,7 +864,7 @@ async function cartCheckoutHandler(request, h) {
         );
 
         global.logger.info('RESPONSE: cartCheckoutHandler', {
-            meta: Payment.toJSON()
+            meta: Payment ? Payment.toJSON() : null
         });
 
         return onPaymentSuccess(h, Payment);
@@ -1049,7 +1021,7 @@ async function paypalExecutePayment(request, h) {
         );
 
         global.logger.info('RESPONSE: paypalExecutePayment', {
-            meta: Payment.toJSON()
+            meta: Payment ? Payment.toJSON() : null
         });
 
         return onPaymentSuccess(h, Payment);

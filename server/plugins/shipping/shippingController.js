@@ -195,10 +195,6 @@ async function packageTypeDeleteHandler(request, h) {
 async function validateAddress(request, h) {
     try {
         const res = await validateNewAddress(request.payload);
-
-        // global.logger.debug('In validateAddress - REQUEST', request.payload);
-        // global.logger.debug('In validateAddress - RESPONSE', res);
-
         return h.apiSuccess(res);
     }
     catch(err) {
@@ -254,7 +250,7 @@ async function createCustomsItemFromShoppingCart(ShoppingCart) {
 async function createShipmentFromShoppingCart(ShoppingCart) {
     global.logger.debug('In createShipmentFromShoppingCart', {
         meta: {
-            cart: ShoppingCart.toJSON()
+            cart: ShoppingCart ? ShoppingCart.toJSON() : null
         }
     });
 

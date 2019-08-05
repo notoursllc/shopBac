@@ -29,7 +29,7 @@ describe('ShippoAPI: validateNewAddress', () => {
             // console.log(err);
         }
 
-        console.log("ADDRESS VALIDATION RESPONSE", res)
+        // console.log("ADDRESS VALIDATION RESPONSE", res)
 
         expect( res ).to.be.an.object();
         expect(res.validation_results.is_valid).to.equal(true);

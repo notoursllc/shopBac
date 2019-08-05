@@ -51,14 +51,6 @@ async function getPaymentByAttribute(attrName, attrValue, withRelatedArr) {
     })
     .fetch(fetchObj);
 
-    // global.logger.debug('PAYMENT BY ATTRIBUTE', {
-    //     meta: {
-    //         attrName,
-    //         attrValue,
-    //         payment: (Payment ? Payment.toJSON() : '')
-    //     }
-    // });
-
     return Payment;
 }
 
@@ -230,11 +222,6 @@ async function purchaseShippingLabelHandler(request, h) {
         delete request.payload.id;
 
         const response = await shippoTransactionsAPI.createShippingLabel(request.payload);
-        // global.logger.debug('CREATE SHIPPING LABEL RESPONSE', {
-        //     meta: {
-        //         response
-        //     }
-        // });
 
         // no need to await here:
         Payment.save(
@@ -263,12 +250,6 @@ async function purchaseShippingLabelHandler(request, h) {
 async function getShippingLabelHandler(request, h) {
     try {
         const response = await shippoTransactionsAPI.getShippingLabel(request.query.id);
-
-        // global.logger.debug('GET SHIPPING LABEL RESPONSE', {
-        //     meta: {
-        //         response
-        //     }
-        // });
 
         return h.apiSuccess(
             response

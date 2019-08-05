@@ -34,7 +34,7 @@ describe('Testing route: GET /product/{id}', () => {
         };
 
         const res = await server.inject(request);
-        const prod = res.result.data.attributes;
+        const prod = res.result.data;
 
         expect(res.statusCode, 'Status code').to.equal(200);
         expect(prod).to.be.an.object();

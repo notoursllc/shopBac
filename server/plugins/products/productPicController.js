@@ -458,7 +458,7 @@ async function productPicDeleteHandler(request, h) {
         global.logger.info('DELETE FILE PRODUCT PIC SHOULD HAVE VARIANTS', {
             meta: {
                 id: request.payload.id,
-                product_pic: ProductPic.toJSON()
+                product_pic: ProductPic ? ProductPic.toJSON() : null
             }
         });
 
