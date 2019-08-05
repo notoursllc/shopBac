@@ -30,25 +30,6 @@ exports.plugin = {
             return `${info.timestamp} [${info.level}]: ${info.message} ${info.meta}`;
         });
 
-        if(process.env.NODE_ENV === 'development') {
-            logger = winston.createLogger({
-                transports: [
-                    new winston.transports.Console({
-                        level: 'info'
-                    })
-                ],
-                format: winston.format.combine(
-                    winston.format.colorize(),
-                    winston.format.timestamp(),
-                    winston.format.prettyPrint(),
-                    // winston.format.json(),
-                    // winston.format.splat(),
-                    // winston.format.simple(),
-                    prettyJson
-                )
-            });
-        }
-
         // Log DNA setup:
         if(process.env.NODE_ENV === 'production') {
             logger = winston.createLogger({
@@ -70,6 +51,24 @@ exports.plugin = {
                     // This doesn't acutally format the results in LogDNA, except that it does cause
                     // the 'meta' object to be stringified in the LogDNA UI, which is all I really want.
                     // A 'prettiefied' meta object in LogDNA is kind of annoying read, I think.
+                    prettyJson
+                )
+            });
+        }
+        else {
+            logger = winston.createLogger({
+                transports: [
+                    new winston.transports.Console({
+                        level: process.env.NODE_ENV === 'test' ? 'error' : 'info'
+                    })
+                ],
+                format: winston.format.combine(
+                    winston.format.colorize(),
+                    winston.format.timestamp(),
+                    winston.format.prettyPrint(),
+                    // winston.format.json(),
+                    // winston.format.splat(),
+                    // winston.format.simple(),
                     prettyJson
                 )
             });
