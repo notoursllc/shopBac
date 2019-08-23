@@ -5,7 +5,9 @@ const fs = require('fs');
 const Boom = require('@hapi/boom');
 const uuidV4 = require('uuid/v4');
 const jwt = require('jsonwebtoken');
+const robotstxt = require('generate-robotstxt');
 const helperService = require('../../helpers.service');
+
 
 let server = null;
 
@@ -80,6 +82,50 @@ async function healthzHandler(request, h) {
 }
 
 
+/**
+ * Generates a robots.txt. file
+ * https://moz.com/learn/seo/robotstxt
+ * https://www.robotstxt.org/
+ *
+ * @param {*} request
+ * @param {*} h
+ */
+async function robotsHandler(request, h) {
+    try {
+        const host = `http://www.${process.env.DOMAIN_NAME}`;
+        const defaultDisallow = [
+            '/acts/*',
+            '/cart/*',
+            '/order/*'
+        ];
+
+        const robotsText = await robotstxt({
+            policy: [
+              {
+                userAgent: '*',
+                allow: '/',
+                disallow: defaultDisallow,
+                crawlDelay: 2
+              },
+              {
+                userAgent: 'Nutch',
+                disallow: '/',
+              }
+            ],
+            sitemap: `${host}/sitemap.xml`,
+            host: host
+        });
+
+        return h.response(robotsText).type('text/plain');
+    }
+    catch(err) {
+        global.logger.error(err);
+        global.bugsnag(err);
+        throw Boom.badRequest(err);
+    }
+}
+
+
 function faviconHandler(request, h) {
     // TODO: not sure if this is right
     h.response(fs.createReadStream(path.resolve(__dirname, '../../../dist/static/favicon.ico'))).code(200).type('image/x-icon');
@@ -91,5 +137,6 @@ module.exports = {
     getClientJwtHandler,
     loggerHandler,
     healthzHandler,
-    faviconHandler
+    faviconHandler,
+    robotsHandler
 }

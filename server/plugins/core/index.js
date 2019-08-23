@@ -37,6 +37,15 @@ const after = function(server) {
                 description: 'Simple health check',
                 handler: coreController.healthzHandler
             }
+        },
+        {
+            method: 'GET',
+            path: '/robots.txt',  // NOTE: no routePrefix on this one
+            options: {
+                auth: false,
+                description: 'For generating robots.txt',
+            },
+            handler: coreController.robotsHandler
         }
 
         // commentig out to get nuxt working (?)

@@ -290,7 +290,7 @@ const after = function (server) {
                 auth: false
             },
             handler: productsController.sitemapHandler
-        },
+        }
     ]);
 
 
