@@ -37,6 +37,7 @@
     "dotenv": "^8.0.0",
     "file-type": "^12.0.1",
     "fs": "0.0.1-security",
+    "generate-robotstxt": "^7.1.0",
     "handlebars": "^4.1.2",
     "hapi-auth-basic": "^5.0.0",
     "jsonwebtoken": "^8.5.1",
@@ -64,7 +65,6 @@
     "@hapi/code": "^5.3.1",
     "@hapi/lab": "^19.1.0",
     "faker": "^4.1.0",
-    "generate-robotstxt": "^7.1.0",
     "nodemon": "^1.19.1"
   }
 }
