@@ -282,6 +282,15 @@ const after = function (server) {
                 handler: productArtistController.artistGetProductsHandler
             }
         },
+
+        {
+            method: 'GET',
+            path: '/sitemap.xml',  // NOTE: no routePrefix on this one
+            options: {
+                auth: false
+            },
+            handler: productsController.sitemapHandler
+        },
     ]);
 
 

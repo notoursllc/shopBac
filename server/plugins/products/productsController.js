@@ -2,6 +2,7 @@
 
 const isObject = require('lodash.isobject');
 const Boom = require('@hapi/boom');
+const { createSitemap } = require('sitemap');
 const helperService = require('../../helpers.service');
 const productPicController = require('./productPicController');
 const globalTypes = require('../../global_types.js');
@@ -246,6 +247,56 @@ async function productUpdateHandler(request, h) {
 }
 
 
+async function sitemapHandler(request, h) {
+    // https://www.sitemaps.org/protocol.html
+    const sitemapConfig = {
+        hostname: `http://www.${process.env.DOMAIN_NAME}`,
+        cacheTime: 600000,        // 600 sec - cache purge period
+        urls: [
+          { url: '/returns/',  changefreq: 'monthly', priority: 0.5 },
+          { url: '/contact-us/',  changefreq: 'monthly', priority: 0.5 },
+          { url: '/privacy/',  changefreq: 'monthly', priority: 0.5 },
+          { url: '/conditions-of-use/',  changefreq: 'monthly', priority: 0.5 },
+        ]
+    };
+
+    Object.keys(globalTypes.product.subtypes).forEach((key) => {
+        if(key) {
+            let parts = key.split('_');
+            if(parts[2]) {
+                sitemapConfig.urls.push(
+                    { url: `/${parts[2].toLowerCase()}/`,  changefreq: 'monthly', priority: 0.8 },
+                )
+            }
+        }
+    });
+
+    const Products = await getModel().query((qb) => {
+        // qb.innerJoin('manufacturers', 'cars.manufacturer_id', 'manufacturers.id');
+        // qb.groupBy('cars.id');
+        qb.where('is_available', '=', true);
+        // qb.andWhere(arr[0], arr[1], arr[2]);
+    })
+    .fetchPage({
+        pageSize: 100,
+        page: 1
+    });
+
+    Products.toJSON().forEach((obj) => {
+        sitemapConfig.urls.push({
+            url: `/q/${obj.seo_uri}`,
+            changefreq: 'monthly',
+            priority: 1
+        })
+    });
+
+    const sitemap = createSitemap(sitemapConfig);
+    const xml = sitemap.toXML();
+
+    return h.response(xml).type('application/xml')
+}
+
+
 module.exports = {
     setServer,
     getProductByAttribute,
@@ -257,5 +308,6 @@ module.exports = {
     productInfoHandler,
     getProductsHandler,
     productCreateHandler,
-    productUpdateHandler
+    productUpdateHandler,
+    sitemapHandler
 };
