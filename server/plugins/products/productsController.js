@@ -264,9 +264,11 @@ async function sitemapHandler(request, h) {
         if(key) {
             let parts = key.split('_');
             if(parts[2]) {
-                sitemapConfig.urls.push(
-                    { url: `/${parts[2].toLowerCase()}/`,  changefreq: 'monthly', priority: 0.8 },
-                )
+                sitemapConfig.urls.push({
+                    url: `/${parts[2].toLowerCase()}/`,
+                    changefreq: 'weekly',
+                    priority: 0.8
+                })
             }
         }
     });
@@ -279,15 +281,31 @@ async function sitemapHandler(request, h) {
     })
     .fetchPage({
         pageSize: 100,
-        page: 1
+        page: 1,
+        withRelated: {
+            pics: (query) => {
+                query.where('is_visible', '=', true);
+                query.orderBy('sort_order', 'ASC');
+            }
+        }
     });
 
     Products.toJSON().forEach((obj) => {
-        sitemapConfig.urls.push({
+        let prod = {
             url: `/q/${obj.seo_uri}`,
-            changefreq: 'monthly',
+            changefreq: 'weekly',
             priority: 1
-        })
+        };
+
+        // set an image attribute if we can
+        const url = productPicController.featuredProductPic(obj);
+        if(url) {
+            prod.img = [
+                { url }
+            ]
+        }
+
+        sitemapConfig.urls.push(prod);
     });
 
     const sitemap = createSitemap(sitemapConfig);
