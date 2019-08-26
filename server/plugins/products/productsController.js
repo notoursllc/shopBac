@@ -298,10 +298,13 @@ async function sitemapHandler(request, h) {
         };
 
         // set an image attribute if we can
-        const url = productPicController.featuredProductPic(obj);
-        if(url) {
+        const imageUrl = productPicController.featuredProductPic(obj);
+        if(imageUrl) {
             prod.img = [
-                { url }
+                {
+                    url: imageUrl,
+                    title: obj.title ? obj.title.trim() : '',
+                }
             ]
         }
 
