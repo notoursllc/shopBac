@@ -72,7 +72,7 @@ const after = function (server) {
             method: 'POST',
             path: '/cart/shipping/address',
             options: {
-                description: 'Sets the shipping address for the cart and calculates the sales tax',
+                description: 'Sets the shipping address for the cart, calculates the sales tax, and gets shipping rate',
                 validate: {
                     payload: Joi.reach(ShoppingCartController.getShoppingCartModelSchema(), 'shipping')
                 },

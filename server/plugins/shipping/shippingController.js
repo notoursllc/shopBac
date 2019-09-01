@@ -9,6 +9,7 @@ const { createCustomsItem } = require('./shippoAPI/customs_items.js');
 const { createShipment } = require('./shippoAPI/shipments.js');
 const { createParcel } = require('./shippoAPI/parcels.js');
 const { validateNewAddress } = require('./shippoAPI/address');
+const globalTypes = require('../../global_types')
 
 let server = null;
 
@@ -302,6 +303,45 @@ async function createShipmentFromShoppingCart(ShoppingCart) {
 
 
 /**
+ * Returns the weight of the cart item * quantity selected.
+ *
+ * @param {*} cartItem
+ */
+function getProductWeightFromCartItem(cartItem) {
+    if(isObject(cartItem)) {
+        let weight = 0;
+        const qty = cartItem.qty || 1;
+
+        switch(cartItem.product.sub_type) {
+            // Currently all products have sizes that contain their respective weight,
+            // but this probably won't always be the case in the future,
+            // which is my I made this a switch statement.
+            default:
+                let selectedSize = cartItem.variants.size;
+                cartItem.product.sizes.forEach((obj) => {
+                    if(obj.size === selectedSize) {
+                        weight = obj.weight_oz * qty;
+                    }
+                });
+                break;
+        }
+
+        global.logger.debug('ShippingController -> getProductWeightFromCartItem', {
+            meta: {
+                weight,
+                cartItem
+            }
+        });
+
+        return weight;
+    }
+    else {
+        global.logger.error("getProductWeightFromCartItem: Unable to get product weight because given cartItem was not an object", cartItem)
+    }
+}
+
+
+/**
  * Creates Shippo "Parcel" objects from the various items in a shopping cart
  * This will affect how much money the customer has to pay in shipping.
  * I'm guessing that tweaking this method over time will allow us to save postage
@@ -334,7 +374,13 @@ async function createParcelsFromShoppingCart(ShoppingCart) {
                     // The total the amount of weight for each package type needed.
                     // The weight includes the product weight plus the weight of the package material itself
                     shippingPackageTypes[id].packageType = PackageType;
-                    shippingPackageTypes[id].totalWeight += parseFloat(PackageType.get('weight')) + parseFloat(cartItem.product.weight_oz || 5);
+                    shippingPackageTypes[id].totalWeight += parseFloat(PackageType.get('weight')) + parseFloat(getProductWeightFromCartItem(cartItem) || 5);
+                }
+            });
+
+            global.logger.debug('SHIPPING PACKAGE TYPES', {
+                meta: {
+                    shippingPackageTypes
                 }
             });
 
@@ -353,7 +399,7 @@ async function createParcelsFromShoppingCart(ShoppingCart) {
                 );
             });
 
-            return await Promise.all(promises);
+            return Promise.all(promises);
         }
     }
 }
@@ -380,7 +426,7 @@ module.exports = {
 /**
  * NOTES:
  *
- * 1) In order to have mass unit consistency with the product weight and she shipping package weight,
+ * 1) In order to have mass unit consistency with the product weight and the shipping package weight,
  *      I am forcing the 'oz' mass_unit so we can easily calculate the total weight of the package
  *      (product weight + package weight)
  */

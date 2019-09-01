@@ -551,6 +551,12 @@ async function getLowestShippingRate(ShoppingCart) {
     // Get a fresh cart with all of the relations
     const shipment = await shippingController.createShipmentFromShoppingCart(ShoppingCart);
 
+    global.logger.debug('shoppingCartController -> getLowestShippingRate: shipment', {
+        meta: {
+            shipment
+        }
+    });
+
     if(Array.isArray(shipment.rates)) {
         if(!lowestRate) {
             lowestRate = shipment.rates[0];
