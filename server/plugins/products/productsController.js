@@ -5,6 +5,7 @@ const Boom = require('@hapi/boom');
 const { createSitemap } = require('sitemap');
 const helperService = require('../../helpers.service');
 const productPicController = require('./productPicController');
+const productSizeController = require('./productSizeController');
 const globalTypes = require('../../global_types.js');
 
 
@@ -247,6 +248,82 @@ async function productUpdateHandler(request, h) {
 }
 
 
+/**
+ * Deletes a product, including all of its sizes, pictures and artist
+ *
+ * @param {*} request
+ * @param {*} h
+ */
+async function productDeleteHandler(request, h) {
+    try {
+        const productId = request.query.id;
+
+        const Product = await getModel()
+            .forge({ id: productId })
+            .fetch({
+                withRelated: getWithRelated(request.query)
+            });
+
+        if(!Product) {
+            throw Boom.badRequest('Unable to find product.');
+        }
+
+        const productJSON = Product.toJSON();
+
+        // Delete product pics
+        if(productJSON.hasOwnProperty('pics')) {
+            try {
+                const picPromises = [];
+
+                productJSON.pics.forEach((pic) => {
+                    picPromises.push(
+                        productPicController.unlinkFileAndVariants(pic.id),
+                        productPicController.deleteProductPic(pic.id)
+                    )
+                });
+
+                await Promise.all(picPromises);
+            }
+            catch(err) {
+                global.logger.error("productDeleteHandler - ERROR DELETING PRODUCT PICS", err)
+                throw err;
+            }
+        }
+
+        // Delete product sizes
+        if(productJSON.hasOwnProperty('sizes')) {
+            try {
+                const sizePromises = [];
+
+                productJSON.sizes.forEach((size) => {
+                    sizePromises.push(
+                        productSizeController.deleteProductSize(size.id)
+                    )
+                });
+
+                await Promise.all(sizePromises);
+            }
+            catch(err) {
+                global.logger.error("productDeleteHandler - ERROR DELETING PRODUCT SIZES", err)
+                throw err;
+            }
+        }
+
+        // Delete this product model
+        await getModel().destroy({ id: productId })
+
+        return h.apiSuccess({
+            id: productId
+        });
+    }
+    catch(err) {
+        global.logger.error(err);
+        global.bugsnag(err);
+        throw Boom.badRequest(err);
+    }
+}
+
+
 async function sitemapHandler(request, h) {
     // https://www.sitemaps.org/protocol.html
     const sitemapConfig = {
@@ -330,5 +407,6 @@ module.exports = {
     getProductsHandler,
     productCreateHandler,
     productUpdateHandler,
+    productDeleteHandler,
     sitemapHandler
 };

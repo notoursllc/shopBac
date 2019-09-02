@@ -434,6 +434,13 @@ function featuredProductPic(productJson) {
 };
 
 
+function deleteProductPic(id) {
+    return getProductPicModel().destroy({
+        id
+    });
+}
+
+
 async function productPicDeleteHandler(request, h) {
     try {
         const productPicId = request.query.id;
@@ -451,9 +458,7 @@ async function productPicDeleteHandler(request, h) {
         //TODO: Get the product.  If this is the featured pic, assign a new one on the product
 
         // Delete from DB:
-        const ProductPic = await getProductPicModel().destroy(
-            { id: productPicId }
-        );
+        const ProductPic = await deleteProductPic(productPicId)
 
         global.logger.info('DELETE FILE PRODUCT PIC SHOULD HAVE VARIANTS', {
             meta: {
@@ -479,6 +484,8 @@ module.exports = {
     getCloudImagePath,
     getCloudUrl,
     featuredProductPic,
+    unlinkFileAndVariants,
+    deleteProductPic,
     productPicUpsertHandler,
     productPicDeleteHandler
 }

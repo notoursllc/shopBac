@@ -75,11 +75,16 @@ function getSizeTypeSortOrder(size) {
 }
 
 
+function deleteProductSize(id) {
+    return getModel().destroy({
+        id
+    });
+}
+
+
 async function productSizeDeleteHandler(request, h) {
     try {
-        const ProductSize = await getModel().destroy(
-            { id: request.query.id }
-        );
+        const ProductSize = await deleteProductSize(request.query.id)
 
         if(!ProductSize) {
             throw Boom.badRequest('Unable to find product size.');
@@ -133,6 +138,7 @@ async function decrementInventoryCount(ShoppingCart) {
 module.exports = {
     setServer,
     getSizeTypeSortOrder,
+    deleteProductSize,
     productSizeCreateHandler,
     productSizeUpdateHandler,
     productSizeDeleteHandler,

@@ -72,6 +72,19 @@ const after = function (server) {
             }
         },
         {
+            method: 'DELETE',
+            path: `${routePrefix}/product`,
+            options: {
+                description: 'Deletes a product',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: productsController.productDeleteHandler
+            }
+        },
+        {
             method: 'GET',
             path: '/product/share',  // NOTE: no routePrefix on this one
             options: {

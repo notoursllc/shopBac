@@ -154,11 +154,16 @@ async function artistUpdateHandler(request, h) {
 }
 
 
+function deleteArtist(id) {
+    return getModel().destroy({
+        id
+    });
+}
+
+
 async function artistDeleteHandler(request, h) {
     try {
-        const ProductArtist = await getModel().destroy(
-            { id: request.query.id }
-        );
+        const ProductArtist = await deleteArtist();
 
         if(!ProductArtist) {
             throw Boom.badRequest('Unable to find product artist.');
@@ -209,6 +214,7 @@ module.exports = {
     setServer,
     getProductArtistSchema,
     getProductArtistByAttribute,
+    deleteArtist,
     artistListHandler,
     artistCreateHandler,
     artistUpdateHandler,
