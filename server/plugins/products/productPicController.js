@@ -436,10 +436,10 @@ function featuredProductPic(productJson) {
 
 async function productPicDeleteHandler(request, h) {
     try {
-        request.payload.updated_at = request.payload.updated_at || new Date();
+        const productPicId = request.query.id;
 
         try {
-            await unlinkFileAndVariants(request.payload.id);
+            await unlinkFileAndVariants(productPicId);
         }
         catch(err) {
             // just dropping the exception beacuse issues deleting the file
@@ -452,18 +452,18 @@ async function productPicDeleteHandler(request, h) {
 
         // Delete from DB:
         const ProductPic = await getProductPicModel().destroy(
-            { id: request.payload.id }
+            { id: productPicId }
         );
 
         global.logger.info('DELETE FILE PRODUCT PIC SHOULD HAVE VARIANTS', {
             meta: {
-                id: request.payload.id,
+                id: productPicId,
                 product_pic: ProductPic ? ProductPic.toJSON() : null
             }
         });
 
         return h.apiSuccess({
-            id: request.payload.id
+            id: productPicId
         });
     }
     catch(err) {

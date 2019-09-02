@@ -159,14 +159,14 @@ const after = function (server) {
             }
         },
         {
-            method: 'POST',
-            path: `${routePrefix}/product/size/delete`,
+            method: 'DELETE',
+            path: `${routePrefix}/product/size`,
             options: {
                 description: 'Deletes a product size',
                 validate: {
-                    payload: {
-                        id: Joi.string().uuid()
-                    }
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
                 },
                 handler: productSizeController.productSizeDeleteHandler
             }
@@ -194,14 +194,14 @@ const after = function (server) {
             }
         },
         {
-            method: 'POST',
-            path: `${routePrefix}/product/pic/delete`,
+            method: 'DELETE',
+            path: `${routePrefix}/product/pic`,
             options: {
                 description: 'Deletes a product picture',
                 validate: {
-                    payload: {
-                        id: Joi.string().uuid()
-                    }
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
                 },
                 handler: productPicController.productPicDeleteHandler
             }

@@ -78,7 +78,7 @@ function getSizeTypeSortOrder(size) {
 async function productSizeDeleteHandler(request, h) {
     try {
         const ProductSize = await getModel().destroy(
-            { id: request.payload.id }
+            { id: request.query.id }
         );
 
         if(!ProductSize) {
