@@ -19,6 +19,9 @@ const defaultClient = SquareConnect.ApiClient.instance;
 const oauth2 = defaultClient.authentications['oauth2'];
 oauth2.accessToken = squareHelper.getAccessToken()
 
+// Set 'basePath' to switch between sandbox env and production env
+defaultClient.basePath = (process.env.NODE_ENV === 'production' ? 'https://connect.squareup.com' : 'https://connect.squareupsandbox.com');
+
 
 function getPaymentModel() {
     return server.app.bookshelf.model('Payment');
