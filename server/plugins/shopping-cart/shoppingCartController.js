@@ -14,6 +14,7 @@ const shoppingCartEmailService = require('./services/ShoppingCartEmailService');
 const productsController = require('../products/productsController');
 const shippingController = require('../shipping/shippingController');
 const shippoOrdersAPI = require('../shipping/shippoAPI/orders');
+const { getLocationId } = require('../payment/square_helpers');
 
 // Paypal
 const paypal = require('@paypal/checkout-server-sdk');
@@ -722,12 +723,12 @@ function sendPurchaseConfirmationEmails(cartToken, payment_id) {
 }
 
 
-async function processTransaction(request, paymentType, transactionData) {
-    global.logger.info('REQUEST: processTransaction', {
+async function processPayment(request, paymentType, paymentData) {
+    global.logger.info('REQUEST: processPayment', {
         meta: {
             cartToken: request.pre.m1.cartToken,
             paymentType,
-            transactionData
+            paymentData
         }
     });
 
@@ -747,7 +748,7 @@ async function processTransaction(request, paymentType, transactionData) {
     const Payment = await savePayment(
         ShoppingCart.get('id'),
         paymentType,
-        transactionData
+        paymentData
     );
 
     // NOTE: Any failures that happen after this do not affect the Square transaction
@@ -772,7 +773,7 @@ async function processTransaction(request, paymentType, transactionData) {
     // This will cause the cart not to be re-used (See ShoppingCart -> getCart())
     updateParams.closed_at = new Date();
 
-    // global.logger.debug('ShoppingCartController.processTransaction updateParams', updateParams);
+    // global.logger.debug('ShoppingCartController.processPayment updateParams', updateParams);
 
     // Create the Order in Shippo so a shipping label can be created in the future.
     // let shippoOrder = await createShippoOrderFromShoppingCart(ShoppingCart);
@@ -782,7 +783,7 @@ async function processTransaction(request, paymentType, transactionData) {
     // Errors do not need to be caught here because any failures should not affect the transaction
     server.events.emit('SHOPPING_CART_CHECKOUT_SUCCESS', ShoppingCart);
 
-    global.logger.info('processTransaction - Updating Shopping Cart', {
+    global.logger.info('processPayment - Updating Shopping Cart', {
         meta: {
             updateParams
         }
@@ -801,7 +802,7 @@ async function processTransaction(request, paymentType, transactionData) {
 
     sendPurchaseConfirmationEmails(cartToken, Payment.get('id'));
 
-    global.logger.info('RESPONSE: processTransaction', {
+    global.logger.info('RESPONSE: processPayment', {
         meta:  Payment ? Payment.toJSON() : null
     });
 
@@ -819,21 +820,28 @@ async function cartCheckoutHandler(request, h) {
     try {
         const cartToken = request.pre.m1.cartToken;
         const ShoppingCart = await getCart(cartToken);
-        const idempotency_key = require('crypto').randomBytes(64).toString('hex');
 
         // throws Error
         // The argument to runPayment is a Square ChargeRequest object:
-        // https://github.com/square/connect-javascript-sdk/blob/master/docs/ChargeRequest.md#squareconnectchargerequest
+        // https://developer.squareup.com/reference/square/payments-api/create-payment/
+        //
+        // NOTES:
+        // - Using the cartToken (uuid) as the idempotency key seems to make sense.  If the square charge request
+        // was successful, but the connection fails before I receive a success confirmation, and thus if I make
+        // the same request again, then the endpoint will know that this is a duplicate request and does not charge
+        // the card a second time.  On the other hand, if I generated a unique idempotency key here every time, then
+        // the endpoint would not know that this is a duplicate request and the customer would be charged again.
+        // More info here about idempotency: https://developer.squareup.com/docs/working-with-apis/idempotency
         const chargeRequest = {
-            idempotency_key: idempotency_key,
+            idempotency_key: cartToken,
             amount_money: {
-                // https://github.com/square/connect-javascript-sdk/blob/master/docs/Money.md
                 amount: ShoppingCart.get('grand_total') * 100,  // square needs this converted to cents
                 currency: 'USD'
             },
-            card_nonce: request.payload.nonce,
+            source_id: request.payload.nonce,
+            autocomplete: true,
+            location_id: getLocationId(),
             billing_address: {
-                // https://github.com/square/connect-javascript-sdk/blob/master/docs/Address.md
                 address_line_1: request.payload.billing_streetAddress,
                 address_line_2: request.payload.billing_extendedAddress || null,
                 locality: request.payload.billing_city,
@@ -844,6 +852,7 @@ async function cartCheckoutHandler(request, h) {
                 last_name: request.payload.billing_lastName,
                 organization: request.payload.billing_company || null
             },
+            buyer_email_address: ShoppingCart.get('shipping_email'),
             shipping_address: {
                 address_line_1: ShoppingCart.get('shipping_streetAddress'),
                 address_line_2: ShoppingCart.get('shipping_extendedAddress') || null,
@@ -854,19 +863,18 @@ async function cartCheckoutHandler(request, h) {
                 first_name: ShoppingCart.get('shipping_firstName'),
                 last_name: ShoppingCart.get('shipping_lastName'),
                 organization: ShoppingCart.get('shipping_company')
-            },
-            buyer_email_address: ShoppingCart.get('shipping_email')
+            }
         };
 
         // global.logger.debug('PaymentController.runPayment: chargeRequest', chargeRequest);
 
-        let transactionObj = await runPayment(chargeRequest);
-        // global.logger.debug('PaymentController.runPayment: SUCCESS', transactionObj);
+        let paymentData = await runPayment(chargeRequest);
+        // global.logger.debug('PaymentController.runPayment: SUCCESS', paymentData);
 
-        const Payment = await processTransaction(
+        const Payment = await processPayment(
             request,
             PAYMENT_TYPE_CREDIT_CARD,
-            transactionObj.transaction
+            paymentData
         );
 
         global.logger.info('RESPONSE: cartCheckoutHandler', {
@@ -1020,7 +1028,7 @@ async function paypalExecutePayment(request, h) {
 
         const paypalTransaction = await getPaypalClient().execute(req);
 
-        const Payment = await processTransaction(
+        const Payment = await processPayment(
             request,
             PAYMENT_TYPE_PAYPAL,
             paypalTransaction

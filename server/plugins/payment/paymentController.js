@@ -3,24 +3,15 @@
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const isObject = require('lodash.isobject');
-const SquareConnect = require('square-connect');
 const HelperService = require('../../helpers.service');
 const cartController = require('../shopping-cart/shoppingCartController')
 const shippoOrdersAPI = require('../shipping/shippoAPI/orders');
 const shippoTransactionsAPI = require('../shipping/shippoAPI/transactions');
-const squareHelper = require('./squareHelper');
+const { getPaymentsApi } = require('./square_helpers');
 let server = null;
 
 const PAYMENT_TYPE_CREDIT_CARD = 1;
 const PAYMENT_TYPE_PAYPAL = 2;
-
-// Configure OAuth2 access token for authorization: oauth2
-const defaultClient = SquareConnect.ApiClient.instance;
-const oauth2 = defaultClient.authentications['oauth2'];
-oauth2.accessToken = squareHelper.getAccessToken()
-
-// Set 'basePath' to switch between sandbox env and production env
-defaultClient.basePath = (process.env.NODE_ENV === 'production' ? 'https://connect.squareup.com' : 'https://connect.squareupsandbox.com');
 
 
 function getPaymentModel() {
@@ -307,7 +298,7 @@ async function deleteShippingLabelHandler(request, h) {
 /**
  * Submits a payment to Square
  *
- * @param opts  Options object to pass to braintree.transaction.sale
+ * @param opts
  * @returns {Promise}
  */
 async function runPayment(opts) {
@@ -321,10 +312,12 @@ async function runPayment(opts) {
             amount: Joi.number().positive().required(),
             currency: Joi.string().trim().required()
         }),
-        card_nonce: Joi.string().trim().required(),
+        source_id: Joi.string().trim().required(),
+        autocomplete: Joi.boolean().optional(),
+        location_id: Joi.string().optional(),
         billing_address: Joi.object().unknown().required(),
-        shipping_address: Joi.object().unknown().required(),
-        buyer_email_address: Joi.string().email()
+        buyer_email_address: Joi.string().email(),
+        shipping_address: Joi.object().unknown().required()
     });
 
     const validateResult = schema.validate(opts);
@@ -332,21 +325,16 @@ async function runPayment(opts) {
         throw new Error(validateResult.error);
     }
 
-    // CHARGE API:
-    // https://github.com/square/connect-javascript-sdk/blob/master/docs/TransactionsApi.md#charge
+    // https://github.com/square/connect-nodejs-sdk/blob/master/docs/PaymentsApi.md#createPayment
     try {
-        const transactions_api = new SquareConnect.TransactionsApi();
+        const apiInstance = getPaymentsApi();
+        const { payment } = await apiInstance.createPayment(opts);
 
-        let data = await transactions_api.charge(
-            squareHelper.getLocationId(),
-            opts
-        );
-
-        global.logger.info('RESPONSE: runPayment', {
-            meta: data
+        global.logger.info('RESPONSE: SquareConnect.PaymentsApi.createPayment', {
+            meta: payment
         });
 
-        return data;
+        return payment;
     }
     catch(error) {
         // trying to build a more coherent error message from the Square API error
