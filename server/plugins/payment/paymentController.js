@@ -322,6 +322,10 @@ async function runPayment(opts) {
 
     const validateResult = schema.validate(opts);
     if (validateResult.error) {
+        global.logger.info('RESPONSE: runPayment ERROR', {
+            meta: validateResult
+        });
+
         throw new Error(validateResult.error);
     }
 
@@ -330,22 +334,23 @@ async function runPayment(opts) {
         const apiInstance = getPaymentsApi();
         const { payment } = await apiInstance.createPayment(opts);
 
-        global.logger.info('RESPONSE: SquareConnect.PaymentsApi.createPayment', {
+        global.logger.info('RESPONSE: runPayment', {
             meta: payment
         });
 
         return payment;
     }
     catch(error) {
+        global.logger.info('RESPONSE: runPayment ERROR', {
+            meta: error
+        });
+
         // trying to build a more coherent error message from the Square API error
         const errorJson = JSON.parse(error.response.text);
 
+
         if(isObject(errorJson) && errorJson.errors) {
-            let errors = [];
-            errorJson.errors.forEach((obj) => {
-                errors.push(obj.detail || 'Invalid request');
-            })
-            throw new Error(errors.join(', '))
+            throw errorJson.errors;
         }
 
         throw new Error('Invalid request');

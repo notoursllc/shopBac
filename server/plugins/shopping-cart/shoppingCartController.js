@@ -817,23 +817,46 @@ async function cartCheckoutHandler(request, h) {
         meta: request.payload
     });
 
-    try {
-        const cartToken = request.pre.m1.cartToken;
-        const ShoppingCart = await getCart(cartToken);
+    let cartToken;
+    let ShoppingCart;
+    let paymentData;
 
+    try {
+        cartToken = request.pre.m1.cartToken;
+        ShoppingCart = await getCart(cartToken);
+    }
+    catch(err) {
+        let msg = err instanceof Error ? err.message : err;
+
+        global.logger.error(err);
+        global.bugsnag(msg);
+        throw Boom.badData(msg);
+    }
+
+
+    try {
         // throws Error
         // The argument to runPayment is a Square ChargeRequest object:
         // https://developer.squareup.com/reference/square/payments-api/create-payment/
         //
         // NOTES:
-        // - Using the cartToken (uuid) as the idempotency key seems to make sense.  If the square charge request
-        // was successful, but the connection fails before I receive a success confirmation, and thus if I make
-        // the same request again, then the endpoint will know that this is a duplicate request and does not charge
-        // the card a second time.  On the other hand, if I generated a unique idempotency key here every time, then
-        // the endpoint would not know that this is a duplicate request and the customer would be charged again.
+        // I tried usign the cartToken as the idempotency key, however this won't work.
+        // Scenario: Use attempts to checkout and provides a bad value, such as an incorrect CVV.
+        // Square returns an error, as expected.  The user corrects the problem and re-submits the checkout
+        // form.  Even though the input is valid, the same CVV error is still returned because the idempotency key
+        // has not changed (because the key is the cartToken).  This results in the user never being able to
+        // recover from the original error.
+        //
+        // The purpose of the idempotency key is for scenarios like this:
+        // A Square charge request was successful (thus customer's card was charged), but the connection fails before
+        // I receive a success confirmation.  Without the idempotency key, if the back-end re-submits the request to Square, then
+        // Square has no way of knowing that this is a 're-attempt' and will change the customer's card a second time!
+        // Thus the idempotency key in the request tells Square that this charge attempt already occurred, and the original
+        // response will be returned.
+        //
         // More info here about idempotency: https://developer.squareup.com/docs/working-with-apis/idempotency
         const chargeRequest = {
-            idempotency_key: cartToken,
+            idempotency_key: uuidV4(),
             amount_money: {
                 amount: ShoppingCart.get('grand_total') * 100,  // square needs this converted to cents
                 currency: 'USD'
@@ -867,10 +890,19 @@ async function cartCheckoutHandler(request, h) {
         };
 
         // global.logger.debug('PaymentController.runPayment: chargeRequest', chargeRequest);
-
-        let paymentData = await runPayment(chargeRequest);
+        paymentData = await runPayment(chargeRequest);
         // global.logger.debug('PaymentController.runPayment: SUCCESS', paymentData);
+    }
+    catch(errors) {
+        global.logger.error('RESPONSE ERROR: cartCheckoutHandler', {
+            meta: errors
+        });
 
+        throw Boom.badData('Authorization error', errors);
+    }
+
+
+    try {
         const Payment = await processPayment(
             request,
             PAYMENT_TYPE_CREDIT_CARD,
@@ -883,7 +915,7 @@ async function cartCheckoutHandler(request, h) {
 
         return onPaymentSuccess(h, Payment);
     }
-    catch(err) {
+    catch(errors) {
         let msg = err instanceof Error ? err.message : err;
 
         global.logger.error(err);

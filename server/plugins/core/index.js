@@ -149,6 +149,25 @@ exports.plugin = {
         });
 
 
+        // Updates the response output with a 'data' property if a data
+        // property also exists in the Boom error
+        server.ext('onPreResponse', (request, h) => {
+            const response = request.response;
+
+            if (!response.isBoom || !response.hasOwnProperty('output')) {
+                return h.continue;
+            }
+
+            const is4xx = response.output.statusCode >= 400 && response.output.statusCode < 500;
+
+            if (is4xx && response.data) {
+                response.output.payload.data = response.data;
+            }
+
+            return h.continue;
+        });
+
+
         server.dependency(['vision'], after);
     }
 };
