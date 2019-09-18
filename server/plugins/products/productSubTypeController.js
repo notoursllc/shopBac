@@ -8,7 +8,7 @@ let server = null;
 
 
 function getModel() {
-    return server.app.bookshelf.model('ProductType');
+    return server.app.bookshelf.model('ProductSubType');
 }
 
 
@@ -17,7 +17,7 @@ function setServer(s) {
 }
 
 
-function getProductTypeSchema() {
+function getProductSubTypeSchema() {
     return {
         name: Joi.string().max(100).required(),
         value: Joi.number().integer().min(0).required(),
@@ -35,7 +35,7 @@ function getProductTypeSchema() {
  * @param attrValue
  * @returns {Promise}
  */
-async function getProductTypeByAttribute(attrName, attrValue) {
+async function getProductSubTypeByAttribute(attrName, attrValue) {
     let forgeOpts = null;
 
     if(attrName) {
@@ -52,7 +52,7 @@ async function getProductTypeByAttribute(attrName, attrValue) {
  * route handlers
  /**************************************/
 
- async function productTypeListHandler(request, h) {
+ async function productSubTypeListHandler(request, h) {
     try {
         const ProductTypes = await getModel().query((qb) => {
             qb.where('is_available', '=', request.query.is_available === false ? false : true);
@@ -70,23 +70,7 @@ async function getProductTypeByAttribute(attrName, attrValue) {
 }
 
 
-/**
- * Route handler for getting a ProductArtist by ID
- *
- * @param {*} request
- * @param {*} h
- */
-async function getProductTypeByIdHandler(request, h) {
-    try {
-        const ProductType = await getProductTypeByAttribute('id', request.query.id)
-        return h.apiSuccess(ProductType);
-    }
-    catch(err) {
-        global.logger.error(err);
-        global.bugsnag(err);
-        throw Boom.badRequest(err);
-    }
-}
+
 
 
 /**
@@ -95,12 +79,12 @@ async function getProductTypeByIdHandler(request, h) {
  * @param {*} request
  * @param {*} h
  */
-async function productTypeCreateHandler(request, h) {
+async function productSubTypeCreateHandler(request, h) {
     try {
         const ProductType = await getModel().create(request.payload);
 
         if(!ProductType) {
-            throw Boom.badRequest('Unable to create a a new product type.');
+            throw Boom.badRequest('Unable to create a a new product sub-type.');
         }
 
         return h.apiSuccess(
@@ -121,7 +105,7 @@ async function productTypeCreateHandler(request, h) {
  * @param {*} request
  * @param {*} h
  */
-async function productTypeUpdateHandler(request, h) {
+async function productSubTypeUpdateHandler(request, h) {
     try {
         request.payload.updated_at = request.payload.updated_at || new Date();
 
@@ -131,7 +115,7 @@ async function productTypeUpdateHandler(request, h) {
         );
 
         if(!ProductType) {
-            throw Boom.badRequest('Unable to find product type.');
+            throw Boom.badRequest('Unable to find product sub-type.');
         }
 
         return h.apiSuccess(
@@ -146,14 +130,14 @@ async function productTypeUpdateHandler(request, h) {
 }
 
 
-async function productTypeDeleteHandler(request, h) {
+async function productSubTypeDeleteHandler(request, h) {
     try {
         const ProductType = await getModel().destroy({
             id
         });
 
         if(!ProductType) {
-            throw Boom.badRequest('Unable to find product type.');
+            throw Boom.badRequest('Unable to find product sub-type.');
         }
 
         return h.apiSuccess(
@@ -168,42 +152,12 @@ async function productTypeDeleteHandler(request, h) {
 }
 
 
-// async function artistGetProductsHandler(request, h) {
-//     try {
-//         let parsed = queryString.parse(request.url.search, {arrayFormat: 'bracket'});
-//         parsed.where = [
-//             'product_artist_id',
-//             '=',
-//             request.query.id
-//         ];
-
-//         request.url.search = '?' + queryString.stringify(parsed, {sort: false, arrayFormat: 'bracket'})
-
-//         const Products = await helperService.fetchPage(
-//             request,
-//             server.app.bookshelf.model('Product')
-//         );
-
-//         return h.apiSuccess(
-//             Products,
-//             Products.pagination
-//         );
-//     }
-//     catch(err) {
-//         global.logger.error(err);
-//         global.bugsnag(err);
-//         throw Boom.badRequest(err);
-//     }
-// }
-
-
 module.exports = {
     setServer,
-    getProductTypeSchema,
-    getProductTypeByAttribute,
-    productTypeListHandler,
-    getProductTypeByIdHandler,
-    productTypeCreateHandler,
-    productTypeUpdateHandler,
-    productTypeDeleteHandler,
+    getProductSubTypeSchema,
+    getProductSubTypeByAttribute,
+    productSubTypeListHandler,
+    productSubTypeCreateHandler,
+    productSubTypeUpdateHandler,
+    productSubTypeDeleteHandler,
 }

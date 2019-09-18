@@ -5,6 +5,7 @@ const productPicController = require('./productPicController');
 const productSizeController = require('./productSizeController');
 const productArtistController = require('./productArtistController');
 const productTypeController = require('./productTypeController');
+const productSubTypeController = require('./productSubTypeController');
 
 const routePrefix = '/api/v1';
 
@@ -306,6 +307,14 @@ const after = function (server) {
                 handler: productTypeController.productTypeListHandler
             }
         },
+        {
+            method: 'GET',
+            path: `${routePrefix}/product/subtypes`,
+            options: {
+                description: 'Gets a list of product types',
+                handler: productSubTypeController.productSubTypeListHandler
+            }
+        },
 
 
         {
@@ -348,6 +357,11 @@ const after = function (server) {
     );
 
     server.app.bookshelf.model(
+        'ProductSubType',
+        require('./models/ProductSubType')(baseModel, server.app.bookshelf, server)
+    );
+
+    server.app.bookshelf.model(
         'ProductPic',
         require('./models/ProductPic')(baseModel, server.app.bookshelf, server)
     );
@@ -373,6 +387,7 @@ exports.plugin = {
         productPicController.setServer(server);
         productArtistController.setServer(server);
         productTypeController.setServer(server);
+        productSubTypeController.setServer(server);
 
         server.dependency(['BookshelfOrm', 'Core'], after);
     }

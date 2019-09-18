@@ -19,6 +19,7 @@ exports.seed = (knex) => {
                         id: faker.random.uuid(),
                         name: 'PRODUCT_TYPE_APPAREL',
                         value: 0x01,
+                        slug: 'apparel',
                         is_available: true,
                         created_at: d,
                         updated_at: d

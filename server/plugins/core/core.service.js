@@ -5,6 +5,7 @@ const DB_TABLES = {
     payments: 'payments',
     product_artists: 'product_artists',
     product_types: 'product_types',
+    product_subtypes: 'product_subtypes',
     product_sizes: 'product_sizes',
     product_pics: 'product_pics',
     product_pic_variants: 'product_pic_variants',

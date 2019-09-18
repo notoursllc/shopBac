@@ -52,10 +52,12 @@ exports.seed = (knex) => {
                 global.productSeedUuids.push(uuid);
 
                 // For now just seeding with tops and socks:
-                let subType = i % 2 ? globalTypes.product.subtypes.PRODUCT_SUBTYPE_TOPS : globalTypes.product.subtypes.PRODUCT_SUBTYPE_SOCKS;
+                let productSubtypeTops = 0x02;
+                let productSubtypeSocks = 0x04;
+                let subType = i % 2 ?productSubtypeTops : productSubtypeSocks;
 
                 let materialType = i % 2 ? globalTypes.product.material_types.MATERIAL_TYPE_COTTON : globalTypes.product.material_types.MATERIAL_TYPE_TRI_BLEND;
-                let shippingPackageType = (subType === globalTypes.product.subtypes.TOPS ? 0x01 : 0x04);
+                let shippingPackageType = (subType === productSubtypeTops ? 0x01 : 0x04);
 
                 promises.push(
                     knex(CoreService.DB_TABLES.products)
