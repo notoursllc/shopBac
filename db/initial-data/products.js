@@ -75,7 +75,7 @@ exports.seed = (knex) => {
                             tax_code: 20010,
                             video_url: 'https://www.youtube.com/watch?v=JUaY0AOLopU',
                             fit: getRandomFitOption(),
-                            type: globalTypes.product.types.PRODUCT_TYPE_APPAREL,
+                            type: 1, // PRODUCT_TYPE_APPAREL
                             sub_type: subType,
                             material_type: materialType,
                             shipping_package_type: shippingPackageType,

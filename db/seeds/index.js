@@ -1,6 +1,7 @@
 let product_artists = require('../initial-data/product_artists');
 let product_pics = require('../initial-data/product_pics');
 let product_sizes = require('../initial-data/product_sizes');
+let product_types = require('../initial-data/product_types');
 let products = require('../initial-data/products');
 let carts = require('../initial-data/carts');
 let package_types = require('../initial-data/package_types');
@@ -16,22 +17,17 @@ let package_types = require('../initial-data/package_types');
 exports.seed = (knex, Promise) => {
 
     return product_artists.seed(knex, Promise)
-
-        // Products
         .then(() => {
             return products.seed(knex, Promise);
         })
-
-        // Carts
         .then(() => {
             return carts.seed(knex, Promise);
         })
-
-        // ...the rest, which do not depend on any specific order
         .then(() => {
             return Promise.all([
                 product_pics.seed(knex, Promise),
                 product_sizes.seed(knex, Promise),
+                product_types.seed(knex, Promise),
                 package_types.seed(knex, Promise)
             ])
         });
