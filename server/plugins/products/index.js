@@ -156,7 +156,9 @@ const after = function (server) {
             }
         },
 
-        // Product size
+        /******************************
+         * Product Size
+         ******************************/
         {
             method: 'POST',
             path: `${routePrefix}/product/size/create`,
@@ -187,7 +189,9 @@ const after = function (server) {
             }
         },
 
-        // Product pictures
+        /******************************
+         * Product Pictures
+         ******************************/
         {
             method: 'POST',
             path: `${routePrefix}/product/pic/upsert`,
@@ -222,7 +226,9 @@ const after = function (server) {
             }
         },
 
-        // Artists
+        /******************************
+         * Product Artists
+         ******************************/
         {
             method: 'GET',
             path: `${routePrefix}/artists`,
@@ -298,7 +304,9 @@ const after = function (server) {
             }
         },
 
-        // Product Types
+        /******************************
+         * Product Types
+         ******************************/
         {
             method: 'GET',
             path: `${routePrefix}/product/types`,
@@ -309,10 +317,116 @@ const after = function (server) {
         },
         {
             method: 'GET',
+            path: `${routePrefix}/product/type`,
+            options: {
+                description: 'Gets an product type by ID',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()  // artist ID
+                    })
+                },
+                handler: productTypeController.getProductTypeByIdHandler
+            }
+        },
+        {
+            method: 'POST',
+            path: `${routePrefix}/product/type`,
+            options: {
+                description: 'Adds a new product type',
+                validate: {
+                    payload: productTypeController.getProductTypeSchema()
+                },
+                handler: productTypeController.productTypeCreateHandler
+            }
+        },
+        {
+            method: 'PUT',
+            path: `${routePrefix}/product/type`,
+            options: {
+                description: 'Updates product type',
+                validate: {
+                    payload: Joi.object({
+                        id: Joi.string().uuid().required(),
+                        ...productTypeController.getProductTypeSchema()
+                    })
+                },
+                handler: productTypeController.productTypeUpdateHandler
+            }
+        },
+        {
+            method: 'DELETE',
+            path: `${routePrefix}/product/type`,
+            options: {
+                description: 'Deletes a product type',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: productTypeController.productTypeDeleteHandler
+            }
+        },
+
+        /******************************
+         * Product Sub Types
+         ******************************/
+        {
+            method: 'GET',
             path: `${routePrefix}/product/subtypes`,
             options: {
                 description: 'Gets a list of product types',
-                handler: productSubTypeController.productSubTypeListHandler
+                handler: productSubTypeController.getTypeListHandler
+            }
+        },
+        {
+            method: 'GET',
+            path: `${routePrefix}/product/subtype`,
+            options: {
+                description: 'Gets an product type by ID',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()  // artist ID
+                    })
+                },
+                handler: productSubTypeController.getTypeByIdHandler
+            }
+        },
+        {
+            method: 'POST',
+            path: `${routePrefix}/product/subtype`,
+            options: {
+                description: 'Adds a new product type',
+                validate: {
+                    payload: productTypeController.getProductTypeSchema()
+                },
+                handler: productSubTypeController.typeCreateHandler
+            }
+        },
+        {
+            method: 'PUT',
+            path: `${routePrefix}/product/subtype`,
+            options: {
+                description: 'Updates product type',
+                validate: {
+                    payload: Joi.object({
+                        id: Joi.string().uuid().required(),
+                        ...productTypeController.getProductTypeSchema()
+                    })
+                },
+                handler: productSubTypeController.typeUpdateHandler
+            }
+        },
+        {
+            method: 'DELETE',
+            path: `${routePrefix}/product/subtype`,
+            options: {
+                description: 'Deletes a product type',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: productSubTypeController.typeDeleteHandler
             }
         },
 

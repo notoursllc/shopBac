@@ -1,5 +1,3 @@
-'use strict';
-
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const helperService = require('../../helpers.service');
@@ -22,6 +20,7 @@ function getProductTypeSchema() {
         name: Joi.string().max(100).required(),
         value: Joi.number().integer().min(0).required(),
         slug: Joi.string().required(),
+        is_available: Joi.boolean().default(true),
         created_at: Joi.date(),
         updated_at: Joi.date()
     };
@@ -55,7 +54,9 @@ async function getProductTypeByAttribute(attrName, attrValue) {
  async function productTypeListHandler(request, h) {
     try {
         const ProductTypes = await getModel().query((qb) => {
-            qb.where('is_available', '=', request.query.is_available === false ? false : true);
+            if(helperService.isBoolean(request.query.is_available)) {
+                qb.where('is_available', '=', request.query.is_available);
+            }
         }).fetchAll();
 
         return h.apiSuccess(
@@ -100,7 +101,7 @@ async function productTypeCreateHandler(request, h) {
         const ProductType = await getModel().create(request.payload);
 
         if(!ProductType) {
-            throw Boom.badRequest('Unable to create a a new product type.');
+            throw Boom.badRequest('Unable to create a new product type.');
         }
 
         return h.apiSuccess(
@@ -149,7 +150,7 @@ async function productTypeUpdateHandler(request, h) {
 async function productTypeDeleteHandler(request, h) {
     try {
         const ProductType = await getModel().destroy({
-            id
+            id: request.query.id
         });
 
         if(!ProductType) {
@@ -166,35 +167,6 @@ async function productTypeDeleteHandler(request, h) {
         throw Boom.badRequest(err);
     }
 }
-
-
-// async function artistGetProductsHandler(request, h) {
-//     try {
-//         let parsed = queryString.parse(request.url.search, {arrayFormat: 'bracket'});
-//         parsed.where = [
-//             'product_artist_id',
-//             '=',
-//             request.query.id
-//         ];
-
-//         request.url.search = '?' + queryString.stringify(parsed, {sort: false, arrayFormat: 'bracket'})
-
-//         const Products = await helperService.fetchPage(
-//             request,
-//             server.app.bookshelf.model('Product')
-//         );
-
-//         return h.apiSuccess(
-//             Products,
-//             Products.pagination
-//         );
-//     }
-//     catch(err) {
-//         global.logger.error(err);
-//         global.bugsnag(err);
-//         throw Boom.badRequest(err);
-//     }
-// }
 
 
 module.exports = {

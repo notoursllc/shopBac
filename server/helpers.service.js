@@ -228,6 +228,14 @@ function comparePassword(password, userPassword) {
 }
 
 
+
+function isBoolean(val) {
+    // NOTE: I read that typeof and string comparisons are slow
+    // (typeof val === 'boolean')
+    return val === true || val === false;
+}
+
+
 module.exports.getSiteUrl = getSiteUrl;
 module.exports.getBrandName = getBrandName;
 module.exports.getDomainName = getDomainName;
@@ -240,3 +248,4 @@ module.exports.stripTags = stripTags;
 module.exports.stripQuotes = stripQuotes;
 module.exports.cryptPassword = cryptPassword;
 module.exports.comparePassword = comparePassword;
+module.exports.isBoolean = isBoolean;

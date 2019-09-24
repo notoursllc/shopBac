@@ -1,5 +1,3 @@
-'use strict';
-
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const helperService = require('../../helpers.service');
@@ -22,6 +20,7 @@ function getProductSubTypeSchema() {
         name: Joi.string().max(100).required(),
         value: Joi.number().integer().min(0).required(),
         slug: Joi.string().required(),
+        is_available: Joi.boolean().default(true),
         created_at: Joi.date(),
         updated_at: Joi.date()
     };
@@ -35,7 +34,7 @@ function getProductSubTypeSchema() {
  * @param attrValue
  * @returns {Promise}
  */
-async function getProductSubTypeByAttribute(attrName, attrValue) {
+async function getTypeByAttribute(attrName, attrValue) {
     let forgeOpts = null;
 
     if(attrName) {
@@ -52,14 +51,16 @@ async function getProductSubTypeByAttribute(attrName, attrValue) {
  * route handlers
  /**************************************/
 
- async function productSubTypeListHandler(request, h) {
+ async function getTypeListHandler(request, h) {
     try {
-        const ProductTypes = await getModel().query((qb) => {
-            qb.where('is_available', '=', request.query.is_available === false ? false : true);
+        const ProductSubTypes = await getModel().query((qb) => {
+            if(helperService.isBoolean(request.query.is_available)) {
+                qb.where('is_available', '=', request.query.is_available);
+            }
         }).fetchAll();
 
         return h.apiSuccess(
-            ProductTypes.toJSON()
+            ProductSubTypes.toJSON()
         );
     }
     catch(err) {
@@ -70,7 +71,23 @@ async function getProductSubTypeByAttribute(attrName, attrValue) {
 }
 
 
-
+/**
+ * Route handler for getting a ProductArtist by ID
+ *
+ * @param {*} request
+ * @param {*} h
+ */
+async function getTypeByIdHandler(request, h) {
+    try {
+        const ProductSubType = await getTypeByAttribute('id', request.query.id)
+        return h.apiSuccess(ProductSubType);
+    }
+    catch(err) {
+        global.logger.error(err);
+        global.bugsnag(err);
+        throw Boom.badRequest(err);
+    }
+}
 
 
 /**
@@ -79,16 +96,16 @@ async function getProductSubTypeByAttribute(attrName, attrValue) {
  * @param {*} request
  * @param {*} h
  */
-async function productSubTypeCreateHandler(request, h) {
+async function typeCreateHandler(request, h) {
     try {
-        const ProductType = await getModel().create(request.payload);
+        const ProductSubType = await getModel().create(request.payload);
 
-        if(!ProductType) {
-            throw Boom.badRequest('Unable to create a a new product sub-type.');
+        if(!ProductSubType) {
+            throw Boom.badRequest('Unable to create a new product sub-type.');
         }
 
         return h.apiSuccess(
-            ProductType.toJSON()
+            ProductSubType.toJSON()
         );
     }
     catch(err) {
@@ -105,21 +122,21 @@ async function productSubTypeCreateHandler(request, h) {
  * @param {*} request
  * @param {*} h
  */
-async function productSubTypeUpdateHandler(request, h) {
+async function typeUpdateHandler(request, h) {
     try {
         request.payload.updated_at = request.payload.updated_at || new Date();
 
-        const ProductType = await getModel().update(
+        const ProductSubType = await getModel().update(
             request.payload,
             { id: request.payload.id }
         );
 
-        if(!ProductType) {
+        if(!ProductSubType) {
             throw Boom.badRequest('Unable to find product sub-type.');
         }
 
         return h.apiSuccess(
-            ProductType.toJSON()
+            ProductSubType.toJSON()
         );
     }
     catch(err) {
@@ -130,18 +147,18 @@ async function productSubTypeUpdateHandler(request, h) {
 }
 
 
-async function productSubTypeDeleteHandler(request, h) {
+async function typeDeleteHandler(request, h) {
     try {
-        const ProductType = await getModel().destroy({
-            id
+        const ProductSubType = await getModel().destroy({
+            id: request.query.id
         });
 
-        if(!ProductType) {
+        if(!ProductSubType) {
             throw Boom.badRequest('Unable to find product sub-type.');
         }
 
         return h.apiSuccess(
-            ProductType.toJSON()
+            ProductSubType.toJSON()
         );
     }
     catch(err) {
@@ -155,9 +172,10 @@ async function productSubTypeDeleteHandler(request, h) {
 module.exports = {
     setServer,
     getProductSubTypeSchema,
-    getProductSubTypeByAttribute,
-    productSubTypeListHandler,
-    productSubTypeCreateHandler,
-    productSubTypeUpdateHandler,
-    productSubTypeDeleteHandler,
+    getTypeByAttribute,
+    getTypeListHandler,
+    getTypeByIdHandler,
+    typeCreateHandler,
+    typeUpdateHandler,
+    typeDeleteHandler
 }
