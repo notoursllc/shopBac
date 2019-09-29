@@ -9,6 +9,8 @@ const DB_TABLES = {
     product_sizes: 'product_sizes',
     product_pics: 'product_pics',
     product_pic_variants: 'product_pic_variants',
+    product_options: 'product_options',
+    product_variations: 'product_variations',
     products: 'products'
 };
 

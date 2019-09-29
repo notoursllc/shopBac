@@ -3,10 +3,11 @@
 const Hoek = require('@hapi/hoek');
 const testHelpers = require('../../testHelpers');
 const serverSetup = require('./_serverSetup');
-const productsController = require('../../../../server/plugins/products/productsController');
 const productPicController = require('../../../../server/plugins/products/productPicController');
 const productSizeController = require('../../../../server/plugins/products/productSizeController');
 
+const ProductCtrl = require('../../../../server/plugins/products/ProductCtrl');
+const ProductController = new ProductCtrl();
 
 async function getServer() {
     return await testHelpers.getServer(
@@ -17,10 +18,10 @@ async function getServer() {
 
 async function initProductsController() {
     const server = await getServer();
-    productsController.setServer(server);
+    ProductController.setServer(server);
 
     return {
-        controller: productsController,
+        controller: ProductController,
         server
     };
 }

@@ -1,48 +1,27 @@
 const Joi = require('@hapi/joi');
 const path = require('path');
-const productsController = require('./productsController');
-const productPicController = require('./productPicController');
+
+//TODO: this to be replaced by ProductVariantController right?
 const productSizeController = require('./productSizeController');
-const productArtistController = require('./productArtistController');
-const productTypeController = require('./productTypeController');
-const productSubTypeController = require('./productSubTypeController');
 
-const routePrefix = '/api/v1';
-
-const schema = {
-    title: Joi.string().max(100).allow(null),
-    description_short: Joi.string().max(500).allow(null),
-    description_long: Joi.string().max(750).allow(null),
-    sku: Joi.string().max(50).allow(null),
-    seo_uri: Joi.string().max(50).allow(null),
-    cost: Joi.number().precision(2).min(0).max(99999999.99).default(null),
-    weight_oz: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
-    base_price: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
-    sale_price: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
-    is_on_sale: Joi.boolean().default(false),
-    is_available: Joi.boolean().default(false),
-    tax_code: Joi.number().allow(null),
-    video_url: Joi.string().max(500).allow(null),
-    fit: Joi.number().integer().positive().allow(null),
-    type: Joi.number().integer().positive().default(1),
-    sub_type: Joi.number().integer().positive().allow(null),
-    shipping_package_type: Joi.number().integer().positive().allow(null),
-    hide_if_out_of_stock: Joi.boolean().default(true),
-    product_artist_id: Joi.string().uuid().allow(null),
-    created_at: Joi.date().optional(),
-    updated_at: Joi.date().optional(),
-    material_type: Joi.number().integer().positive().allow(null)
-};
-
-const productPicSchema = {
-    id: Joi.string().uuid(),
-    sort_order: Joi.number().integer().min(0),
-    is_visible: Joi.boolean(),
-    product_id: Joi.string().uuid()
-};
+const ProductCtrl = require('./ProductCtrl');
+const ProductPicCtrl = require('./ProductPicCtrl');
+const ProductArtistCtrl = require('./ProductArtistCtrl');
+const ProductTypeCtrl = require('./ProductTypeCtrl');
+const ProductSubTypeCtrl = require('./ProductSubTypeCtrl');
+const ProductVariationCtrl = require('./ProductVariationCtrl');
 
 
 const after = function (server) {
+    const routePrefix = '/api/v1';
+
+    const ProductController = new ProductCtrl(server, 'Product');
+    const ProductPicController = new ProductPicCtrl(server, 'ProductPic');
+    const ProductArtistController = new ProductArtistCtrl(server, 'ProductArtist');
+    const ProductTypeController = new ProductTypeCtrl(server, 'ProductType');
+    const ProductSubTypeController = new ProductSubTypeCtrl(server, 'ProductSubType');
+    const ProductVariationController = new ProductVariationCtrl(server, 'ProductVariation');
+
 
     // Yes this was aleady set in the Core plugin, but apparently
     // it must be set in every plugin that needs a view engine:
@@ -70,7 +49,24 @@ const after = function (server) {
                         viewAllRelated: Joi.boolean().optional()
                     }
                 },
-                handler: productsController.getProductByIdHandler
+                handler: (request, h) => {
+                    return ProductController.getProductByIdHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'GET',
+            path: `${routePrefix}/product/seo`,
+            options: {
+                description: 'Finds a product by it\'s seo uri',
+                validate: {
+                    query: {
+                        id: Joi.string().max(100)
+                    }
+                },
+                handler: (request, h) => {
+                    return ProductController.productSeoHandler(request, h);
+                }
             }
         },
         {
@@ -83,7 +79,9 @@ const after = function (server) {
                         id: Joi.string().uuid().required()
                     })
                 },
-                handler: productsController.productDeleteHandler
+                handler: (request, h) => {
+                    return ProductController.productDeleteHandler(request, h);
+                }
             }
         },
         {
@@ -97,19 +95,8 @@ const after = function (server) {
                     }
                 }
             },
-            handler: productsController.productShareHandler
-        },
-        {
-            method: 'GET',
-            path: `${routePrefix}/product/seo`,
-            options: {
-                description: 'Finds a product by it\'s seo uri',
-                validate: {
-                    query: {
-                        id: Joi.string().max(100)
-                    }
-                },
-                handler: productsController.productSeoHandler
+            handler: (request, h) => {
+                return ProductController.productShareHandler(request, h);
             }
         },
         {
@@ -117,7 +104,9 @@ const after = function (server) {
             path: `${routePrefix}/product/info`,
             options: {
                 description: 'Returns general info about products',
-                handler: productsController.productInfoHandler
+                handler: (request, h) => {
+                    return ProductController.productInfoHandler(request, h);
+                }
             }
         },
         {
@@ -125,34 +114,40 @@ const after = function (server) {
             path: `${routePrefix}/products`,
             options: {
                 description: 'Gets a list of products',
-                handler: productsController.getProductsHandler
+                handler: (request, h) => {
+                    return ProductController.getPageHandler(request, ProductController.getWithRelated(), h);
+                }
             }
         },
         {
             method: 'POST',
-            path: `${routePrefix}/product/create`,
+            path: `${routePrefix}/product`,
             options: {
-                description: 'Updates a product',
+                description: 'Creates a product',
                 validate: {
                     payload: Joi.object({
-                        ...schema
+                        ...ProductController.getSchema()
                     })
                 },
-                handler: productsController.productCreateHandler
+                handler: (request, h) => {
+                    return ProductController.createHandler(request, h);
+                }
             }
         },
         {
-            method: 'POST',
-            path: `${routePrefix}/product/update`,
+            method: 'PUT',
+            path: `${routePrefix}/product`,
             options: {
                 description: 'Updates a product',
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...schema
+                        ...ProductController.getSchema()
                     })
                 },
-                handler: productsController.productUpdateHandler
+                handler: (request, h) => {
+                    return ProductController.updateHandler(request, h);
+                }
             }
         },
 
@@ -194,7 +189,7 @@ const after = function (server) {
          ******************************/
         {
             method: 'POST',
-            path: `${routePrefix}/product/pic/upsert`,
+            path: `${routePrefix}/product/pic`,
             options: {
                 description: 'Adds a new picture to the product',
                 payload: {
@@ -206,10 +201,12 @@ const after = function (server) {
                 validate: {
                     payload: {
                         file: Joi.object(),
-                        ...productPicSchema
+                        ...ProductPicController.getSchema()
                     }
                 },
-                handler: productPicController.productPicUpsertHandler
+                handler: (request, h) => {
+                    return ProductPicController.upsertHandler(request, h);
+                }
             }
         },
         {
@@ -222,7 +219,9 @@ const after = function (server) {
                         id: Joi.string().uuid().required()
                     })
                 },
-                handler: productPicController.productPicDeleteHandler
+                handler: (request, h) => {
+                    return ProductPicController.deleteHandler(request, h);
+                }
             }
         },
 
@@ -234,7 +233,9 @@ const after = function (server) {
             path: `${routePrefix}/artists`,
             options: {
                 description: 'Gets a list of artists',
-                handler: productArtistController.artistListHandler
+                handler: (request, h) => {
+                    return ProductArtistController.getPageHandler(request, null, h);
+                }
             }
         },
         {
@@ -247,34 +248,40 @@ const after = function (server) {
                         id: Joi.string().uuid().required()  // artist ID
                     })
                 },
-                handler: productArtistController.getProductArtistByIdHandler
+                handler: (request, h) => {
+                    return ProductArtistController.getByIdHandler(request.query.id, null, h);
+                }
             }
         },
         {
             method: 'POST',
-            path: `${routePrefix}/artist/create`,
+            path: `${routePrefix}/artist`,
             options: {
                 description: 'Creates a product artist',
                 validate: {
                     payload: Joi.object({
-                        ...productArtistController.getProductArtistSchema()
+                        ...ProductArtistController.getSchema()
                     })
                 },
-                handler: productArtistController.artistCreateHandler
+                handler: (request, h) => {
+                    return ProductArtistController.createHandler(request, h);
+                }
             }
         },
         {
-            method: 'POST',
-            path: `${routePrefix}/artist/update`,
+            method: 'PUT',
+            path: `${routePrefix}/artist`,
             options: {
                 description: 'Updates a product artist',
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...productArtistController.getProductArtistSchema()
+                        ...ProductArtistController.getSchema()
                     })
                 },
-                handler: productArtistController.artistUpdateHandler
+                handler: (request, h) => {
+                    return ProductArtistController.updateHandler(request, h);
+                }
             }
         },
         {
@@ -284,10 +291,12 @@ const after = function (server) {
                 description: 'Deletes an artist',
                 validate: {
                     query: Joi.object({
-                        id: Joi.string().uuid().required()  // payment ID
+                        id: Joi.string().uuid().required()
                     })
                 },
-                handler: productArtistController.artistDeleteHandler
+                handler: (request, h) => {
+                    return ProductArtistController.deleteHandler(request.query.id, h);
+                }
             }
         },
         {
@@ -300,7 +309,9 @@ const after = function (server) {
                         id: Joi.string().max(100)
                     }
                 },
-                handler: productArtistController.artistGetProductsHandler
+                handler: (request, h) => {
+                    return ProductController.getProductsForArtistHandler(request.query.id, h);
+                }
             }
         },
 
@@ -312,7 +323,9 @@ const after = function (server) {
             path: `${routePrefix}/product/types`,
             options: {
                 description: 'Gets a list of product types',
-                handler: productTypeController.productTypeListHandler
+                handler: (request, h) => {
+                    return ProductTypeController.getAllHandler(request, h);
+                }
             }
         },
         {
@@ -322,10 +335,12 @@ const after = function (server) {
                 description: 'Gets an product type by ID',
                 validate: {
                     query: Joi.object({
-                        id: Joi.string().uuid().required()  // artist ID
+                        id: Joi.string().uuid().required()
                     })
                 },
-                handler: productTypeController.getProductTypeByIdHandler
+                handler: (request, h) => {
+                    return ProductTypeController.getByIdHandler(request.query.id, null, h);
+                }
             }
         },
         {
@@ -334,9 +349,11 @@ const after = function (server) {
             options: {
                 description: 'Adds a new product type',
                 validate: {
-                    payload: productTypeController.getProductTypeSchema()
+                    payload: ProductTypeController.getSchema()
                 },
-                handler: productTypeController.productTypeCreateHandler
+                handler: (request, h) => {
+                    return ProductTypeController.createHandler(request, h);
+                }
             }
         },
         {
@@ -347,10 +364,12 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...productTypeController.getProductTypeSchema()
+                        ...ProductTypeController.getSchema()
                     })
                 },
-                handler: productTypeController.productTypeUpdateHandler
+                handler: (request, h) => {
+                    return ProductTypeController.updateHandler(request, h);
+                }
             }
         },
         {
@@ -363,7 +382,9 @@ const after = function (server) {
                         id: Joi.string().uuid().required()
                     })
                 },
-                handler: productTypeController.productTypeDeleteHandler
+                handler: (request, h) => {
+                    return ProductTypeController.deleteHandler(request.query.id, h);
+                }
             }
         },
 
@@ -374,8 +395,10 @@ const after = function (server) {
             method: 'GET',
             path: `${routePrefix}/product/subtypes`,
             options: {
-                description: 'Gets a list of product types',
-                handler: productSubTypeController.getTypeListHandler
+                description: 'Gets a list of product sub types',
+                handler: (request, h) => {
+                    return ProductSubTypeController.getAllHandler(request, h);
+                }
             }
         },
         {
@@ -385,10 +408,12 @@ const after = function (server) {
                 description: 'Gets an product type by ID',
                 validate: {
                     query: Joi.object({
-                        id: Joi.string().uuid().required()  // artist ID
+                        id: Joi.string().uuid().required()
                     })
                 },
-                handler: productSubTypeController.getTypeByIdHandler
+                handler: (request, h) => {
+                    return ProductSubTypeController.getByIdHandler(request.query.id, null, h);
+                }
             }
         },
         {
@@ -397,9 +422,11 @@ const after = function (server) {
             options: {
                 description: 'Adds a new product type',
                 validate: {
-                    payload: productTypeController.getProductTypeSchema()
+                    payload: ProductSubTypeController.getSchema()
                 },
-                handler: productSubTypeController.typeCreateHandler
+                handler: (request, h) => {
+                    return ProductSubTypeController.createHandler(request, h);
+                }
             }
         },
         {
@@ -410,10 +437,12 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...productTypeController.getProductTypeSchema()
+                        ...ProductSubTypeController.getSchema()
                     })
                 },
-                handler: productSubTypeController.typeUpdateHandler
+                handler: (request, h) => {
+                    return ProductSubTypeController.updateHandler(request, h);
+                }
             }
         },
         {
@@ -426,18 +455,114 @@ const after = function (server) {
                         id: Joi.string().uuid().required()
                     })
                 },
-                handler: productSubTypeController.typeDeleteHandler
+                handler: (request, h) => {
+                    return ProductSubTypeController.deleteHandler(request.query.id, h);
+                }
             }
         },
 
 
+        /******************************
+         * Product Variations
+         ******************************/
+        {
+            method: 'GET',
+            path: `${routePrefix}/product/variations`,
+            options: {
+                description: 'Gets a list of product variations',
+                handler: (request, h) => {
+                    return ProductVariationController.getPageHandler(request, null, h);
+                }
+            }
+        },
+        {
+            method: 'GET',
+            path: `${routePrefix}/product/variation`,
+            options: {
+                description: 'Gets a ProductVariation by ID',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: (request, h) => {
+                    return ProductVariationController.getByIdHandler(request.query.id, null, h);
+                }
+            }
+        },
+        {
+            method: 'DELETE',
+            path: `${routePrefix}/product/variation`,
+            options: {
+                description: 'Deletes a ProductVariation',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: (request, h) => {
+                    return ProductVariationController.deleteHandler(request.query.id, h);
+                }
+            }
+        },
+        {
+            method: 'GET',
+            path: `${routePrefix}/product/variations/product`,
+            options: {
+                description: 'Gets a list of variations for a given product',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required() // product id
+                    })
+                },
+                handler: (request, h) => {
+                    return ProductVariationController.getVariationsForProductHandler(request.query.id, h);
+                }
+            }
+        },
+        {
+            method: 'POST',
+            path: `${routePrefix}/product/variation/product`,
+            options: {
+                description: 'Adds a new variation to a product',
+                validate: {
+                    payload: ProductVariationController.getSchema()
+                },
+                handler: (request, h) => {
+                    return ProductVariationController.createHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'PUT',
+            path: `${routePrefix}/product/variation/product`,
+            options: {
+                description: 'Updates a product variation',
+                validate: {
+                    payload: Joi.object({
+                        id: Joi.string().uuid().required(),
+                        ...ProductVariationController.getSchema()
+                    })
+                },
+                handler: (request, h) => {
+                    return ProductVariationController.updateHandler(request, h);
+                }
+            }
+        },
+
+
+        /******************************
+         * Other
+         ******************************/
         {
             method: 'GET',
             path: '/sitemap.xml',  // NOTE: no routePrefix on this one
             options: {
                 auth: false
             },
-            handler: productsController.sitemapHandler
+            handler: (request, h) => {
+                return ProductController.sitemapHandler(request, h);
+            }
         }
     ]);
 
@@ -489,6 +614,11 @@ const after = function (server) {
         'ProductSize',
         require('./models/ProductSize')(baseModel, server.app.bookshelf, server)
     );
+
+    server.app.bookshelf.model(
+        'ProductVariation',
+        require('./models/ProductVariation')(baseModel, server.app.bookshelf, server)
+    );
 };
 
 
@@ -496,12 +626,7 @@ exports.plugin = {
     once: true,
     pkg: require('./package.json'),
     register: function (server, options) {
-        productsController.setServer(server);
         productSizeController.setServer(server);
-        productPicController.setServer(server);
-        productArtistController.setServer(server);
-        productTypeController.setServer(server);
-        productSubTypeController.setServer(server);
 
         server.dependency(['BookshelfOrm', 'Core'], after);
     }

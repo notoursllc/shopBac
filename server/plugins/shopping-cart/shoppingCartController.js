@@ -11,10 +11,13 @@ const accounting = require('accounting');
 
 const salesTaxService = require('./services/SalesTaxService');
 const shoppingCartEmailService = require('./services/ShoppingCartEmailService');
-const productsController = require('../products/productsController');
 const shippingController = require('../shipping/shippingController');
 const shippoOrdersAPI = require('../shipping/shippoAPI/orders');
 const { getLocationId } = require('../payment/square_helpers');
+
+// Products
+const ProductCtrl = require('../products/ProductCtrl');
+let ProductController;
 
 // Paypal
 const paypal = require('@paypal/checkout-server-sdk');
@@ -36,7 +39,7 @@ function getShoppingCartItemModel() {
 
 function setServer(s) {
     server = s;
-    productsController.setServer(s);
+    ProductController = new ProductCtrl(s)
 }
 
 
@@ -304,7 +307,9 @@ async function cartItemAddHandler(request, h) {
             ShoppingCart = await createCart(cartToken);
         }
 
-        const Product = await productsController.getProductByAttribute('id', request.payload.id);
+        const Product = await ProductController.modelForgeFetch(
+            { id: request.payload.id }
+        );
 
         if(!Product) {
             throw new Error('Unable to find product');
