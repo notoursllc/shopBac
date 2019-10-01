@@ -66,10 +66,7 @@ exports.seed = (knex) => {
                             title: 'Product Title ' + i,
                             description_short: 'Short description ' + i + ' - ' + faker.lorem.sentence(),
                             description_long: 'Long description ' + i + ' - ' + faker.lorem.paragraph(),
-                            sku: (10000 + i),
                             seo_uri: 'seo_uri_' + i,
-                            cost: ((100 + i + cents).toFixed(2)),
-                            weight_oz: 5.3,
                             base_price: ((100 + i + cents).toFixed(2)),
                             sale_price: ((99 - i + cents).toFixed(2)),
                             is_on_sale: faker.random.boolean(),
@@ -81,7 +78,6 @@ exports.seed = (knex) => {
                             sub_type: subType,
                             material_type: materialType,
                             shipping_package_type: shippingPackageType,
-                            hide_if_out_of_stock: true,
                             created_at: d,
                             updated_at: d,
                             product_artist_id: global.productArtistSeedUuids[artistIndex]

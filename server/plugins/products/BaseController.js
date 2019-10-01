@@ -190,7 +190,7 @@ class BaseController {
 
     async getPageHandler(request, withRelatedConfig, h) {
         try {
-            global.logger.info('REQUEST: BaseController.getPageHandler', {
+            global.logger.info(`REQUEST: BaseController.getPageHandler (${this.modelName})`, {
                 meta: request.query,
                 withRelatedConfig: withRelatedConfig
             });
@@ -198,7 +198,7 @@ class BaseController {
             const Models = await this.fetchPage(request, withRelatedConfig);
             const pagination = Models ? Models.pagination : null;
 
-            global.logger.info('RESPONSE: BaseController.getPageHandler', {
+            global.logger.info(`RESPONSE: BaseController.getPageHandler (${this.modelName})`, {
                 meta: {
                     // logging the entire products json can be quite large,
                     // so avoiding it for now, and just logging the pagination data

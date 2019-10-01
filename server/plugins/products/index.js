@@ -10,6 +10,8 @@ const ProductArtistCtrl = require('./ProductArtistCtrl');
 const ProductTypeCtrl = require('./ProductTypeCtrl');
 const ProductSubTypeCtrl = require('./ProductSubTypeCtrl');
 const ProductVariationCtrl = require('./ProductVariationCtrl');
+const ProductOptionCtrl = require('./ProductOptionCtrl');
+const MaterialTypeCtrl = require('./MaterialTypeCtrl');
 
 
 const after = function (server) {
@@ -21,6 +23,8 @@ const after = function (server) {
     const ProductTypeController = new ProductTypeCtrl(server, 'ProductType');
     const ProductSubTypeController = new ProductSubTypeCtrl(server, 'ProductSubType');
     const ProductVariationController = new ProductVariationCtrl(server, 'ProductVariation');
+    const ProductOptionController = new ProductOptionCtrl(server, 'ProductOption');
+    const MaterialTypeController = new MaterialTypeCtrl(server, 'MaterialType');
 
 
     // Yes this was aleady set in the Core plugin, but apparently
@@ -150,6 +154,35 @@ const after = function (server) {
                 }
             }
         },
+        {
+            method: 'GET',
+            path: `${routePrefix}/product/variations`,
+            options: {
+                description: 'Gets a list of variations for a given product',
+                validate: {
+                    query: Joi.object({
+                        product_id: Joi.string().uuid().required()
+                    })
+                },
+                handler: (request, h) => {
+                    return ProductVariationController.getVariationsForProductHandler(request.query.product_id, h);
+                }
+            }
+        },
+        {
+            method: 'POST',
+            path: `${routePrefix}/product/variation`,
+            options: {
+                description: 'Adds a new variation to a product',
+                validate: {
+                    payload: ProductVariationController.getSchema()
+                },
+                handler: (request, h) => {
+                    return ProductVariationController.createHandler(request, h);
+                }
+            }
+        },
+
 
         /******************************
          * Product Size
@@ -320,7 +353,7 @@ const after = function (server) {
          ******************************/
         {
             method: 'GET',
-            path: `${routePrefix}/product/types`,
+            path: `${routePrefix}/types`,
             options: {
                 description: 'Gets a list of product types',
                 handler: (request, h) => {
@@ -330,7 +363,7 @@ const after = function (server) {
         },
         {
             method: 'GET',
-            path: `${routePrefix}/product/type`,
+            path: `${routePrefix}/type`,
             options: {
                 description: 'Gets an product type by ID',
                 validate: {
@@ -345,7 +378,7 @@ const after = function (server) {
         },
         {
             method: 'POST',
-            path: `${routePrefix}/product/type`,
+            path: `${routePrefix}/type`,
             options: {
                 description: 'Adds a new product type',
                 validate: {
@@ -358,7 +391,7 @@ const after = function (server) {
         },
         {
             method: 'PUT',
-            path: `${routePrefix}/product/type`,
+            path: `${routePrefix}/type`,
             options: {
                 description: 'Updates product type',
                 validate: {
@@ -374,7 +407,7 @@ const after = function (server) {
         },
         {
             method: 'DELETE',
-            path: `${routePrefix}/product/type`,
+            path: `${routePrefix}/type`,
             options: {
                 description: 'Deletes a product type',
                 validate: {
@@ -393,7 +426,7 @@ const after = function (server) {
          ******************************/
         {
             method: 'GET',
-            path: `${routePrefix}/product/subtypes`,
+            path: `${routePrefix}/subtypes`,
             options: {
                 description: 'Gets a list of product sub types',
                 handler: (request, h) => {
@@ -403,7 +436,7 @@ const after = function (server) {
         },
         {
             method: 'GET',
-            path: `${routePrefix}/product/subtype`,
+            path: `${routePrefix}/subtype`,
             options: {
                 description: 'Gets an product type by ID',
                 validate: {
@@ -418,7 +451,7 @@ const after = function (server) {
         },
         {
             method: 'POST',
-            path: `${routePrefix}/product/subtype`,
+            path: `${routePrefix}/subtype`,
             options: {
                 description: 'Adds a new product type',
                 validate: {
@@ -431,7 +464,7 @@ const after = function (server) {
         },
         {
             method: 'PUT',
-            path: `${routePrefix}/product/subtype`,
+            path: `${routePrefix}/subtype`,
             options: {
                 description: 'Updates product type',
                 validate: {
@@ -447,7 +480,7 @@ const after = function (server) {
         },
         {
             method: 'DELETE',
-            path: `${routePrefix}/product/subtype`,
+            path: `${routePrefix}/subtype`,
             options: {
                 description: 'Deletes a product type',
                 validate: {
@@ -467,7 +500,7 @@ const after = function (server) {
          ******************************/
         {
             method: 'GET',
-            path: `${routePrefix}/product/variations`,
+            path: `${routePrefix}/variations`,
             options: {
                 description: 'Gets a list of product variations',
                 handler: (request, h) => {
@@ -477,7 +510,7 @@ const after = function (server) {
         },
         {
             method: 'GET',
-            path: `${routePrefix}/product/variation`,
+            path: `${routePrefix}/variation`,
             options: {
                 description: 'Gets a ProductVariation by ID',
                 validate: {
@@ -491,8 +524,24 @@ const after = function (server) {
             }
         },
         {
+            method: 'PUT',
+            path: `${routePrefix}/variation`,
+            options: {
+                description: 'Updates a variation',
+                validate: {
+                    payload: Joi.object({
+                        id: Joi.string().uuid().required(),
+                        ...ProductVariationController.getSchema()
+                    })
+                },
+                handler: (request, h) => {
+                    return ProductVariationController.updateHandler(request, h);
+                }
+            }
+        },
+        {
             method: 'DELETE',
-            path: `${routePrefix}/product/variation`,
+            path: `${routePrefix}/variation`,
             options: {
                 description: 'Deletes a ProductVariation',
                 validate: {
@@ -507,45 +556,164 @@ const after = function (server) {
         },
         {
             method: 'GET',
-            path: `${routePrefix}/product/variations/product`,
+            path: `${routePrefix}/variation/options`,
             options: {
-                description: 'Gets a list of variations for a given product',
+                description: 'Gets a list of options for a given variation',
                 validate: {
                     query: Joi.object({
-                        id: Joi.string().uuid().required() // product id
+                        product_variation_id: Joi.string().uuid().required() // product id
                     })
                 },
                 handler: (request, h) => {
-                    return ProductVariationController.getVariationsForProductHandler(request.query.id, h);
+                    return ProductOptionController.getOptionsForProductVariationHandler(request.query.product_variation_id, h);
+                }
+            }
+        },
+
+
+        /******************************
+         * Product Options
+         ******************************/
+        {
+            method: 'GET',
+            path: `${routePrefix}/options`,
+            options: {
+                description: 'Gets a list of options',
+                handler: (request, h) => {
+                    return ProductOptionController.getPageHandler(request, null, h);
+                }
+            }
+        },
+        {
+            method: 'GET',
+            path: `${routePrefix}/option`,
+            options: {
+                description: 'Gets a ProductOption by ID',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: (request, h) => {
+                    return ProductOptionController.getByIdHandler(request.query.id, null, h);
                 }
             }
         },
         {
             method: 'POST',
-            path: `${routePrefix}/product/variation/product`,
+            path: `${routePrefix}/option`,
             options: {
-                description: 'Adds a new variation to a product',
+                description: 'Adds a new option to a product variation',
                 validate: {
-                    payload: ProductVariationController.getSchema()
+                    payload: ProductOptionController.getSchema()
                 },
                 handler: (request, h) => {
-                    return ProductVariationController.createHandler(request, h);
+                    return ProductOptionController.createHandler(request, h);
                 }
             }
         },
         {
             method: 'PUT',
-            path: `${routePrefix}/product/variation/product`,
+            path: `${routePrefix}/option`,
             options: {
-                description: 'Updates a product variation',
+                description: 'Updates an option to a product variation',
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...ProductVariationController.getSchema()
+                        ...ProductOptionController.getSchema()
                     })
                 },
                 handler: (request, h) => {
-                    return ProductVariationController.updateHandler(request, h);
+                    return ProductOptionController.createHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'DELETE',
+            path: `${routePrefix}/option`,
+            options: {
+                description: 'Deletes a ProductOption',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: (request, h) => {
+                    return ProductOptionController.deleteHandler(request.query.id, h);
+                }
+            }
+        },
+
+
+        /******************************
+         * Material Types
+         ******************************/
+        {
+            method: 'GET',
+            path: `${routePrefix}/materials`,
+            options: {
+                description: 'Gets a list of material types',
+                handler: (request, h) => {
+                    return MaterialTypeController.getAllHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'GET',
+            path: `${routePrefix}/material`,
+            options: {
+                description: 'Gets an material type by ID',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: (request, h) => {
+                    return MaterialTypeController.getByIdHandler(request.query.id, null, h);
+                }
+            }
+        },
+        {
+            method: 'POST',
+            path: `${routePrefix}/material`,
+            options: {
+                description: 'Adds a new material type',
+                validate: {
+                    payload: MaterialTypeController.getSchema()
+                },
+                handler: (request, h) => {
+                    return MaterialTypeController.createHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'PUT',
+            path: `${routePrefix}/material`,
+            options: {
+                description: 'Updates material type',
+                validate: {
+                    payload: Joi.object({
+                        id: Joi.string().uuid().required(),
+                        ...MaterialTypeController.getSchema()
+                    })
+                },
+                handler: (request, h) => {
+                    return MaterialTypeController.updateHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'DELETE',
+            path: `${routePrefix}/material`,
+            options: {
+                description: 'Deletes a material type',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: (request, h) => {
+                    return MaterialTypeController.deleteHandler(request.query.id, h);
                 }
             }
         },
@@ -618,6 +786,16 @@ const after = function (server) {
     server.app.bookshelf.model(
         'ProductVariation',
         require('./models/ProductVariation')(baseModel, server.app.bookshelf, server)
+    );
+
+    server.app.bookshelf.model(
+        'ProductOption',
+        require('./models/ProductOption')(baseModel, server.app.bookshelf, server)
+    );
+
+    server.app.bookshelf.model(
+        'MaterialType',
+        require('./models/MaterialType')(baseModel, server.app.bookshelf, server)
     );
 };
 

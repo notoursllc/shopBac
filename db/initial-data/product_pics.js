@@ -3,7 +3,9 @@
 const Promise = require('bluebird');
 const faker = require('faker');
 const CoreService = require('../../server/plugins/core/core.service');
-const productPicController = require('../../server/plugins/products/productPicController');
+const ProductPicCtrl = require('../../server/plugins/products/ProductPicCtrl');
+
+const ProductPicController = new ProductPicCtrl()
 
 
 exports.seed = (knex) => {
@@ -16,7 +18,7 @@ exports.seed = (knex) => {
             let promises = [];
             let d = new Date();
             let uuid;
-            let urlPrefix = productPicController.getCloudUrl();
+            let urlPrefix = ProductPicController.getCloudUrl();
 
             global.productPicSeedUuids = [];
             global.productSeedUuids = global.productSeedUuids || [];
@@ -31,7 +33,7 @@ exports.seed = (knex) => {
                     knex(CoreService.DB_TABLES.product_pics)
                         .insert({
                             id: uuid,
-                            url: `${urlPrefix}/${productPicController.getCloudImagePath('sample-300-x-400.png')}`,
+                            url: `${urlPrefix}/${ProductPicController.getCloudImagePath('sample-300-x-400.png')}`,
                             sort_order: 1,
                             is_visible: true,
                             created_at: d,
@@ -47,7 +49,7 @@ exports.seed = (knex) => {
                     knex(CoreService.DB_TABLES.product_pics)
                         .insert({
                             id: uuid,
-                            url: `${urlPrefix}/${productPicController.getCloudImagePath('sample_calbeamin.jpg')}`,
+                            url: `${urlPrefix}/${ProductPicController.getCloudImagePath('sample_calbeamin.jpg')}`,
                             sort_order: 2,
                             is_visible: true,
                             created_at: d,

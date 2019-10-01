@@ -11,7 +11,8 @@ const DB_TABLES = {
     product_pic_variants: 'product_pic_variants',
     product_options: 'product_options',
     product_variations: 'product_variations',
-    products: 'products'
+    products: 'products',
+    material_types: 'material_types',
 };
 
 module.exports.DB_TABLES = DB_TABLES;

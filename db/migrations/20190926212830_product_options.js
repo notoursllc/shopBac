@@ -10,13 +10,20 @@ module.exports.up = (knex) => {
             t.string('name').notNullable();  // XL
             t.integer('ordinal').nullable();
             t.string('sku').nullable();
+            t.boolean('published').defaultTo(true);
+            t.integer('inventory_alert_threshold').nullable();
+            t.boolean('inventory_alert_show').notNullable();
+            t.integer('inventory_count').defaultTo(0);
+            t.decimal('weight_oz').defaultTo(0);
+            t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
+            t.timestamp('updated_at', true).nullable();
 
             t.index([
                 'id'
             ]);
 
             // Foreign Keys:
-            t.uuid('product_variant_id') //TODO- is this the right name of the key?
+            t.uuid('product_variation_id') //TODO- is this the right name of the key?
                 .notNullable()
                 .references('id')
                 .inTable(CoreService.DB_TABLES.product_variations);
