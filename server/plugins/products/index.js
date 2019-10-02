@@ -4,27 +4,20 @@ const path = require('path');
 //TODO: this to be replaced by ProductVariantController right?
 const productSizeController = require('./productSizeController');
 
-const ProductCtrl = require('./ProductCtrl');
-const ProductPicCtrl = require('./ProductPicCtrl');
-const ProductArtistCtrl = require('./ProductArtistCtrl');
-const ProductTypeCtrl = require('./ProductTypeCtrl');
-const ProductSubTypeCtrl = require('./ProductSubTypeCtrl');
-const ProductVariationCtrl = require('./ProductVariationCtrl');
-const ProductOptionCtrl = require('./ProductOptionCtrl');
-const MaterialTypeCtrl = require('./MaterialTypeCtrl');
-
 
 const after = function (server) {
     const routePrefix = '/api/v1';
 
-    const ProductController = new ProductCtrl(server, 'Product');
-    const ProductPicController = new ProductPicCtrl(server, 'ProductPic');
-    const ProductArtistController = new ProductArtistCtrl(server, 'ProductArtist');
-    const ProductTypeController = new ProductTypeCtrl(server, 'ProductType');
-    const ProductSubTypeController = new ProductSubTypeCtrl(server, 'ProductSubType');
-    const ProductVariationController = new ProductVariationCtrl(server, 'ProductVariation');
-    const ProductOptionController = new ProductOptionCtrl(server, 'ProductOption');
-    const MaterialTypeController = new MaterialTypeCtrl(server, 'MaterialType');
+    // fancy shorthand instead of saving returned value of require() to a variable and doing 'new' on that variable
+    const ProductCtrl = new (require('./ProductCtrl'))(server, 'Product');
+    const ProductPicCtrl = new (require('./ProductPicCtrl'))(server, 'ProductPic');
+    const ProductArtistCtrl = new (require('./ProductArtistCtrl'))(server, 'ProductArtist');
+    const ProductTypeCtrl = new (require('./ProductTypeCtrl'))(server, 'ProductType');
+    const ProductSubTypeCtrl = new (require('./ProductSubTypeCtrl'))(server, 'ProductSubType');
+    const ProductVariationCtrl = new (require('./ProductVariationCtrl'))(server, 'ProductVariation');
+    const ProductOptionCtrl = new (require('./ProductOptionCtrl'))(server, 'ProductOption');
+    const MaterialTypeCtrl = new (require('./MaterialTypeCtrl'))(server, 'MaterialType');
+    const FitTypeCtrl = new (require('./FitTypeCtrl'))(server, 'FitType');
 
 
     // Yes this was aleady set in the Core plugin, but apparently
@@ -54,7 +47,7 @@ const after = function (server) {
                     }
                 },
                 handler: (request, h) => {
-                    return ProductController.getProductByIdHandler(request, h);
+                    return ProductCtrl.getProductByIdHandler(request, h);
                 }
             }
         },
@@ -69,7 +62,7 @@ const after = function (server) {
                     }
                 },
                 handler: (request, h) => {
-                    return ProductController.productSeoHandler(request, h);
+                    return ProductCtrl.productSeoHandler(request, h);
                 }
             }
         },
@@ -84,7 +77,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductController.productDeleteHandler(request, h);
+                    return ProductCtrl.productDeleteHandler(request, h);
                 }
             }
         },
@@ -100,7 +93,7 @@ const after = function (server) {
                 }
             },
             handler: (request, h) => {
-                return ProductController.productShareHandler(request, h);
+                return ProductCtrl.productShareHandler(request, h);
             }
         },
         {
@@ -109,7 +102,7 @@ const after = function (server) {
             options: {
                 description: 'Returns general info about products',
                 handler: (request, h) => {
-                    return ProductController.productInfoHandler(request, h);
+                    return ProductCtrl.productInfoHandler(request, h);
                 }
             }
         },
@@ -119,7 +112,7 @@ const after = function (server) {
             options: {
                 description: 'Gets a list of products',
                 handler: (request, h) => {
-                    return ProductController.getPageHandler(request, ProductController.getWithRelated(), h);
+                    return ProductCtrl.getPageHandler(request, ProductCtrl.getWithRelated(), h);
                 }
             }
         },
@@ -130,11 +123,11 @@ const after = function (server) {
                 description: 'Creates a product',
                 validate: {
                     payload: Joi.object({
-                        ...ProductController.getSchema()
+                        ...ProductCtrl.getSchema()
                     })
                 },
                 handler: (request, h) => {
-                    return ProductController.createHandler(request, h);
+                    return ProductCtrl.createHandler(request, h);
                 }
             }
         },
@@ -146,11 +139,11 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...ProductController.getSchema()
+                        ...ProductCtrl.getSchema()
                     })
                 },
                 handler: (request, h) => {
-                    return ProductController.updateHandler(request, h);
+                    return ProductCtrl.updateHandler(request, h);
                 }
             }
         },
@@ -165,20 +158,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductVariationController.getVariationsForProductHandler(request.query.product_id, h);
-                }
-            }
-        },
-        {
-            method: 'POST',
-            path: `${routePrefix}/product/variation`,
-            options: {
-                description: 'Adds a new variation to a product',
-                validate: {
-                    payload: ProductVariationController.getSchema()
-                },
-                handler: (request, h) => {
-                    return ProductVariationController.createHandler(request, h);
+                    return ProductVariationCtrl.getVariationsForProductHandler(request.query.product_id, h);
                 }
             }
         },
@@ -234,11 +214,11 @@ const after = function (server) {
                 validate: {
                     payload: {
                         file: Joi.object(),
-                        ...ProductPicController.getSchema()
+                        ...ProductPicCtrl.getSchema()
                     }
                 },
                 handler: (request, h) => {
-                    return ProductPicController.upsertHandler(request, h);
+                    return ProductPicCtrl.upsertHandler(request, h);
                 }
             }
         },
@@ -253,7 +233,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductPicController.deleteHandler(request, h);
+                    return ProductPicCtrl.deleteHandler(request, h);
                 }
             }
         },
@@ -267,7 +247,7 @@ const after = function (server) {
             options: {
                 description: 'Gets a list of artists',
                 handler: (request, h) => {
-                    return ProductArtistController.getPageHandler(request, null, h);
+                    return ProductArtistCtrl.getPageHandler(request, null, h);
                 }
             }
         },
@@ -282,7 +262,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductArtistController.getByIdHandler(request.query.id, null, h);
+                    return ProductArtistCtrl.getByIdHandler(request.query.id, null, h);
                 }
             }
         },
@@ -293,11 +273,11 @@ const after = function (server) {
                 description: 'Creates a product artist',
                 validate: {
                     payload: Joi.object({
-                        ...ProductArtistController.getSchema()
+                        ...ProductArtistCtrl.getSchema()
                     })
                 },
                 handler: (request, h) => {
-                    return ProductArtistController.createHandler(request, h);
+                    return ProductArtistCtrl.createHandler(request, h);
                 }
             }
         },
@@ -309,11 +289,11 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...ProductArtistController.getSchema()
+                        ...ProductArtistCtrl.getSchema()
                     })
                 },
                 handler: (request, h) => {
-                    return ProductArtistController.updateHandler(request, h);
+                    return ProductArtistCtrl.updateHandler(request, h);
                 }
             }
         },
@@ -328,7 +308,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductArtistController.deleteHandler(request.query.id, h);
+                    return ProductArtistCtrl.deleteHandler(request.query.id, h);
                 }
             }
         },
@@ -343,7 +323,7 @@ const after = function (server) {
                     }
                 },
                 handler: (request, h) => {
-                    return ProductController.getProductsForArtistHandler(request.query.id, h);
+                    return ProductCtrl.getProductsForArtistHandler(request.query.id, h);
                 }
             }
         },
@@ -357,7 +337,7 @@ const after = function (server) {
             options: {
                 description: 'Gets a list of product types',
                 handler: (request, h) => {
-                    return ProductTypeController.getAllHandler(request, h);
+                    return ProductTypeCtrl.getAllHandler(request, h);
                 }
             }
         },
@@ -372,7 +352,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductTypeController.getByIdHandler(request.query.id, null, h);
+                    return ProductTypeCtrl.getByIdHandler(request.query.id, null, h);
                 }
             }
         },
@@ -382,10 +362,10 @@ const after = function (server) {
             options: {
                 description: 'Adds a new product type',
                 validate: {
-                    payload: ProductTypeController.getSchema()
+                    payload: ProductTypeCtrl.getSchema()
                 },
                 handler: (request, h) => {
-                    return ProductTypeController.createHandler(request, h);
+                    return ProductTypeCtrl.createHandler(request, h);
                 }
             }
         },
@@ -397,11 +377,11 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...ProductTypeController.getSchema()
+                        ...ProductTypeCtrl.getSchema()
                     })
                 },
                 handler: (request, h) => {
-                    return ProductTypeController.updateHandler(request, h);
+                    return ProductTypeCtrl.updateHandler(request, h);
                 }
             }
         },
@@ -416,7 +396,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductTypeController.deleteHandler(request.query.id, h);
+                    return ProductTypeCtrl.deleteHandler(request.query.id, h);
                 }
             }
         },
@@ -430,7 +410,7 @@ const after = function (server) {
             options: {
                 description: 'Gets a list of product sub types',
                 handler: (request, h) => {
-                    return ProductSubTypeController.getAllHandler(request, h);
+                    return ProductSubTypeCtrl.getAllHandler(request, h);
                 }
             }
         },
@@ -445,7 +425,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductSubTypeController.getByIdHandler(request.query.id, null, h);
+                    return ProductSubTypeCtrl.getByIdHandler(request.query.id, null, h);
                 }
             }
         },
@@ -455,10 +435,10 @@ const after = function (server) {
             options: {
                 description: 'Adds a new product type',
                 validate: {
-                    payload: ProductSubTypeController.getSchema()
+                    payload: ProductSubTypeCtrl.getSchema()
                 },
                 handler: (request, h) => {
-                    return ProductSubTypeController.createHandler(request, h);
+                    return ProductSubTypeCtrl.createHandler(request, h);
                 }
             }
         },
@@ -470,11 +450,11 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...ProductSubTypeController.getSchema()
+                        ...ProductSubTypeCtrl.getSchema()
                     })
                 },
                 handler: (request, h) => {
-                    return ProductSubTypeController.updateHandler(request, h);
+                    return ProductSubTypeCtrl.updateHandler(request, h);
                 }
             }
         },
@@ -489,7 +469,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductSubTypeController.deleteHandler(request.query.id, h);
+                    return ProductSubTypeCtrl.deleteHandler(request.query.id, h);
                 }
             }
         },
@@ -504,7 +484,7 @@ const after = function (server) {
             options: {
                 description: 'Gets a list of product variations',
                 handler: (request, h) => {
-                    return ProductVariationController.getPageHandler(request, null, h);
+                    return ProductVariationCtrl.getPageHandler(request, null, h);
                 }
             }
         },
@@ -519,7 +499,20 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductVariationController.getByIdHandler(request.query.id, null, h);
+                    return ProductVariationCtrl.getVariationByIdHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'POST',
+            path: `${routePrefix}/variation`,
+            options: {
+                description: 'Adds a new variation to a product',
+                validate: {
+                    payload: ProductVariationCtrl.getSchema()
+                },
+                handler: (request, h) => {
+                    return ProductVariationCtrl.createHandler(request, h);
                 }
             }
         },
@@ -531,11 +524,11 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...ProductVariationController.getSchema()
+                        ...ProductVariationCtrl.getSchema()
                     })
                 },
                 handler: (request, h) => {
-                    return ProductVariationController.updateHandler(request, h);
+                    return ProductVariationCtrl.updateHandler(request, h);
                 }
             }
         },
@@ -550,7 +543,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductVariationController.deleteHandler(request.query.id, h);
+                    return ProductVariationCtrl.deleteHandler(request.query.id, h);
                 }
             }
         },
@@ -565,7 +558,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductOptionController.getOptionsForProductVariationHandler(request.query.product_variation_id, h);
+                    return ProductOptionCtrl.getOptionsForProductVariationHandler(request.query.product_variation_id, h);
                 }
             }
         },
@@ -580,7 +573,7 @@ const after = function (server) {
             options: {
                 description: 'Gets a list of options',
                 handler: (request, h) => {
-                    return ProductOptionController.getPageHandler(request, null, h);
+                    return ProductOptionCtrl.getPageHandler(request, null, h);
                 }
             }
         },
@@ -595,7 +588,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductOptionController.getByIdHandler(request.query.id, null, h);
+                    return ProductOptionCtrl.getByIdHandler(request.query.id, null, h);
                 }
             }
         },
@@ -605,10 +598,10 @@ const after = function (server) {
             options: {
                 description: 'Adds a new option to a product variation',
                 validate: {
-                    payload: ProductOptionController.getSchema()
+                    payload: ProductOptionCtrl.getSchema()
                 },
                 handler: (request, h) => {
-                    return ProductOptionController.createHandler(request, h);
+                    return ProductOptionCtrl.createHandler(request, h);
                 }
             }
         },
@@ -620,11 +613,11 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...ProductOptionController.getSchema()
+                        ...ProductOptionCtrl.getSchema()
                     })
                 },
                 handler: (request, h) => {
-                    return ProductOptionController.createHandler(request, h);
+                    return ProductOptionCtrl.createHandler(request, h);
                 }
             }
         },
@@ -639,7 +632,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ProductOptionController.deleteHandler(request.query.id, h);
+                    return ProductOptionCtrl.deleteHandler(request.query.id, h);
                 }
             }
         },
@@ -654,7 +647,7 @@ const after = function (server) {
             options: {
                 description: 'Gets a list of material types',
                 handler: (request, h) => {
-                    return MaterialTypeController.getAllHandler(request, h);
+                    return MaterialTypeCtrl.getAllHandler(request, h);
                 }
             }
         },
@@ -669,7 +662,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return MaterialTypeController.getByIdHandler(request.query.id, null, h);
+                    return MaterialTypeCtrl.getByIdHandler(request.query.id, null, h);
                 }
             }
         },
@@ -679,10 +672,10 @@ const after = function (server) {
             options: {
                 description: 'Adds a new material type',
                 validate: {
-                    payload: MaterialTypeController.getSchema()
+                    payload: MaterialTypeCtrl.getSchema()
                 },
                 handler: (request, h) => {
-                    return MaterialTypeController.createHandler(request, h);
+                    return MaterialTypeCtrl.createHandler(request, h);
                 }
             }
         },
@@ -694,11 +687,11 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...MaterialTypeController.getSchema()
+                        ...MaterialTypeCtrl.getSchema()
                     })
                 },
                 handler: (request, h) => {
-                    return MaterialTypeController.updateHandler(request, h);
+                    return MaterialTypeCtrl.updateHandler(request, h);
                 }
             }
         },
@@ -713,7 +706,81 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return MaterialTypeController.deleteHandler(request.query.id, h);
+                    return MaterialTypeCtrl.deleteHandler(request.query.id, h);
+                }
+            }
+        },
+
+
+        /******************************
+         * Fit Types
+         ******************************/
+        {
+            method: 'GET',
+            path: `${routePrefix}/fits`,
+            options: {
+                description: 'Gets a list of fit types',
+                handler: (request, h) => {
+                    return FitTypeCtrl.getAllHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'GET',
+            path: `${routePrefix}/fit`,
+            options: {
+                description: 'Gets an fit type by ID',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: (request, h) => {
+                    return FitTypeCtrl.getByIdHandler(request.query.id, null, h);
+                }
+            }
+        },
+        {
+            method: 'POST',
+            path: `${routePrefix}/fit`,
+            options: {
+                description: 'Adds a new fit type',
+                validate: {
+                    payload: FitTypeCtrl.getSchema()
+                },
+                handler: (request, h) => {
+                    return FitTypeCtrl.createHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'PUT',
+            path: `${routePrefix}/fit`,
+            options: {
+                description: 'Updates fit type',
+                validate: {
+                    payload: Joi.object({
+                        id: Joi.string().uuid().required(),
+                        ...FitTypeCtrl.getSchema()
+                    })
+                },
+                handler: (request, h) => {
+                    return FitTypeCtrl.updateHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'DELETE',
+            path: `${routePrefix}/fit`,
+            options: {
+                description: 'Deletes a fit type',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: (request, h) => {
+                    return FitTypeCtrl.deleteHandler(request.query.id, h);
                 }
             }
         },
@@ -729,7 +796,7 @@ const after = function (server) {
                 auth: false
             },
             handler: (request, h) => {
-                return ProductController.sitemapHandler(request, h);
+                return ProductCtrl.sitemapHandler(request, h);
             }
         }
     ]);
@@ -796,6 +863,11 @@ const after = function (server) {
     server.app.bookshelf.model(
         'MaterialType',
         require('./models/MaterialType')(baseModel, server.app.bookshelf, server)
+    );
+
+    server.app.bookshelf.model(
+        'FitType',
+        require('./models/FitType')(baseModel, server.app.bookshelf, server)
     );
 };
 

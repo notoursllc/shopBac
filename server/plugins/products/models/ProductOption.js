@@ -11,7 +11,7 @@ module.exports = function (baseModel, bookshelf) {
 
             // One-to-One relation with ProductVariation
             // product_variation_id is the foreign key in this model
-            product_variation: function() {
+            variation: function() {
                 return this.belongsTo('ProductVariation', 'product_variation_id');
             }
         },

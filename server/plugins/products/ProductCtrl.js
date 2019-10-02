@@ -70,9 +70,12 @@ class ProductCtrl extends BaseController {
 
 
     async getProductByIdHandler(request, h) {
+        let withRelated = this.getWithRelated(request.query);
+        withRelated.push('variations.options');
+
         return this.getByIdHandler(
             request.query.id,
-            { withRelated: this.getWithRelated(request.query) },
+            { withRelated: withRelated },
             h
         );
     }
@@ -81,7 +84,7 @@ class ProductCtrl extends BaseController {
     async productSeoHandler(request, h) {
         try {
             let withRelated = this.getWithRelated();
-            withRelated.push('pics.pic_variants');
+            withRelated.push('pics.pic_variants', 'variations.options');
 
             global.logger.info('REQUEST: productSeoHandler', {
                 meta: request.query

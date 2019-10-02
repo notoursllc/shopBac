@@ -33,6 +33,27 @@ class ProductVariationCtrl extends BaseController {
     }
 
 
+    getWithRelated() {
+        return [
+            {
+                options: (query) => {
+                    query.where('published', '=', true);
+                    query.orderBy('ordinal', 'ASC');
+                }
+            }
+        ]
+    }
+
+
+    async getVariationByIdHandler(request, h) {
+        return this.getByIdHandler(
+            request.query.id,
+            { withRelated: this.getWithRelated() },
+            h
+        );
+    }
+
+
     async getVariationsForProductHandler(productId, h) {
         return this.fetchAll(h, (qb) => {
             qb.where('product_id', '=', productId);

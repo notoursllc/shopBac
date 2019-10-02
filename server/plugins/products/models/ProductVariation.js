@@ -13,7 +13,12 @@ module.exports = function (baseModel, bookshelf) {
             // product_id is the foreign key in this model
             product: function() {
                 return this.belongsTo('Product', 'product_id');
-            }
+            },
+
+            options: function() {
+                // product_variation_id is the foreign key in ProductOption
+                return this.hasMany('ProductOption', 'product_variation_id');
+            },
         },
 
         // Custom methods:
