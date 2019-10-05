@@ -12,14 +12,14 @@ const it = lab.test;
 let routePrefix = testHelpers.getApiPrefix();
 
 
-describe('Testing route: GET /product/subtypes', () => {
+describe('Testing route: GET /subtypes', () => {
 
     it('returns a list of product types', async () => {
         const { server } = await initProductsController();
 
         const res = await server.inject({
             method: 'GET',
-            url: `${routePrefix}/product/subtypes`
+            url: `${routePrefix}/subtypes`
         });
 
         let data = JSON.parse(JSON.stringify(res.result.data));
