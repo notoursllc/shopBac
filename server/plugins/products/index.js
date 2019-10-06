@@ -198,13 +198,33 @@ const after = function (server) {
         },
 
         /******************************
-         * Product Pictures
+         * Pictures
          ******************************/
         {
-            method: 'POST',
-            path: `${routePrefix}/product/pic`,
+            method: 'GET',
+            path: `${routePrefix}/pics`,
             options: {
-                description: 'Adds a new picture to the product',
+                description: 'Gets a list of pictures',
+                handler: (request, h) => {
+                    return ProductPicCtrl.getAllHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'GET',
+            path: `${routePrefix}/pic`,
+            options: {
+                description: 'Gets a picture',
+                handler: (request, h) => {
+                    return ProductPicCtrl.getPicByIdHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'POST',
+            path: `${routePrefix}/pic`,
+            options: {
+                description: 'Adds a new picture',
                 payload: {
                     output: 'stream',
                     parse: true,
@@ -224,9 +244,9 @@ const after = function (server) {
         },
         {
             method: 'DELETE',
-            path: `${routePrefix}/product/pic`,
+            path: `${routePrefix}/pic`,
             options: {
-                description: 'Deletes a product picture',
+                description: 'Deletes a picture',
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required()

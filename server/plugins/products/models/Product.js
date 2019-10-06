@@ -19,12 +19,6 @@ module.exports = function (baseModel, bookshelf) {
                 return this.hasMany('ProductSize', 'product_id');
             },
 
-    // TODO: move pics to ProductVariation?
-            pics: function() {
-                // product_id is the foreign key in ProductPic
-                return this.hasMany('ProductPic', 'product_id');
-            },
-
             variations: function() {
                 // product_pic_id is the foreign key in ProductPicVariant
                 return this.hasMany('ProductVariation', 'product_id');

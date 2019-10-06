@@ -1,16 +1,18 @@
 const Joi = require('@hapi/joi');
+const Boom = require('@hapi/boom');
 const isObject = require('lodash.isobject');
 const { createSitemap } = require('sitemap');
 const BaseController = require('./BaseController');
 const helperService = require('../../helpers.service');
 const globalTypes = require('../../global_types.js');
-const ProductPicCtrl = require('./ProductPicCtrl');
+const ProductVariationCtrl = require('./ProductVariationCtrl');
+
 
 class ProductCtrl extends BaseController {
 
     constructor(server, modelName) {
         super(server, modelName);
-        this.ProductPicController = new ProductPicCtrl(server, 'ProductPic');
+        this.ProductVariationController = new ProductVariationCtrl(server, 'ProductVariation');
     }
 
 
@@ -58,7 +60,7 @@ class ProductCtrl extends BaseController {
                     query.orderBy('ordinal', 'ASC');
                 },
 
-                pics: (query) => {
+                'variations.pics': (query) => {
                     if(!options.viewAllRelated) {
                         query.where('is_visible', '=', true);
                     }
@@ -72,6 +74,7 @@ class ProductCtrl extends BaseController {
     async getProductByIdHandler(request, h) {
         let withRelated = this.getWithRelated(request.query);
         withRelated.push('variations.options');
+        withRelated.push('variations.pics.pic_variants');
 
         return this.getByIdHandler(
             request.query.id,
@@ -84,7 +87,8 @@ class ProductCtrl extends BaseController {
     async productSeoHandler(request, h) {
         try {
             let withRelated = this.getWithRelated();
-            withRelated.push('pics.pic_variants', 'variations.options');
+            withRelated.push('variations.options');
+            withRelated.push('variations.pics.pic_variants');
 
             global.logger.info('REQUEST: productSeoHandler', {
                 meta: request.query
@@ -117,67 +121,55 @@ class ProductCtrl extends BaseController {
      * @param {*} request
      * @param {*} h
      */
-
-     //TODO THIS STILL NEEDS REFACTORING
     async productDeleteHandler(request, h) {
         try {
+            global.logger.info('REQUEST: ProductCtrl.productDeleteHandler', {
+                meta: request.query
+            });
+
             const productId = request.query.id;
 
             const Product = await this.modelForgeFetch(
                 { id: productId },
-                { withRelated: getWithRelated(request.query) }
+                { withRelated: this.getWithRelated(request.query) }
             );
 
             if(!Product) {
                 throw Boom.badRequest('Unable to find product.');
             }
 
-            const productJSON = Product.toJSON();
+            const productJson = Product.toJSON();
+
+            global.logger.info('ProductCtrl.productDeleteHandler - VARIATIONS', {
+                meta: productJson.variations
+            });
 
             // Delete product pics
-            if(productJSON.hasOwnProperty('pics')) {
+            if(Array.isArray(productJson.variations)) {
                 try {
-                    const picPromises = [];
+                    const variationPromises = [];
 
-                    productJSON.pics.forEach((pic) => {
-                        picPromises.push(
-                            ProductPicController.deletePic(pic.id)
-                        )
+                    productJson.variations.forEach((variation) => {
+                        variationPromises.push(
+                            this.ProductVariationController.deleteVariation(variation.id)
+                        );
                     });
 
-                    await Promise.all(picPromises);
+                    await Promise.all(variationPromises);
                 }
                 catch(err) {
-                    global.logger.error("productDeleteHandler - ERROR DELETING PRODUCT PICS", err)
+                    global.logger.error("productDeleteHandler - ERROR DELETING PRODUCT VARIATIONS", err)
                     throw err;
                 }
             }
 
-            // Delete product sizes
-            if(productJSON.hasOwnProperty('sizes')) {
-                try {
-                    const sizePromises = [];
-
-                    productJSON.sizes.forEach((size) => {
-                        sizePromises.push(
-                            productSizeController.deleteProductSize(size.id)
-                        )
-                    });
-
-                    await Promise.all(sizePromises);
-                }
-                catch(err) {
-                    global.logger.error("productDeleteHandler - ERROR DELETING PRODUCT SIZES", err)
-                    throw err;
-                }
-            }
-
-            // Delete this product model
             await this.getModel().destroy({ id: productId })
 
-            return h.apiSuccess({
-                id: productId
+            global.logger.info('RESPONSE: ProductCtrl.productDeleteHandler', {
+                meta: Product ? Product.toJSON() : null
             });
+
+            return h.apiSuccess(Product);
         }
         catch(err) {
             global.logger.error(err);

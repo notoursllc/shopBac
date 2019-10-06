@@ -10,9 +10,9 @@ module.exports = function (baseModel, bookshelf) {
             hasTimestamps: true,
 
             // One-to-One relation with Product
-            // product_id is the foreign key in this model
-            product: function() {
-                return this.belongsTo('Product', 'product_id');
+            // product_variation_id is the foreign key in this model
+            variation: function() {
+                return this.belongsTo('ProductVariation', 'product_variation_id');
             },
 
             pic_variants: function() {

@@ -19,6 +19,11 @@ module.exports = function (baseModel, bookshelf) {
                 // product_variation_id is the foreign key in ProductOption
                 return this.hasMany('ProductOption', 'product_variation_id');
             },
+
+            pics: function() {
+                // product_variation_id is the foreign key in ProductPic
+                return this.hasMany('ProductPic', 'product_variation_id');
+            }
         },
 
         // Custom methods:
