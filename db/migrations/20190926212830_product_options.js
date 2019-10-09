@@ -23,10 +23,11 @@ module.exports.up = (knex) => {
             ]);
 
             // Foreign Keys:
-            t.uuid('product_variation_id') //TODO- is this the right name of the key?
+            t.uuid('product_variation_id')
                 .notNullable()
                 .references('id')
-                .inTable(CoreService.DB_TABLES.product_variations);
+                .inTable(CoreService.DB_TABLES.product_variations)
+                .onDelete('CASCADE');
         }
     );
 };
