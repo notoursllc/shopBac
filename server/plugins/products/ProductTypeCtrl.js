@@ -5,8 +5,8 @@ const helperService = require('../../helpers.service');
 
 class ProductTypeCtrl extends BaseController {
 
-    constructor(server) {
-        super(server, 'ProductType');
+    constructor(server, modelName) {
+        super(server, modelName || 'ProductType');
     }
 
 
