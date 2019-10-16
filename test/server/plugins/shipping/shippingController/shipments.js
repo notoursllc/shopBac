@@ -15,7 +15,6 @@ const shippingController = getController();
 
 async function expectErrorOnMissingShippingArgument(arg) {
     const server = await getServer();
-    shippingController.setServer(server);
 
     let data = getShipmentData();
     delete data[arg];
@@ -40,7 +39,6 @@ async function expectErrorOnMissingShippingArgument(arg) {
 
 async function expectErrorOnMissingAddressArgument(key, addressProp) {
     const server = await getServer();
-    shippingController.setServer(server);
 
     let data = getShipmentData();
     delete data[key][addressProp];
@@ -144,7 +142,6 @@ describe('ShippoAPI: createShipment()', () => {
 
     it('errors on shipment_date if not a ISO-8601 value', async () => {
         const server = await getServer();
-        shippingController.setServer(server);
 
         let data = getShipmentData();
         // data.shipment_date = '123';
@@ -185,7 +182,6 @@ describe('ShippoAPI: createShipment()', () => {
 
     it('should create a Parcel object from a ShoppingCart', async () => {
         const server = await getServer();
-        shippingController.setServer(server);
 
         let parcels = null;
         let error = null;
@@ -214,7 +210,6 @@ describe('ShippoAPI: createShipment()', () => {
 
     it('should create 2 Parcel objects from a ShoppingCart with cart items with different package types defined', async () => {
         const server = await getServer();
-        shippingController.setServer(server);
 
         let parcels = null;
         let error = null;
@@ -244,7 +239,6 @@ describe('ShippoAPI: createShipment()', () => {
 
     it('should create 1 Parcel object from a ShoppingCart with cart items with the same package types defined', async () => {
         const server = await getServer();
-        shippingController.setServer(server);
 
         let parcels = null;
         let error = null;

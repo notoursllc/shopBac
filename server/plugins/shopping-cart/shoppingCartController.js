@@ -11,13 +11,15 @@ const accounting = require('accounting');
 
 const salesTaxService = require('./services/SalesTaxService');
 const shoppingCartEmailService = require('./services/ShoppingCartEmailService');
-const shippingController = require('../shipping/shippingController');
 const shippoOrdersAPI = require('../shipping/shippoAPI/orders');
 const { getLocationId } = require('../payment/square_helpers');
 
 // Products
 const ProductCtrl = require('../products/ProductCtrl');
 let ProductController;
+
+// Shipping
+let ShippingCtrl;
 
 // Paypal
 const paypal = require('@paypal/checkout-server-sdk');
@@ -40,6 +42,7 @@ function getShoppingCartItemModel() {
 function setServer(s) {
     server = s;
     ProductController = new ProductCtrl(s)
+    ShippingCtrl = new (require('../shipping/ShippingCtrl'))(server);
 }
 
 
@@ -526,7 +529,7 @@ async function getCartShippingRatesHandler(request, h) {
     try {
         const cartToken = request.pre.m1.cartToken;
         const ShoppingCart = await getCart(cartToken);
-        const shipment = await shippingController.createShipmentFromShoppingCart(ShoppingCart);
+        const shipment = await ShippingCtrl.createShipmentFromShoppingCart(ShoppingCart);
         const rates = shipment ? shipment.rates : null;
 
         global.logger.info('RESPONSE: getCartShippingRatesHandler', {
@@ -555,7 +558,7 @@ async function getLowestShippingRate(ShoppingCart) {
     let lowestRate = null;
 
     // Get a fresh cart with all of the relations
-    const shipment = await shippingController.createShipmentFromShoppingCart(ShoppingCart);
+    const shipment = await ShippingCtrl.createShipmentFromShoppingCart(ShoppingCart);
 
     global.logger.debug('shoppingCartController -> getLowestShippingRate: shipment', {
         meta: {

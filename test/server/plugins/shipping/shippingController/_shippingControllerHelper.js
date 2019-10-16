@@ -3,13 +3,13 @@
 const Hoek = require('@hapi/hoek');
 const testHelpers = require('../../../testHelpers');
 const serverSetup = require('../_serverSetup');
-const shippingController = require('../../../../../server/plugins/shipping/shippingController');
 const carrier_accounts = require('../../../../../server/plugins/shipping/shippoAPI/carrier_accounts');
 
 
-
-function getController() {
-    return shippingController;
+async function getController() {
+    const server = await getServer();
+    const ShippingCtrl = new (require('../../../../../server/plugins/shipping/ShippingCtrl'))(server);
+    return ShippingCtrl;
 }
 
 

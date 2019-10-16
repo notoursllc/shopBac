@@ -1,8 +1,7 @@
 const Joi = require('@hapi/joi');
-const ShippingController = require('./shippingController');
 
 const after = function (server) {
-    const ShippingPackageTypeCtrl = new (require('./ShippingPackageTypeCtrl'))(server);
+    const ShippingCtrl = new (require('./ShippingCtrl'))(server);
 
     server.route([
         {
@@ -23,7 +22,7 @@ const after = function (server) {
                         country: Joi.string().max(3).regex(/^[A-z]+$/).required()
                     }
                 },
-                handler: ShippingController.validateAddress
+                handler: ShippingCtrl.validateAddress
             }
         },
 
@@ -32,9 +31,8 @@ const after = function (server) {
             path: `/shipping/packagetypes`,
             options: {
                 description: 'Gets a list of package types',
-                // handler: ShippingController.packageTypeListHandler
                 handler: (request, h) => {
-                    return ShippingPackageTypeCtrl.getAllHandler(request, h);
+                    return ShippingCtrl.getAllHandler(request, h);
                 }
             }
         },
@@ -49,7 +47,7 @@ const after = function (server) {
                     }
                 },
                 handler: (request, h) => {
-                    return ShippingPackageTypeCtrl.getByIdHandler(request.query.id, null, h);
+                    return ShippingCtrl.getByIdHandler(request.query.id, null, h);
                 }
             }
         },
@@ -60,11 +58,11 @@ const after = function (server) {
                 description: 'Creates a package type',
                 validate: {
                     payload: Joi.object({
-                        ...ShippingPackageTypeCtrl.getSchema()
+                        ...ShippingCtrl.getSchema()
                     })
                 },
                 handler: (request, h) => {
-                    return ShippingPackageTypeCtrl.createHandler(request, h);
+                    return ShippingCtrl.createHandler(request, h);
                 }
             }
         },
@@ -76,11 +74,11 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...ShippingPackageTypeCtrl.getSchema()
+                        ...ShippingCtrl.getSchema()
                     })
                 },
                 handler: (request, h) => {
-                    return ShippingPackageTypeCtrl.updateHandler(request, h);
+                    return ShippingCtrl.updateHandler(request, h);
                 }
             }
         },
@@ -95,7 +93,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ShippingPackageTypeCtrl.deleteHandler(request.query.id, h);
+                    return ShippingCtrl.deleteHandler(request.query.id, h);
                 }
             }
         }
@@ -115,8 +113,6 @@ exports.plugin = {
     once: true,
     pkg: require('./package.json'),
     register: function (server, options) {
-        ShippingController.setServer(server);
-
         server.dependency(['BookshelfOrm', 'Core'], after);
     }
 };
