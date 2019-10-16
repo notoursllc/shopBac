@@ -4,7 +4,7 @@ const Promise = require('bluebird');
 const isObject = require('lodash.isobject');
 const helperService = require('../../helpers.service');
 const StorageService = require('../core/services/StorageService')
-const BaseController = require('./BaseController');
+const BaseController = require('../core/BaseController');
 const ProductPicVariantCtrl = require('./ProductPicVariantCtrl');
 
 

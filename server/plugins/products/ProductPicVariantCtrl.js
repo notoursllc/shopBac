@@ -1,7 +1,7 @@
 const Promise = require('bluebird');
 const isObject = require('lodash.isobject');
 const StorageService = require('../core/services/StorageService')
-const BaseController = require('./BaseController');
+const BaseController = require('../core/BaseController');
 
 
 class ProductPicVariantCtrl extends BaseController {

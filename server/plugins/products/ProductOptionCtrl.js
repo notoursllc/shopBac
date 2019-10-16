@@ -1,11 +1,11 @@
 const Joi = require('@hapi/joi');
-const BaseController = require('./BaseController');
+const BaseController = require('../core/BaseController');
 
 
 class ProductOptionCtrl extends BaseController {
 
-    constructor(server, modelName) {
-        super(server, modelName);
+    constructor(server) {
+        super(server, 'ProductOption');
     }
 
 

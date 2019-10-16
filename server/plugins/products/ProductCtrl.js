@@ -2,7 +2,7 @@ const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const isObject = require('lodash.isobject');
 const { createSitemap } = require('sitemap');
-const BaseController = require('./BaseController');
+const BaseController = require('../core/BaseController');
 const helperService = require('../../helpers.service');
 const globalTypes = require('../../global_types.js');
 const ProductVariationCtrl = require('./ProductVariationCtrl');
@@ -10,8 +10,8 @@ const ProductVariationCtrl = require('./ProductVariationCtrl');
 
 class ProductCtrl extends BaseController {
 
-    constructor(server, modelName) {
-        super(server, modelName);
+    constructor(server) {
+        super(server, 'Product');
         this.ProductVariationController = new ProductVariationCtrl(server, 'ProductVariation');
     }
 

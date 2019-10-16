@@ -1,12 +1,12 @@
 const Joi = require('@hapi/joi');
-const BaseController = require('./BaseController');
+const BaseController = require('../core/BaseController');
 const helperService = require('../../helpers.service');
 
 
 class FitTypeCtrl extends BaseController {
 
-    constructor(server, modelName) {
-        super(server, modelName);
+    constructor(server) {
+        super(server, 'FitType');
     }
 
 

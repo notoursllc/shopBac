@@ -1,6 +1,6 @@
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
-const BaseController = require('./BaseController');
+const BaseController = require('../core/BaseController');
 const ProductPicCtrl = require('./ProductPicCtrl');
 
 

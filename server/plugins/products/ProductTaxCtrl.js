@@ -1,5 +1,5 @@
 const Joi = require('@hapi/joi');
-const BaseController = require('./BaseController');
+const BaseController = require('../core/BaseController');
 
 
 class ProductTaxCtrl extends BaseController {

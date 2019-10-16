@@ -9,16 +9,16 @@ const after = function (server) {
     const routePrefix = '/api/v1';
 
     // fancy shorthand instead of saving returned value of require() to a variable and doing 'new' on that variable
-    const ProductCtrl = new (require('./ProductCtrl'))(server, 'Product');
-    const ProductPicCtrl = new (require('./ProductPicCtrl'))(server, 'ProductPic');
-    const ProductArtistCtrl = new (require('./ProductArtistCtrl'))(server, 'ProductArtist');
-    const ProductTypeCtrl = new (require('./ProductTypeCtrl'))(server, 'ProductType');
-    const ProductSubTypeCtrl = new (require('./ProductSubTypeCtrl'))(server, 'ProductSubType');
+    const ProductCtrl = new (require('./ProductCtrl'))(server);
+    const ProductPicCtrl = new (require('./ProductPicCtrl'))(server);
+    const ProductArtistCtrl = new (require('./ProductArtistCtrl'))(server);
+    const ProductTypeCtrl = new (require('./ProductTypeCtrl'))(server);
+    const ProductSubTypeCtrl = new (require('./ProductSubTypeCtrl'))(server);
     const ProductTaxCtrl = new (require('./ProductTaxCtrl'))(server);
-    const ProductVariationCtrl = new (require('./ProductVariationCtrl'))(server, 'ProductVariation');
-    const ProductOptionCtrl = new (require('./ProductOptionCtrl'))(server, 'ProductOption');
-    const MaterialTypeCtrl = new (require('./MaterialTypeCtrl'))(server, 'MaterialType');
-    const FitTypeCtrl = new (require('./FitTypeCtrl'))(server, 'FitType');
+    const ProductVariationCtrl = new (require('./ProductVariationCtrl'))(server);
+    const ProductOptionCtrl = new (require('./ProductOptionCtrl'))(server);
+    const MaterialTypeCtrl = new (require('./MaterialTypeCtrl'))(server);
+    const FitTypeCtrl = new (require('./FitTypeCtrl'))(server);
 
 
     // Yes this was aleady set in the Core plugin, but apparently
