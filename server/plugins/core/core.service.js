@@ -14,6 +14,7 @@ const DB_TABLES = {
     products: 'products',
     material_types: 'material_types',
     fit_types: 'fit_types',
+    taxes: 'taxes',
 };
 
 module.exports.DB_TABLES = DB_TABLES;

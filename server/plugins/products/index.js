@@ -14,6 +14,7 @@ const after = function (server) {
     const ProductArtistCtrl = new (require('./ProductArtistCtrl'))(server, 'ProductArtist');
     const ProductTypeCtrl = new (require('./ProductTypeCtrl'))(server, 'ProductType');
     const ProductSubTypeCtrl = new (require('./ProductSubTypeCtrl'))(server, 'ProductSubType');
+    const ProductTaxCtrl = new (require('./ProductTaxCtrl'))(server);
     const ProductVariationCtrl = new (require('./ProductVariationCtrl'))(server, 'ProductVariation');
     const ProductOptionCtrl = new (require('./ProductOptionCtrl'))(server, 'ProductOption');
     const MaterialTypeCtrl = new (require('./MaterialTypeCtrl'))(server, 'MaterialType');
@@ -163,40 +164,6 @@ const after = function (server) {
             }
         },
 
-
-        /******************************
-         * Product Size
-         ******************************/
-        {
-            method: 'POST',
-            path: `${routePrefix}/product/size/create`,
-            options: {
-                description: 'Adds a new size to the product',
-                handler: productSizeController.productSizeCreateHandler
-            }
-        },
-        {
-            method: 'POST',
-            path: `${routePrefix}/product/size/update`,
-            options: {
-                description: 'Updates a product size',
-                handler: productSizeController.productSizeUpdateHandler
-            }
-        },
-        {
-            method: 'DELETE',
-            path: `${routePrefix}/product/size`,
-            options: {
-                description: 'Deletes a product size',
-                validate: {
-                    query: Joi.object({
-                        id: Joi.string().uuid().required()
-                    })
-                },
-                handler: productSizeController.productSizeDeleteHandler
-            }
-        },
-
         /******************************
          * Pictures
          ******************************/
@@ -343,7 +310,7 @@ const after = function (server) {
                     }
                 },
                 handler: (request, h) => {
-                    return ProductCtrl.getProductsForArtistHandler(request.query.id, h);
+                    return ProductArtistCtrl.getProductsForArtistHandler(request.query.id, h);
                 }
             }
         },
@@ -490,6 +457,79 @@ const after = function (server) {
                 },
                 handler: (request, h) => {
                     return ProductSubTypeCtrl.deleteHandler(request.query.id, h);
+                }
+            }
+        },
+
+        /******************************
+         * Product Taxes
+         ******************************/
+        {
+            method: 'GET',
+            path: `${routePrefix}/taxes`,
+            options: {
+                description: 'Gets a list of taxes',
+                handler: (request, h) => {
+                    return ProductTaxCtrl.getAllHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'GET',
+            path: `${routePrefix}/tax`,
+            options: {
+                description: 'Gets a tax by ID',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: (request, h) => {
+                    return ProductTaxCtrl.getByIdHandler(request.query.id, null, h);
+                }
+            }
+        },
+        {
+            method: 'POST',
+            path: `${routePrefix}/tax`,
+            options: {
+                description: 'Adds a new tax',
+                validate: {
+                    payload: ProductTaxCtrl.getSchema()
+                },
+                handler: (request, h) => {
+                    return ProductTaxCtrl.createHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'PUT',
+            path: `${routePrefix}/tax`,
+            options: {
+                description: 'Updates a tax',
+                validate: {
+                    payload: Joi.object({
+                        id: Joi.string().uuid().required(),
+                        ...ProductTaxCtrl.getSchema()
+                    })
+                },
+                handler: (request, h) => {
+                    return ProductTaxCtrl.updateHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'DELETE',
+            path: `${routePrefix}/tax`,
+            options: {
+                description: 'Deletes a tax',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: (request, h) => {
+                    return ProductTaxCtrl.deleteHandler(request.query.id, h);
                 }
             }
         },
@@ -826,6 +866,7 @@ const after = function (server) {
     server.event('SHOPPING_CART_CHECKOUT_SUCCESS');
 
     // defining event handlers:
+    // TODO: use product options instead
     server.events.on(
         'SHOPPING_CART_CHECKOUT_SUCCESS',
         productSizeController.decrementInventoryCount
@@ -866,11 +907,6 @@ const after = function (server) {
     );
 
     server.app.bookshelf.model(
-        'ProductSize',
-        require('./models/ProductSize')(baseModel, server.app.bookshelf, server)
-    );
-
-    server.app.bookshelf.model(
         'ProductVariation',
         require('./models/ProductVariation')(baseModel, server.app.bookshelf, server)
     );
@@ -888,6 +924,11 @@ const after = function (server) {
     server.app.bookshelf.model(
         'FitType',
         require('./models/FitType')(baseModel, server.app.bookshelf, server)
+    );
+
+    server.app.bookshelf.model(
+        'ProductTax',
+        require('./models/ProductTax')(baseModel, server.app.bookshelf, server)
     );
 };
 

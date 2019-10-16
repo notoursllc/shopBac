@@ -14,13 +14,13 @@ module.exports = function (baseModel, bookshelf) {
                 return this.belongsTo('ProductArtist', 'product_artist_id');
             },
 
-            sizes: function() {
-                // product_id is the foreign key in ProductSize
-                return this.hasMany('ProductSize', 'product_id');
+            tax: function() {
+                // tax_id is the foreign key in this model
+                return this.belongsTo('ProductTax', 'tax_id');
             },
 
             variations: function() {
-                // product_pic_id is the foreign key in ProductPicVariant
+                // product_id is the foreign key in ProductVariation
                 return this.hasMany('ProductVariation', 'product_id');
             },
 
@@ -30,16 +30,6 @@ module.exports = function (baseModel, bookshelf) {
             },
 
             virtuals: {
-                total_inventory_count: function() {
-                    let totalCount = 0;
-
-                    this.related('sizes').forEach((sizeModel) => {
-                        totalCount += parseInt(sizeModel.get('inventory_count') || 0, 10);
-                    });
-
-                    return totalCount;
-                },
-
                 display_price: function() {
                     let price = 0;
                     let salePrice = this.get('sale_price') || 0;

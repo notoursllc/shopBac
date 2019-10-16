@@ -34,6 +34,7 @@ class ProductCtrl extends BaseController {
             shipping_package_type: Joi.number().integer().positive().allow(null),
             material_type: Joi.number().integer().positive().allow(null),
             product_artist_id: Joi.string().uuid().allow(null),
+            tax_id: Joi.string().uuid().allow(null),
             created_at: Joi.date().optional(),
             updated_at: Joi.date().optional()
         };
@@ -46,13 +47,6 @@ class ProductCtrl extends BaseController {
         return [
             'artist',
             {
-                sizes: (query) => {
-                    if(!options.viewAllRelated) {
-                        query.where('is_visible', '=', true);
-                    }
-                    query.orderBy('sort', 'ASC');
-                },
-
                 variations: (query) => {
                     if(!options.viewAllRelated) {
                         query.where('published', '=', true);
@@ -73,8 +67,11 @@ class ProductCtrl extends BaseController {
 
     async getProductByIdHandler(request, h) {
         let withRelated = this.getWithRelated(request.query);
-        withRelated.push('variations.options');
-        withRelated.push('variations.pics.pic_variants');
+        withRelated.push(
+            'tax',
+            'variations.options',
+            'variations.pics.pic_variants'
+        );
 
         return this.getByIdHandler(
             request.query.id,
@@ -116,7 +113,7 @@ class ProductCtrl extends BaseController {
 
 
     /**
-     * Deletes a product, including all of its sizes, pictures and artist
+     * Deletes a product, including all of its variations and pictures
      *
      * @param {*} request
      * @param {*} h
@@ -183,7 +180,6 @@ class ProductCtrl extends BaseController {
         return h.apiSuccess({
             types: globalTypes.product.types,
             subTypes: globalTypes.product.subtypes,
-            sizes: globalTypes.product.sizes,
             fits: globalTypes.product.fits
         });
     }
@@ -289,20 +285,14 @@ class ProductCtrl extends BaseController {
     }
 
 
-    async getProductsForArtistHandler(artistId, h) {
-        return this.fetchAll(h, (qb) => {
-            qb.where('product_artist_id', '=', artistId);
-        });
-    }
-
-
+    // TODO: move to product variation?
     featuredProductPic(productJson) {
         let pic = null;
 
         if(Array.isArray(productJson.pics)) {
             let len = productJson.pics.length;
 
-            // The related sizes for a product are ordered by sort order (ASC)
+            // The related pics for a product are ordered by sort order (ASC)
             // so the first 'is_visible' pic will be the featured pic
             for(let i=0; i<len; i++) {
                 if(productJson.pics[i].is_visible && productJson.pics[i].url) {
