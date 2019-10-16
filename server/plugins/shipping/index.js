@@ -2,6 +2,8 @@ const Joi = require('@hapi/joi');
 const ShippingController = require('./shippingController');
 
 const after = function (server) {
+    const ShippingPackageTypeCtrl = new (require('./ShippingPackageTypeCtrl'))(server);
+
     server.route([
         {
             method: 'POST',
@@ -27,6 +29,17 @@ const after = function (server) {
 
         {
             method: 'GET',
+            path: `/shipping/packagetypes`,
+            options: {
+                description: 'Gets a list of package types',
+                // handler: ShippingController.packageTypeListHandler
+                handler: (request, h) => {
+                    return ShippingPackageTypeCtrl.getAllHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'GET',
             path: '/shipping/packagetype',
             options: {
                 description: 'Finds a package type by ID',
@@ -35,42 +48,40 @@ const after = function (server) {
                         id: Joi.string().uuid()
                     }
                 },
-                handler: ShippingController.getPackageTypeByIdHandler
-            }
-        },
-        {
-            method: 'GET',
-            path: `/shipping/packagetypes`,
-            options: {
-                description: 'Gets a list of package types',
-                handler: ShippingController.packageTypeListHandler
+                handler: (request, h) => {
+                    return ShippingPackageTypeCtrl.getByIdHandler(request.query.id, null, h);
+                }
             }
         },
         {
             method: 'POST',
-            path: `/shipping/packagetype/create`,
+            path: `/shipping/packagetype`,
             options: {
                 description: 'Creates a package type',
                 validate: {
                     payload: Joi.object({
-                        ...ShippingController.getPackageTypeSchema()
+                        ...ShippingPackageTypeCtrl.getSchema()
                     })
                 },
-                handler: ShippingController.packageTypeCreateHandler
+                handler: (request, h) => {
+                    return ShippingPackageTypeCtrl.createHandler(request, h);
+                }
             }
         },
         {
-            method: 'POST',
-            path: `/shipping/packagetype/update`,
+            method: 'PUT',
+            path: `/shipping/packagetype`,
             options: {
                 description: 'Updates a package type',
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...ShippingController.getPackageTypeSchema()
+                        ...ShippingPackageTypeCtrl.getSchema()
                     })
                 },
-                handler: ShippingController.packageTypeUpdateHandler
+                handler: (request, h) => {
+                    return ShippingPackageTypeCtrl.updateHandler(request, h);
+                }
             }
         },
         {
@@ -83,7 +94,9 @@ const after = function (server) {
                         id: Joi.string().uuid().required(),
                     })
                 },
-                handler: ShippingController.packageTypeDeleteHandler
+                handler: (request, h) => {
+                    return ShippingPackageTypeCtrl.deleteHandler(request.query.id, h);
+                }
             }
         }
     ]);
@@ -92,8 +105,8 @@ const after = function (server) {
     let baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
 
     server.app.bookshelf.model(
-        'PackageTypes',
-        require('./models/PackageTypes')(baseModel, server.app.bookshelf, server)
+        'PackageType',
+        require('./models/PackageType')(baseModel, server.app.bookshelf, server)
     );
 };
 

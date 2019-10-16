@@ -31,7 +31,7 @@ class ProductCtrl extends BaseController {
             fit: Joi.number().integer().positive().allow(null),
             type: Joi.number().integer().positive().default(1),
             sub_type: Joi.number().integer().positive().allow(null),
-            shipping_package_type: Joi.number().integer().positive().allow(null),
+            shipping_package_type_id: Joi.string().uuid().allow(null),
             material_type: Joi.number().integer().positive().allow(null),
             product_artist_id: Joi.string().uuid().allow(null),
             tax_id: Joi.string().uuid().allow(null),
@@ -41,10 +41,9 @@ class ProductCtrl extends BaseController {
     }
 
 
-    getWithRelated(opts) {
+    getWithRelated(opts, details) {
         let options = opts || {};
-
-        return [
+        let related = [
             'artist',
             {
                 variations: (query) => {
@@ -61,21 +60,26 @@ class ProductCtrl extends BaseController {
                     query.orderBy('sort_order', 'ASC');
                 }
             }
-        ]
+        ];
+
+        if(details) {
+            related.push(
+                'tax',
+                'package_type',
+                'variations.options',
+                'variations.pics.pic_variants'
+            );
+        }
+
+        return related;
     }
 
 
-    async getProductByIdHandler(request, h) {
-        let withRelated = this.getWithRelated(request.query);
-        withRelated.push(
-            'tax',
-            'variations.options',
-            'variations.pics.pic_variants'
-        );
 
+    async getProductByIdHandler(request, h) {
         return this.getByIdHandler(
             request.query.id,
-            { withRelated: withRelated },
+            { withRelated: this.getWithRelated(request.query, true) },
             h
         );
     }
@@ -83,17 +87,13 @@ class ProductCtrl extends BaseController {
 
     async productSeoHandler(request, h) {
         try {
-            let withRelated = this.getWithRelated();
-            withRelated.push('variations.options');
-            withRelated.push('variations.pics.pic_variants');
-
             global.logger.info('REQUEST: productSeoHandler', {
                 meta: request.query
             });
 
             const Product = await this.modelForgeFetch(
                 { 'seo_uri': request.query.id },
-                { withRelated: withRelated }
+                { withRelated: this.getWithRelated(request.query, true) }
             );
 
             const productJson = Product ? Product.toJSON() : null;
