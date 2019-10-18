@@ -14,6 +14,8 @@ class FitTypeCtrl extends BaseController {
         return {
             name: Joi.string().max(100).required(),
             value: Joi.number().integer().min(0).required(),
+            slug: Joi.string().required(),
+            is_available: Joi.boolean().default(true),
             created_at: Joi.date(),
             updated_at: Joi.date()
         };
@@ -28,9 +30,9 @@ class FitTypeCtrl extends BaseController {
      */
     async getAllHandler(request, h) {
         return this.fetchAll(h, (qb) => {
-            // if(helperService.isBoolean(request.query.is_available)) {
-            //     qb.where('is_available', '=', request.query.is_available);
-            // }
+            if(helperService.isBoolean(request.query.is_available)) {
+                qb.where('is_available', '=', request.query.is_available);
+            }
         });
     }
 
