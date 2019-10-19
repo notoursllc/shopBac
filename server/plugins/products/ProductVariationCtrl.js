@@ -64,16 +64,39 @@ class ProductVariationCtrl extends BaseController {
 
 
     async getVariationsForProductHandler(productId, h) {
-        return this.fetchAll(h, (qb) => {
-            qb.where('product_id', '=', productId);
-        });
+        try {
+            global.logger.info(`REQUEST: ProductVariationCtrl.getVariationsForProductHandler`, {
+                meta: { productId }
+            });
+
+            const Models = await this.getModel()
+                .query('where', 'product_id', '=', productId)   // https://bookshelfjs.org/api.html#Model-instance-query
+                .fetchPage({
+                    pageSize: 50,  // This seems safe.  We need to get all of the variations.  Cant imagine there will be more than this.
+                    page: 1,
+                    withRelated: [{
+                        pics: (query) => {
+                            query.orderBy('sort_order', 'ASC');
+                        }
+                    }]
+                });
+
+            global.logger.info(`RESPONSE: ProductVariationCtrl.getVariationsForProductHandler`, {
+                meta: Models ? Models.toJSON() : null
+            });
+
+            return h.apiSuccess(Models);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
     }
 
 
     async deleteHandler(id, h) {
         try {
-
-
             const ProductVariation = await this.deleteVariation(id);
 
             global.logger.info(`RESPONSE: ProductVariationCtrl.deleteHandler (${this.modelName})`, {
