@@ -38,6 +38,16 @@ const after = function (server) {
     server.route([
         {
             method: 'GET',
+            path: `${routePrefix}/products`,
+            options: {
+                description: 'Gets a list of products',
+                handler: (request, h) => {
+                    return ProductCtrl.getPageHandler(request, ProductCtrl.getWithRelated(), h);
+                }
+            }
+        },
+        {
+            method: 'GET',
             path: `${routePrefix}/product`,
             options: {
                 description: 'Finds a product by ID',
@@ -49,6 +59,37 @@ const after = function (server) {
                 },
                 handler: (request, h) => {
                     return ProductCtrl.getProductByIdHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'POST',
+            path: `${routePrefix}/product`,
+            options: {
+                description: 'Creates a product',
+                validate: {
+                    payload: Joi.object({
+                        ...ProductCtrl.getSchema()
+                    })
+                },
+                handler: (request, h) => {
+                    return ProductCtrl.createHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'PUT',
+            path: `${routePrefix}/product`,
+            options: {
+                description: 'Updates a product',
+                validate: {
+                    payload: Joi.object({
+                        id: Joi.string().uuid().required(),
+                        ...ProductCtrl.getSchema()
+                    })
+                },
+                handler: (request, h) => {
+                    return ProductCtrl.updateHandler(request, h);
                 }
             }
         },
@@ -104,47 +145,6 @@ const after = function (server) {
                 description: 'Returns general info about products',
                 handler: (request, h) => {
                     return ProductCtrl.productInfoHandler(request, h);
-                }
-            }
-        },
-        {
-            method: 'GET',
-            path: `${routePrefix}/products`,
-            options: {
-                description: 'Gets a list of products',
-                handler: (request, h) => {
-                    return ProductCtrl.getPageHandler(request, ProductCtrl.getWithRelated(), h);
-                }
-            }
-        },
-        {
-            method: 'POST',
-            path: `${routePrefix}/product`,
-            options: {
-                description: 'Creates a product',
-                validate: {
-                    payload: Joi.object({
-                        ...ProductCtrl.getSchema()
-                    })
-                },
-                handler: (request, h) => {
-                    return ProductCtrl.createHandler(request, h);
-                }
-            }
-        },
-        {
-            method: 'PUT',
-            path: `${routePrefix}/product`,
-            options: {
-                description: 'Updates a product',
-                validate: {
-                    payload: Joi.object({
-                        id: Joi.string().uuid().required(),
-                        ...ProductCtrl.getSchema()
-                    })
-                },
-                handler: (request, h) => {
-                    return ProductCtrl.updateHandler(request, h);
                 }
             }
         },
