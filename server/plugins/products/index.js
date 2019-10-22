@@ -19,6 +19,7 @@ const after = function (server) {
     const ProductOptionCtrl = new (require('./ProductOptionCtrl'))(server);
     const MaterialTypeCtrl = new (require('./MaterialTypeCtrl'))(server);
     const FitTypeCtrl = new (require('./FitTypeCtrl'))(server);
+    const OptionTypeCtrl = new (require('./OptionTypeCtrl'))(server);
 
 
     // Yes this was aleady set in the Core plugin, but apparently
@@ -847,6 +848,80 @@ const after = function (server) {
 
 
         /******************************
+         * Option Types
+         ******************************/
+        {
+            method: 'GET',
+            path: `${routePrefix}/optiontypes`,
+            options: {
+                description: 'Gets a list of option types',
+                handler: (request, h) => {
+                    return OptionTypeCtrl.getAllHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'GET',
+            path: `${routePrefix}/optiontype`,
+            options: {
+                description: 'Gets an option type by ID',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: (request, h) => {
+                    return OptionTypeCtrl.getByIdHandler(request.query.id, null, h);
+                }
+            }
+        },
+        {
+            method: 'POST',
+            path: `${routePrefix}/optiontype`,
+            options: {
+                description: 'Adds a new option type',
+                validate: {
+                    payload: OptionTypeCtrl.getSchema()
+                },
+                handler: (request, h) => {
+                    return OptionTypeCtrl.createHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'PUT',
+            path: `${routePrefix}/optiontype`,
+            options: {
+                description: 'Updates option type',
+                validate: {
+                    payload: Joi.object({
+                        id: Joi.string().uuid().required(),
+                        ...OptionTypeCtrl.getSchema()
+                    })
+                },
+                handler: (request, h) => {
+                    return OptionTypeCtrl.updateHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'DELETE',
+            path: `${routePrefix}/optiontype`,
+            options: {
+                description: 'Deletes a option type',
+                validate: {
+                    query: Joi.object({
+                        id: Joi.string().uuid().required()
+                    })
+                },
+                handler: (request, h) => {
+                    return OptionTypeCtrl.deleteHandler(request.query.id, h);
+                }
+            }
+        },
+
+
+        /******************************
          * Other
          ******************************/
         {
@@ -924,6 +999,11 @@ const after = function (server) {
     server.app.bookshelf.model(
         'FitType',
         require('./models/FitType')(baseModel, server.app.bookshelf, server)
+    );
+
+    server.app.bookshelf.model(
+        'OptionType',
+        require('./models/OptionType')(baseModel, server.app.bookshelf, server)
     );
 
     server.app.bookshelf.model(

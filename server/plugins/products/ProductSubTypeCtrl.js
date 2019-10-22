@@ -1,7 +1,7 @@
-const ProductTypeCtrl = require('./ProductTypeCtrl');
+const BaseTypeCtrl = require('../core/BaseTypeCtrl');
 
 
-class ProductSubTypeCtrl extends ProductTypeCtrl {
+class ProductSubTypeCtrl extends BaseTypeCtrl {
 
     constructor(server) {
         super(server, 'ProductSubType');
