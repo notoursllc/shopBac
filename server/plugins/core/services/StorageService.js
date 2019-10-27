@@ -104,7 +104,7 @@ function resizeAndWrite(req, width) {
 
             if(typeObj) {
                 let w = parseInt(width, 10) || 600
-                let cleanId = helperService.stripTags(helperService.stripQuotes(req.payload.product_variation_id));
+                let cleanId = helperService.stripTags(helperService.stripQuotes(req.payload.product_id));
                 let fileName = `${cleanId}_${new Date().getTime()}.${typeObj.ext}`;
 
                 // Read image data from readableStream,

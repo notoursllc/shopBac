@@ -26,7 +26,7 @@ class ProductTaxCtrl extends BaseController {
      * @param {*} h
      */
     async getAllHandler(request, h) {
-        return this.fetchAll(h, (qb) => {
+        return this.fetchAllHandler(h, (qb) => {
             // if(helperService.isBoolean(request.query.is_available)) {
             //     qb.where('is_available', '=', request.query.is_available);
             // }

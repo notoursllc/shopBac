@@ -2,39 +2,63 @@ const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const isObject = require('lodash.isobject');
 const { createSitemap } = require('sitemap');
-const BaseController = require('../core/BaseController');
-const helperService = require('../../helpers.service');
-const globalTypes = require('../../global_types.js');
-const ProductVariationCtrl = require('./ProductVariationCtrl');
+const BaseController = require('../../core/BaseController');
+const helperService = require('../../../helpers.service');
+const globalTypes = require('../../../global_types.js');
+// const ProductVariationCtrl = require('../controllers/ProductVariationCtrl');
 
 
 class ProductCtrl extends BaseController {
 
     constructor(server) {
         super(server, 'Product');
-        this.ProductVariationController = new ProductVariationCtrl(server, 'ProductVariation');
+        // this.ProductVariationController = new ProductVariationCtrl(server, 'ProductVariation');
     }
 
 
     getSchema() {
         return {
+            vendor: Joi.string().max(100).allow(null),
+            published: Joi.boolean().default(false),
+
+            // TYPES
+            fit_type: Joi.number().integer().positive().allow(null),
+            type: Joi.number().integer().positive().default(1),
+            sub_type: Joi.number().integer().positive().allow(null),
+            sales_channel_type: Joi.number().integer().positive().allow(null),
+            collections: Joi.number().integer().positive().allow(null),
+
+            // GENERAL
             title: Joi.string().max(100).allow(null),
-            description_short: Joi.string().max(500).allow(null),
-            description_long: Joi.string().max(750).allow(null),
+            description: Joi.string().max(500).allow(null),
+            video_url: Joi.string().max(500).allow(null),
+
+            // SEO
+            seo_page_title: Joi.string().max(100).allow(null),
+            seo_page_desc: Joi.string().allow(null),
             seo_uri: Joi.string().max(50).allow(null),
+
+            // PRICING
             base_price: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
             sale_price: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
             is_on_sale: Joi.boolean().default(false),
-            is_available: Joi.boolean().default(false),
+            cost: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
+
+            // INVENTORY
+            inventory_count: Joi.number().allow(null),
+            sku: Joi.string().allow(null),
+            barcode: Joi.string().allow(null),
+            hide_if_out_of_stock: Joi.boolean().default(true),
+
+            // SHIPPING
+            weight_oz: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
+            customs_country_of_origin: Joi.string().max(2).allow(null),
+            customs_harmonized_system_code: Joi.number().allow(null),
+
+            // TAXES
             tax_code: Joi.number().allow(null),
-            video_url: Joi.string().max(500).allow(null),
-            fit: Joi.number().integer().positive().allow(null),
-            type: Joi.number().integer().positive().default(1),
-            sub_type: Joi.number().integer().positive().allow(null),
-            shipping_package_type_id: Joi.string().uuid().allow(null),
-            material_type: Joi.number().integer().positive().allow(null),
-            product_artist_id: Joi.string().uuid().allow(null),
-            tax_id: Joi.string().uuid().allow(null),
+
+            // TIMESTAMPS
             created_at: Joi.date().optional(),
             updated_at: Joi.date().optional()
         };
@@ -44,30 +68,21 @@ class ProductCtrl extends BaseController {
     getWithRelated(opts, details) {
         let options = opts || {};
         let related = [
-            'artist',
             {
-                variations: (query) => {
+                pics: (query) => {
                     if(!options.viewAllRelated) {
                         query.where('published', '=', true);
                     }
                     query.orderBy('ordinal', 'ASC');
-                },
-
-                'variations.pics': (query) => {
-                    if(!options.viewAllRelated) {
-                        query.where('is_visible', '=', true);
-                    }
-                    query.orderBy('sort_order', 'ASC');
                 }
             }
         ];
 
         if(details) {
             related.push(
-                'tax',
-                'package_type',
-                'variations.options',
-                'variations.pics.pic_variants'
+                // 'variations.options',
+                'pics.pic_variants',
+                'option_labels'
             );
         }
 
@@ -141,14 +156,15 @@ class ProductCtrl extends BaseController {
                 meta: productJson.variations
             });
 
-            // Delete product pics
+            // Delete product variations
             if(Array.isArray(productJson.variations)) {
                 try {
                     const variationPromises = [];
 
                     productJson.variations.forEach((variation) => {
                         variationPromises.push(
-                            this.ProductVariationController.deleteVariation(variation.id)
+                            // TODO - needs refactoring
+                            // this.ProductVariationController.deleteVariation(variation.id)
                         );
                     });
 
@@ -224,7 +240,7 @@ class ProductCtrl extends BaseController {
             page: 1,
             withRelated: {
                 pics: (query) => {
-                    query.where('is_visible', '=', true);
+                    query.where('published', '=', true);
                     query.orderBy('sort_order', 'ASC');
                 }
             }
@@ -293,9 +309,9 @@ class ProductCtrl extends BaseController {
             let len = productJson.pics.length;
 
             // The related pics for a product are ordered by sort order (ASC)
-            // so the first 'is_visible' pic will be the featured pic
+            // so the first 'published' pic will be the featured pic
             for(let i=0; i<len; i++) {
-                if(productJson.pics[i].is_visible && productJson.pics[i].url) {
+                if(productJson.pics[i].published && productJson.pics[i].url) {
                     pic = productJson.pics[i].url;
                     break;
                 }

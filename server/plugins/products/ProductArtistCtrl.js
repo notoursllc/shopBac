@@ -26,7 +26,7 @@ class ProductArtistCtrl extends BaseController {
 
 
     async getProductsForArtistHandler(artistId, h) {
-        return this.fetchAll(h, (qb) => {
+        return this.fetchAllHandler(h, (qb) => {
             qb.where('product_artist_id', '=', artistId);
         });
     }

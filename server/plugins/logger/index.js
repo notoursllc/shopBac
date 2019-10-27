@@ -27,7 +27,7 @@ exports.plugin = {
             if (isObject(info.meta)) {
                 info.meta = `- ${JSON.stringify(info.meta)}`
             }
-            return `${info.timestamp} [${info.level}]: ${info.message} ${info.meta}`;
+            return `${info.timestamp} [${info.level}]: ${info.message} ${info.meta || ''}`;
         });
 
         // Log DNA setup:

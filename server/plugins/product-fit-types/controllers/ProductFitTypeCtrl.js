@@ -1,10 +1,10 @@
-const BaseTypeCtrl = require('../core/BaseTypeCtrl');
+const BaseTypeCtrl = require('../../core/BaseTypeCtrl');
 
 
 class FitTypeCtrl extends BaseTypeCtrl {
 
     constructor(server) {
-        super(server, 'FitType');
+        super(server, 'ProductFitType');
     }
 
 }

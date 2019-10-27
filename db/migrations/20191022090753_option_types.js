@@ -9,7 +9,6 @@ module.exports.up = (knex) => {
             t.string('name').notNullable();
             t.integer('value').nullable();
             t.string('slug').notNullable();
-            t.boolean('is_available').defaultTo(true);
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();
 

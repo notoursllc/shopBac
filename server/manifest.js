@@ -46,6 +46,56 @@ const webManifest = {
             // { plugin: './plugins/auth-scheme-jwt-cookie' },
             { plugin: './plugins/hapi-basic-auth' },
             { plugin: './plugins/core' },
+
+            {
+                plugin: './plugins/product-collections',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+
+            {
+                plugin: './plugins/product-option-labels',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+
+            {
+                plugin: './plugins/product-pics',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+
+            {
+                plugin: './plugins/product-types',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+
+            {
+                plugin: './plugins/product-fit-types',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+
+            {
+                plugin: './plugins/product-sales-channel-types',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+
+            {
+                plugin: './plugins/product-sub-types',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+
             { plugin: './plugins/products' },
             {
                 plugin: './plugins/shipping',

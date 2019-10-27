@@ -21,7 +21,7 @@ class ShippingCtrl extends BaseController {
             width: Joi.number().precision(2).min(0).required(),
             height: Joi.number().precision(2).min(0).allow(null),
             weight: Joi.number().precision(2).min(0).allow(null),
-            mass_unit: Joi.string().allow('oz').optional(),  // see note #1 below
+            // mass_unit: Joi.string().allow('oz').allow(null),  // see note #1 below
             distance_unit: Joi.string().length(2).required(),
             created_at: Joi.date(),
             updated_at: Joi.date()
@@ -36,7 +36,7 @@ class ShippingCtrl extends BaseController {
      * @param {*} h
      */
     async getAllHandler(request, h) {
-        return this.fetchAll(h, (qb) => {
+        return this.fetchAllHandler(h, (qb) => {
             // if(helperService.isBoolean(request.query.is_available)) {
             //     qb.where('is_available', '=', request.query.is_available);
             // }

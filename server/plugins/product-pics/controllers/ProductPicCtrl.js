@@ -1,14 +1,12 @@
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
-const Promise = require('bluebird');
 const isObject = require('lodash.isobject');
-const helperService = require('../../helpers.service');
-const StorageService = require('../core/services/StorageService')
-const BaseController = require('../core/BaseController');
+const StorageService = require('../../core/services/StorageService')
+const ProductPicBaseCtrl = require('./ProductPicBaseCtrl');
 const ProductPicVariantCtrl = require('./ProductPicVariantCtrl');
 
 
-class ProductPicCtrl extends BaseController {
+class ProductPicCtrl extends ProductPicBaseCtrl {
 
     constructor(server) {
         super(server, 'ProductPic');
@@ -18,10 +16,9 @@ class ProductPicCtrl extends BaseController {
 
     getSchema() {
         return {
-            // id: Joi.string().uuid(),
-            sort_order: Joi.number().integer().min(0),
-            is_visible: Joi.boolean(),
-            product_variation_id: Joi.string().uuid()
+            ordinal: Joi.number().integer().min(0),
+            published: Joi.boolean(),
+            product_id: Joi.string().uuid()
         };
     }
 
@@ -33,80 +30,56 @@ class ProductPicCtrl extends BaseController {
     }
 
 
-    async deletePicFiles(id) {
-        global.logger.info('REQUEST: ProductPicCtrl.deletePicFiles', {
-            meta: { id }
-        });
+    // async deletePicFiles(id) {
+    //     global.logger.info('REQUEST: ProductPicCtrl.deletePicFiles', {
+    //         meta: { id }
+    //     });
 
-        // Getting the ProductPic and it's pic_variants relations
-        const ProductPic = await this.modelForgeFetch(
-            {id: id},
-            { withRelated: this.getWithRelated() }
-        );
+    //     // Getting the ProductPic and it's pic_variants relations
+    //     const ProductPic = await this.modelForgeFetch(
+    //         {id: id},
+    //         { withRelated: this.getWithRelated() }
+    //     );
 
-        const picJson = ProductPic ? ProductPic.toJSON() : {};
+    //     const picJson = ProductPic ? ProductPic.toJSON() : {};
 
-        StorageService.deleteFile(picJson.url);
+    //     StorageService.deleteFile(picJson.url);
 
-        if(Array.isArray(picJson.pic_variants)) {
-            picJson.pic_variants.forEach((obj) => {
-                StorageService.deleteFile(obj.url);
-            })
-        }
-    }
-
-
-    /**
-     * Deletes the pic file from object storage and also from DB
-     *
-     * @param {*} ProductPic
-     */
-    async deleteFromFileAndDB(ProductPic) {
-        const picJson = ProductPic ? ProductPic.toJSON() : {};
-        const promises = [];
-
-        global.logger.info('REQUEST: ProductPicCtrl.deleteFromFileAndDB', {
-            meta: picJson
-        });
-
-        if(picJson.id) {
-            promises.push(
-                this.getModel().destroy({ id: picJson.id }),
-                StorageService.deleteFile(picJson.url)
-            );
-        }
-
-        const resposne = await Promise.all(promises);
-
-        global.logger.info('RESPONSE: ProductPicCtrl.deleteFromFileAndDB', {
-            meta: resposne
-        });
-
-        return resposne;
-    }
+    //     if(Array.isArray(picJson.pic_variants)) {
+    //         picJson.pic_variants.forEach((obj) => {
+    //             StorageService.deleteFile(obj.url);
+    //         })
+    //     }
+    // }
 
 
     deleteVariantsFromFileAndDB(ProductPic) {
-        const variants = ProductPic ? ProductPic.get('pic_variants') : null;
+        const picJson = ProductPic ? ProductPic.toJSON() : {};
+        const promises = [];
 
-        if(Array.isArray(variants)) {
-            variants.forEach((obj) => {
-                this.ProductPicVariantController.deleteFromFileAndDB(obj.id)
-            })
+        global.logger.info(`REQUEST: ProductPicCtrl.deleteVariantsFromFileAndDB`, {
+            meta: picJson
+        });
+
+        if(Array.isArray(picJson.pic_variants)) {
+            picJson.pic_variants.forEach((obj) => {
+                promises.push(
+                    this.ProductPicVariantController.deleteFromFileAndDB(obj.id, obj.url)
+                )
+            });
         }
+
+        return Promise.all(promises);
     }
 
 
     /***************************************
      * route handlers
-     /**************************************/
+    /**************************************/
 
-     async getAllHandler(request, h) {
-        return this.fetchAll(h, (qb) => {
-            if(helperService.isBoolean(request.query.is_visible)) {
-                qb.where('is_visible', '=', request.query.is_visible);
-            }
-        });
+    async getPageHandler(request, h) {
+        const withRelated = this.getWithRelated();
+        return super.getPageHandler(request, withRelated, h);
     }
 
 
@@ -131,9 +104,10 @@ class ProductPicCtrl extends BaseController {
             try {
                 // If a new file is being uploaded then delete the current file and variants
                 if(request.payload.id && request.payload.file) {
-                    const ProductPicModel = await this.getModel().findById(request.payload.id);
-                    this.deleteVariantsFromFileAndDB(ProductPicModel);
-                    StorageService.deleteFile(ProductPicModel.get('url'))
+                    const ProductPic = await this.getModel().findById(request.payload.id);
+
+                    this.deleteVariantsFromFileAndDB(ProductPic);
+                    StorageService.deleteFile(ProductPic.get('url'))
                 }
             }
             catch(e) {
@@ -147,9 +121,9 @@ class ProductPicCtrl extends BaseController {
 
             // update or create the ProductPic
             const createParams = {
-                product_variation_id: request.payload.product_variation_id,
-                is_visible: request.payload.is_visible === true ? true : false,
-                sort_order: parseInt(request.payload.sort_order, 10) || 1
+                product_id: request.payload.product_id,
+                published: request.payload.published === true ? true : false,
+                ordinal: parseInt(request.payload.ordinal, 10) || 1
             };
 
             // resizeResponse will be empty if the HTTP request did not include a file
@@ -190,20 +164,18 @@ class ProductPicCtrl extends BaseController {
 
     async deleteHandler(request, h) {
         try {
-            const productPicId = request.query.id;
-
             global.logger.info('REQUEST: ProductPicCtrl.deleteHandler', {
-                meta: { productPicId }
+                meta: { id: request.query.id }
             });
 
             // Getting the ProductPic and its pic_variant relations
             const ProductPic = await this.modelForgeFetch(
-                {id: productPicId},
+                { id: request.query.id },
                 { withRelated: this.getWithRelated() }
             );
 
             await this.deleteVariantsFromFileAndDB(ProductPic);
-            await this.deleteFromFileAndDB(ProductPic);
+            await this.deleteFromFileAndDB(ProductPic.get('id'), ProductPic.get('url'));
 
             global.logger.info('RESPONSE: ProductPicCtrl.deleteHandler', {
                 meta: ProductPic ? ProductPic.toJSON() : null

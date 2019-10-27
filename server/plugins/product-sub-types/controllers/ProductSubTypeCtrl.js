@@ -1,4 +1,4 @@
-const BaseTypeCtrl = require('../core/BaseTypeCtrl');
+const BaseTypeCtrl = require('../../core/BaseTypeCtrl');
 
 
 class ProductSubTypeCtrl extends BaseTypeCtrl {

@@ -16,91 +16,6 @@ function setServer(s) {
 }
 
 
-function getSizeTypeSortOrder(size) {
-    let types = globalTypes.product.sizes;
-    let index = types.indexOf(size);
-    return index > -1 ? index : types.length;
-}
-
-
-/***************************************
- * route handlers
- /**************************************/
-
- async function productSizeCreateHandler(request, h) {
-    try {
-        request.payload.sort = request.payload.sort || getSizeTypeSortOrder(request.payload.size)
-
-        const ProductSize = await getModel().forge().save(
-            request.payload,
-            { method: 'insert' }
-        )
-
-        if(!ProductSize) {
-            throw Boom.badRequest('Unable to create a a new product size.');
-        }
-
-        return h.apiSuccess(
-            ProductSize.toJSON()
-        );
-    }
-    catch(err) {
-        global.logger.error(err);
-        global.bugsnag(err);
-        throw Boom.badRequest(err);
-    }
-}
-
-
- async function productSizeUpdateHandler(request, h) {
-    try {
-        const ProductSize = await getModel().forge().save(
-            request.payload,
-            { method: 'update', patch: true }
-        )
-
-        if(!ProductSize) {
-            throw Boom.badRequest('Unable to find product size.');
-        }
-
-        return h.apiSuccess(
-            ProductSize.toJSON()
-        );
-    }
-    catch(err) {
-        global.logger.error(err);
-        global.bugsnag(err);
-        throw Boom.badRequest(err);
-    }
-}
-
-
-function deleteProductSize(id) {
-    return getModel().destroy({
-        id
-    });
-}
-
-
-async function productSizeDeleteHandler(request, h) {
-    try {
-        const ProductSize = await deleteProductSize(request.query.id)
-
-        if(!ProductSize) {
-            throw Boom.badRequest('Unable to find product size.');
-        }
-
-        return h.apiSuccess(
-            ProductSize.toJSON()
-        );
-    }
-    catch(err) {
-        global.logger.error(err);
-        global.bugsnag(err);
-        throw Boom.badRequest(err);
-    }
-}
-
 
 async function decrementInventoryCount(ShoppingCart) {
     try {
@@ -137,10 +52,5 @@ async function decrementInventoryCount(ShoppingCart) {
 
 module.exports = {
     setServer,
-    getSizeTypeSortOrder,
-    deleteProductSize,
-    productSizeCreateHandler,
-    productSizeUpdateHandler,
-    productSizeDeleteHandler,
     decrementInventoryCount
 }

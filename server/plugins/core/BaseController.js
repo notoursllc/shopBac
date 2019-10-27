@@ -109,8 +109,6 @@ class BaseController {
      */
     async updateHandler(request, h) {
         try {
-            request.payload.updated_at = request.payload.updated_at || new Date();
-
             global.logger.info(`REQUEST: BaseController.updateHandler (${this.modelName})`, {
                 meta: request.payload
             });
@@ -168,7 +166,7 @@ class BaseController {
     }
 
 
-    async fetchAll(h, queryBufferModiferFn) {
+    async fetchAll(queryBufferModiferFn) {
         try {
             global.logger.info(`REQUEST: BaseController.fetchAll (${this.modelName})`);
 
@@ -178,6 +176,19 @@ class BaseController {
                 meta: Models ? Models.toJSON() : null
             });
 
+            return Models;
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
+
+    async fetchAllHandler(h, queryBufferModiferFn) {
+        try {
+            const Models = await this.fetchAll(queryBufferModiferFn);
             return h.apiSuccess(Models);
         }
         catch(err) {
@@ -191,8 +202,10 @@ class BaseController {
     async getPageHandler(request, withRelatedConfig, h) {
         try {
             global.logger.info(`REQUEST: BaseController.getPageHandler (${this.modelName})`, {
-                meta: request.query,
-                withRelatedConfig: withRelatedConfig
+                meta: {
+                    query: request.query,
+                    withRelatedConfig
+                }
             });
 
             const Models = await this.fetchPage(request, withRelatedConfig);
@@ -212,6 +225,7 @@ class BaseController {
             );
         }
         catch(err) {
+            console.log(err)
             global.logger.error(err);
             global.bugsnag(err);
             throw Boom.notFound(err);
@@ -305,31 +319,32 @@ class BaseController {
             config.withRelated = withRelated;
         }
 
-        return this.getModel().query((qb) => {
-            // qb.innerJoin('manufacturers', 'cars.manufacturer_id', 'manufacturers.id');
-            // qb.groupBy('cars.id');
+        return this.getModel()
+            .query((qb) => {
+                // qb.innerJoin('manufacturers', 'cars.manufacturer_id', 'manufacturers.id');
+                // qb.groupBy('cars.id');
 
-            if(queryData.where) {
-                qb.where(queryData.where[0], queryData.where[1], queryData.where[2]);
-            }
-
-            if(queryData.whereRaw) {
-                if(queryData.whereRaw.length === 1) {
-                    qb.whereRaw(queryData.whereRaw);
+                if(queryData.where) {
+                    qb.where(queryData.where[0], queryData.where[1], queryData.where[2]);
                 }
-                else {
-                    qb.whereRaw(queryData.whereRaw.shift(), queryData.whereRaw);
-                }
-            }
 
-            if(queryData.andWhere) {
-                forEach(queryData.andWhere, function(arr) {
-                    qb.andWhere(arr[0], arr[1], arr[2]);
-                });
-            }
-        })
-        .orderBy(queryData.orderBy, queryData.orderDir)
-        .fetchPage(config);
+                if(queryData.whereRaw) {
+                    if(queryData.whereRaw.length === 1) {
+                        qb.whereRaw(queryData.whereRaw);
+                    }
+                    else {
+                        qb.whereRaw(queryData.whereRaw.shift(), queryData.whereRaw);
+                    }
+                }
+
+                if(queryData.andWhere) {
+                    forEach(queryData.andWhere, function(arr) {
+                        qb.andWhere(arr[0], arr[1], arr[2]);
+                    });
+                }
+            })
+            .orderBy(queryData.orderBy, queryData.orderDir)
+            .fetchPage(config);
     }
 
 }

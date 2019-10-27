@@ -6,36 +6,50 @@ module.exports.up = (knex) => {
         CoreService.DB_TABLES.products,
         (t) => {
             t.uuid('id').primary();
-            t.string('title').nullable();
-            t.text('description_short').nullable();
-            t.text('description_long').nullable();
-            t.string('sku').nullable();
-            t.string('seo_uri').nullable();
-            t.decimal('cost').defaultTo(0);
-            t.decimal('weight_oz').defaultTo(0);
-            t.decimal('base_price').defaultTo(0);
-            t.decimal('sale_price').defaultTo(0);
-            t.boolean('is_on_sale').defaultTo(false);
-            t.boolean('is_available').defaultTo(false);
-            t.string('tax_code').nullable();
-            t.string('video_url').nullable();
+            t.uuid('vendor').primary();
+            t.boolean('published').defaultTo(false);
+
+            // TYPES
             t.integer('gender').nullable();
             t.integer('type').nullable();
             t.integer('sub_type').nullable();
+            t.integer('sales_channel_type').nullable();
+
+            // GENERAL
+            t.string('title').nullable();
+            t.text('description').nullable();
+            t.string('video_url').nullable();
+
+            // SEO
+            t.text('seo_page_title').nullable();
+            t.text('seo_page_desc').nullable();
+            t.string('seo_uri').nullable();
+
+            // PRICING
+            t.decimal('base_price').defaultTo(0);
+            t.decimal('sale_price').defaultTo(0);
+            t.boolean('is_on_sale').defaultTo(false);
+            t.decimal('cost').defaultTo(0);
+            t.boolean('is_taxable').defaultTo(true);
+            t.string('tax_code').nullable();
+
+            // INVENTORY
             t.integer('inventory_count').defaultTo(0);
+            t.string('sku').nullable();
+            t.string('barcode').nullable();
             t.boolean('hide_if_out_of_stock').defaultTo(true);
+
+            // SHIPPING
+            t.decimal('weight_oz').defaultTo(0);
+            t.string('customs_country_of_origin').nullable();
+            t.string('customs_harmonized_system_code').nullable();
+
+            // TIMESTAMPS
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();
 
-            // Foreign Keys:
-            t.uuid('product_artist_id')
-                .references('id')
-                .inTable(CoreService.DB_TABLES.product_artists)
-                .onDelete('CASCADE');
-
             t.index([
                 'id',
-                'product_artist_id',
                 'type',
                 'sub_type'
             ]);

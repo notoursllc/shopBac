@@ -1,7 +1,7 @@
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const BaseController = require('../core/BaseController');
-const ProductPicCtrl = require('./ProductPicCtrl');
+const ProductPicCtrl = require('../product-pics/controllers/ProductPicCtrl');
 
 
 class ProductVariationCtrl extends BaseController {
@@ -45,7 +45,7 @@ class ProductVariationCtrl extends BaseController {
                 },
 
                 pics: (query) => {
-                    query.where('is_visible', '=', true);
+                    query.where('published', '=', true);
                     query.orderBy('sort_order', 'ASC');
                 }
             },

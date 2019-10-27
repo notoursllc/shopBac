@@ -17,7 +17,7 @@ let common = {
         }
     },
     migrations: {
-        directory: './db/migrations',
+        directory: './db/migrations_new',
         tableName: 'knex_migrations'
     },
     seeds: {

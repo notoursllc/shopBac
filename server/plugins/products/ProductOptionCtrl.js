@@ -33,7 +33,7 @@ class ProductOptionCtrl extends BaseController {
 
 
     async getOptionsForProductVariationHandler(productVariationId, h) {
-        return this.fetchAll(h, (qb) => {
+        return this.fetchAllHandler(h, (qb) => {
             qb.where('product_variation_id', '=', productVariationId);
         });
     }

@@ -9,30 +9,45 @@ module.exports = function (baseModel, bookshelf) {
 
             hasTimestamps: true,
 
-            artist: function() {
-                // product_artist_id is the foreign key in this model
-                return this.belongsTo('ProductArtist', 'product_artist_id');
+            // artist: function() {
+            //     // product_artist_id is the foreign key in this model
+            //     return this.belongsTo('ProductArtist', 'product_artist_id');
+            // },
+
+            // tax: function() {
+            //     // tax_id is the foreign key in this model
+            //     return this.belongsTo('ProductTax', 'tax_id');
+            // },
+
+            // package_type: function() {
+            //     // tax_id is the foreign key in this model
+            //     return this.belongsTo('PackageType', 'shipping_package_type_id');
+            // },
+
+            pics: function() {
+                // product_id is the foreign key in ProductPic
+                return this.hasMany('ProductPic', 'product_id');
             },
 
-            tax: function() {
-                // tax_id is the foreign key in this model
-                return this.belongsTo('ProductTax', 'tax_id');
-            },
-
-            package_type: function() {
-                // tax_id is the foreign key in this model
-                return this.belongsTo('PackageType', 'shipping_package_type_id');
+            option_labels: function() {
+                // product_id is the foreign key in ProductPic
+                return this.hasMany('ProductOptionLabel', 'product_id');
             },
 
             variations: function() {
-                // product_id is the foreign key in ProductVariation
-                return this.hasMany('ProductVariation', 'product_id');
+                // product_id is the foreign key in ProductVariant
+                return this.hasMany('ProductVariant', 'product_id');
             },
 
-            cart_items: function() {
-                // product_id is the foreign key in ShoppingCartItem
-                return this.hasMany('ShoppingCartItem', 'product_id');
+            options: function() {
+                // product_id is the foreign key in ProductOption
+                return this.hasMany('ProductOption', 'product_id');
             },
+
+            // cart_items: function() {
+            //     // product_id is the foreign key in ShoppingCartItem
+            //     return this.hasMany('ShoppingCartItem', 'product_id');
+            // },
 
             virtuals: {
                 display_price: function() {
