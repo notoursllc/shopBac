@@ -1,75 +1,66 @@
 const Joi = require('@hapi/joi');
 
+
 const after = function (server) {
-    const ProductSubTypeCtrl = new (require('./controllers/ProductSubTypeCtrl'))(server);
+    const ProductVariantCtrl = new (require('./controllers/ProductVariantCtrl'))(server);
 
     server.route([
         {
             method: 'GET',
-            path: `/sub_types`,
+            path: '/product_variant',
             options: {
-                description: 'Gets a list of product sub types',
-                handler: (request, h) => {
-                    return ProductSubTypeCtrl.getAllHandler(request, h);
-                }
-            }
-        },
-        {
-            method: 'GET',
-            path: `/sub_type`,
-            options: {
-                description: 'Gets an product type by ID',
+                description: 'Gets an product variant by ID',
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required()
                     })
                 },
                 handler: (request, h) => {
-                    return ProductSubTypeCtrl.getByIdHandler(request.query.id, null, h);
+                    return ProductVariantCtrl.getByIdHandler(request, h);
                 }
             }
         },
         {
             method: 'POST',
-            path: `/sub_type`,
+            path: '/product_variant',
             options: {
-                description: 'Adds a new product type',
+                description: 'Adds a new product variant',
                 validate: {
-                    payload: ProductSubTypeCtrl.getSchema()
+                    payload: ProductVariantCtrl.getSchema()
                 },
                 handler: (request, h) => {
-                    return ProductSubTypeCtrl.createHandler(request, h);
+                    return ProductVariantCtrl.createHandler(request, h);
                 }
             }
         },
         {
             method: 'PUT',
-            path: `/sub_type`,
+            path: '/product_variant',
             options: {
-                description: 'Updates product type',
+                description: 'Updates a product variant',
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...ProductSubTypeCtrl.getSchema()
+                        ...ProductVariantCtrl.getSchema()
                     })
                 },
                 handler: (request, h) => {
-                    return ProductSubTypeCtrl.updateHandler(request, h);
+                    return ProductVariantCtrl.updateHandler(request, h);
                 }
             }
         },
         {
             method: 'DELETE',
-            path: `/sub_type`,
+            path: '/product_variant',
             options: {
-                description: 'Deletes a product type',
+                description: 'Deletes a product variant',
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required()
                     })
                 },
                 handler: (request, h) => {
-                    return ProductSubTypeCtrl.deleteHandler(request.query.id, h);
+                    return ProductVariantCtrl.deleteHandler(request.query.id, h);
                 }
             }
         }
@@ -80,9 +71,10 @@ const after = function (server) {
     let baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
 
     server.app.bookshelf.model(
-        'ProductSubType',
-        require('./models/ProductSubType')(baseModel, server.app.bookshelf, server)
+        'ProductVariant',
+        require('./models/ProductVariant')(baseModel, server.app.bookshelf, server)
     );
+
 };
 
 

@@ -7,19 +7,17 @@ module.exports = function (baseModel, bookshelf) {
 
             uuid: true,
 
-            hasTimestamps: true,
+            hasTimestamps: false,
 
-            // One-to-One relation with ProductVariant
-            // product_variant_id is the foreign key in this model
             variant: function() {
+                // product_variant_id is the foreign key in this model
                 return this.belongsTo('ProductVariant', 'product_variant_id');
             },
 
-            // One-to-One relation with ProductOption
-            // product_option_id is the foreign key in this model
-            option: function() {
-                return this.belongsTo('ProductOptionm', 'product_option_id');
-            }
+            product_option_label: function() {
+                // product_option_label_id is the foreign key in this model
+                return this.belongsTo('ProductOptionLabel', 'product_option_label_id');
+            },
         },
 
         // Custom methods:

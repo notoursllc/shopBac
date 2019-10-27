@@ -15,7 +15,7 @@ module.exports.up = (knex) => {
         CoreService.DB_TABLES.product_option_labels,
         (t) => {
             t.uuid('id').primary();
-            t.string('label').defaultTo(false);
+            t.string('label').nullable();
 
             // Foreign Keys:
             t.uuid('product_id')

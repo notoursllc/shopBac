@@ -15,9 +15,7 @@ module.exports.up = (knex) => {
         CoreService.DB_TABLES.product_option_values,
         (t) => {
             t.uuid('id').primary();
-            t.boolean('value').defaultTo(false);
-            t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
-            t.timestamp('updated_at', true).nullable();
+            t.string('value').nullable();
 
             // Foreign Keys:
             t.uuid('product_option_label_id')

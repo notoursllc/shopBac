@@ -1,14 +1,14 @@
 const CoreService = require('../../server/plugins/core/core.service');
 
-
 module.exports.up = (knex) => {
     return knex.schema.createTable(
         CoreService.DB_TABLES.product_variants,
         (t) => {
+            /*
+            * Common attributes for product and product variant:
+            */
             t.uuid('id').primary();
             t.boolean('published').defaultTo(false);
-            t.string('display_name').nullable();
-            t.string('image').nullable();
 
             // PRICING
             t.decimal('base_price').defaultTo(0);
@@ -28,11 +28,17 @@ module.exports.up = (knex) => {
             // SHIPPING
             t.decimal('weight_oz').defaultTo(0);
             t.string('customs_country_of_origin').nullable();
-            t.string('customs_harmonized_system_code').nullable();
+            t.integer('customs_harmonized_system_code').nullable();
 
             // TIMESTAMPS
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();
+
+
+            /*
+            * Unique attributes for product variant:
+            */
+            t.string('image').nullable();
 
             // Foreign Keys:
             t.uuid('product_id')

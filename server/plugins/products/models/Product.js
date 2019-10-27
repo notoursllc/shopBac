@@ -34,15 +34,15 @@ module.exports = function (baseModel, bookshelf) {
                 return this.hasMany('ProductOptionLabel', 'product_id');
             },
 
-            variations: function() {
+            variants: function() {
                 // product_id is the foreign key in ProductVariant
                 return this.hasMany('ProductVariant', 'product_id');
             },
 
-            options: function() {
-                // product_id is the foreign key in ProductOption
-                return this.hasMany('ProductOption', 'product_id');
-            },
+            // options: function() {
+            //     // product_id is the foreign key in ProductOption
+            //     return this.hasMany('ProductOption', 'product_id');
+            // },
 
             // cart_items: function() {
             //     // product_id is the foreign key in ShoppingCartItem

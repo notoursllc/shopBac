@@ -6,7 +6,7 @@ const after = function (server) {
     server.route([
         {
             method: 'GET',
-            path: '/saleschanneltypes',
+            path: '/sales_channel_types',
             options: {
                 description: 'Gets a list of sales channel types',
                 handler: (request, h) => {
@@ -16,7 +16,7 @@ const after = function (server) {
         },
         {
             method: 'GET',
-            path: '/saleschanneltype',
+            path: '/sales_channel_type',
             options: {
                 description: 'Gets a sales channel type by ID',
                 validate: {
@@ -31,7 +31,7 @@ const after = function (server) {
         },
         {
             method: 'POST',
-            path: '/saleschanneltype',
+            path: '/sales_channel_type',
             options: {
                 description: 'Adds a new sales channel type',
                 validate: {
@@ -44,7 +44,7 @@ const after = function (server) {
         },
         {
             method: 'PUT',
-            path: '/saleschanneltype',
+            path: '/sales_channel_type',
             options: {
                 description: 'Updates sales channel type',
                 validate: {
@@ -60,7 +60,7 @@ const after = function (server) {
         },
         {
             method: 'DELETE',
-            path: '/saleschanneltype',
+            path: '/sales_channel_type',
             options: {
                 description: 'Deletes a sales channel type',
                 validate: {

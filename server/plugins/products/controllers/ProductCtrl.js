@@ -18,8 +18,33 @@ class ProductCtrl extends BaseController {
 
     getSchema() {
         return {
-            vendor: Joi.string().max(100).allow(null),
             published: Joi.boolean().default(false),
+
+            // PRICING
+            base_price: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
+            sale_price: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
+            is_on_sale: Joi.boolean().default(false),
+            cost: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
+            is_taxable: Joi.boolean().default(true),
+            tax_code: Joi.number().allow(null),
+
+            // INVENTORY
+            inventory_count: Joi.number().allow(null),
+            sku: Joi.string().allow(null),
+            barcode: Joi.string().allow(null),
+            hide_if_out_of_stock: Joi.boolean().default(true),
+            track_quantity: Joi.boolean().default(true),
+
+            // SHIPPING
+            weight_oz: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
+            customs_country_of_origin: Joi.string().max(2).allow(null),
+            customs_harmonized_system_code: Joi.number().allow(null),
+
+            // TIMESTAMPS
+            created_at: Joi.date().optional(),
+            updated_at: Joi.date().optional(),
+
+            vendor: Joi.string().max(100).allow(null),
 
             // TYPES
             fit_type: Joi.number().integer().positive().allow(null),
@@ -36,31 +61,7 @@ class ProductCtrl extends BaseController {
             // SEO
             seo_page_title: Joi.string().max(100).allow(null),
             seo_page_desc: Joi.string().allow(null),
-            seo_uri: Joi.string().max(50).allow(null),
-
-            // PRICING
-            base_price: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
-            sale_price: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
-            is_on_sale: Joi.boolean().default(false),
-            cost: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
-
-            // INVENTORY
-            inventory_count: Joi.number().allow(null),
-            sku: Joi.string().allow(null),
-            barcode: Joi.string().allow(null),
-            hide_if_out_of_stock: Joi.boolean().default(true),
-
-            // SHIPPING
-            weight_oz: Joi.number().precision(2).min(0).max(99999999.99).allow(null),
-            customs_country_of_origin: Joi.string().max(2).allow(null),
-            customs_harmonized_system_code: Joi.number().allow(null),
-
-            // TAXES
-            tax_code: Joi.number().allow(null),
-
-            // TIMESTAMPS
-            created_at: Joi.date().optional(),
-            updated_at: Joi.date().optional()
+            seo_uri: Joi.string().max(50).allow(null)
         };
     }
 
@@ -82,7 +83,9 @@ class ProductCtrl extends BaseController {
             related.push(
                 // 'variations.options',
                 'pics.pic_variants',
-                'option_labels'
+                'option_labels',
+                'variants',
+                'variants.product_option_values',
             );
         }
 

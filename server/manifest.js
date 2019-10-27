@@ -62,6 +62,13 @@ const webManifest = {
             },
 
             {
+                plugin: './plugins/product-option-values',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+
+            {
                 plugin: './plugins/product-pics',
                 routes: {
                     prefix: routePrefix
@@ -96,7 +103,15 @@ const webManifest = {
                 }
             },
 
+            {
+                plugin: './plugins/product-variants',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+
             { plugin: './plugins/products' },
+
             {
                 plugin: './plugins/shipping',
                 routes: {

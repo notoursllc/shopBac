@@ -15,9 +15,9 @@ module.exports = function (baseModel, bookshelf) {
                 return this.belongsTo('Product', 'product_id');
             },
 
-            option_values: function() {
+            product_option_values: function() {
                 // product_variation_id is the foreign key in ProductOptionValues
-                return this.hasMany('ProductOptionValues', 'product_variant_id');
+                return this.hasMany('ProductOptionValue', 'product_variant_id');
             },
 
             // pics: function() {

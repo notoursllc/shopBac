@@ -6,7 +6,7 @@ const after = function (server) {
     server.route([
         {
             method: 'GET',
-            path: `/fittypes`,
+            path: `/fit_types`,
             options: {
                 description: 'Gets a list of fit types',
                 handler: (request, h) => {
@@ -16,7 +16,7 @@ const after = function (server) {
         },
         {
             method: 'GET',
-            path: `/fittype`,
+            path: `/fit_type`,
             options: {
                 description: 'Gets an fit type by ID',
                 validate: {
@@ -31,7 +31,7 @@ const after = function (server) {
         },
         {
             method: 'POST',
-            path: `/fittype`,
+            path: `/fit_type`,
             options: {
                 description: 'Adds a new fit type',
                 validate: {
@@ -44,7 +44,7 @@ const after = function (server) {
         },
         {
             method: 'PUT',
-            path: `/fittype`,
+            path: `/fit_type`,
             options: {
                 description: 'Updates fit type',
                 validate: {
@@ -60,7 +60,7 @@ const after = function (server) {
         },
         {
             method: 'DELETE',
-            path: `/fittype`,
+            path: `/fit_type`,
             options: {
                 description: 'Deletes a fit type',
                 validate: {

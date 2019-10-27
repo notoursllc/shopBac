@@ -7,12 +7,13 @@ module.exports.up = (knex) => {
         (t) => {
             t.uuid('id').primary();
             t.string('url').nullable();
-            t.integer('ordinal');
             t.integer('width');
             t.integer('height');
-            t.boolean('published').defaultTo(false);
+            t.boolean('published').defaultTo(true);
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();
+
+            t.integer('ordinal');
 
             // Foreign Keys:
             t.uuid('product_id')
