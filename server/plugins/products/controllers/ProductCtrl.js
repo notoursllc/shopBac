@@ -195,6 +195,20 @@ class ProductCtrl extends BaseController {
     }
 
 
+    async getAdminProductList(request, h) {
+        const withSelectedOpts = [
+            'variants',
+            {
+                pics: (query) => {
+                    query.orderBy('ordinal', 'ASC');
+                }
+            }
+        ];
+
+        return this.getPageHandler(request, withSelectedOpts, h);
+    }
+
+
     productInfoHandler(request, h) {
         return h.apiSuccess({
             types: globalTypes.product.types,

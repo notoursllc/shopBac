@@ -63,7 +63,25 @@ module.exports = function (baseModel, bookshelf) {
                     }
 
                     return price;
+                },
+
+                total_inventory_count: function() {
+                    let totalCount = this.get('inventory_count') || 0;
+
+                    // https://bookshelfjs.org/api.html#Collection-instance-toArray
+                    const variants = this.related('variants').toArray();
+                    if(variants.length) {
+                        // If there are variants then we only count their inventory
+                        totalCount = 0;
+
+                        variants.forEach(function (model) {
+                            totalCount += model.get('inventory_count')
+                        })
+                    }
+
+                    return totalCount;
                 }
+
             }
         }
     );

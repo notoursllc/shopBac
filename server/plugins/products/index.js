@@ -138,22 +138,20 @@ const after = function (server) {
                 }
             }
         },
-        // {
-        //     method: 'GET',
-        //     path: `${routePrefix}/product/variations`,
-        //     options: {
-        //         description: 'Gets a list of variations for a given product',
-        //         validate: {
-        //             query: Joi.object({
-        //                 product_id: Joi.string().uuid().required()
-        //             })
-        //         },
-        //         handler: (request, h) => {
-        //             return ProductVariationCtrl.getVariationsForProductHandler(request.query.product_id, h);
-        //         }
-        //     }
-        // },
 
+        /******************************
+         * Admin routes
+         ******************************/
+        {
+            method: 'GET',
+            path: `${routePrefix}/admin/products`,
+            options: {
+                description: 'Gets a list of products',
+                handler: (request, h) => {
+                    return ProductCtrl.getAdminProductList(request, h);
+                }
+            }
+        },
 
         /******************************
          * Other
