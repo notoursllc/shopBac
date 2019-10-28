@@ -34,6 +34,17 @@ const webManifest = {
             },
             { plugin: '@hapi/inert' },
             { plugin: '@hapi/vision' },
+
+            // https://www.npmjs.com/package/hapi-rate-limit
+            {
+                plugin: 'hapi-rate-limit',
+                options: {
+                    enabled: true,
+                    userLimit: 300,
+                    pathLimit: 50
+                }
+            },
+
             { plugin: './plugins/logger' },
             {
                 plugin: './plugins/bookshelf-orm',
