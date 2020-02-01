@@ -1,8 +1,6 @@
-'use strict';
-
 const Boom = require('@hapi/boom');
 const path = require('path');
-const Config = require('./config');
+const Config = require('./OLD-plugins/config');
 
 const routePrefix = '/api/v1';
 
@@ -11,6 +9,9 @@ const webManifest = {
         // cache: 'redis',
         port: Config.get('/port/api'),
         routes: {
+            cors: {
+                origin: ['*']
+            },
             validate: {
                 failAction: async (request, h, err) => {
                     global.logger.error(err);
@@ -34,6 +35,14 @@ const webManifest = {
             },
             { plugin: '@hapi/inert' },
             { plugin: '@hapi/vision' },
+            {
+                plugin: 'hapi-rate-limit', // https://www.npmjs.com/package/hapi-rate-limit
+                options: {
+                    enabled: true,
+                    userLimit: 300,
+                    pathLimit: 50
+                }
+            },
             { plugin: './plugins/logger' },
             {
                 plugin: './plugins/bookshelf-orm',
@@ -46,6 +55,24 @@ const webManifest = {
             // { plugin: './plugins/auth-scheme-jwt-cookie' },
             { plugin: './plugins/hapi-basic-auth' },
             { plugin: './plugins/core' },
+            {
+                plugin: './plugins/master-types',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+            {
+                plugin: './plugins/product-collections',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+            {
+                plugin: './plugins/storage',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
             { plugin: './plugins/products' },
             {
                 plugin: './plugins/shipping',
@@ -61,6 +88,12 @@ const webManifest = {
             },
             {
                 plugin: './plugins/shopping-cart',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+            {
+                plugin: './plugins/tenants',
                 routes: {
                     prefix: routePrefix
                 }

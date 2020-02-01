@@ -35,12 +35,12 @@ class ShippingCtrl extends BaseController {
      * @param {*} request
      * @param {*} h
      */
-    async getAllHandler(request, h) {
-        return this.fetchAll(h, (qb) => {
-            // if(helperService.isBoolean(request.query.is_available)) {
-            //     qb.where('is_available', '=', request.query.is_available);
-            // }
-        });
+    getByIdHandler(request, h) {
+        return this.modelForgeFetchHandler(
+            { id: request.query.id, tenant_id: this.getTenantId(request) },
+            null,
+            h
+        );
     }
 
 

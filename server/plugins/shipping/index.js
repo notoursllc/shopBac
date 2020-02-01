@@ -28,7 +28,7 @@ const after = function (server) {
 
         {
             method: 'GET',
-            path: `/shipping/packagetypes`,
+            path: '/shipping/packagetypes',
             options: {
                 description: 'Gets a list of package types',
                 handler: (request, h) => {
@@ -47,13 +47,13 @@ const after = function (server) {
                     }
                 },
                 handler: (request, h) => {
-                    return ShippingCtrl.getByIdHandler(request.query.id, null, h);
+                    return ShippingCtrl.getByIdHandler(request, h);
                 }
             }
         },
         {
             method: 'POST',
-            path: `/shipping/packagetype`,
+            path: '/shipping/packagetype',
             options: {
                 description: 'Creates a package type',
                 validate: {
@@ -68,7 +68,7 @@ const after = function (server) {
         },
         {
             method: 'PUT',
-            path: `/shipping/packagetype`,
+            path: '/shipping/packagetype',
             options: {
                 description: 'Updates a package type',
                 validate: {
@@ -84,7 +84,7 @@ const after = function (server) {
         },
         {
             method: 'DELETE',
-            path: `/shipping/packagetype`,
+            path: '/shipping/packagetype',
             options: {
                 description: 'Deletes a package type',
                 validate: {
@@ -100,7 +100,7 @@ const after = function (server) {
     ]);
 
     // LOADING BOOKSHELF MODELS:
-    let baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
+    const baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
 
     server.app.bookshelf.model(
         'PackageType',

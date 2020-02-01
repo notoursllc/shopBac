@@ -1,6 +1,6 @@
 const logdnaWinston = require('logdna-winston');
 const winston = require('winston');
-const bugsnag = require('bugsnag');
+const bugsnag = require('@bugsnag/js');
 const isObject = require('lodash.isobject');
 
 
@@ -9,21 +9,21 @@ exports.plugin = {
     pkg: require('./package.json'),
     register: function (server, options) {
         // Bugsnag setup:
-        bugsnag.register(process.env.BUG_SNAG_API_KEY, {
-            releaseStage: 'production',
-            // autoNotifyUnhandledRejection: false // https://docs.bugsnag.com/platforms/nodejs/other/
+        const bugsnagClient = bugsnag({
+            apiKey: process.env.BUG_SNAG_API_KEY,
+            releaseStage: 'production'
         });
 
-        global.bugsnag = function() {
+        global.bugsnag = () => {
             const args = arguments;
             if(process.env.NODE_ENV === 'production') {
-                bugsnag.notify(args);
+                bugsnagClient.notify(args);
             }
-        }
+        };
 
         let logger = null;
 
-        let prettyJson = winston.format.printf((info) => {
+        const prettyJson = winston.format.printf((info) => {
             if (isObject(info.meta)) {
                 info.meta = `- ${JSON.stringify(info.meta)}`
             }

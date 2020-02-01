@@ -8,7 +8,7 @@ exports.plugin = {
     register: function (server, options) {
         let knex;
         let bookshelf = null;
-        let bookshelfPlugins = ['registry', 'virtuals', 'visibility', 'pagination', 'bookshelf-uuid'];
+        let bookshelfPlugins = ['registry', 'virtuals', 'visibility', 'pagination', 'bookshelf-uuid', 'bookshelf-paranoia'];
 
         const schema = Joi.object().keys({
             knex: Joi.object().keys({

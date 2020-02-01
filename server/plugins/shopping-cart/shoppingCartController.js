@@ -15,7 +15,7 @@ const shippoOrdersAPI = require('../shipping/shippoAPI/orders');
 const { getLocationId } = require('../payment/square_helpers');
 
 // Products
-const ProductCtrl = require('../products/ProductCtrl');
+const ProductCtrl = require('../products/controllers/ProductCtrl');
 let ProductController;
 
 // Shipping

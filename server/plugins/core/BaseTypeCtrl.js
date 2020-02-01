@@ -15,7 +15,7 @@ class BaseTypeCtrl extends BaseController {
             name: Joi.string().max(100).required(),
             value: Joi.number().integer().min(0).required(),
             slug: Joi.string().required(),
-            is_available: Joi.boolean().default(true),
+            published: Joi.boolean().default(true),
             created_at: Joi.date(),
             updated_at: Joi.date()
         };
@@ -29,9 +29,9 @@ class BaseTypeCtrl extends BaseController {
      * @param {*} h
      */
     async getAllHandler(request, h) {
-        return this.fetchAll(h, (qb) => {
-            if(helperService.isBoolean(request.query.is_available)) {
-                qb.where('is_available', '=', request.query.is_available);
+        return this.fetchAllHandler(h, (qb) => {
+            if(helperService.isBoolean(request.query.published)) {
+                qb.where('published', '=', request.query.published);
             }
         });
     }

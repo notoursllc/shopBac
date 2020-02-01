@@ -1,4 +1,3 @@
-const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const queryString = require('query-string');
 const isString = require('lodash.isstring');
@@ -17,78 +16,49 @@ class BaseController {
     }
 
 
-    modelForgeFetch(forgeObj, fetchObj) {
-        return this.getModel().forge(forgeObj).fetch(fetchObj);
-    }
-
-
     /**
-     * Gets a model by a given attribute, or all results if no attributes are passed
+     * Creates or updates a model
+     * Note this method does not add the tenant_id to the payload
      *
-     * @param attrName
-     * @param attrValue
-     * @returns {Promise}
+     * @param {*} data
      */
-    getByAttribute(attrName, attrValue) {
-        let forgeOpts = null;
-
-        if(attrName) {
-            forgeOpts = {};
-            forgeOpts[attrName] = attrValue;
-        }
-
-        return this.modelForgeFetch(forgeOpts)
-    }
-
-
-    async getByIdHandler(id, fetchConfig, h) {
+    async upsertModel(data) {
         try {
-            global.logger.info(`REQUEST: BaseController.getByIdHandler (${this.modelName})`, {
+            global.logger.info(`REQUEST: BaseController.upsertModel (${this.modelName})`, {
+                meta: data
+            });
+
+            const ModelInstance = data.id
+                ? await this.getModel().update(data, {id: data.id})
+                : await this.getModel().create(data);
+
+            global.logger.info(`RESPONSE: BaseController.upsertModel (${this.modelName})`, {
                 meta: {
-                    id: id,
-                    fetchConfig: fetchConfig
+                    model: ModelInstance ? ModelInstance.toJSON() : null
                 }
             });
 
-            const ModelInstance = await this.modelForgeFetch(
-                {'id': id},
-                fetchConfig
-            )
-
-            global.logger.info(`RESPONSE: BaseController.getByIdHandler (${this.modelName})`, {
-                meta: ModelInstance ? ModelInstance.toJSON() : null
-            });
-
-            return h.apiSuccess(ModelInstance);
+            return ModelInstance;
         }
         catch(err) {
             global.logger.error(err);
             global.bugsnag(err);
-            throw Boom.badRequest(err);
         }
     }
 
 
     /**
-     * Route handler for creating a new model
+     * Route handler for upserting a model
      *
      * @param {*} request
      * @param {*} h
      */
-    async createHandler(request, h) {
+    async upsertHandler(request, h) {
         try {
-            global.logger.info(`REQUEST: BaseController.createHandler (${this.modelName})`, {
-                meta: request.payload
-            });
-
-            const ModelInstance = await this.getModel().create(request.payload);
-
-            global.logger.info(`RESPONSE: BaseController.createHandler (${this.modelName})`, {
-                meta: ModelInstance ? ModelInstance.toJSON() : null
-            });
+            const ModelInstance = await this.upsertModel(request.payload);
 
             if(!ModelInstance) {
-                throw Boom.badRequest(`Unable to create a new model (${this.modelName})`);
+                throw Boom.badRequest(`Unable to ${request.payload.id ? 'update' : 'create'} model (${this.modelName})`);
             }
 
             return h.apiSuccess(ModelInstance);
@@ -101,56 +71,33 @@ class BaseController {
     }
 
 
-    /**
-     * Route handler for updating a model
-     *
-     * @param {*} request
-     * @param {*} h
-     */
-    async updateHandler(request, h) {
+    async deleteModel(id, tenant_id) {
+        global.logger.info(`REQUEST: BaseController.deleteModel (${this.modelName})`, {
+            meta: {
+                id,
+                tenant_id
+            }
+        });
+
+        const ModelInstance = await this.getModel().destroy({
+            id,
+            tenant_id
+        });
+
+        global.logger.info(`RESPONSE: BaseController.deleteModel (${this.modelName})`, {
+            meta: ModelInstance ? ModelInstance.toJSON() : null
+        });
+
+        return ModelInstance;
+    }
+
+
+    async deleteHandler(request, h) {
         try {
-            request.payload.updated_at = request.payload.updated_at || new Date();
-
-            global.logger.info(`REQUEST: BaseController.updateHandler (${this.modelName})`, {
-                meta: request.payload
-            });
-
-            const ModelInstance = await this.getModel().update(
-                request.payload,
-                { id: request.payload.id }
+            const ModelInstance = await this.deleteModel(
+                request.query.id,
+                this.getTenantId(request)
             );
-
-            global.logger.info(`RESPONSE: BaseController.updateHandler (${this.modelName})`, {
-                meta: ModelInstance ? ModelInstance.toJSON() : null
-            });
-
-            if(!ModelInstance) {
-                throw Boom.badRequest('Unable to find model');
-            }
-
-            return h.apiSuccess(ModelInstance);
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-            throw Boom.badRequest(err);
-        }
-    }
-
-
-    async deleteHandler(id, h) {
-        try {
-            global.logger.info(`REQUEST: BaseController.deleteHandler (${this.modelName})`, {
-                meta: { id }
-            });
-
-            const ModelInstance = await this.getModel().destroy({
-                id: id
-            });
-
-            global.logger.info(`RESPONSE: BaseController.deleteHandler (${this.modelName})`, {
-                meta: ModelInstance ? ModelInstance.toJSON() : null
-            });
 
             if(!ModelInstance) {
                 throw Boom.badRequest(`Unable to find model (${this.modelName})`);
@@ -168,7 +115,59 @@ class BaseController {
     }
 
 
-    async fetchAll(h, queryBufferModiferFn) {
+    async modelForgeFetch(forgeOptions, fetchOptions) {
+        global.logger.info(`REQUEST: BaseController.modelForgeFetch (${this.modelName})`, {
+            meta: {
+                forgeOptions,
+                fetchOptions
+            }
+        });
+
+        const ModelInstance = await this.getModel()
+            .forge(forgeOptions)
+            .fetch(fetchOptions);
+
+        global.logger.info(`RESPONSE: BaseController.modelForgeFetch (${this.modelName})`, {
+            meta: {
+                model: ModelInstance ? ModelInstance.toJSON() : null
+            }
+        });
+
+        return ModelInstance;
+    }
+
+
+    async modelForgeFetchHandler(forgeOptions, fetchOptions, h) {
+        try {
+            const ModelInstance = await this.modelForgeFetch(forgeOptions, fetchOptions);
+            return h.apiSuccess(ModelInstance);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
+
+    getByIdHandler(request, fetchOptions, h) {
+        return this.modelForgeFetchHandler(
+            { id: request.query.id },
+            fetchOptions,
+            h
+        );
+    }
+
+    // async getByIdHandler(request, fetchOptions, h) {
+    //     return await this.modelForgeFetchHandler(
+    //         { id: request.query.id, tenant_id: this.getTenantId(request) },
+    //         fetchOptions,
+    //         h
+    //     );
+    // }
+
+
+    async fetchAll(queryBufferModiferFn) {
         try {
             global.logger.info(`REQUEST: BaseController.fetchAll (${this.modelName})`);
 
@@ -178,6 +177,19 @@ class BaseController {
                 meta: Models ? Models.toJSON() : null
             });
 
+            return Models;
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
+
+    async fetchAllHandler(h, queryBufferModiferFn) {
+        try {
+            const Models = await this.fetchAll(queryBufferModiferFn);
             return h.apiSuccess(Models);
         }
         catch(err) {
@@ -191,8 +203,10 @@ class BaseController {
     async getPageHandler(request, withRelatedConfig, h) {
         try {
             global.logger.info(`REQUEST: BaseController.getPageHandler (${this.modelName})`, {
-                meta: request.query,
-                withRelatedConfig: withRelatedConfig
+                meta: {
+                    query: request.query,
+                    withRelatedConfig
+                }
             });
 
             const Models = await this.fetchPage(request, withRelatedConfig);
@@ -212,6 +226,7 @@ class BaseController {
             );
         }
         catch(err) {
+            console.log(err)
             global.logger.error(err);
             global.bugsnag(err);
             throw Boom.notFound(err);
@@ -305,31 +320,49 @@ class BaseController {
             config.withRelated = withRelated;
         }
 
-        return this.getModel().query((qb) => {
-            // qb.innerJoin('manufacturers', 'cars.manufacturer_id', 'manufacturers.id');
-            // qb.groupBy('cars.id');
+        return this.getModel()
+            .query((qb) => {
+                // qb.innerJoin('manufacturers', 'cars.manufacturer_id', 'manufacturers.id');
+                // qb.groupBy('cars.id');
 
-            if(queryData.where) {
-                qb.where(queryData.where[0], queryData.where[1], queryData.where[2]);
-            }
-
-            if(queryData.whereRaw) {
-                if(queryData.whereRaw.length === 1) {
-                    qb.whereRaw(queryData.whereRaw);
+                if(queryData.where) {
+                    qb.where(queryData.where[0], queryData.where[1], queryData.where[2]);
                 }
-                else {
-                    qb.whereRaw(queryData.whereRaw.shift(), queryData.whereRaw);
-                }
-            }
 
-            if(queryData.andWhere) {
-                forEach(queryData.andWhere, function(arr) {
-                    qb.andWhere(arr[0], arr[1], arr[2]);
-                });
-            }
-        })
-        .orderBy(queryData.orderBy, queryData.orderDir)
-        .fetchPage(config);
+                if(queryData.whereRaw) {
+                    if(queryData.whereRaw.length === 1) {
+                        qb.whereRaw(queryData.whereRaw);
+                    }
+                    else {
+                        qb.whereRaw(queryData.whereRaw.shift(), queryData.whereRaw);
+                    }
+                }
+
+                if(queryData.andWhere) {
+                    forEach(queryData.andWhere, function(arr) {
+                        qb.andWhere(arr[0], arr[1], arr[2]);
+                    });
+                }
+            })
+            .orderBy(queryData.orderBy, queryData.orderDir)
+            .fetchPage(config);
+    }
+
+
+    getTenantId(request) {
+        return request.headers['x-tenant'];
+    }
+
+
+    addTenantId(request, requestKey) {
+        const tenantId = this.getTenantId(request);
+
+        if(requestKey) {
+            request[requestKey].tenant_id = tenantId;
+        }
+        else {
+            request.tenant_id = tenantId;
+        }
     }
 
 }

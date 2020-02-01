@@ -4,6 +4,7 @@ const AWS = require('aws-sdk');
 const isObject = require('lodash.isobject');
 const cloneDeep = require('lodash.clonedeep');
 const sharp = require('sharp');
+const uuidV4 = require('uuid/v4');
 const helperService = require('../../../helpers.service');
 
 const spacesEndpoint = new AWS.Endpoint(process.env.DIGITAL_OCEAN_SPACES_ENDPOINT);
@@ -92,89 +93,96 @@ function deleteFile(url) {
  * More info here about 'writable directories' on Nanobox:
  * https://docs.nanobox.io/app-config/writable-dirs/
  */
-function resizeAndWrite(req, width) {
-    return new Promise((resolve, reject) => {
-        // Cloning is necessary because the file.pipe operation below seems
-        // to modify the request.payload.file value, causing subsequest
-        // resize attemtps on the same file to fail.
-        let file = cloneDeep(req.payload.file);
+function resizeAndWrite(fileObj, width) {
+    try {
+        return new Promise((resolve, reject) => {
+            // Cloning is necessary because the file.pipe operation below seems
+            // to modify the request.payload.file value, causing subsequest
+            // resize attemtps on the same file to fail.
+            let file = cloneDeep(fileObj);
 
-        if(file) {
-            let typeObj = fileIsImage(file._data)
+            if(isObject(file)) {
+                let typeObj = fileIsImage(file._data);
 
-            if(typeObj) {
-                let w = parseInt(width, 10) || 600
-                let cleanId = helperService.stripTags(helperService.stripQuotes(req.payload.product_variation_id));
-                let fileName = `${cleanId}_${new Date().getTime()}.${typeObj.ext}`;
+                if(typeObj) {
+                    let w = parseInt(width, 10) || 600
+                    // let cleanId = helperService.stripTags(helperService.stripQuotes(req.payload.product_id));
+                    // let fileName = `${cleanId}_${new Date().getTime()}.${typeObj.ext}`;
+                    let fileName = `${uuidV4()}.${typeObj.ext}`;
 
-                // Read image data from readableStream,
-                // resize,
-                // emit an 'info' event with calculated dimensions
-                // and finally write image data to writableStream
-                // http://sharp.pixelplumbing.com/en/stable/api-resize/
-                // http://sharp.pixelplumbing.com/en/stable/api-output/#tobuffer
-                let transformer = sharp()
-                    .resize({
-                        width: w
-                    })
-                    .toBuffer((err, buffer, info) => {
-                        if (err) {
-                            reject(err);
-                            return;
-                        }
-
-                        global.logger.info('StorageService.resizeAndWrite - RESIZING', {
-                            meta: info
-                        });
-
-                        let fileKey = getCloudImagePath(fileName);
-                        let { mime } = fileType(buffer);
-
-                        // https://gist.github.com/SylarRuby/b60eea29c1682519e422476cc5357b60
-                        const s3Config = {
-                            Bucket: process.env.DIGITAL_OCEAN_SPACE_NAME,
-                            Key: fileKey,
-                            Body: buffer,
-                            ACL: 'public-read',
-                            ContentEncoding: 'base64', // required
-                            ContentType: mime
-                            // Metadata: {
-                            //     'Content-Type': typeObj.mime
-                            // }
-                        };
-
-                        s3.upload(s3Config, (err, data) => {
+                    // Read image data from readableStream,
+                    // resize,
+                    // emit an 'info' event with calculated dimensions
+                    // and finally write image data to writableStream
+                    // http://sharp.pixelplumbing.com/en/stable/api-resize/
+                    // http://sharp.pixelplumbing.com/en/stable/api-output/#tobuffer
+                    let transformer = sharp()
+                        .resize({
+                            width: w
+                        })
+                        .toBuffer((err, buffer, info) => {
                             if (err) {
-                                global.logger.error('StorageService.resizeAndWrite - IMAGE UPLOAD FAILURE', err);
-                                return reject(err);
+                                reject(err);
+                                return;
                             }
 
-                            global.logger.info('StorageService.resizeAndWrite - UPLOAD SUCCESS', {
-                                meta: {
-                                    url: `${getCloudUrl()}/${fileKey}`,
-                                    width: w,
-                                    ...data
+                            global.logger.info('StorageService.resizeAndWrite - RESIZING', {
+                                meta: info
+                            });
+
+                            let fileKey = getCloudImagePath(fileName);
+                            let { mime } = fileType(buffer);
+
+                            // https://gist.github.com/SylarRuby/b60eea29c1682519e422476cc5357b60
+                            const s3Config = {
+                                Bucket: process.env.DIGITAL_OCEAN_SPACE_NAME,
+                                Key: fileKey,
+                                Body: buffer,
+                                ACL: 'public-read',
+                                ContentEncoding: 'base64', // required
+                                ContentType: mime
+                                // Metadata: {
+                                //     'Content-Type': typeObj.mime
+                                // }
+                            };
+
+                            s3.upload(s3Config, (err, data) => {
+                                if (err) {
+                                    global.logger.error('StorageService.resizeAndWrite - IMAGE UPLOAD FAILURE', err);
+                                    return reject(err);
                                 }
-                            });
 
-                            return resolve({
-                                url: `${getCloudUrl()}/${fileKey}`,
-                                width: w
-                            });
-                        })
-                    });
+                                global.logger.info('StorageService.resizeAndWrite - UPLOAD SUCCESS', {
+                                    meta: {
+                                        url: `${getCloudUrl()}/${fileKey}`,
+                                        width: w,
+                                        ...data
+                                    }
+                                });
 
-                file.pipe(transformer);
+                                return resolve({
+                                    url: `${getCloudUrl()}/${fileKey}`,
+                                    width: w
+                                });
+                            })
+                        });
+
+                    file.pipe(transformer);
+                }
+                else {
+                    global.logger.info('SAVING PRODUCT FAILED BECAUSE WRONG MIME TYPE');
+                    return reject('File type must be one of: ' + imageMimeTypeWhiteList.join(','))
+                }
             }
             else {
-                global.logger.info('SAVING PRODUCT FAILED BECAUSE WRONG MIME TYPE');
-                return reject('File type must be one of: ' + imageMimeTypeWhiteList.join(','))
+                resolve();
             }
-        }
-        else {
-            resolve();
-        }
-    });
+        });
+    }
+    catch(err) {
+        global.logger.error("StorageService.resizeAndWrite: ", err)
+        throw err;
+    }
 }
 
 
