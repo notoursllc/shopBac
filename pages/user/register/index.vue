@@ -1,8 +1,17 @@
 <script>
+import { required, email } from 'vuelidate/lib/validators';
+import PasswordValidator from '../../../utils/PasswordValidator';
+import { getPasswordValidationConfig } from '../../../utils/universal';
+
+const Validator = new PasswordValidator(getPasswordValidationConfig());
+const touchMap = new WeakMap();
+
+
 export default {
     name: 'RegisterPage',
 
     components: {
+        PasswordInputErrors: () => import('@/components/auth/PasswordInputErrors')
     },
 
     data() {
@@ -11,14 +20,38 @@ export default {
                 email: null,
                 password: null,
                 cors_origin: null
-            }
+            },
+            numPasswordErrors: 0
         };
+    },
+
+    validations: {
+        userData: {
+            email: {
+                required,
+                email
+            },
+            password: {
+                required
+            },
+            cors_origin: {
+                required
+            }
+        }
     },
 
     methods: {
         async onSubmit() {
-            const { data } = await this.$api.tenants.register(this.userData);
-            console.log('TENANT RESPONSE', data);
+            const response = await this.$api.tenants.register(this.userData);
+            console.log('TENANT RESPONSE', response);
+        },
+
+        delayTouch($v) {
+            $v.$reset();
+            if (touchMap.has($v)) {
+                clearTimeout(touchMap.get($v));
+            }
+            touchMap.set($v, setTimeout($v.$touch, 1000));
         }
     }
 };
@@ -33,26 +66,45 @@ export default {
                 <!-- email -->
                 <div class="inputGroup mrl mbm">
                     <label>{{ $t('Email') }}</label>
-                    <el-input v-model="userData.email" />
+                    <el-input
+                        v-model="userData.email"
+                        @input="delayTouch($v.userData.email)" />
+                    <div v-if="$v.userData.email.$invalid" class="form-validation-error">
+                        <div v-if="!$v.userData.email.required">{{ $t('required') }}</div>
+                        <div v-if="$v.userData.email.$dirty && !$v.userData.email.email">{{ $t('invalid email address format') }}</div>
+                    </div>
                 </div>
 
                 <!-- password -->
                 <div class="inputGroup mrl mbm">
                     <label>{{ $t('Password') }}</label>
-                    <el-input
-                        v-model="userData.password"
-                        show-password />
+                    <div>
+                        <el-input
+                            v-model="userData.password"
+                            show-password />
+                        <div class="form-validation-error">
+                            <password-input-errors
+                                :password="userData.password"
+                                @numErrors="(num) => { numPasswordErrors = num }" />
+                        </div>
+                    </div>
                 </div>
 
-                <!-- password -->
+                <!-- cors origin -->
                 <div class="inputGroup mrl mbm">
                     <label>{{ $t('CORS origin') }}</label>
-                     <el-input v-model="userData.cors_origin" />
+                    <el-input v-model="userData.cors_origin" />
+                    <div v-if="$v.userData.cors_origin.$invalid" class="form-validation-error">
+                        <div v-if="!$v.userData.cors_origin.required">{{ $t('required') }}</div>
+                    </div>
                 </div>
 
-                <el-button
-                    type="primary"
-                    @click="onSubmit">{{ $t('Submit') }}</el-button>
+                <div class="ptl">
+                    <el-button
+                        type="primary"
+                        @click="onSubmit"
+                        :disabled="$v.userData.$invalid || numPasswordErrors > 0">{{ $t('Submit') }}</el-button>
+                </div>
             </form>
         </div>
     </div>

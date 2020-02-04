@@ -180,6 +180,14 @@
 
     "Package": "Package",
     "Page title": "Page title",
+    "password_error_maxLength": "maximum length: {val}",
+    "password_error_maxRepeatableCharacters": "max number of repeatable characters: {val}",
+    "password_error_minLength": "minimum length: {val}",
+    "password_error_requireLowerCaseLetter": "at least one lowercase letter",
+    "password_error_requireNumber": "at least one number",
+    "password_error_requireSpecialCharacter": "at least one special character (example: !@#$%^&*)",
+    "password_error_requireUpperCaseLetter": "at least one uppercase letter",
+    "password_requirements": "Password requirements:<br/><ul><li>at least 8 characters</li><li>at least one uppercase letter</li><li>at least one number</li><li>at least one special character</ul>",
     "Pay with PAYPAL": "Pay with PAYPAL",
     "PAYMENT": "PAYMENT",
     "Payment method": "Payment method",
@@ -286,6 +294,7 @@
     "Stay in checkout": "Stay in checkout",
     "STREET ADDRESS": "STREET ADDRESS",
     "Sub-Types": "Sub-Types",
+    "Submit": "Submit",
     "Subtotal": "Subtotal",
 
     "Tax": "Tax",

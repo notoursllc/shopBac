@@ -3,4 +3,4 @@ import Vuelidate from 'vuelidate';
 
 export default () => {
     Vue.use(Vuelidate);
-}
+};
