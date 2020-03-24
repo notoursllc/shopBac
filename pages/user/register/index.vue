@@ -18,8 +18,7 @@ export default {
         return {
             userData: {
                 email: null,
-                password: null,
-                cors_origin: null
+                password: null
             },
             numPasswordErrors: 0
         };
@@ -32,9 +31,6 @@ export default {
                 email
             },
             password: {
-                required
-            },
-            cors_origin: {
                 required
             }
         }
@@ -87,15 +83,6 @@ export default {
                                 :password="userData.password"
                                 @numErrors="(num) => { numPasswordErrors = num }" />
                         </div>
-                    </div>
-                </div>
-
-                <!-- cors origin -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('CORS origin') }}</label>
-                    <el-input v-model="userData.cors_origin" />
-                    <div v-if="$v.userData.cors_origin.$invalid" class="form-validation-error">
-                        <div v-if="!$v.userData.cors_origin.required">{{ $t('required') }}</div>
                     </div>
                 </div>
 

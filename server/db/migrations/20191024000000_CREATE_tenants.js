@@ -7,7 +7,8 @@ module.exports.up = (knex) => {
             t.uuid('id').primary();
             t.string('email').nullable();
             t.string('password').nullable();
-            t.string('cors_origin').nullable();
+            // t.uuid('refresh_token').nullable();
+            t.string('refresh_token').nullable();
             t.string('api_key').nullable();
             t.boolean('active').defaultTo(true);
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());

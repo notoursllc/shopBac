@@ -66,6 +66,7 @@ module.exports = {
     'object-curly-spacing': OFF,
     'object-shorthand': OFF,
     'one-var': OFF,
+    'operator-linebreak': OFF,
     'padded-blocks': OFF,
     'quotes': [ERROR, 'single'],
     'semi': [ ERROR, 'always' ],

@@ -11,7 +11,7 @@ module.exports = function (baseModel, bookshelf) {
         visible: [
             'id',
             'email',
-            'cors_origin',
+            'refresh_token',
             'api_key',
             'active',
             'created_at',

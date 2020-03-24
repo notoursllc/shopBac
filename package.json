@@ -61,6 +61,7 @@
     "generate-robotstxt": "^7.1.0",
     "handlebars": "^4.4.2",
     "hapi-auth-basic": "^5.0.0",
+    "hapi-auth-jwt2": "^9.0.1",
     "hapi-rate-limit": "^4.1.0",
     "js-cookie": "^2.2.1",
     "jsonwebtoken": "^8.5.1",

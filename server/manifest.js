@@ -10,14 +10,15 @@ const webManifest = {
         port: Config.get('/port/api'),
         routes: {
             cors: {
-                origin: ['*']
+                origin: process.env.NODE_ENV === 'production' ? process.env.CORS_ORIGINS.split(',').map(url => url.trim()) : ['*']
+                // additionalHeaders: ['X-Tenant']
             },
             validate: {
-                failAction: async (request, h, err) => {
+                failAction: (request, h, err) => {
                     global.logger.error(err);
 
                     if (process.env.NODE_ENV === 'production') {
-                        throw Boom.badRequest(`Invalid request payload input`);
+                        throw Boom.badRequest('Invalid request payload input');
                     }
                     else {
                         // During development, respond with the full error.
@@ -35,6 +36,7 @@ const webManifest = {
             },
             { plugin: '@hapi/inert' },
             { plugin: '@hapi/vision' },
+
             {
                 plugin: 'hapi-rate-limit', // https://www.npmjs.com/package/hapi-rate-limit
                 options: {
@@ -53,7 +55,15 @@ const webManifest = {
                 }
             },
             // { plugin: './plugins/auth-scheme-jwt-cookie' },
-            { plugin: './plugins/hapi-basic-auth' },
+            // { plugin: './plugins/hapi-basic-auth' },
+            { plugin: 'hapi-auth-jwt2' },
+            {
+                plugin: './plugins/tenants',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+
             { plugin: './plugins/core' },
             {
                 plugin: './plugins/master-types',
@@ -91,14 +101,8 @@ const webManifest = {
                 routes: {
                     prefix: routePrefix
                 }
-            },
-            {
-                plugin: './plugins/tenants',
-                routes: {
-                    prefix: routePrefix
-                }
             }
-        ],
+        ]
         // options: {
         //     once: false
         // }
