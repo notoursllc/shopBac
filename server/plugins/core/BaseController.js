@@ -299,7 +299,7 @@ class BaseController {
 
 
     fetchPage(request, withRelated) {
-        let queryData = this.queryHelper(request);
+        const queryData = this.queryHelper(request);
         let config = {};
 
         if(queryData.hasOwnProperty('limit') && queryData.limit) {
@@ -313,7 +313,7 @@ class BaseController {
             config = {
                 pageSize: queryData.pageSize || 100,
                 page: queryData.page || 1
-            }
+            };
         }
 
         if(Array.isArray(withRelated) && withRelated.length) {
@@ -350,7 +350,8 @@ class BaseController {
 
 
     getTenantId(request) {
-        return request.headers['x-tenant'];
+        // https://github.com/BoseCorp/hapi-auth-jwt2#want-to-access-the-jwt-token-after-validation
+        return request.auth.credentials.id;
     }
 
 

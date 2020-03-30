@@ -19,8 +19,7 @@ function setServer(s) {
 
 async function getClientJwtHandler(request, h) {
     try {
-        let uuid = uuidV4();
-
+        const uuid = uuidV4();
         const cartToken = await helperService.cryptPassword(process.env.CART_TOKEN_SECRET + uuid);
 
         if(!cartToken) {
@@ -33,7 +32,7 @@ async function getClientJwtHandler(request, h) {
                 clientId: process.env.JWT_CLIENT_ID, // is this needed?
                 ct: cartToken
             },
-            process.env.JWT_SERVER_SECRET
+            process.env.JWT_TOKEN_SECRET
         );
 
         const response = h.response('success');
@@ -101,16 +100,16 @@ async function robotsHandler(request, h) {
 
         const robotsText = await robotstxt({
             policy: [
-              {
-                userAgent: '*',
-                allow: '/',
-                disallow: defaultDisallow,
-                crawlDelay: 2
-              },
-              {
-                userAgent: 'Nutch',
-                disallow: '/',
-              }
+                {
+                    userAgent: '*',
+                    allow: '/',
+                    disallow: defaultDisallow,
+                    crawlDelay: 2
+                },
+                {
+                    userAgent: 'Nutch',
+                    disallow: '/'
+                }
             ],
             sitemap: `${host}/sitemap.xml`,
             host: host

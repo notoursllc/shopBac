@@ -37,15 +37,15 @@ export const mutations = {
     },
 
     WINDOW_RESIZE: (state) => {
-        const { innerWidth } = window
-        const isDesktop = innerWidth > 1024
-        state.isMobile = !isDesktop
-        state.sidebarOpened = isDesktop
+        const { innerWidth } = window;
+        const isDesktop = innerWidth > 1024;
+        state.isMobile = !isDesktop;
+        state.sidebarOpened = isDesktop;
     },
 
     SET_LANG(state, locale) {
         if (state.locales.indexOf(locale) !== -1) {
-            state.locale = locale
+            state.locale = locale;
         }
     },
 
@@ -66,19 +66,19 @@ export const mutations = {
 
 export const actions = {
     openSidebar ({ commit }) {
-        commit('OPEN_SIDEBAR')
+        commit('OPEN_SIDEBAR');
     },
 
     closeSidebar ({ commit }) {
-        commit('CLOSE_SIDEBAR')
+        commit('CLOSE_SIDEBAR');
     },
 
     toggleSidebar ({ commit }) {
-        commit('TOGGLE_SIDEBAR')
+        commit('TOGGLE_SIDEBAR');
     },
 
     windowResize ({ commit }) {
-        commit('WINDOW_RESIZE')
+        commit('WINDOW_RESIZE');
     },
 
     IN_CHECKOUT_FLOW: ({ commit }, inCheckoutFlow) => {
@@ -91,12 +91,12 @@ export const actions = {
 
     CLOSE_MESSAGE_INSTANCES: ({ commit }) => {
         commit('CLOSE_MESSAGE_INSTANCES');
-    },
-}
+    }
+};
 
 
 export const getters = {
     inCheckoutFlow: (state) => {
         return state.inCheckoutFlow;
     }
-}
+};

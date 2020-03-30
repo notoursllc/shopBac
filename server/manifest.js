@@ -11,7 +11,6 @@ const webManifest = {
         routes: {
             cors: {
                 origin: process.env.NODE_ENV === 'production' ? process.env.CORS_ORIGINS.split(',').map(url => url.trim()) : ['*']
-                // additionalHeaders: ['X-Tenant']
             },
             validate: {
                 failAction: (request, h, err) => {
@@ -107,6 +106,6 @@ const webManifest = {
         //     once: false
         // }
     }
-}
+};
 
 module.exports = webManifest;

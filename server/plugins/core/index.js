@@ -117,7 +117,7 @@ exports.plugin = {
 
         /*
         server.auth.strategy('xCartToken', 'jwt-cookie', {
-            secret: process.env.JWT_SERVER_SECRET,
+            secret: process.env.JWT_TOKEN_SECRET,
             cookieKey: 'cart-jwt',
             verifyOptions: {   // https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback
                 ignoreExpiration: true,    // do not reject expired tokens

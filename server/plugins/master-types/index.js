@@ -77,7 +77,7 @@ const after = function (server) {
 
 
     // LOADING BOOKSHELF MODELS:
-    let baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
+    const baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
 
     server.app.bookshelf.model(
         'MasterType',

@@ -9,7 +9,7 @@ const after = function (server) {
             // which hapi-auth-jwt2 supports:
             // https://www.npmjs.com/package/hapi-auth-jwt2#additional-notes-on-keys-and-key-lookup-functions
             key: TenantCtrl.getTenantJwtSecretKey,
-            // key: process.env.JWT_SERVER_SECRET,
+            // key: process.env.JWT_TOKEN_SECRET,
             validate: (decoded, request) => {
                 return TenantCtrl.validateJwtKey(decoded, request);
             },

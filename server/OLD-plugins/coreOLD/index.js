@@ -5,16 +5,7 @@ const coreController = require('./coreController');
 
 
 const after = function(server) {
-    let routes = [
-        // {
-        //     method: 'GET',
-        //     path: '/api/v1/jwt',
-        //     options: {
-        //         auth: false,
-        //         description: 'Returns the client token',
-        //         handler: coreController.getClientJwtHandler
-        //     }
-        // },
+    const routes = [
         {
             method: 'POST',
             path: '/api/v1/logger',
@@ -40,10 +31,10 @@ const after = function(server) {
         },
         {
             method: 'GET',
-            path: '/robots.txt',  // NOTE: no routePrefix on this one
+            path: '/robots.txt', // NOTE: no routePrefix on this one
             options: {
                 auth: false,
-                description: 'For generating robots.txt',
+                description: 'For generating robots.txt'
             },
             handler: coreController.robotsHandler
         }
@@ -117,7 +108,7 @@ exports.plugin = {
 
         /*
         server.auth.strategy('xCartToken', 'jwt-cookie', {
-            secret: process.env.JWT_SERVER_SECRET,
+            secret: process.env.JWT_TOKEN_SECRET,
             cookieKey: 'cart-jwt',
             verifyOptions: {   // https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback
                 ignoreExpiration: true,    // do not reject expired tokens
@@ -138,7 +129,7 @@ exports.plugin = {
 
 
         server.decorate('toolkit', 'apiSuccess', function (responseData, paginationObj) {
-            let response = {};
+            const response = {};
             response.data = responseData;
 
             if(isObject(paginationObj)) {

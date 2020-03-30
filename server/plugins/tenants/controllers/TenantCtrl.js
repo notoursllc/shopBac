@@ -175,8 +175,8 @@ class TenantCtrl extends BaseController {
     */
     getTenantJwtSecretKey(decoded) {
         return {
-            key: process.env.JWT_SERVER_SECRET, // Never Share your secret key
-            additional: decoded
+            key: process.env.JWT_TOKEN_SECRET // Never Share your secret key
+            // additional: decoded
         };
     }
 
@@ -185,11 +185,12 @@ class TenantCtrl extends BaseController {
      * Sign the JWT
      */
     createToken(Tenant) {
+        // For now I think all I need is the tenant id in the token
         return jwt.sign(
             {
-                ...Tenant.toJSON()
+                id: Tenant.get('id')
             },
-            process.env.JWT_SERVER_SECRET,
+            process.env.JWT_TOKEN_SECRET,
             {
                 algorithm: 'HS256',
                 expiresIn: process.env.JWT_TOKEN_EXPIRES_IN_SECONDS ? parseInt(process.env.JWT_TOKEN_EXPIRES_IN_SECONDS, 10) : 120 // expressed in seconds or a string describing a time span (https://www.npmjs.com/package/jsonwebtoken)
@@ -199,9 +200,9 @@ class TenantCtrl extends BaseController {
 
 
     async validateJwtKey(decoded, request) {
-        if (request.plugins['hapi-auth-jwt2']) {
-            decoded.extraInfo = request.plugins['hapi-auth-jwt2'].extraInfo;
-        }
+        // if (request.plugins['hapi-auth-jwt2']) {
+        //     decoded.extraInfo = request.plugins['hapi-auth-jwt2'].extraInfo;
+        // }
 
         console.log(" - - - - - - - decoded token:");
         console.log(decoded);
@@ -254,5 +255,6 @@ class TenantCtrl extends BaseController {
         };
     };
 }
+
 
 module.exports = TenantCtrl;
