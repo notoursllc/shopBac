@@ -135,7 +135,8 @@ export default {
         onClickAddColumn() {
             const newAttribute = {
                 label: null,
-                id: uuid()
+                id: uuid(),
+                inputType: 'select'
             };
 
             const suggestions = Array.isArray(this.attributeSuggestions) ? this.attributeSuggestions.slice(0) : [];  // copy the array
@@ -241,7 +242,7 @@ export default {
 
 
 <template>
-    <div style="overflow-x: scroll">
+    <div style="overflow-x:auto">
 <!-- <div>product.skus: {{ product.skus }}</div> -->
 <!-- <div>product.attribtues:{{ product.attributes }}</div> -->
 
@@ -266,14 +267,29 @@ export default {
                             v-for="(obj, index) in product.attributes"
                             :key="index"
                             class="width125">
-                            <div class="delete-icon">
+                            <div class="sku-item-col-icon">
                                 <el-popconfirm
                                     :title="$t('Delete this column?')"
                                     :confirmButtonText="$t('OK')"
                                     :cancelButtonText="$t('cancel')"
                                     @onConfirm="onClickDeleteColumn(index)">
-                                    <i slot="reference" class="el-icon-delete"/>
+                                    <i slot="reference" class="el-icon-delete mrl cursorPointer" />
                                 </el-popconfirm>
+
+                                <!-- test -->
+                                <el-popover
+                                    placement="top-start"
+                                    width="200"
+                                    trigger="click">
+                                    <i slot="reference" class="el-icon-edit-outline cursorPointer" />
+                                    <div class="tac">
+                                        {{ $t('Input type') }}:
+                                        <el-select v-model="product.attributes[index].inputType" size="mini">
+                                            <el-option label="Select menu" value="select"></el-option>
+                                            <el-option label="Buttons" value="buttons"></el-option>
+                                        </el-select>
+                                    </div>
+                                </el-popover>
                             </div>
 
                             <el-input
@@ -319,9 +335,9 @@ export default {
                     </td>
 
                     <!-- custom attributes -->
-                    <td v-for="attr in obj.attributes" :key="attr.optionId">
-                        <el-input
-                            v-model="attr.value" />
+                    <td v-for="attr in obj.attributes" :key="attr.optionId" class="attributeLabelValue">
+                        <div><label>{{ $t('Label') }}:</label><el-input v-model="attr.label" size="mini" class="width75" /></div>
+                        <div><label>{{ $t('Value') }}:</label><el-input v-model="attr.value" size="mini" class="width75" /></div>
                     </td>
 
                     <!-- Price -->
@@ -384,6 +400,22 @@ export default {
 @import "~assets/css/components/_formRow.scss";
 @import "~assets/css/components/_mixins.scss";
 
+.attributeLabelValue {
+    > div {
+        white-space: nowrap;
+        margin-bottom: 2px;
+
+        label {
+            font-size: 11px;
+            padding-right: 3px
+        }
+
+        &:last-child {
+            margin: 0;
+        }
+    }
+}
+
 .el-popconfirm__action {
     margin-top: 10px;
 }
@@ -415,10 +447,10 @@ export default {
     }
 }
 
-.delete-icon {
+.sku-item-col-icon {
     text-align: center;
     margin-bottom: 3px;
     font-size: 16px;
-    cursor: pointer;
 }
+
 </style>

@@ -12,7 +12,6 @@ module.exports = function (baseModel, bookshelf) {
             'id',
             'email',
             'refresh_token',
-            'api_key',
             'active',
             'created_at',
             'updated_at'

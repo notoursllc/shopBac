@@ -96,6 +96,8 @@ module.exports = {
     'vue/multiline-html-element-content-newline': OFF,
     'vue/singleline-html-element-content-newline': OFF,
     'wrap-iife': [ ERROR, 'outside' ],
-    'no-undefined': OFF
+    'no-undefined': OFF,
+    'unicorn/prefer-exponentiation-operator': OFF,
+    'unicorn/prefer-includes': OFF
   }
 }

@@ -67,7 +67,7 @@ class ProductImageCtrl extends BaseController {
             if(Array.isArray(storedImages) && storedImages.length) {
                 upsertData.image_url = storedImages[0].url;
                 upsertData.width = storedImages[0].width;
-                upsertData.variants = storedImages[1];
+                upsertData.variants = [storedImages[1]];
             }
         }
 

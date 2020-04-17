@@ -1,8 +1,5 @@
 <script>
-import forEach from 'lodash.foreach';
-import isObject from 'lodash.isobject';
 import cloneDeep from 'lodash.clonedeep';
-import isNil from 'lodash.isnil';
 import product_mixin from '@/mixins/product_mixin';
 import shipping_mixin from '@/mixins/shipping_mixin';
 
@@ -39,17 +36,36 @@ export default {
             productHasMetaData: false,
             domainName: process.env.DOMAIN_NAME,
             imageManagerMaxImages: process.env.IMAGE_MANAGER_MAX_IMAGES || 8,
+            imageManagerMaxFeaturedImages: process.env.IMAGE_MANAGER_MAX_FEATURED_IMAGES || 3,
             videoPlayerModal: {
                 isActive: false,
                 videoId: null,
-                player: null,
+                player: null
             }
+        };
+    },
+
+    mounted() {
+        try {
+            if(this.$route.params.id) {
+                this.fetchProduct();
+            }
+            else {
+                // setting some defaults:
+                this.product.published = true;
+            }
+        }
+        catch(e) {
+            this.$errorMessage(
+                e.message,
+                { closeOthers: true }
+            );
         }
     },
 
     methods: {
         async fetchProduct() {
-            let id = this.$route.params.id;
+            const id = this.$route.params.id;
             this.loading = true;
 
             try {
@@ -71,7 +87,7 @@ export default {
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
 
             this.loading = false;
@@ -88,7 +104,7 @@ export default {
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
 
             this.loadingProductImages = false;
@@ -107,15 +123,15 @@ export default {
                 await this.saveImages(p.id);
                 await this.saveSkus(p.id);
 
-                let title = p.id ? 'Product updated successfully' : 'Product added successfully';
-                this.$successMessage(`${title}: ${p.title}`)
+                const title = p.id ? 'Product updated successfully' : 'Product added successfully';
+                this.$successMessage(`${title}: ${p.title}`);
                 this.goToAdminProductList();
             }
             catch(e) {
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
         },
 
@@ -176,15 +192,15 @@ export default {
 
                 await Promise.all(promises);
 
-                let title = p.id ? this.$t('Product updated successfully') : this.$t('Product added successfully');
-                this.$successMessage(`${title}: ${p.title}`)
+                const title = p.id ? this.$t('Product updated successfully') : this.$t('Product added successfully');
+                this.$successMessage(`${title}: ${p.title}`);
                 this.goToAdminProductList();
             }
             catch(e) {
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
 
             this.loading = false;
@@ -192,7 +208,7 @@ export default {
 
 
         goToStore(seoUri) {
-            let routeData = this.$router.resolve({
+            const routeData = this.$router.resolve({
                 name: 'p-seouri',
                 params: { seouri: seoUri }
             });
@@ -203,7 +219,7 @@ export default {
 
 
         playVideo(url) {
-            let id = this.$youtube.getIdFromURL(url);
+            const id = this.$youtube.getIdFromURL(url);
             if(id) {
                 this.videoPlayerModal.videoId = id;
                 this.videoPlayerModal.isActive = true;
@@ -224,26 +240,8 @@ export default {
         videoPlaying(player) {
             this.videoPlayerModal.player = player;
         }
-    },
-
-    mounted() {
-        try {
-            if(this.$route.params.id) {
-                this.fetchProduct();
-            }
-            else {
-                // setting some defaults:
-                this.product.published = true;
-            }
-        }
-        catch(e) {
-            this.$errorMessage(
-                e.message,
-                { closeOthers: true }
-            )
-        }
     }
-}
+};
 </script>
 
 
@@ -349,17 +347,17 @@ export default {
 
 
         <!-- Images -->
-        <!-- <text-card>
+        <text-card>
             <div slot="header">
-                {{ $t('Images') }}
-                <span class="fs11 plm">{{ $t('You can add up to num images', {number: imageManagerMaxImages}) }}</span>
+                {{ $t('Featured images') }}
+                <span class="fs11 plm">{{ $t('You can add up to num images', {number: imageManagerMaxFeaturedImages}) }}</span>
             </div>
             <image-manager
                 v-loading="loadingProductImages"
                 v-model="product.images"
-                :max-num-images="parseInt(imageManagerMaxImages, 10)"
+                :max-num-images="parseInt(imageManagerMaxFeaturedImages, 10)"
                 @delete="onDeleteProductImage" />
-        </text-card> -->
+        </text-card>
 
 
         <!-- Variants / Options -->

@@ -18,7 +18,7 @@ module.exports = function (baseModel, bookshelf) {
 
         format(attributes) {
             if (attributes.variants) {
-                attributes.variants = JSON.stringify(attributes.variants)
+                attributes.variants = JSON.stringify(attributes.variants);
             }
 
             return attributes;

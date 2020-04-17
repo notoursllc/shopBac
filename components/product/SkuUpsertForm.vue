@@ -29,9 +29,9 @@ export default {
 
     data: function() {
         return {
-            imageManagerMaxImages: process.env.IMAGE_MANAGER_MAX_IMAGES || 4,
-            loadingImages: false,
-        }
+            imageManagerMaxImages: process.env.SKU_IMAGE_MANAGER_MAX_IMAGES || 3,
+            loadingImages: false
+        };
     },
 
     computed: {
@@ -62,11 +62,11 @@ export default {
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
 
             this.loadingImages = false;
-        },
+        }
     },
 
     watch: {
@@ -127,8 +127,11 @@ export default {
                 <!-- cost pre item -->
                 <div class="inputGroup mrl mbm" >
                     <label>{{ $t('Cost per item') }}</label>
-                    <input-money
-                        v-model="sku.cost_price" />
+                    <span>
+                        <input-money
+                            v-model="sku.cost_price" />
+                        <div class="fs12 colorGrayLighter">{{ $t('Customers won’t see this') }}</div>
+                    </span>
                 </div>
             </div>
 

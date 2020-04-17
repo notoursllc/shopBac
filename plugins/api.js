@@ -14,13 +14,13 @@ export default async ({$axios, store}, inject) => {
 
         if(isRefresh) {
             tokens = await $axios.$post('tenant/refresh', {
-                email: process.env.TENANT_ID,
+                id: process.env.TENANT_ID,
                 refresh_token: store.state.jwtRefreshToken // is this the right store.state path?
             });
         }
         else {
-            tokens = await $axios.$post('tenant/login',  {
-                email: process.env.TENANT_ID,
+            tokens = await $axios.$post('tenant/login', {
+                id: process.env.TENANT_ID,
                 password: process.env.TENANT_PASSWORD
             });
         }

@@ -28,22 +28,22 @@ class TenantCtrl extends BaseController {
 
     getAuthSchema() {
         return {
-            email: Joi.string().max(100).required(),
+            id: Joi.string().max(100).required(),
             password: Joi.string().max(100).required()
         };
     }
 
     getRefreshSchema() {
         return {
-            email: Joi.string().max(100).required(),
+            id: Joi.string().max(100).required(),
             refresh_token: Joi.string().required()
         };
     }
 
     getSchema() {
         return {
-            ...this.getAuthSchema(),
-            api_key: Joi.string().max(500),
+            id: Joi.string().max(100).required(),
+            password: Joi.string().max(100).required(),
             active: Joi.boolean().default(true),
             created_at: Joi.date(),
             updated_at: Joi.date()
@@ -85,7 +85,10 @@ class TenantCtrl extends BaseController {
         let Tenant;
 
         try {
-            Tenant = await this.getByEmail(request.payload.email);
+            Tenant = await this.modelForgeFetch(
+                { id: request.payload.id },
+                null
+            );
         }
         catch(err) {
             global.logger.error(err);
@@ -128,7 +131,10 @@ class TenantCtrl extends BaseController {
 
 
     async createHandler(request, h) {
-        const tenant = await this.getByEmail(request.payload.email);
+        const tenant = await this.modelForgeFetch(
+            { email: request.payload.email },
+            null
+        );
         // throw Boom.badData('A user with this email address already exists');
 
         const passwordValidation = owasp.test(request.payload.password);
@@ -136,7 +142,7 @@ class TenantCtrl extends BaseController {
 
         // TODO: throw error if errors
 
-        request.payload.api_key = crypto.randomBytes(32).toString('hex');
+        // request.payload.api_key = crypto.randomBytes(32).toString('hex');
         request.payload.password = this.cryptPassword(request.payload.password);
         return super.upsertHandler(request, h);
     }
@@ -149,7 +155,7 @@ class TenantCtrl extends BaseController {
 
         console.log('PWD VALIDATION', request.payload.password, passwordValidation);
 
-        request.payload.api_key = crypto.randomBytes(32).toString('hex');
+        // request.payload.api_key = crypto.randomBytes(32).toString('hex');
         request.payload.password = this.cryptPassword(request.payload.password);
         return super.upsertHandler(request, h);
     }

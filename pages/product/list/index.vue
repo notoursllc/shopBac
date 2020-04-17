@@ -1,6 +1,5 @@
 <script>
-import forEach from 'lodash.foreach'
-import product_mixin from '@/mixins/product_mixin'
+import product_mixin from '@/mixins/product_mixin';
 
 
 export default {
@@ -16,11 +15,19 @@ export default {
     data() {
         return {
             products: [],
+            productSubTypes: [],
             sortData: {
                 orderBy: 'updated_at',
                 orderDir: 'DESC'
             }
-        }
+        };
+    },
+
+    async created() {
+        await Promise.all([
+            this.fetchProducts(),
+            this.fetchProductSubTypes()
+        ]);
     },
 
     methods: {
@@ -39,8 +46,26 @@ export default {
                 this.$errorMessage(
                     err.message,
                     { closeOthers: true }
-                )
+                );
             }
+        },
+
+        async fetchProductSubTypes() {
+            this.productSubTypes = await this.$api.masterTypes.list('product_sub_type');
+        },
+
+        getSubTypeLabel(value) {
+            const values = [];
+
+            this.productSubTypes.forEach((obj) => {
+                if(value & obj.value) {
+                    values.push(
+                        this.$t(obj.name)
+                    );
+                }
+            });
+
+            return values.join(', ');
         },
 
         sortChanged(val) {
@@ -51,14 +76,14 @@ export default {
 
         async onProductDelete(product) {
             try {
-                await this.$confirm(`Delete product "${ product.title }"?`, 'Please confirm', {
+                await this.$confirm(`Delete product "${product.title}"?`, 'Please confirm', {
                     confirmButtonText: 'OK',
                     cancelButtonText: 'Cancel',
                     type: 'warning'
                 });
 
                 await this.deleteProduct(product.id);
-                this.$successMessage(`"${ product.title }" deleted successfully`);
+                this.$successMessage(`"${product.title}" deleted successfully`);
                 this.fetchProducts();
             }
             catch(err) {
@@ -76,9 +101,9 @@ export default {
                             if(pic.is_visible) {
                                 count++;
                             }
-                        })
+                        });
                     }
-                })
+                });
             }
 
             return count;
@@ -98,18 +123,14 @@ export default {
 
             return this.$t('n_in_stock', { numInventory: totalInventoryCount })
         }
-    },
-
-    created() {
-        this.fetchProducts();
     }
-}
+};
 </script>
 
 
 <template>
     <div>
-        <fab type="add" @click="goToAdminProductAdd" />
+        <fab type="add" @click="goToAdminProductUpsert" />
 
         <el-table
             :data="products"
@@ -122,8 +143,8 @@ export default {
                 <template slot-scope="scope">
                     <template v-if="featuredProductPic(scope.row)">
                         <img :src="featuredProductPic(scope.row)"
-                            alt="Image"
-                            class="prodPicSmall" />
+                             alt="Image"
+                             class="prodPicSmall">
                         <div class="fs12"># pictures: {{ numberOfPicsInProduct(scope.row) }}</div>
                     </template>
                 </template>
@@ -171,7 +192,7 @@ export default {
                 width="120"
                 sortable="custom">
                 <template slot-scope="scope">
-                    {{ prodmix_getSubTypeLabel(scope.row.sub_type) }}
+                    {{ getSubTypeLabel(scope.row.sub_type) }}
                 </template>
             </el-table-column>
 

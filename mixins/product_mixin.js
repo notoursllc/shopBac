@@ -26,7 +26,7 @@ function stripRelations(productJson) {
 export default {
     methods: {
         async getProducts(params) {
-            let paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
+            const paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
 
             // const response = await this.$axios.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
             const response = await this.$axios.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
@@ -35,7 +35,7 @@ export default {
 
 
         async getAdminProducts(params) {
-            let paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
+            const paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
 
             // const response = await this.$axios.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
             const response = await this.$axios.$get(`/admin/products?${paramString}`); // TODO: is there a XSS issue here?
@@ -151,39 +151,6 @@ export default {
         },
 
 
-
-        /******************************
-         * Product Sub Types
-         ******************************/
-
-        getProductSubTypes(onlyAvailable) {
-            const subTypes = Object.assign({}, this.$store.state.product.subTypes);
-
-            Object.keys(subTypes).forEach((key) => {
-                if(onlyAvailable && !subTypes[key].is_available) {
-                    delete subTypes[key];
-                }
-            });
-
-            return subTypes;
-        },
-
-        prodmix_getSubTypeLabel(value) {
-            const subTypes = this.getProductSubTypes(true);
-            const values = [];
-
-            Object.keys(subTypes).forEach((key) => {
-                if(value & subTypes[key].value) {
-                    values.push(
-                        this.$t(subTypes[key].name)
-                    );
-                }
-            });
-
-            return values.join(', ');
-        },
-
-
         /******************************
          * Navigation
          ******************************/
@@ -213,9 +180,12 @@ export default {
 
 
         goToAdminProductAdd() {
-            this.$router.push({
+            return this.$router.push({
                 name: 'product-upsert-id'
             });
+            // return this.$router.push({
+            //     name: 'product-upsert-id'
+            // });
         },
 
 
@@ -247,11 +217,11 @@ export default {
             if(Array.isArray(product.variations)) {
                 product.variations.forEach((variation) => {
                     if(variation.published && Array.isArray(variation.pics)) {
-                        let len = variation.pics.length;
+                        const len = variation.pics.length;
 
                         // The related pics for a product variant are ordered by sort order (ASC)
                         // so the first 'is_visible' pic will be the featured pic
-                        for(let i=0; i<len; i++) {
+                        for(let i = 0; i < len; i++) {
                             if(variation.pics[i].is_visible) {
                                 pic = variation.pics[i].url;
                                 break;
@@ -267,7 +237,7 @@ export default {
 
         async upsertProduct(product) {
             let response;
-            let cleanProduct = stripRelations(product);
+            const cleanProduct = stripRelations(product);
 
             if(product.id) {
                 response = await this.$axios.$put('/product', cleanProduct);
@@ -281,13 +251,13 @@ export default {
 
 
         buildPictures(product) {
-            let sortObj = {};
-            let added = [];
+            const sortObj = {};
+            const added = [];
 
             function add(sortOrder, val) {
-                let order = sortOrder || 100;
+                const order = sortOrder || 100;
 
-                if(added.indexOf(val) === -1) {
+                if (added.indexOf(val) === -1) {
                     added.push(val);
 
                     if(!sortObj.hasOwnProperty(order)) {
@@ -299,7 +269,7 @@ export default {
             }
 
             function getSortedArray(sortObj) {
-                let vals = [];
+                const vals = [];
 
                 _forEach(sortObj, (arr) => {
                     if(Array.isArray(arr)) {
@@ -332,7 +302,7 @@ export default {
 
         // TODO: refactor this to get size options from product variation
         buildSizeOptions(product) {
-            let sizeOpts = [];
+            const sizeOpts = [];
             let maxInventoryCount = 0;
 
             if (isObject(product) && Array.isArray(product.sizes)) {
@@ -371,7 +341,7 @@ export default {
             }
 
             productInfo.sizes.forEach((id) => {
-                if(usedSizeIds.indexOf(id) === -1) {
+                if (usedSizeIds.indexOf(id) === -1) {
                     options.push(id);
                 }
             });
@@ -429,7 +399,7 @@ export default {
                 '/product/pic',
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
-            )
+            );
             return response.data;
         },
 
@@ -444,4 +414,4 @@ export default {
         }
 
     }
-}
+};

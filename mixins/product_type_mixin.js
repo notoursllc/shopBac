@@ -47,10 +47,7 @@ export default {
         /*********************
          * Product Sub Types
         /*********************/
-        async getProductSubTypes() {
-            const response = await this.$axios.$get('/subtypes');
-            return response.data;
-        },
+
 
 
         async getProductSubType(id) {

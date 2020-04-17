@@ -8,6 +8,13 @@ Vue.use(Tooltip);
 export default {
     name: 'ImageManager',
 
+    components: {
+        AppDialog: () => import('@/components/AppDialog'),
+        FileButton: () => import('@/components/FileButton'),
+        IconDragHandle: () => import('@/components/icons/IconDragHandle'),
+        draggable: () => import('vuedraggable'),
+    },
+
     props: {
         value: {
             type: Array,
@@ -20,13 +27,6 @@ export default {
         }
     },
 
-    components: {
-        AppDialog: () => import('@/components/AppDialog'),
-        FileButton: () => import('@/components/FileButton'),
-        IconDragHandle: () => import('@/components/icons/IconDragHandle'),
-        draggable: () => import('vuedraggable'),
-    },
-
     data() {
         return {
             loading: false,
@@ -34,7 +34,7 @@ export default {
             dialogVisible: false,
             fileList: [],
             accept: 'image/png, image/jpeg, image/gif'
-        }
+        };
     },
 
     computed: {
@@ -45,7 +45,7 @@ export default {
 
     methods: {
         emitChange() {
-            this.$emit('input', this.fileList)
+            this.$emit('input', this.fileList);
         },
 
         onPreview(file) {
@@ -57,7 +57,7 @@ export default {
             const acceptedTypes = this.accept.split(',').map((type) => { return type.trim() });
             let isAcceptedType = true;
 
-            for (var i=0; i<files.length; i++) {
+            for (let i = 0; i < files.length; i++) {
                 if (acceptedTypes.indexOf(files[i].type) === -1) {
                     isAcceptedType = false;
                 }
@@ -72,7 +72,7 @@ export default {
             }
 
             if(!this.filesAreAcceptedTypes(files)) {
-                throw new Error('File type not allowed')
+                throw new Error('File type not allowed');
             }
 
             this.createTempImages(files);
@@ -123,7 +123,7 @@ export default {
             this.fileList.forEach((obj, index) => {
                 obj.ordinal = index;
             });
-            console.log("SET ORDINALS UPDATE", this.fileList)
+            // console.log("SET ORDINALS UPDATE", this.fileList)
         }
     },
 
@@ -134,17 +134,17 @@ export default {
                     this.fileList = newVal;
                 }
             },
-            immediate: true,
+            immediate: true
         }
     }
-}
+};
 </script>
 
 
 <template>
     <div v-cloak
-        v-loading="loading"
-        class="widthAll">
+         v-loading="loading"
+         class="widthAll">
 
         <draggable
             v-model="fileList"
@@ -154,7 +154,7 @@ export default {
 
             <div class="image-row" v-for="(obj, index) in fileList" :key="index">
                 <div class="image-row-fields">
-                    <div class="image-row-handle">
+                    <div class="image-row-handle" v-if="maxNumImages > 1">
                         <i class="handle">
                             <icon-drag-handle
                                 icon-name="drag-handle"
@@ -168,7 +168,7 @@ export default {
                             class="cursorPointer"
                             :src="obj.image_url"
                             alt=""
-                            @click="onPreview(obj.image_url)" />
+                            @click="onPreview(obj.image_url)">
                     </div>
 
                     <div class="image-row-input">

@@ -81,6 +81,7 @@
     "Country of origin": "Country of origin",
     "Create": "Create",
     "CREDIT CARD": "CREDIT CARD",
+    "Customers won’t see this": "Customers won’t see this",
     "customs_country_of_origin_desc": "In most cases, where the product is manufactured",
     "customs_hs_code_desc": "Used by border officers to classify this product",
     "CUSTOMS INFORMATION": "CUSTOMS INFORMATION",
@@ -105,6 +106,7 @@
     "Estimated tax": "Estimated tax",
     "Expiration date": "Expiration date",
 
+    "Featured images": "Featured images",
     "Fit type": "Fit type",
     "footer_cart_secure": "Our cart is protected by 256-bit encrypted connection and we never store your card details.",
     "fill_out_form_warning": "Please fill out the form completely before continuing. Thanks!",
