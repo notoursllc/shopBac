@@ -97,9 +97,10 @@ class ProductCtrl extends BaseController {
     getPageHandler(request, h) {
         return super.getPageHandler(
             request,
-            ['images'],
+            // ['images'],
+            this.getWithRelated(),
             h
-        )
+        );
     }
 
 

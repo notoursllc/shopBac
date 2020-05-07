@@ -11,7 +11,6 @@ const DB_TABLES = {
     // product_pic_variants: 'product_pic_variants',
     // product_options: 'product_options',
     product_variations: 'product_variations',
-    // products: 'products',
     material_types: 'material_types',
     option_types: 'option_types',
     fit_types: 'fit_types',
@@ -26,7 +25,6 @@ const DB_TABLES = {
     product_subtypes: 'product_subtypes',
     product_types: 'product_types',
     product_variants: 'product_variants',
-    products: 'products',
     product_sales_channel_types: 'product_sales_channel_types',
 
     // new new
@@ -34,6 +32,7 @@ const DB_TABLES = {
     product_collections: 'product_collections',
     product_skus: 'product_skus',
     product_sku_images: 'product_sku_images',
+    product_sku_options: 'product_sku_options',
     products: 'products',
     product_images: 'product_images',
     tenants: 'tenants'

@@ -109,6 +109,11 @@ export default {
                                 index="productCollections"
                                 @click="menuItemClick">{{ $t('Collections') }}</el-menu-item>
                         </el-submenu>
+
+                        <el-menu-item
+                            :route="{ name: 'product-sku-options-list' }"
+                            index="/productSkuOptionsList"
+                            @click="menuItemClick">{{ $t('Product SKU options') }}</el-menu-item>
                     </el-submenu>
 
                     <el-menu-item

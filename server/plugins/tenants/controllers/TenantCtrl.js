@@ -40,6 +40,13 @@ class TenantCtrl extends BaseController {
         };
     }
 
+    getCreateSchema() {
+        return {
+            email: Joi.string().max(100).required(),
+            password: Joi.string().max(100).required()
+        };
+    }
+
     getSchema() {
         return {
             id: Joi.string().max(100).required(),
@@ -97,11 +104,14 @@ class TenantCtrl extends BaseController {
         }
 
         let isMatch = false;
-        if(request.payload.hasOwnProperty('password')) {
-            isMatch = this.passwordIsMatch(request.payload.password, Tenant.get('password'));
-        }
-        else {
-            isMatch = this.passwordIsMatch(request.payload.refresh_token, Tenant.get('refresh_token'));
+
+        if(Tenant) {
+            if(request.payload.hasOwnProperty('password')) {
+                isMatch = this.passwordIsMatch(request.payload.password, Tenant.get('password'));
+            }
+            else {
+                isMatch = this.passwordIsMatch(request.payload.refresh_token, Tenant.get('refresh_token'));
+            }
         }
 
         if(!Tenant || !isMatch) {
@@ -131,11 +141,12 @@ class TenantCtrl extends BaseController {
 
 
     async createHandler(request, h) {
-        const tenant = await this.modelForgeFetch(
-            { email: request.payload.email },
-            null
-        );
-        // throw Boom.badData('A user with this email address already exists');
+        const Tenant = await this.getByEmail(request.payload.email);
+
+        console.log("TENANT", Tenant);
+        if(Tenant) {
+            throw Boom.badData('A user with this email address already exists');
+        }
 
         const passwordValidation = owasp.test(request.payload.password);
         console.log('PWD VALIDATION', request.payload.password, passwordValidation);

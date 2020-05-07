@@ -81,20 +81,28 @@ export default {
             immediate: true
         }
     }
-}
+};
 </script>
 
 
 <template>
     <div>
+
+        <!-- published-->
+        <div class="mbl">
+            <el-checkbox
+                v-model="sku.published"
+                border>{{ $t('This SKU is available for purchase') }}</el-checkbox>
+        </div>
+
         <!-- options -->
         <text-card v-if="showAttributes">
             <div slot="header">{{ $t('Attributes') }}</div>
 
             <div class="inputGroupContainer">
                 <div v-for="(label, index) in tableColumnLabels"
-                    :key="index"
-                    class="inputGroup mrl mbm" >
+                     :key="index"
+                     class="inputGroup mrl mbm">
                     <label>{{ label }}</label>
                     <div v-if="sku.attributes[index]">
                         <el-input

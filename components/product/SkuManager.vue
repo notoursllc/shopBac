@@ -43,7 +43,8 @@ export default {
                 sku: {
                     attributes: []
                 }
-            }
+            },
+            addColumnPopoverVisible: false
         }
     },
 
@@ -133,6 +134,9 @@ export default {
 
 
         onClickAddColumn() {
+            // test
+            this.addColumnPopoverVisible = !this.addColumnPopoverVisible;
+
             const newAttribute = {
                 label: null,
                 id: uuid(),
@@ -224,7 +228,7 @@ export default {
 
         canShowRightIcon(index) {
             return this.product.attributes[index + 1];
-        },
+        }
     },
 
     watch: {
@@ -243,14 +247,27 @@ export default {
 
 <template>
     <div style="overflow-x:auto">
-<!-- <div>product.skus: {{ product.skus }}</div> -->
-<!-- <div>product.attribtues:{{ product.attributes }}</div> -->
-
         <table class="table">
             <thead>
                 <tr>
                     <th class="vabtm" :class="{'width50': canAddColumn || canShowGrabHandles}">
-                        <el-tooltip
+                        <!-- choose custom attribute popover -->
+                        <el-popover
+                            ref="attributePopover"
+                            placement="bottom"
+                            title="Choose a variant type"
+                            trigger="manual"
+                            content="this is content, this is content, this is content"
+                            v-model="addColumnPopoverVisible">
+                        </el-popover>
+
+                        <el-button
+                            v-popover:attributePopover
+                            @click="onClickAddColumn"
+                            size="mini"
+                            icon="el-icon-plus"></el-button>
+
+                        <!-- <el-tooltip
                             v-if="canAddColumn"
                             effect="dark"
                             :content="$t('Add column')"
@@ -260,6 +277,7 @@ export default {
                                 size="mini"
                                 icon="el-icon-plus"></el-button>
                         </el-tooltip>
+                        -->
                     </th>
 
                     <template v-if="Array.isArray(product.attributes)">
@@ -276,7 +294,7 @@ export default {
                                     <i slot="reference" class="el-icon-delete mrl cursorPointer" />
                                 </el-popconfirm>
 
-                                <!-- test -->
+                                <!-- input type -->
                                 <el-popover
                                     placement="top-start"
                                     width="200"
@@ -349,7 +367,7 @@ export default {
                     <td>
                         <el-input-number
                             v-model="obj.inventory_count"
-                            :min="1"
+                            :min="0"
                             :step="1"
                             controls-position="right"
                             step-strictly />

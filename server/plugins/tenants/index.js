@@ -93,9 +93,10 @@ const after = function (server) {
             method: 'POST',
             path: '/tenant',
             options: {
+                auth: false,
                 description: 'Adds a new tenant',
                 validate: {
-                    payload: TenantCtrl.getSchema()
+                    payload: TenantCtrl.getCreateSchema()
                 },
                 handler: (request, h) => {
                     return TenantCtrl.createHandler(request, h);

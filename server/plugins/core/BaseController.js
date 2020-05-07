@@ -246,7 +246,7 @@ class BaseController {
             limit: null
         };
 
-        let parsed = queryString.parse(request.url.search, {arrayFormat: 'bracket'});
+        const parsed = queryString.parse(request.url.search, {arrayFormat: 'bracket'});
 
         if(parsed.pageSize) {
             response.pageSize = parseInt(parsed.pageSize, 10) || null;
@@ -272,7 +272,7 @@ class BaseController {
             // and where:
             // andWhere: [ 'product_type_id,=,3', 'total_inventory_count,>,0' ]
             if(parsed.andWhere) {
-                let andWhere = [];
+                const andWhere = [];
 
                 if(Array.isArray(parsed.andWhere)) {
                     forEach(parsed.andWhere, (val) => {
@@ -342,6 +342,11 @@ class BaseController {
                     forEach(queryData.andWhere, function(arr) {
                         qb.andWhere(arr[0], arr[1], arr[2]);
                     });
+                }
+
+                // tenant id
+                if(request.query && request.query.tenant_id) {
+                    qb.andWhere('tenant_id', '=', request.query.tenant_id);
                 }
             })
             .orderBy(queryData.orderBy, queryData.orderDir)

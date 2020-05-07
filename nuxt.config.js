@@ -97,7 +97,7 @@ module.exports = {
     axios: {
         debug: false,
         https: process.env.API_USE_HTTPS,
-        retry: { retries: 3 },
+        // retry: { retries: 3 },
         progress: true
     },
 
