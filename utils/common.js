@@ -33,19 +33,12 @@ export const getNextAvailableTypeValue = (allTypes) => {
     }
 
     return Math.pow(2, factor);
-}
-
-
-export const slugSuggestion = (name) => {
-    if(name) {
-        return name.replace(/ /g,"_").toLowerCase().replace(/[^a-z_0-9]/g, "");
-    }
-}
+};
 
 
 export const stripTags = (str) => {
     return str.replace(/<\/?[^>]+(>|$)/g, "");
-}
+};
 
 
 export const arrayDiff = (a1, a2) => {

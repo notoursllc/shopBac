@@ -1,6 +1,6 @@
 <script>
 import isObject from 'lodash.isobject';
-import { slugSuggestion } from '@/utils/common';
+import slugify from 'slugify';
 
 export default {
     name: 'MasterTypesManager',
@@ -37,7 +37,7 @@ export default {
 
     computed: {
         slugIdea() {
-            return slugSuggestion(this.form.name)
+            return slugify(this.form.name, { lower: true });
         }
     },
 
