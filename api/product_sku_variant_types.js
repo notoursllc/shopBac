@@ -13,12 +13,12 @@ export default ($axios) => ({
 
     list(params) {
         const paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
-        return $axios.$get(`/product/sku/options?${paramString}`); // TODO: is there a XSS issue here?
+        return $axios.$get(`/product/sku/variant_types?${paramString}`); // TODO: is there a XSS issue here?
     },
 
 
     async get(id) {
-        const { data } = await $axios.$get('/product/sku/option', {
+        const { data } = await $axios.$get('/product/sku/variant_type', {
             params: {
                 id
             }
@@ -34,17 +34,17 @@ export default ($axios) => ({
         stripRelations(prod);
 
         if(prod.id) {
-            response = await $axios.$put('/product/sku/option', prod);
+            response = await $axios.$put('/product/sku/variant_type', prod);
         }
         else {
-            response = await $axios.$post('/product/sku/option', prod);
+            response = await $axios.$post('/product/sku/variant_type', prod);
         }
 
         return response.data;
     },
 
     async delete(id) {
-        const { data } = await $axios.$delete('/product', {
+        const { data } = await $axios.$delete('/product/sku/variant_type', {
             params: {
                 id
             }

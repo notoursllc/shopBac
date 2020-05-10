@@ -32,7 +32,7 @@ const DB_TABLES = {
     product_collections: 'product_collections',
     product_skus: 'product_skus',
     product_sku_images: 'product_sku_images',
-    product_sku_options: 'product_sku_options',
+    product_sku_variant_types: 'product_sku_variant_types',
     products: 'products',
     product_images: 'product_images',
     tenants: 'tenants'

@@ -3,6 +3,7 @@
 export default {
     components: {
         OperationsDropdown: () => import('@/components/OperationsDropdown'),
+        SkuVariantTypeForm: () => import('@/components/product/sku/SkuVariantTypeForm'),
         Fab: () => import('@/components/Fab')
     },
 
@@ -10,9 +11,9 @@ export default {
         return {
             dialog: {
                 show: false,
-                skuOptionId: null
+                id: null
             },
-            skuOptions: [],
+            types: [],
             sortData: {
                 orderBy: 'updated_at',
                 orderDir: 'DESC'
@@ -21,15 +22,14 @@ export default {
     },
 
     created() {
-        this.fetchSkuOptions();
+        this.fetchTypes();
     },
 
     methods: {
-        async fetchSkuOptions() {
+        async fetchTypes() {
             try {
-                const { data } = await this.$api.productSkuOptions.list(this.sortData);
-                this.skuOptions = data;
-                console.log("this.skuOptions", this.skuOptions)
+                const { data } = await this.$api.productSkuVariantTypes.list(this.sortData);
+                this.types = data;
             }
             catch(e) {
                 this.$errorMessage(
@@ -42,13 +42,13 @@ export default {
         sortChanged(val) {
             this.sortData.orderBy = val.prop || 'updated_at';
             this.sortData.orderDir = val.order === 'ascending' ? 'ASC' : 'DESC';
-            this.fetchSkuOptions();
+            this.fetchTypes();
         },
 
         async deleteType(data) {
             try {
                 await this.$confirm(
-                    this.$t('remove_sku_option_label', {label: data.label}),
+                    this.$t('remove_label?', {label: data.label}),
                     this.$t('Please confirm'),
                     {
                         confirmButtonText: 'OK',
@@ -58,14 +58,14 @@ export default {
                 );
 
                 try {
-                    const skuOptionJson = await this.this.$api.productSkuOptions.delete(data.id);
+                    const typeJson = await this.$api.productSkuVariantTypes.delete(data.id);
 
-                    if(!skuOptionJson) {
-                        throw new Error(this.$t('SKU option not found'));
+                    if(!typeJson) {
+                        throw new Error(this.$t('Item not found'));
                     }
 
-                    this.fetchSkuOptions();
-                    this.$successMessage(this.$t('sku_option_deleted_label', {label: data.label}));
+                    this.fetchTypes();
+                    this.$successMessage(this.$t('item_deleted_label', {label: data.label}));
                 }
                 catch(e) {
                     this.$errorMessage(
@@ -80,13 +80,13 @@ export default {
         },
 
         onUpsertClick(id) {
-            this.dialog.skuOptionId = id || null;
+            this.dialog.id = id || null;
             this.dialog.show = true;
         },
 
         onUpsertSuccess() {
             this.dialog.show = false;
-            this.fetchSkuOptions();
+            this.fetchTypes();
         }
     }
 };
@@ -98,7 +98,7 @@ export default {
         <fab type="add" @click="onUpsertClick" />
 
         <el-table
-            :data="skuOptions"
+            :data="types"
             class="widthAll"
             @sort-change="sortChanged">
 
@@ -122,24 +122,21 @@ export default {
                 </template>
             </el-table-column>
 
-            <!-- length -->
+            <!-- description -->
             <el-table-column
                 prop="description"
-                :label="$t('Description')"
-                sortable="custom">
+                :label="$t('Description')">
             </el-table-column>
         </el-table>
 
         <el-dialog
             :visible.sync="dialog.show"
             :destroy-on-close="true"
-            width="95%"
+            width="600px"
             top="5vh">
-            TODO
-            <!-- <shipping-package-type-upsert-form
-                :id="dialog.skuOptionId"
-                @success="onUpsertSuccess"
-                @cancel="dialog.show = false" /> -->
+            <sku-variant-type-form
+                :id="dialog.id"
+                @success="onUpsertSuccess" />
         </el-dialog>
 
     </div>

@@ -14,7 +14,7 @@ exports.plugin = {
                 const ProductImageCtrl = new (require('./controllers/ProductImageCtrl'))(server);
                 const ProductSkuCtrl = new (require('./controllers/ProductSkuCtrl'))(server);
                 const ProductSkuImageCtrl = new (require('./controllers/ProductSkuImageCtrl'))(server);
-                const ProductSkuOptionCtrl = new (require('./controllers/ProductSkuOptionCtrl'))(server);
+                const ProductSkuVariantTypeCtrl = new (require('./controllers/ProductSkuVariantTypeCtrl'))(server);
 
 
                 // Yes this was aleady set in the Core plugin, but apparently
@@ -242,70 +242,70 @@ exports.plugin = {
                      ******************************/
                     {
                         method: 'GET',
-                        path: `${routePrefix}/product/sku/options`,
+                        path: `${routePrefix}/product/sku/variant_types`,
                         options: {
                             description: 'Finds SKU options',
                             handler: (request, h) => {
-                                return ProductSkuOptionCtrl.getPageHandler(request, h);
+                                return ProductSkuVariantTypeCtrl.getPageHandler(request, h);
                             }
                         }
                     },
                     {
                         method: 'GET',
-                        path: `${routePrefix}/product/sku/option`,
+                        path: `${routePrefix}/product/sku/variant_type`,
                         options: {
-                            description: 'Finds a SKU option by ID',
+                            description: 'Finds a SKU variant by ID',
                             validate: {
                                 query: {
                                     id: Joi.string().uuid()
                                 }
                             },
                             handler: (request, h) => {
-                                return ProductSkuOptionCtrl.getByIdHandler(request, h);
+                                return ProductSkuVariantTypeCtrl.getByIdHandler(request, h);
                             }
                         }
                     },
                     {
                         method: 'POST',
-                        path: `${routePrefix}/product/sku/option`,
+                        path: `${routePrefix}/product/sku/variant_type`,
                         options: {
-                            description: 'Add a SKU option',
+                            description: 'Add a SKU variant',
                             validate: {
-                                payload: ProductSkuOptionCtrl.getSchema()
+                                payload: ProductSkuVariantTypeCtrl.getSchema()
                             },
                             handler: (request, h) => {
-                                return ProductSkuOptionCtrl.upsertHandler(request, h);
+                                return ProductSkuVariantTypeCtrl.upsertHandler(request, h);
                             }
                         }
                     },
                     {
                         method: 'PUT',
-                        path: `${routePrefix}/product/sku/option`,
+                        path: `${routePrefix}/product/sku/variant_type`,
                         options: {
-                            description: 'Updates a SKU option',
+                            description: 'Updates a SKU variant',
                             validate: {
                                 payload: Joi.object({
                                     id: Joi.string().uuid().required(),
-                                    ...ProductSkuOptionCtrl.getSchema()
+                                    ...ProductSkuVariantTypeCtrl.getSchema()
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductSkuOptionCtrl.upsertHandler(request, h);
+                                return ProductSkuVariantTypeCtrl.upsertHandler(request, h);
                             }
                         }
                     },
                     {
                         method: 'DELETE',
-                        path: `${routePrefix}/product/sku/option`,
+                        path: `${routePrefix}/product/sku/variant_type`,
                         options: {
-                            description: 'Deletes a SKU option',
+                            description: 'Deletes a SKU variant',
                             validate: {
                                 query: Joi.object({
                                     id: Joi.string().uuid().required()
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductSkuOptionCtrl.deleteHandler(request, h);
+                                return ProductSkuVariantTypeCtrl.deleteHandler(request, h);
                             }
                         }
                     },
@@ -391,8 +391,8 @@ exports.plugin = {
                 );
 
                 server.app.bookshelf.model(
-                    'ProductSkuOption',
-                    require('./models/ProductSkuOption')(baseModel, server.app.bookshelf, server)
+                    'ProductSkuVariant',
+                    require('./models/ProductSkuVariant')(baseModel, server.app.bookshelf, server)
                 );
             }
         );

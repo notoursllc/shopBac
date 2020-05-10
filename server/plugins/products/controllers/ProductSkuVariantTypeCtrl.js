@@ -2,10 +2,10 @@ const Joi = require('@hapi/joi');
 const BaseController = require('../../core/BaseController');
 
 
-class ProductSkuOptionCtrl extends BaseController {
+class ProductSkuVariantTypeCtrl extends BaseController {
 
     constructor(server) {
-        super(server, 'ProductSkuOption');
+        super(server, 'ProductSkuVariant');
     }
 
 
@@ -58,4 +58,4 @@ class ProductSkuOptionCtrl extends BaseController {
 
 }
 
-module.exports = ProductSkuOptionCtrl;
+module.exports = ProductSkuVariantTypeCtrl;

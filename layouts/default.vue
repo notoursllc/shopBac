@@ -111,9 +111,9 @@ export default {
                         </el-submenu>
 
                         <el-menu-item
-                            :route="{ name: 'product-sku-options-list' }"
-                            index="/productSkuOptionsList"
-                            @click="menuItemClick">{{ $t('Product SKU options') }}</el-menu-item>
+                            :route="{ name: 'product-sku-variant-types-list' }"
+                            index="/productSkuVariantTypesList"
+                            @click="menuItemClick">{{ $t('Custom SKU variant types') }}</el-menu-item>
                     </el-submenu>
 
                     <el-menu-item

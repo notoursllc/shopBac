@@ -1,16 +1,42 @@
 <script>
-import cloneDeep from 'lodash.clonedeep';
-
-export default{
+export default {
     props: {
         value: {
-            type: Array
+            type: Array,
+            default: function() {
+                return [];
+            }
+        },
+
+        propertyPlaceholder: {
+            type: String,
+            default: null
+        },
+
+        valuePlaceholder: {
+            type: String,
+            default: function() {
+                return this.$t('Value');
+            }
         }
     },
 
     data: function() {
         return {
             newdata: []
+        };
+    },
+
+    watch: {
+        value: {
+            handler(newVal) {
+                this.newdata = Array.isArray(newVal) ? newVal : [];
+
+                if(!this.newdata.length) {
+                    this.addNewItem();
+                }
+            },
+            immediate: true,
         }
     },
 
@@ -51,23 +77,10 @@ export default{
         addNewItem() {
             this.newdata.push(
                 { property: null, value: null }
-            )
-        }
-    },
-
-    watch: {
-        value: {
-            handler(newVal) {
-                this.newdata = Array.isArray(newVal) ? newVal : [];
-
-                if(!this.newdata.length) {
-                    this.addNewItem();
-                }
-            },
-            immediate: true,
+            );
         }
     }
-}
+};
 </script>
 
 
@@ -79,13 +92,15 @@ export default{
                     <div class="meta-row-property">
                         <el-input
                             v-model="obj.property"
-                            @input="onInputChange" />
+                            @input="onInputChange"
+                            :placeholder="propertyPlaceholder" />
                     </div>
 
                     <div class="meta-row-value">
                         <el-input
                             v-model="obj.value"
-                            @input="onInputChange" />
+                            @input="onInputChange"
+                            :placeholder="valuePlaceholder" />
 
                         <el-button
                             @click="onClickDeleteRow(index)"
@@ -98,9 +113,9 @@ export default{
 
         <div class="metaDataFooter">
             <el-button
-                type="primary"
                 @click="addNewItem"
-                size="small">{{ $t('New item') }}</el-button>
+                size="small"
+                icon="el-icon-circle-plus-outline">{{ $t('New item') }}</el-button>
         </div>
     </div>
 </template>
