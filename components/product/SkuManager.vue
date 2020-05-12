@@ -8,21 +8,6 @@ import storage_mixin from '@/mixins/storage_mixin';
 export default {
     name: 'SkuManager',
 
-    props: {
-        product: {
-            type: Object
-        },
-
-        attributeSuggestions: {
-            type: Array
-        },
-
-        maxNumCustomAttributes: {
-            type: Number,
-            default: 3
-        }
-    },
-
     components: {
         InputMoney: () => import('@/components/InputMoney'),
         AppDialog: () => import('@/components/AppDialog'),
@@ -35,6 +20,20 @@ export default {
         storage_mixin
     ],
 
+    props: {
+        product: {
+            type: Object,
+            default: function() {
+                return {};
+            }
+        },
+
+        maxNumCustomAttributes: {
+            type: Number,
+            default: 3
+        }
+    },
+
     data: function() {
         return {
             skuDialog: {
@@ -44,8 +43,14 @@ export default {
                     attributes: []
                 }
             },
-            addColumnPopoverVisible: false
-        }
+            addColumnPopoverVisible: false,
+            skuVariantTypes: {
+                all: [],
+                selected: null,
+                choose: '1'
+            },
+            unusedSkuVariantTypes: []
+        };
     },
 
     computed: {
@@ -62,9 +67,24 @@ export default {
         }
     },
 
+    watch: {
+        'product.skus': {
+            handler(newVal) {
+                if(Array.isArray(newVal) && !newVal.length) {
+                    this.addEmptySku();
+                }
+            },
+            immediate: true
+        }
+    },
+
+    created() {
+        this.getVariantTypes();
+    },
+
     methods: {
         onClickMoreSkuInfo(index) {
-            let sku = this.product.skus[index];
+            const sku = this.product.skus[index];
 
             this.skuDialog.sku = sku;
             this.skuDialog.action = 'append';
@@ -80,7 +100,6 @@ export default {
             }
 
             this.resetSkuDialog();
-            // console.log("DONE", this.product)
         },
 
 
@@ -112,7 +131,7 @@ export default {
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
         },
 
@@ -126,40 +145,44 @@ export default {
             // the attributes in each sku need to be rearranged too:
             if(Array.isArray(this.product.skus)) {
                 this.product.skus.forEach((sku) => {
-                    let removed = sku.attributes.splice(index, 1);
+                    const removed = sku.attributes.splice(index, 1);
                     sku.attributes.splice(new_index, 0, removed[0]);
                 });
             }
         },
 
 
-        onClickAddColumn() {
-            // test
-            this.addColumnPopoverVisible = !this.addColumnPopoverVisible;
-
-            const newAttribute = {
-                label: null,
-                id: uuid(),
-                inputType: 'select'
-            };
-
-            const suggestions = Array.isArray(this.attributeSuggestions) ? this.attributeSuggestions.slice(0) : [];  // copy the array
-
-            // loop over all of the suggestions, and remove the ones that are already used
-            if(suggestions.length) {
-                let i = this.product.attributes.length;
-
-                while (i--) {
-                    // If this suggestion is already being used then remove it.
-                    if(suggestions.indexOf(this.product.attributes[i].label) > -1) {
-                        suggestions.splice(suggestions.indexOf(this.product.attributes[i].label), 1);
-                    }
-                }
-
-                // Use the first suggestion that is still unused.
-                newAttribute.label = suggestions[0] || null
+        addSkuVariantType() {
+            // adding a blank attribute
+            if(this.skuVariantTypes.choose === '1') {
+                this.addNewProductAttribute();
+                this.addColumnPopoverVisible = false;
+                return;
             }
 
+            for(let i=0, l=this.unusedSkuVariantTypes.length; i<l; i++) {
+                if(this.unusedSkuVariantTypes[i].id === this.skuVariantTypes.selected) {
+                    this.addNewProductAttribute({
+                        label: this.unusedSkuVariantTypes[i].label,
+                        id: this.unusedSkuVariantTypes[i].id,
+                        inputType: 'select'
+                    });
+                    break;
+                }
+            }
+
+            this.addColumnPopoverVisible = false;
+        },
+
+
+        addNewProductAttribute(newAttribute) {
+            if(!newAttribute) {
+                newAttribute = {
+                    label: null,
+                    id: uuid(),
+                    inputType: 'select'
+                };
+            }
 
             this.product.attributes.push(newAttribute);
 
@@ -172,6 +195,52 @@ export default {
                     });
                 });
             }
+
+            this.recalculateUnusedSkuVariantTypes();
+        },
+
+
+        recalculateUnusedSkuVariantTypes() {
+            const all = cloneDeep(this.skuVariantTypes.all);
+
+            if(Array.isArray(all)) {
+                const usedIds = this.product.attributes.map(obj => obj.id);
+
+                if(usedIds.length) {
+                    // remove all attributes that have already been selected:
+                    let i = all.length;
+
+                    while (i--) {
+                        if(usedIds.indexOf(all[i].id) > -1) {
+                            all.splice(i, 1);
+                        }
+                    }
+                }
+            }
+
+            this.unusedSkuVariantTypes = all;
+        },
+
+
+        setDefaultSkuVariantSelectOption() {
+            this.skuVariantTypes.selected = (Array.isArray(this.unusedSkuVariantTypes) && this.unusedSkuVariantTypes.length) ? this.unusedSkuVariantTypes[0].id : null;
+        },
+
+
+        onClickAddColumnButton() {
+            this.setDefaultSkuVariantSelectOption();
+
+            // if there are no more custom attributes to add then add a blank attribute
+            // straight away without displaying the popup
+            if(!this.unusedSkuVariantTypes.length) {
+                this.addNewProductAttribute();
+                this.addColumnPopoverVisible = false;
+                return;
+            }
+
+            // Otherwise display the popover and allow the user to choose to add
+            // a blank attribute or a pre-defined one
+            this.addColumnPopoverVisible = true;
         },
 
 
@@ -189,6 +258,8 @@ export default {
                     }
                 }
             });
+
+            this.recalculateUnusedSkuVariantTypes();
         },
 
 
@@ -206,13 +277,27 @@ export default {
                     newSku.attributes.push({
                         optionId: obj.id,
                         value: null
-                    })
-                })
+                    });
+                });
             }
 
             this.product.skus.push(newSku);
         },
 
+
+        async getVariantTypes() {
+            try {
+                const { data } = await this.$api.productSkuVariantTypes.list();
+                this.skuVariantTypes.all = data;
+                this.unusedSkuVariantTypes = cloneDeep(data);
+            }
+            catch(e) {
+                this.$errorMessage(
+                    e.message,
+                    { closeOthers: true }
+                );
+            }
+        },
 
         setOrdinals() {
             this.product.skus.forEach((obj, index) => {
@@ -220,28 +305,15 @@ export default {
             });
         },
 
-
         canShowLeftIcon(index) {
             return this.product.attributes[index - 1];
         },
 
-
         canShowRightIcon(index) {
             return this.product.attributes[index + 1];
         }
-    },
-
-    watch: {
-        'product.skus': {
-            handler(newVal) {
-                if(Array.isArray(newVal) && !newVal.length) {
-                    this.addEmptySku();
-                }
-            },
-            immediate: true,
-        }
     }
-}
+};
 </script>
 
 
@@ -254,30 +326,59 @@ export default {
                         <!-- choose custom attribute popover -->
                         <el-popover
                             ref="attributePopover"
-                            placement="bottom"
-                            title="Choose a variant type"
+                            placement="top"
                             trigger="manual"
                             content="this is content, this is content, this is content"
                             v-model="addColumnPopoverVisible">
+                            <div>
+                                <el-radio
+                                    v-model="skuVariantTypes.choose"
+                                    label="1"
+                                    border
+                                    class="widthAll">Add a blank attribute</el-radio>
+                            </div>
+                            <div class="ptm">
+                                <el-radio
+                                    v-model="skuVariantTypes.choose"
+                                    label="2"
+                                    border
+                                    class="widthAll">Add a pre-defined attribute</el-radio>
+
+                                <div class="pts" v-show="skuVariantTypes.choose === '2'">
+                                    <el-select
+                                        v-model="skuVariantTypes.selected"
+                                        size="small"
+                                        class="widthAll"
+                                        placeholder="Choose a pre-defined attribute">
+                                        <el-option
+                                            v-for="obj in unusedSkuVariantTypes"
+                                            :key="obj.id"
+                                            :label="obj.label"
+                                            :value="obj.id"></el-option>
+                                    </el-select>
+                                </div>
+                            </div>
+
+                            <div class="ptl tac">
+                                <el-button
+                                    type="primary"
+                                    size="mini"
+                                    @click="addSkuVariantType">{{ $t('Done') }}</el-button>
+                            </div>
                         </el-popover>
 
-                        <el-button
-                            v-popover:attributePopover
-                            @click="onClickAddColumn"
-                            size="mini"
-                            icon="el-icon-plus"></el-button>
-
-                        <!-- <el-tooltip
-                            v-if="canAddColumn"
-                            effect="dark"
-                            :content="$t('Add column')"
-                            placement="top-start">
-                            <el-button
-                                @click="onClickAddColumn"
-                                size="mini"
-                                icon="el-icon-plus"></el-button>
-                        </el-tooltip>
-                        -->
+                        <div class="inlineBlock" v-popover:attributePopover>
+                            <el-tooltip
+                                v-if="canAddColumn"
+                                effect="dark"
+                                :content="$t('Add column')"
+                                placement="top-start">
+                                <el-button
+                                    @click="onClickAddColumnButton"
+                                    size="mini"
+                                    icon="el-icon-plus"></el-button>
+                            </el-tooltip>
+                        </div>
                     </th>
 
                     <template v-if="Array.isArray(product.attributes)">
@@ -316,14 +417,14 @@ export default {
                                 placeholder="Add column"
                                 class="header-input">
                                 <i slot="prepend"
-                                    class="el-icon-back"
-                                    v-if="canShowLeftIcon(index)"
-                                    @click="onColumnMove(index, true)" />
+                                   class="el-icon-back"
+                                   v-if="canShowLeftIcon(index)"
+                                   @click="onColumnMove(index, true)" />
 
                                 <i slot="append"
-                                    class="el-icon-right"
-                                    v-if="canShowRightIcon(index)"
-                                    @click="onColumnMove(index, false)" />
+                                   class="el-icon-right"
+                                   v-if="canShowRightIcon(index)"
+                                   @click="onColumnMove(index, false)" />
                             </el-input>
                         </th>
                     </template>
@@ -400,7 +501,7 @@ export default {
             <el-button
                 type="primary"
                 @click="addEmptySku"
-                size="mini">{{ $t('Add row')}}</el-button>
+                size="mini">{{ $t('Add row') }}</el-button>
         </div>
 
 
