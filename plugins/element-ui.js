@@ -5,6 +5,7 @@ import isObject from 'lodash.isobject'
 
 import {
     Alert,
+    Autocomplete,
     Breadcrumb,
     BreadcrumbItem,
     Button,
@@ -43,6 +44,7 @@ export default ({ store }) => {
     Vue.use(Element, { locale });
 
     Vue.use(Alert);
+    Vue.use(Autocomplete);
     Vue.use(Breadcrumb);
     Vue.use(BreadcrumbItem);
     Vue.use(Button);

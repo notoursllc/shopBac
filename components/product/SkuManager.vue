@@ -12,8 +12,9 @@ export default {
         InputMoney: () => import('@/components/InputMoney'),
         AppDialog: () => import('@/components/AppDialog'),
         SkuUpsertForm: () => import('@/components/product/SkuUpsertForm'),
+        SkuAttributeInputs: () => import('@/components/product/sku/SkuAttributeInputs'),
         draggable: () => import('vuedraggable'),
-        IconDragHandle: () => import('@/components/icons/IconDragHandle'),
+        IconDragHandle: () => import('@/components/icons/IconDragHandle')
     },
 
     mixins: [
@@ -455,8 +456,13 @@ export default {
 
                     <!-- custom attributes -->
                     <td v-for="attr in obj.attributes" :key="attr.optionId" class="attributeLabelValue">
-                        <div><label>{{ $t('Label') }}:</label><el-input v-model="attr.label" size="mini" class="width75" /></div>
-                        <div><label>{{ $t('Value') }}:</label><el-input v-model="attr.value" size="mini" class="width75" /></div>
+                        <sku-attribute-inputs
+                            :sku-variant-types="skuVariantTypes.all"
+                            :attribute="attr"
+                            :initital-label="attr.label"
+                            :initital-value="attr.value"
+                            @labelChange="(val) => { attr.label = val }"
+                            @valueChange="(val) => { attr.value = val }" />
                     </td>
 
                     <!-- Price -->

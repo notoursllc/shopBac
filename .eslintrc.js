@@ -73,6 +73,7 @@ module.exports = {
     'semi-spacing': [ ERROR, {'before': false, 'after': true}],
     'space-before-blocks': [ ERROR, 'always' ],
     'space-before-function-paren': OFF,
+    'space-infix-ops': OFF,
     'vars-on-top': OFF,
     'vue/attributes-order': OFF,
     'vue/html-closing-bracket-newline': OFF,
