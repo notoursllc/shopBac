@@ -1,7 +1,6 @@
 <script>
 import isObject from 'lodash.isobject';
 import cloneDeep from 'lodash.clonedeep';
-// import draggable from 'vuedraggable';
 import uuid from 'uuid/v4';
 import storage_mixin from '@/mixins/storage_mixin';
 
