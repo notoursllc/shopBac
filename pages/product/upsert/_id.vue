@@ -263,7 +263,7 @@ export default {
 
 
         <!-- Organization -->
-        <text-card>
+        <text-card class="mbl">
             <div slot="header">{{ $t('Organization') }}</div>
 
             <div class="inputGroupContainer">
@@ -312,7 +312,7 @@ export default {
 
 
         <!-- Details -->
-        <text-card>
+        <text-card class="mbl">
             <div slot="header">{{ $t('Details') }}</div>
 
             <!-- page title -->
@@ -347,7 +347,7 @@ export default {
 
 
         <!-- Images -->
-        <text-card>
+        <text-card class="mbl">
             <div slot="header">
                 {{ $t('Featured images') }}
                 <span class="fs11 plm">{{ $t('You can add up to num images', {number: imageManagerMaxFeaturedImages}) }}</span>
@@ -361,7 +361,7 @@ export default {
 
 
         <!-- Variants / Options -->
-        <text-card>
+        <text-card class="mbl">
             <div slot="header">{{ $t('Variants') }}</div>
 
             <sku-manager
@@ -376,7 +376,7 @@ export default {
 
 
         <!-- SEO -->
-        <text-card>
+        <text-card class="mbl">
             <div slot="header">{{ $t('Search engine listing') }}</div>
 
             <!-- page title -->
@@ -421,7 +421,7 @@ export default {
 
 
         <!-- Metadata -->
-        <text-card>
+        <text-card class="mbl">
             <div slot="header">{{ $t('Metadata') }}</div>
 
             <div class="inputGroup mrl mbm">
@@ -434,7 +434,7 @@ export default {
         </text-card>
 
 
-        <div class="mtl">
+        <div>
             <el-button type="primary" @click="onSaveClick">{{ $t('Save') }}</el-button>
         </div>
     </div>
