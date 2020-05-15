@@ -1,20 +1,9 @@
 <script>
-import cloneDeep from 'lodash.clonedeep';
 import isObject from 'lodash.isobject';
 import storage_mixin from '@/mixins/storage_mixin'; // TODO: not needed?
 
 export default {
     name: 'SkuUpsertForm',
-
-    props: {
-        sku: {
-            type: Object
-        },
-
-        productAttributes: {
-            type: Array
-        }
-    },
 
     components: {
         InputMoney: () => import('@/components/InputMoney'),
@@ -26,6 +15,22 @@ export default {
     mixins: [
         storage_mixin
     ],
+
+    props: {
+        sku: {
+            type: Object,
+            default: function() {
+                return {};
+            }
+        },
+
+        productAttributes: {
+            type: Array,
+            default: function() {
+                return [];
+            }
+        }
+    },
 
     data: function() {
         return {
@@ -47,9 +52,22 @@ export default {
         }
     },
 
+    watch: {
+        sku: {
+            handler(newVal) {
+                if(isObject(newVal)) {
+                    if(!Array.isArray(newVal.images)) {
+                        newVal.images = [];
+                    }
+                }
+            },
+            immediate: true
+        }
+    },
+
     methods: {
         onClickDone() {
-            this.$emit('done')
+            this.$emit('done');
         },
 
         async onDeleteSkuImage(id) {
@@ -67,19 +85,6 @@ export default {
 
             this.loadingImages = false;
         }
-    },
-
-    watch: {
-        sku: {
-            handler(newVal) {
-                if(isObject(newVal)) {
-                    if(!Array.isArray(newVal.images)) {
-                        newVal.images = [];
-                    }
-                }
-            },
-            immediate: true
-        }
     }
 };
 </script>
@@ -96,7 +101,7 @@ export default {
         </div>
 
         <!-- options -->
-        <text-card v-if="showAttributes">
+        <text-card v-if="showAttributes" class="mbl">
             <div slot="header">{{ $t('Attributes') }}</div>
 
             <div class="inputGroupContainer">
@@ -114,26 +119,26 @@ export default {
 
 
         <!-- pricing -->
-        <text-card>
+        <text-card class="mbl">
             <div slot="header">{{ $t('Pricing') }}</div>
 
             <div class="inputGroupContainer">
                 <!-- price -->
-                <div class="inputGroup mrl mbm" >
+                <div class="inputGroup mrl mbm">
                     <label>{{ $t('Price') }}</label>
                     <input-money
                         v-model="sku.base_price" />
                 </div>
 
                 <!-- compare at price -->
-                <div class="inputGroup mrl mbm" >
+                <div class="inputGroup mrl mbm">
                     <label>{{ $t('Compare at price') }}</label>
                     <input-money
                         v-model="sku.compare_at_price" />
                 </div>
 
                 <!-- cost pre item -->
-                <div class="inputGroup mrl mbm" >
+                <div class="inputGroup mrl mbm">
                     <label>{{ $t('Cost per item') }}</label>
                     <span>
                         <input-money
@@ -144,15 +149,15 @@ export default {
             </div>
 
             <!-- Charge tax on this product -->
-            <div class="mtm" >
+            <div class="mtm">
                 <el-checkbox
-                    v-model="sku.is_taxable" >{{ $t('Charge tax on this product') }}</el-checkbox>
+                    v-model="sku.is_taxable">{{ $t('Charge tax on this product') }}</el-checkbox>
             </div>
         </text-card>
 
 
         <!-- Images -->
-        <text-card>
+        <text-card class="mbl">
             <div slot="header">
                 {{ $t('Images') }}
                 <span class="fs11 plm">{{ $t('You can add up to num images', {number: imageManagerMaxImages}) }}</span>
@@ -166,12 +171,12 @@ export default {
 
 
         <!-- inventory -->
-        <text-card>
+        <text-card class="mbl">
             <div slot="header">{{ $t('Inventory') }}</div>
 
             <div class="inputGroupContainer">
                 <!-- qty -->
-                <div class="inputGroup mrl mbm" >
+                <div class="inputGroup mrl mbm">
                     <label>{{ $t('Quantity') }}</label>
                     <el-input-number
                         v-model="sku.inventory_count"
@@ -183,14 +188,14 @@ export default {
                 </div>
 
                 <!-- sku -->
-                <div class="inputGroup mrl mbm" >
+                <div class="inputGroup mrl mbm">
                     <label>{{ $t('SKU (Stock Keeping Unit)') }}</label>
                     <el-input
                         v-model="sku.sku" />
                 </div>
 
                 <!-- barcode -->
-                <div class="inputGroup mrl mbm" >
+                <div class="inputGroup mrl mbm">
                     <label>{{ $t('Barcode (ISBN, UPC, GTIN, etc.)') }}</label>
                     <el-input
                         v-model="sku.barcode" />
@@ -198,26 +203,26 @@ export default {
             </div>
 
             <!-- track quantity -->
-            <div class="mtm" >
+            <div class="mtm">
                 <el-checkbox
-                    v-model="sku.track_quantity" >{{ $t('Track quantity') }}</el-checkbox>
+                    v-model="sku.track_quantity">{{ $t('Track quantity') }}</el-checkbox>
             </div>
 
             <!-- Continue selling when out of stock -->
-            <div class="mtm" >
+            <div class="mtm">
                 <el-checkbox
-                    v-model="sku.visible_if_out_of_stock" >{{ $t('Continue selling when out of stock') }}</el-checkbox>
+                    v-model="sku.visible_if_out_of_stock">{{ $t('Continue selling when out of stock') }}</el-checkbox>
             </div>
         </text-card>
 
 
         <!-- shipping -->
-        <text-card>
+        <text-card class="mbl">
             <div slot="header">{{ $t('Shipping') }}</div>
 
             <div class="inputGroupContainer">
                 <!-- weight -->
-                <div class="inputGroup mrl mbm" >
+                <div class="inputGroup mrl mbm">
                     <label>{{ $t('Weight (oz)') }}</label>
                     <el-input-number
                         v-model="sku.weight_oz"
@@ -229,31 +234,31 @@ export default {
                 </div>
             </div>
 
-            <hr/>
+            <hr />
 
-            <h4>{{ $t('CUSTOMS INFORMATION')}}</h4>
+            <h4>{{ $t('CUSTOMS INFORMATION') }}</h4>
 
             <div class="inputGroupContainer">
                 <!-- country of origin -->
-                <div class="inputGroup mrl mbm" >
+                <div class="inputGroup mrl mbm">
                     <label>{{ $t('Country of origin') }}</label>
                     <country-select
                         v-model="sku.customs_country_of_origin" />
-                    <div class="colorGrayLighter">{{ $t('customs_country_of_origin_desc')}}</div>
+                    <div class="colorGrayLighter">{{ $t('customs_country_of_origin_desc') }}</div>
                 </div>
 
                 <!-- hs code -->
-                <div class="inputGroup mrl mbm" >
+                <div class="inputGroup mrl mbm">
                     <label>{{ $t('HS (Harmonized System) code') }}</label>
                     <el-input
                         v-model="sku.customs_harmonized_system_code" />
-                    <div class="colorGrayLighter">{{ $t('customs_hs_code_desc')}}</div>
+                    <div class="colorGrayLighter">{{ $t('customs_hs_code_desc') }}</div>
                 </div>
             </div>
         </text-card>
 
 
-        <div class="mtl tac">
+        <div class="tac">
             <el-button
                 type="primary"
                 @click="onClickDone">{{ $t('Done') }}</el-button>
