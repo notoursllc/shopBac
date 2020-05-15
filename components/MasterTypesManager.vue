@@ -5,19 +5,19 @@ import slugify from 'slugify';
 export default {
     name: 'MasterTypesManager',
 
-    props: {
-        object: {
-            type: String,
-            required: true
-        }
-    },
-
     components: {
         AppDialog: () => import('@/components/AppDialog'),
         Fab: () => import('@/components/Fab'),
         OperationsDropdown: () => import('@/components/OperationsDropdown'),
         BooleanTag: () => import('@/components/BooleanTag'),
-        MetaDataBuilder: () => import('@/components/MetaDataBuilder'),
+        MetaDataBuilder: () => import('@/components/MetaDataBuilder')
+    },
+
+    props: {
+        object: {
+            type: String,
+            required: true
+        }
     },
 
     data() {
@@ -32,13 +32,29 @@ export default {
             },
             formHasMetaData: false,
             types: []
-        }
+        };
     },
 
     computed: {
         slugIdea() {
-            return slugify(this.form.name, { lower: true });
+            if(this.form.name) {
+                return slugify(this.form.name, { lower: true });
+            }
+            return '';
         }
+    },
+
+    watch: {
+        'object': {
+            handler(newVal) {
+                this.form.object = newVal;
+            },
+            immediate: true
+        }
+    },
+
+    created() {
+        this.fetchTypes();
     },
 
     methods: {
@@ -50,13 +66,13 @@ export default {
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
         },
 
         async onDeleteClick(data) {
             try {
-                await this.$confirm(`Delete "${ data.name }"?`, 'Please confirm', {
+                await this.$confirm(`Delete "${data.name}"?`, 'Please confirm', {
                     confirmButtonText: 'OK',
                     cancelButtonText: 'Cancel',
                     type: 'warning'
@@ -70,13 +86,13 @@ export default {
                     }
 
                     this.fetchTypes();
-                    this.$successMessage(`Deleted: ${data.name}`)
+                    this.$successMessage(`Deleted: ${data.name}`);
                 }
                 catch(e) {
                     this.$errorMessage(
                         e.message,
                         { closeOthers: true }
-                    )
+                    );
                 }
             }
             catch(err) {
@@ -111,7 +127,7 @@ export default {
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
         },
 
@@ -120,7 +136,7 @@ export default {
                 if(key !== 'object') {
                     this.form[key] = null;
                 }
-            })
+            });
         },
 
         async onUpsertFormSave() {
@@ -137,7 +153,7 @@ export default {
                     throw new Error(this.$t('Error updating Master Type'));
                 }
 
-                let title = this.form.id ? 'Master Type updated successfully' : 'Master Type added successfully';
+                const title = this.form.id ? 'Master Type updated successfully' : 'Master Type added successfully';
                 this.$successMessage(`${title}: ${mt.name}`);
 
                 this.showDialog = false;
@@ -148,7 +164,7 @@ export default {
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
         },
 
@@ -160,21 +176,8 @@ export default {
         onUseSlugSuggestion() {
             this.form.slug = this.slugIdea;
         }
-    },
-
-    created() {
-        this.fetchTypes();
-    },
-
-    watch: {
-        'object': {
-            handler(newVal) {
-                this.form.object = newVal;
-            },
-            immediate: true
-        },
-    },
-}
+    }
+};
 </script>
 
 
@@ -305,18 +308,18 @@ export default {
 </template>
 
 <style lang="scss">
-    @import "~assets/css/components/_table.scss";
-    @import "~assets/css/components/_formRow.scss";
+@import "~assets/css/components/_table.scss";
+@import "~assets/css/components/_formRow.scss";
 
-    .formContainer {
-        width: 500px;
+.formContainer {
+    width: 500px;
 
-        .formRow > label {
-            white-space: nowrap;
-        }
-
-        .formRow > span {
-            width: 100%;
-        }
+    .formRow > label {
+        white-space: nowrap;
     }
+
+    .formRow > span {
+        width: 100%;
+    }
+}
 </style>

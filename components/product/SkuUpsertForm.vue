@@ -9,7 +9,7 @@ export default {
         InputMoney: () => import('@/components/InputMoney'),
         TextCard: () => import('@/components/TextCard'),
         CountrySelect: () => import('@/components/CountrySelect'),
-        ImageManager: () => import('@/components/product/ImageManager'),
+        ImageManager: () => import('@/components/product/ImageManager')
     },
 
     mixins: [
