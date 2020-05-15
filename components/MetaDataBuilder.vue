@@ -1,5 +1,10 @@
 <script>
 export default {
+    components: {
+        draggable: () => import('vuedraggable'),
+        IconDragHandle: () => import('@/components/icons/IconDragHandle')
+    },
+
     props: {
         value: {
             type: Array,
@@ -18,6 +23,11 @@ export default {
             default: function() {
                 return this.$t('Value');
             }
+        },
+
+        isSortable: {
+            type: Boolean,
+            default: true
         }
     },
 
@@ -36,7 +46,7 @@ export default {
                     this.addNewItem();
                 }
             },
-            immediate: true,
+            immediate: true
         }
     },
 
@@ -87,28 +97,43 @@ export default {
 <template>
     <div>
         <div class="metaDataHeader">
-            <div class="meta-row" v-for="(obj, index) in newdata" :key="index">
-                <div class="meta-row-fields">
-                    <div class="meta-row-property">
-                        <el-input
-                            v-model="obj.property"
-                            @input="onInputChange"
-                            :placeholder="propertyPlaceholder" />
-                    </div>
+            <draggable
+                v-model="newdata"
+                handle=".meta-row-handle"
+                @update="emitInput"
+                ghost-class="ghost"
+                tag="div">
+                <div class="meta-row" v-for="(obj, index) in newdata" :key="index">
+                    <div class="meta-row-fields">
+                        <!-- drag handle -->
+                        <div class="meta-row-handle cursorGrab" v-if="isSortable">
+                            <icon-drag-handle
+                                icon-name="drag-handle"
+                                width="15px"
+                                class-name="fillGrayLight vam" />
+                        </div>
 
-                    <div class="meta-row-value">
-                        <el-input
-                            v-model="obj.value"
-                            @input="onInputChange"
-                            :placeholder="valuePlaceholder" />
+                        <div class="meta-row-property">
+                            <el-input
+                                v-model="obj.property"
+                                @input="onInputChange"
+                                :placeholder="propertyPlaceholder" />
+                        </div>
 
-                        <el-button
-                            @click="onClickDeleteRow(index)"
-                            class="mlm"
-                            icon="el-icon-delete" />
+                        <div class="meta-row-value">
+                            <el-input
+                                v-model="obj.value"
+                                @input="onInputChange"
+                                :placeholder="valuePlaceholder" />
+
+                            <el-button
+                                @click="onClickDeleteRow(index)"
+                                class="mlm"
+                                icon="el-icon-delete" />
+                        </div>
                     </div>
                 </div>
-            </div>
+            </draggable>
         </div>
 
         <div class="metaDataFooter">
@@ -130,6 +155,11 @@ export default {
     }
     .meta-row-fields {
         @include flexbox();
+    }
+    .meta-row-handle {
+        width: 25px;
+        @include flexbox();
+        @include align-items(center);
     }
     .meta-row-property {
         @include flex(0 0 180px);
