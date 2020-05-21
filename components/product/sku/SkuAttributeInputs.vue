@@ -65,7 +65,6 @@ export default {
 
     methods: {
         onLabelChange(newLabelValue) {
-            // console.log("label change", newLabelValue)
             let newValue = null;
             let newLabel = null;
 
@@ -85,9 +84,11 @@ export default {
                 }
             });
 
-            this.$emit('labelChange', newLabel);
-            this.selectedValue = newValue;
-            this.onValueChange(newValue);
+            this.$emit('labelChange', newLabel || newLabelValue);
+
+            if(newValue) {
+                this.selectedValue = newValue;
+            }
         },
 
         onValueChange(val) {

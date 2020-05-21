@@ -9,7 +9,8 @@ export default {
         InputMoney: () => import('@/components/InputMoney'),
         TextCard: () => import('@/components/TextCard'),
         CountrySelect: () => import('@/components/CountrySelect'),
-        ImageManager: () => import('@/components/product/ImageManager')
+        ImageManager: () => import('@/components/product/ImageManager'),
+        SkuAttributeInputs: () => import('@/components/product/sku/SkuAttributeInputs')
     },
 
     mixins: [
@@ -35,7 +36,8 @@ export default {
     data: function() {
         return {
             imageManagerMaxImages: process.env.SKU_IMAGE_MANAGER_MAX_IMAGES || 3,
-            loadingImages: false
+            loadingImages: false,
+            skuVariantTypes: []
         };
     },
 
@@ -65,9 +67,26 @@ export default {
         }
     },
 
+    created() {
+        this.getVariantTypes();
+    },
+
     methods: {
         onClickDone() {
             this.$emit('done');
+        },
+
+        async getVariantTypes() {
+            try {
+                const { data } = await this.$api.productSkuVariantTypes.list();
+                this.skuVariantTypes = data;
+            }
+            catch(e) {
+                this.$errorMessage(
+                    e.message,
+                    { closeOthers: true }
+                );
+            }
         },
 
         async onDeleteSkuImage(id) {
@@ -100,7 +119,7 @@ export default {
                 border>{{ $t('This SKU is available for purchase') }}</el-checkbox>
         </div>
 
-        <!-- options -->
+        <!-- attributes -->
         <text-card v-if="showAttributes" class="mbl">
             <div slot="header">{{ $t('Attributes') }}</div>
 
@@ -108,10 +127,15 @@ export default {
                 <div v-for="(label, index) in tableColumnLabels"
                      :key="index"
                      class="inputGroup mrl mbm">
-                    <label>{{ label }}</label>
-                    <div v-if="sku.attributes[index]">
-                        <el-input
-                            v-model="sku.attributes[index].value" />
+                    <label class="fwb tac pbs">{{ label }}</label>
+                    <div v-if="sku.attributes[index]" class="fs12">
+                        <sku-attribute-inputs
+                            :sku-variant-types="skuVariantTypes"
+                            :attribute="sku.attributes[index]"
+                            :initital-label="sku.attributes[index].label"
+                            :initital-value="sku.attributes[index].value"
+                            @labelChange="(val) => { sku.attributes[index].label = val }"
+                            @valueChange="(val) => { sku.attributes[index].value = val }" />
                     </div>
                 </div>
             </div>
