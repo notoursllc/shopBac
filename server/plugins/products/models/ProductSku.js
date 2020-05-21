@@ -30,6 +30,13 @@ module.exports = function (baseModel, bookshelf) {
             return attributes;
         },
 
+        virtuals: {
+            is_displayable: function() {
+                const inventory_count = this.get('inventory_count');
+                return (this.get('published') && (inventory_count || (!inventory_count && this.get('visible_if_out_of_stock'))));
+            }
+        },
+
         // tenant_id is not visible
         visible: [
             'id',
@@ -45,6 +52,7 @@ module.exports = function (baseModel, bookshelf) {
             'sale_price',
             'is_on_sale',
             'is_taxable',
+            'is_displayable',
             'tax_code',
             'inventory_count',
             'sku',
