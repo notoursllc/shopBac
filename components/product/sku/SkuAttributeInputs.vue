@@ -87,7 +87,8 @@ export default {
             this.$emit('labelChange', newLabel || newLabelValue);
 
             if(newValue) {
-                this.selectedValue = newValue;
+                // this.selectedValue = newValue;
+                this.$emit('valueChange', newValue);
             }
         },
 
