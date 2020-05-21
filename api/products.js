@@ -107,52 +107,6 @@ export default ($axios) => ({
 
 
     //////////////////
-    // SKUs
-    //////////////////
-    async upsertSku(data) {
-        let response;
-        let sku = cloneDeep(data);
-
-        stripRelations(sku);
-
-        if(sku.id) {
-            response = await $axios.$put('/product/sku', sku);
-        }
-        else {
-            response = await $axios.$post('/product/sku', sku);
-        }
-
-        return response.data;
-    },
-
-
-    async deleteSku(id) {
-        const { data } = await $axios.$delete(`/product/sku`, {
-            params: {
-                id
-            }
-        });
-        return data;
-    },
-
-
-    async upsertSkuImage(imgData) {
-        const { data } = await $axios.$post('/product/sku/image', imgData);
-        return data;
-    },
-
-
-    async deleteSkuImage(id) {
-        const { data } = await $axios.$delete(`/product/sku/image`, {
-            params: {
-                id
-            }
-        });
-        return data;
-    },
-
-
-    //////////////////
     // Collections
     //////////////////
     async listProductCollections() {

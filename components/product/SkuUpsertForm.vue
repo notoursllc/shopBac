@@ -92,7 +92,7 @@ export default {
         async onDeleteSkuImage(id) {
             try {
                 this.loadingImages = true;
-                await this.$api.products.deleteSkuImage(id);
+                await this.$api.productSkus.deleteImage(id);
                 this.$successMessage(this.$t('Image deleted successfully'));
             }
             catch(e) {
@@ -204,7 +204,6 @@ export default {
                     <label>{{ $t('Quantity') }}</label>
                     <el-input-number
                         v-model="sku.inventory_count"
-                        :min="1"
                         :step="1"
                         controls-position="right"
                         step-strictly

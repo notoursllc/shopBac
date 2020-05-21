@@ -118,7 +118,7 @@ export default {
 
                 // Only delete the skus that are persisted in the DB (which have an id)
                 if(sku.id) {
-                    await this.$api.products.deleteSku(sku.id);
+                    await this.$api.productSkus.delete(sku.id);
                 }
 
                 this.product.skus.splice(index, 1);
@@ -433,6 +433,7 @@ export default {
                     <th class="vabtm">{{ $t('Price') }}</th>
                     <th class="vabtm input-number">{{ $t('Quantity') }}</th>
                     <th class="vabtm">{{ $t('SKU') }}</th>
+                    <th class="vabtm">{{ $t('Images') }}</th>
                     <th class="vabtm"></th>
                 </tr>
             </thead>
@@ -483,6 +484,11 @@ export default {
                     <!-- Sku -->
                     <td>
                         <el-input v-model="obj.sku" />
+                    </td>
+
+                    <!-- Images -->
+                    <td>
+
                     </td>
 
                     <td>

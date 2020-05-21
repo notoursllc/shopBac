@@ -167,7 +167,7 @@ export default {
                 if(Array.isArray(this.product.skus)) {
                     this.product.skus.forEach(async (sku) => {
                         sku.product_id = p.id;
-                        const s = await this.$api.products.upsertSku(sku);
+                        const s = await this.$api.productSkus.upsert(sku);
 
                         if(!s) {
                             throw new Error('Error updating product SKU');
@@ -185,7 +185,7 @@ export default {
                         });
 
                         promises.push(
-                            this.$api.products.upsertSkuImage(formData)
+                            this.$api.productSkus.upsertImage(formData)
                         );
                     });
                 }
