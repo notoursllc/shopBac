@@ -47,7 +47,7 @@ export default {
             skuVariantTypes: {
                 all: [],
                 selected: null,
-                choose: '1'
+                choose: '2'
             },
             unusedSkuVariantTypes: []
         };
@@ -334,13 +334,6 @@ export default {
                             <div>
                                 <el-radio
                                     v-model="skuVariantTypes.choose"
-                                    label="1"
-                                    border
-                                    class="widthAll">Add a blank attribute</el-radio>
-                            </div>
-                            <div class="ptm">
-                                <el-radio
-                                    v-model="skuVariantTypes.choose"
                                     label="2"
                                     border
                                     class="widthAll">Add a pre-defined attribute</el-radio>
@@ -358,6 +351,14 @@ export default {
                                             :value="obj.id"></el-option>
                                     </el-select>
                                 </div>
+                            </div>
+
+                            <div class="ptm">
+                                <el-radio
+                                    v-model="skuVariantTypes.choose"
+                                    label="1"
+                                    border
+                                    class="widthAll">Add a blank attribute</el-radio>
                             </div>
 
                             <div class="ptl tac">
