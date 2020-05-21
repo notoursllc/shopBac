@@ -269,7 +269,8 @@ export default {
             const newSku = {
                 attributes: [],
                 product_id: this.product.id,
-                ordinal: this.product.skus.length
+                ordinal: this.product.skus.length,
+                published: true
             };
 
             if(Array.isArray(this.product.attributes)) {
