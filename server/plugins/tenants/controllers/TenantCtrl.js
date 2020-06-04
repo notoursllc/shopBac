@@ -36,7 +36,7 @@ class TenantCtrl extends BaseController {
     getRefreshSchema() {
         return {
             id: Joi.string().max(100).required(),
-            refresh_token: Joi.string().required()
+            // refresh_token: Joi.string().required()
         };
     }
 
@@ -90,6 +90,7 @@ class TenantCtrl extends BaseController {
      */
     async authHandler(request, h) {
         let Tenant;
+        const refreshTokenFromCookie = Array.isArray(request.state.bvrt) ? request.state.bvrt[request.state.bvrt.length - 1] : request.state.bvrt;
 
         try {
             Tenant = await this.modelForgeFetch(
@@ -110,7 +111,8 @@ class TenantCtrl extends BaseController {
                 isMatch = this.passwordIsMatch(request.payload.password, Tenant.get('password'));
             }
             else {
-                isMatch = this.passwordIsMatch(request.payload.refresh_token, Tenant.get('refresh_token'));
+                // get the refresh token from cookie (request.state)
+                isMatch = this.passwordIsMatch(refreshTokenFromCookie, Tenant.get('refresh_token'));
             }
         }
 
@@ -121,6 +123,20 @@ class TenantCtrl extends BaseController {
         try {
             const authToken = this.createToken(Tenant);
             const refreshToken = uuid();
+
+            // return the refresh token in a httpOnly cookie
+            h.state(
+                'bvrt',
+                refreshToken,
+                {
+                    ttl: null,
+                    isSecure: process.env.NODE_ENV === 'production',
+                    isHttpOnly: true,
+                    clearInvalid: true,
+                    strictHeader: false,
+                    path: '/'
+                }
+            );
 
             await this.upsertModel({
                 id: Tenant.get('id'),
@@ -143,7 +159,7 @@ class TenantCtrl extends BaseController {
     async createHandler(request, h) {
         const Tenant = await this.getByEmail(request.payload.email);
 
-        console.log("TENANT", Tenant);
+        // console.log("TENANT", Tenant);
         if(Tenant) {
             throw Boom.badData('A user with this email address already exists');
         }
@@ -164,7 +180,7 @@ class TenantCtrl extends BaseController {
 
         const passwordValidation = owasp.test(request.payload.password);
 
-        console.log('PWD VALIDATION', request.payload.password, passwordValidation);
+        // console.log('PWD VALIDATION', request.payload.password, passwordValidation);
 
         // request.payload.api_key = crypto.randomBytes(32).toString('hex');
         request.payload.password = this.cryptPassword(request.payload.password);

@@ -68,6 +68,9 @@ const after = function (server) {
             path: '/tenant/refresh',
             options: {
                 auth: false,
+                cors: {
+                    credentials: true // so cookies can be accepted
+                },
                 description: 'Returns a new refresh token',
                 validate: {
                     payload: TenantCtrl.getRefreshSchema()
