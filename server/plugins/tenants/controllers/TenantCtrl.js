@@ -7,6 +7,7 @@ const uuid = require('uuid/v4');
 const owasp = require('owasp-password-strength-test');
 const isObject = require('lodash.isobject');
 const BaseController = require('../../core/BaseController');
+const { cryptPassword } = require('../../../helpers.service');
 
 
 owasp.config({
@@ -43,7 +44,9 @@ class TenantCtrl extends BaseController {
     getCreateSchema() {
         return {
             email: Joi.string().max(100).required(),
-            password: Joi.string().max(100).required()
+            password: Joi.string().max(100).required(),
+            application_name: Joi.string().max(100),
+            application_url: Joi.string().max(100)
         };
     }
 
@@ -108,11 +111,11 @@ class TenantCtrl extends BaseController {
 
         if(Tenant) {
             if(request.payload.hasOwnProperty('password')) {
-                isMatch = this.passwordIsMatch(request.payload.password, Tenant.get('password'));
+                isMatch = bcrypt.compareSync(request.payload.password, Tenant.get('password'));
             }
             else {
                 // get the refresh token from cookie (request.state)
-                isMatch = this.passwordIsMatch(refreshTokenFromCookie, Tenant.get('refresh_token'));
+                isMatch = bcrypt.compareSync(refreshTokenFromCookie, Tenant.get('refresh_token'));
             }
         }
 
@@ -140,7 +143,7 @@ class TenantCtrl extends BaseController {
 
             await this.upsertModel({
                 id: Tenant.get('id'),
-                refresh_token: this.cryptPassword(refreshToken) // hashing the refresh token for better security
+                refresh_token: cryptPassword(refreshToken) // hashing the refresh token for better security
             });
 
             return h.apiSuccess({
@@ -170,7 +173,7 @@ class TenantCtrl extends BaseController {
         // TODO: throw error if errors
 
         // request.payload.api_key = crypto.randomBytes(32).toString('hex');
-        request.payload.password = this.cryptPassword(request.payload.password);
+        request.payload.password = cryptPassword(request.payload.password);
         return super.upsertHandler(request, h);
     }
 
@@ -183,34 +186,8 @@ class TenantCtrl extends BaseController {
         // console.log('PWD VALIDATION', request.payload.password, passwordValidation);
 
         // request.payload.api_key = crypto.randomBytes(32).toString('hex');
-        request.payload.password = this.cryptPassword(request.payload.password);
+        request.payload.password = cryptPassword(request.payload.password);
         return super.upsertHandler(request, h);
-    }
-
-
-    cryptPassword(password) {
-        const salt = bcrypt.genSaltSync(10);
-        const hash = bcrypt.hashSync(password, salt);
-        return hash;
-    }
-
-
-    passwordIsMatch(plainText, hash) {
-        return bcrypt.compareSync(plainText, hash);
-    }
-
-
-    /*
-    * Since I'm not sharing the secret with the tenants, I don't need to have different secrets for different users.
-    * But I do need to change the key every so often; I can use one key for everyone, but not one key forever.
-    *
-    * Implementation example:  https://github.com/dwyl/hapi-auth-jwt2/blob/master/test/multiple_key_server.js
-    */
-    getTenantJwtSecretKey(decoded) {
-        return {
-            key: process.env.JWT_TOKEN_SECRET // Never Share your secret key
-            // additional: decoded
-        };
     }
 
 

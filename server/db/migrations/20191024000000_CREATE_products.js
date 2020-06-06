@@ -5,7 +5,7 @@ module.exports.up = (knex) => {
         CoreService.DB_TABLES.products,
         (t) => {
             t.uuid('id').primary();
-            t.string('tenant_id').nullable();
+            t.uuid('tenant_id').nullable();
             t.boolean('published').defaultTo(false);
             t.string('title').nullable();
             t.string('caption').nullable();

@@ -43,6 +43,8 @@ module.exports = {
     ** Plugins to load before mounting the App
     */
     plugins: [
+        // { src: '@/plugins/tenantLogin.js', mode: 'server' },
+        '@/plugins/axios.js',
         '@/plugins/api.js',
         '@/plugins/i18n.js',
         '@/plugins/element-ui',
@@ -67,27 +69,15 @@ module.exports = {
     modules: [
         // Doc: https://axios.nuxtjs.org/usage
         '@nuxtjs/axios',
-        '@nuxtjs/auth',
         ['@nuxtjs/pwa', { oneSignal: false }],
         // Doc: https://github.com/nuxt-community/dotenv-module
         '@nuxtjs/dotenv'
     ],
 
-    /*
-    ** Auth module config (@nuxtjs/auth - https://auth.nuxtjs.org/)
-    */
-    auth: {
-        strategies: {
-            local: {
-                endpoints: {
-                    login: { url: '/api/v1/auth', method: 'post', propertyName: 'token' },
-                    logout: { url: '/api/v1/auth', method: 'delete' },
-                    user: { url: '/api/v1/auth/user', method: 'get', propertyName: 'user' }
-                }
-                // tokenRequired: true,
-                // tokenType: 'bearer'
-            }
-        }
+    router: {
+        middleware: [
+            'check-auth'
+        ]
     },
 
     /*

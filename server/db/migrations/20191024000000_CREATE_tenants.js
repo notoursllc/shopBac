@@ -8,6 +8,8 @@ module.exports.up = (knex) => {
             t.string('email').nullable();
             t.string('password').nullable();
             t.string('refresh_token').nullable();
+            t.string('application_name').nullable();
+            t.string('application_url').nullable();
             t.boolean('active').defaultTo(true);
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();

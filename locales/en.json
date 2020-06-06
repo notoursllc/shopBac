@@ -190,6 +190,7 @@
 
     "Package": "Package",
     "Page title": "Page title",
+    "Password": "Password",
     "password_error_maxLength": "maximum length: {val}",
     "password_error_maxRepeatableCharacters": "max number of repeatable characters: {val}",
     "password_error_minLength": "minimum length: {val}",

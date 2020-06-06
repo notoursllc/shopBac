@@ -6,7 +6,7 @@ module.exports.up = (knex) => {
         CoreService.DB_TABLES.product_sku_variant_types,
         (t) => {
             t.uuid('id').primary();
-            t.string('tenant_id').nullable();
+            t.uuid('tenant_id').nullable();
             t.string('label').nullable();
             t.string('description').nullable();
             t.json('optionData').nullable();

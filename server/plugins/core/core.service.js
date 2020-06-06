@@ -35,7 +35,8 @@ const DB_TABLES = {
     product_sku_variant_types: 'product_sku_variant_types',
     products: 'products',
     product_images: 'product_images',
-    tenants: 'tenants'
+    tenants: 'tenants',
+    tenant_users: 'tenant_users',
 };
 
 module.exports.DB_TABLES = DB_TABLES;

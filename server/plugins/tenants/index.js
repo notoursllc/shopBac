@@ -2,6 +2,7 @@ const Joi = require('@hapi/joi');
 
 const after = function (server) {
     const TenantCtrl = new (require('./controllers/TenantCtrl'))(server);
+    const TenantUserCtrl = new (require('./controllers/TenantUserCtrl'))(server);
 
     server.auth.strategy('jwt', 'jwt',
         {
@@ -136,6 +137,39 @@ const after = function (server) {
                     return TenantCtrl.deleteHandler(request, h);
                 }
             }
+        },
+
+
+        /*
+         *  TENANT USERS
+         */
+        {
+            method: 'POST',
+            path: '/tenant/user',
+            options: {
+                auth: false,
+                description: 'Creates a new tenant user',
+                validate: {
+                    payload: TenantUserCtrl.getCreateSchema()
+                },
+                handler: (request, h) => {
+                    return TenantUserCtrl.createHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'POST',
+            path: '/tenant/user/login',
+            options: {
+                auth: false,
+                description: 'Authenticates a tenant user and returns a cookie containing JWT',
+                validate: {
+                    payload: TenantUserCtrl.getLoginSchema()
+                },
+                handler: (request, h) => {
+                    return TenantUserCtrl.loginHandler(request, h);
+                }
+            }
         }
     ]);
 
@@ -145,6 +179,11 @@ const after = function (server) {
     server.app.bookshelf.model(
         'Tenant',
         require('./models/Tenant')(baseModel, server.app.bookshelf, server)
+    );
+
+    server.app.bookshelf.model(
+        'TenantUser',
+        require('./models/TenantUser')(baseModel, server.app.bookshelf, server)
     );
 };
 

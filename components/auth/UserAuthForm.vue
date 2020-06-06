@@ -21,7 +21,6 @@ export default {
     data() {
         return {
             userInfo: {
-                email: '',
                 password: ''
             }
         };
@@ -46,7 +45,7 @@ export default {
         <!-- email -->
         <div class="inputGroup mrl mbm">
             <label>{{ $t('Email') }}</label>
-            <el-input v-model="userInfo.email" />
+            <el-input v-model="userInfo.id" />
         </div>
 
         <!-- password -->

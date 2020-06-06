@@ -148,18 +148,18 @@ export default {
                 <nav class="navigation">
                     <ul class="navigation-list">
                         <li>
-                            <template v-if="$auth.loggedIn">
+                            <!-- <template v-if="$auth.loggedIn">
                                 {{ $auth.user.email }}
                                 <el-button
                                     type="text"
                                     @click="logout"
                                     class="colorBlack">{{ $t('LOGOUT') }}</el-button>
-                            </template>
-                            <template v-else>
+                            </template> -->
+                            <!-- <template v-else> -->
                                 <nuxt-link
                                     :to="{ name: 'login' }"
                                     tag="a">{{ $t('Login') }}</nuxt-link>
-                            </template>
+                            <!-- </template> -->
                         </li>
                     </ul>
                 </nav>

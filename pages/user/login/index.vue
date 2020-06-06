@@ -2,23 +2,31 @@
 export default {
     name: 'LoginPage',
 
-    components: {
-        UserAuthForm: () => import('@/components/auth/UserAuthForm')
-    },
-
     data() {
         return {
-
+            loading: false,
+            userInfo: {
+                email: null,
+                password: null
+            }
         };
     },
 
     methods: {
-        onAuthFormSubmit(data) {
-            console.log('onAuthFormSubmit', data);
-            this.$auth.loginWith(
-                'local',
-                { data }
-            );
+        async onSubmit() {
+            try {
+                await this.$api.tenants.login(this.userInfo);
+
+                this.$router.push({
+                    name: 'product-list'
+                });
+            }
+            catch(e) {
+                this.$errorMessage(
+                    e.message,
+                    { closeOthers: true }
+                );
+            }
         }
     }
 };
@@ -28,12 +36,31 @@ export default {
     <div>
         <h1>Login</h1>
 
-        <div>
-            <user-auth-form :submit-function="onAuthFormSubmit" />
+        <div v-loading="loading">
+            <form @submit.prevent>
+                <!-- email -->
+                <div class="inputGroup mrl mbm">
+                    <label>{{ $t('Email address') }}</label>
+                    <el-input v-model="userInfo.email" />
+                </div>
+
+                <!-- password -->
+                <div class="inputGroup mrl mbm">
+                    <label>{{ $t('Password') }}</label>
+                    <el-input
+                        v-model="userInfo.password"
+                        show-password />
+                </div>
+
+                <el-button
+                    type="primary"
+                    @click="onSubmit">{{ $t('Submit') }}</el-button>
+            </form>
         </div>
     </div>
 </template>
 
-<style lang="scss">
 
+<style lang="scss" scoped>
+@import "~assets/css/components/_formRow.scss";
 </style>

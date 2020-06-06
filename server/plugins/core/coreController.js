@@ -20,7 +20,7 @@ function setServer(s) {
 async function getClientJwtHandler(request, h) {
     try {
         const uuid = uuidV4();
-        const cartToken = await helperService.cryptPassword(process.env.CART_TOKEN_SECRET + uuid);
+        const cartToken = helperService.cryptPassword(process.env.CART_TOKEN_SECRET + uuid);
 
         if(!cartToken) {
             throw new Error('Error creating cart token');

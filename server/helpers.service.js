@@ -1,11 +1,19 @@
-'use strict';
-
 const isString = require('lodash.isstring');
 const forEach = require('lodash.foreach');
 const queryString = require('query-string');
 const bcrypt = require('bcrypt');
+const owasp = require('owasp-password-strength-test');
 
 const domainName = 'goBreadVan.com';
+
+owasp.config({
+    allowPassphrases: true,
+    maxLength: 128,
+    minLength: 8,
+    minPhraseLength: 20,
+    minOptionalTestsToPass: 4
+});
+
 
 function getSiteUrl(full) {
     if(process.env.NODE_ENV === 'development') {
@@ -193,21 +201,9 @@ function stripQuotes(text) {
  * @returns {Promise}
  */
 function cryptPassword(password) {
-    return new Promise((resolve, reject) => {
-        bcrypt.genSalt(10, (err, salt) => {
-            if (err) {
-                return reject(err);
-            }
-
-            bcrypt.hash(password, salt, (err, hash) => {
-                if (err) {
-                    return reject(err);
-                }
-
-                return resolve(hash);
-            });
-        });
-    });
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(password, salt);
+    return hash;
 }
 
 
@@ -231,6 +227,10 @@ function comparePassword(password, userPassword) {
 }
 
 
+function testPasswordStrength(pwd) {
+    return owasp.test(pwd);
+}
+
 
 function isBoolean(val) {
     // NOTE: I read that typeof and string comparisons are slow
@@ -252,3 +252,4 @@ module.exports.stripQuotes = stripQuotes;
 module.exports.cryptPassword = cryptPassword;
 module.exports.comparePassword = comparePassword;
 module.exports.isBoolean = isBoolean;
+module.exports.testPasswordStrength = testPasswordStrength;

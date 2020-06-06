@@ -15,8 +15,8 @@ function getPaypalClient() {
  * Set up and return PayPal JavaScript SDK environment with PayPal access credentials.
  */
 function getPaypalEnvironment() {
-    let clientId = process.env.PAYPAL_CLIENT_ID || 'PAYPAL-SANDBOX-CLIENT-ID';
-    let clientSecret = process.env.PAYPAL_CLIENT_SECRET || 'PAYPAL-SANDBOX-CLIENT-SECRET';
+    const clientId = process.env.PAYPAL_CLIENT_ID || 'PAYPAL-SANDBOX-CLIENT-ID';
+    const clientSecret = process.env.PAYPAL_CLIENT_SECRET || 'PAYPAL-SANDBOX-CLIENT-SECRET';
 
     if(process.env.PAYPAL_MODE === 'sandbox') {
         return new paypalSdk.core.SandboxEnvironment(
@@ -32,4 +32,4 @@ function getPaypalEnvironment() {
 
 module.exports = {
     getPaypalClient
-}
+};
