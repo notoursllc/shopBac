@@ -13,25 +13,17 @@ function stripRelations(data) {
 export default ($http) => ({
 
     async upsert(data) {
-        let response;
         const sku = cloneDeep(data);
-
         stripRelations(sku);
 
-        if(sku.id) {
-            response = await $http.$put('/product/sku', sku);
-        }
-        else {
-            response = await $http.$post('/product/sku', sku);
-        }
-
+        const response = await $http[sku.id ? '$put' : '$post']('/product/sku', sku);
         return response.data;
     },
 
 
     async delete(id) {
         const { data } = await $http.$delete('/product/sku', {
-            params: {
+            searchParams: {
                 id
             }
         });
@@ -47,7 +39,7 @@ export default ($http) => ({
 
     async deleteImage(id) {
         const { data } = await $http.$delete('/product/sku/image', {
-            params: {
+            searchParams: {
                 id
             }
         });

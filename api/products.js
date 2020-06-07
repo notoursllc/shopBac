@@ -17,7 +17,7 @@ export default ($http) => ({
 
     // was getProducts
     async list(params) {
-        let paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
+        const paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
 
         // const response = await $http.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
         const { data } = await $http.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
@@ -35,54 +35,46 @@ export default ($http) => ({
     // was getProductBySeoUri
     async getBySeoUri(str) {
         const { data } = await $http.$get('/product/seo', {
-            params: {
+            searchParams: {
                 id: str
             }
         });
+
         return data;
     },
 
 
-    // was getProductById
     async get(id, options) {
-        let params = {};
+        let searchParams = {};
 
         if(isObject(options)) {
-            params = {
+            searchParams = {
                 ...options
             };
         }
 
-        params.id = id;
+        searchParams.id = id;
 
         const { data } = await $http.$get('/product', {
-            params
+            searchParams
         });
+
         return data;
     },
 
 
     async upsert(data) {
-        let response;
-        let prod = cloneDeep(data);
-
+        const prod = cloneDeep(data);
         stripRelations(prod);
 
-        if(prod.id) {
-            response = await $http.$put('/product', prod);
-        }
-        else {
-            response = await $http.$post('/product', prod);
-        }
-
+        const response = await $http[prod.id ? '$put' : '$post']('/product', prod);
         return response.data;
     },
 
 
-    // was deleteProduct
     async delete(id) {
-        const { data } = await $http.$delete(`/product`, {
-            params: {
+        const { data } = await $http.$delete('/product', {
+            searchParams: {
                 id
             }
         });
@@ -91,14 +83,16 @@ export default ($http) => ({
 
 
     async upsertImage(formData) {
-        const { data } = await $http.$post('/product/image', formData);
+        const { data } = await $http.$post('/product/image', {
+            body: formData
+        });
         return data;
     },
 
 
     async deleteImage(id) {
-        const { data } = await $http.$delete(`/product/image`, {
-            params: {
+        const { data } = await $http.$delete('/product/image', {
+            searchParams: {
                 id
             }
         });
@@ -106,9 +100,9 @@ export default ($http) => ({
     },
 
 
-    //////////////////
-    // Collections
-    //////////////////
+    /*
+    * Collections
+    */
     async listProductCollections() {
         const { data } = await $http.$get('/collections');
         return data;
@@ -116,8 +110,8 @@ export default ($http) => ({
 
 
     async getProductCollection(id) {
-        const { data }  = await $http.$get('/collection', {
-            params: {
+        const { data } = await $http.$get('/collection', {
+            searchParams: {
                 id
             }
         });
@@ -127,22 +121,14 @@ export default ($http) => ({
 
 
     async upsertProductCollection(data) {
-        let response;
-
-        if(data.hasOwnProperty('id')) {
-            response = await $http.$put('/collection', data);
-        }
-        else {
-            response = await $http.$post('/collection', data);
-        }
-
+        const response = await $http[data.hasOwnProperty('id') ? '$put' : '$post']('/collection', data);
         return response.data;
     },
 
 
     async deleteProductCollection(id) {
         const { data } = await $http.$delete('/collection', {
-            params: {
+            searchParams: {
                 id
             }
         });

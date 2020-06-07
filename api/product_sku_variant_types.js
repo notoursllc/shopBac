@@ -19,7 +19,7 @@ export default ($http) => ({
 
     async get(id) {
         const { data } = await $http.$get('/product/sku/variant_type', {
-            params: {
+            searchParams: {
                 id
             }
         });
@@ -28,24 +28,17 @@ export default ($http) => ({
 
 
     async upsert(data) {
-        let response;
         const prod = cloneDeep(data);
-
         stripRelations(prod);
 
-        if(prod.id) {
-            response = await $http.$put('/product/sku/variant_type', prod);
-        }
-        else {
-            response = await $http.$post('/product/sku/variant_type', prod);
-        }
-
+        const response = await $http[prod.id ? '$put' : '$post']('/product/sku/variant_type', prod);
         return response.data;
     },
 
+
     async delete(id) {
         const { data } = await $http.$delete('/product/sku/variant_type', {
-            params: {
+            searchParams: {
                 id
             }
         });

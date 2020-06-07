@@ -2,7 +2,7 @@ export default ($http) => ({
 
     async list(object) {
         const { data } = await $http.$get('/master_types', {
-            params: {
+            searchParams: {
                 object
             }
         });
@@ -12,7 +12,7 @@ export default ($http) => ({
 
     async get(id) {
         const response = await $http.$get('/master_type', {
-            params: {
+            searchParams: {
                 id
             }
         });
@@ -22,22 +22,14 @@ export default ($http) => ({
 
 
     async upsert(data) {
-        let response;
-
-        if(data.hasOwnProperty('id')) {
-            response = await $http.$put('/master_type', data);
-        }
-        else {
-            response = await $http.$post('/master_type', data);
-        }
-
+        const response = await $http[data.hasOwnProperty('id') ? '$put' : '$post']('/master_type', data);
         return response.data;
     },
 
 
     async delete(id) {
         const response = await $http.$delete('/master_type', {
-            params: {
+            searchParams: {
                 id
             }
         });
@@ -65,4 +57,4 @@ export default ($http) => ({
 
         return Math.pow(2, factor);
     }
-})
+});

@@ -1,13 +1,17 @@
 export default ($http) => ({
 
+    // https://www.npmjs.com/package/ky#tips
     async addImage(FormData) {
-        const { data } = await $http.$post('/storage/image', FormData);
+        const { data } = await $http.$post('/storage/image', {
+            body: FormData
+        });
         return data;
     },
 
+
     async deleteImage(url) {
-        let { data } = await $http.$delete('/storage/image', {
-            params: {
+        const { data } = await $http.$delete('/storage/image', {
+            searchParams: {
                 url
             }
         });

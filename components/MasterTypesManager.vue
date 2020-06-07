@@ -3,8 +3,6 @@ import isObject from 'lodash.isobject';
 import slugify from 'slugify';
 
 export default {
-    name: 'MasterTypesManager',
-
     components: {
         AppDialog: () => import('@/components/AppDialog'),
         Fab: () => import('@/components/Fab'),
@@ -45,16 +43,13 @@ export default {
     },
 
     watch: {
-        'object': {
+        object: {
             handler(newVal) {
                 this.form.object = newVal;
+                this.fetchTypes();
             },
             immediate: true
         }
-    },
-
-    created() {
-        this.fetchTypes();
     },
 
     methods: {

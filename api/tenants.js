@@ -15,14 +15,4 @@ export default ($http) => ({
         return data;
     }
 
-    // async deleteImage(url) {
-    //     let { data } = await $http.$delete('/storage/image', {
-    //         params: {
-    //             url
-    //         }
-    //     });
-
-    //     return data;
-    // }
-
 });

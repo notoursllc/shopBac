@@ -3,7 +3,7 @@ export default {
     components: {
         MasterTypesManager: () => import('@/components/MasterTypesManager')
     }
-}
+};
 </script>
 
 
