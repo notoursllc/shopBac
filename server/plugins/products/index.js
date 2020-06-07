@@ -37,6 +37,9 @@ exports.plugin = {
                         path: `${routePrefix}/products`,
                         options: {
                             description: 'Gets a list of products',
+                            auth: {
+                                strategies: ['jwt', 'session']
+                            },
                             handler: (request, h) => {
                                 return ProductCtrl.getPageHandler(request, h);
                             }

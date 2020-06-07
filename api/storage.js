@@ -1,12 +1,12 @@
-export default ($axios) => ({
+export default ($http) => ({
 
     async addImage(FormData) {
-        const { data } = await $axios.$post('/storage/image', FormData);
+        const { data } = await $http.$post('/storage/image', FormData);
         return data;
     },
 
     async deleteImage(url) {
-        let { data } = await $axios.$delete('/storage/image', {
+        let { data } = await $http.$delete('/storage/image', {
             params: {
                 url
             }

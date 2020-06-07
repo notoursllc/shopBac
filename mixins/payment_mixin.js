@@ -5,7 +5,7 @@ import queryString from 'query-string';
 export default {
     methods: {
         async getPayment(id) {
-            const response = await this.$axios.$get('/payment', {
+            const response = await this.$http.$get('/payment', {
                 params: { id }
             });
             return response.data;
@@ -15,13 +15,13 @@ export default {
         async getPayments(params) {
             let paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
 
-            const response = await this.$axios.$get(`/payments?${paramString}`); // TODO: is there a XSS issue here?
+            const response = await this.$http.$get(`/payments?${paramString}`); // TODO: is there a XSS issue here?
             return response.data;
         },
 
 
         async createPackingSlipFromPayment(paymentId) {
-            const response = await this.$axios.$post('/payment/shipping/packingslip', {
+            const response = await this.$http.$post('/payment/shipping/packingslip', {
                 id: paymentId
             });
             return response.data;
@@ -29,13 +29,13 @@ export default {
 
 
         async purchaseShippingLabel(data) {
-            const response = await this.$axios.$post('/payment/shipping/label', data);
+            const response = await this.$http.$post('/payment/shipping/label', data);
             return response.data;
         },
 
 
         async getShippingLabel(paymentId) {
-            const response = await this.$axios.$get('/payment/shipping/label', {
+            const response = await this.$http.$get('/payment/shipping/label', {
                 params: {
                     id: paymentId
                 }
@@ -46,7 +46,7 @@ export default {
 
 
         async deleteShippingLabelForPayment(paymentId) {
-            const response = await this.$axios.$delete('/payment/shipping/label', {
+            const response = await this.$http.$delete('/payment/shipping/label', {
                 params: {
                     id: paymentId
                 }

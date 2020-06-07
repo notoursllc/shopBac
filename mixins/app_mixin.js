@@ -17,7 +17,7 @@ export default {
 
         logger(type, message) {
             if(message) {
-                return this.$axios.$post('/logger', {
+                return this.$http.$post('/logger', {
                     type: type || 'error',
                     message: message
                 });

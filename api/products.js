@@ -13,28 +13,28 @@ function stripRelations(data) {
 }
 
 
-export default ($axios) => ({
+export default ($http) => ({
 
     // was getProducts
     async list(params) {
         let paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
 
-        // const response = await $axios.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
-        const { data } = await $axios.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
+        // const response = await $http.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
+        const { data } = await $http.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
         return data;
     },
 
 
     // TODO: remove
     async getProductInfo() {
-        const { data } = await $axios.$get('/product/info');
+        const { data } = await $http.$get('/product/info');
         return data;
     },
 
 
     // was getProductBySeoUri
     async getBySeoUri(str) {
-        const { data } = await $axios.$get('/product/seo', {
+        const { data } = await $http.$get('/product/seo', {
             params: {
                 id: str
             }
@@ -55,7 +55,7 @@ export default ($axios) => ({
 
         params.id = id;
 
-        const { data } = await $axios.$get('/product', {
+        const { data } = await $http.$get('/product', {
             params
         });
         return data;
@@ -69,10 +69,10 @@ export default ($axios) => ({
         stripRelations(prod);
 
         if(prod.id) {
-            response = await $axios.$put('/product', prod);
+            response = await $http.$put('/product', prod);
         }
         else {
-            response = await $axios.$post('/product', prod);
+            response = await $http.$post('/product', prod);
         }
 
         return response.data;
@@ -81,7 +81,7 @@ export default ($axios) => ({
 
     // was deleteProduct
     async delete(id) {
-        const { data } = await $axios.$delete(`/product`, {
+        const { data } = await $http.$delete(`/product`, {
             params: {
                 id
             }
@@ -91,13 +91,13 @@ export default ($axios) => ({
 
 
     async upsertImage(formData) {
-        const { data } = await $axios.$post('/product/image', formData);
+        const { data } = await $http.$post('/product/image', formData);
         return data;
     },
 
 
     async deleteImage(id) {
-        const { data } = await $axios.$delete(`/product/image`, {
+        const { data } = await $http.$delete(`/product/image`, {
             params: {
                 id
             }
@@ -110,13 +110,13 @@ export default ($axios) => ({
     // Collections
     //////////////////
     async listProductCollections() {
-        const { data } = await $axios.$get('/collections');
+        const { data } = await $http.$get('/collections');
         return data;
     },
 
 
     async getProductCollection(id) {
-        const { data }  = await $axios.$get('/collection', {
+        const { data }  = await $http.$get('/collection', {
             params: {
                 id
             }
@@ -130,10 +130,10 @@ export default ($axios) => ({
         let response;
 
         if(data.hasOwnProperty('id')) {
-            response = await $axios.$put('/collection', data);
+            response = await $http.$put('/collection', data);
         }
         else {
-            response = await $axios.$post('/collection', data);
+            response = await $http.$post('/collection', data);
         }
 
         return response.data;
@@ -141,7 +141,7 @@ export default ($axios) => ({
 
 
     async deleteProductCollection(id) {
-        const { data } = await $axios.$delete('/collection', {
+        const { data } = await $http.$delete('/collection', {
             params: {
                 id
             }

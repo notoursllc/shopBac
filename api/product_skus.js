@@ -10,7 +10,7 @@ function stripRelations(data) {
 }
 
 
-export default ($axios) => ({
+export default ($http) => ({
 
     async upsert(data) {
         let response;
@@ -19,10 +19,10 @@ export default ($axios) => ({
         stripRelations(sku);
 
         if(sku.id) {
-            response = await $axios.$put('/product/sku', sku);
+            response = await $http.$put('/product/sku', sku);
         }
         else {
-            response = await $axios.$post('/product/sku', sku);
+            response = await $http.$post('/product/sku', sku);
         }
 
         return response.data;
@@ -30,7 +30,7 @@ export default ($axios) => ({
 
 
     async delete(id) {
-        const { data } = await $axios.$delete('/product/sku', {
+        const { data } = await $http.$delete('/product/sku', {
             params: {
                 id
             }
@@ -40,13 +40,13 @@ export default ($axios) => ({
 
 
     async upsertImage(imgData) {
-        const { data } = await $axios.$post('/product/sku/image', imgData);
+        const { data } = await $http.$post('/product/sku/image', imgData);
         return data;
     },
 
 
     async deleteImage(id) {
-        const { data } = await $axios.$delete('/product/sku/image', {
+        const { data } = await $http.$delete('/product/sku/image', {
             params: {
                 id
             }

@@ -9,7 +9,7 @@ export default {
         async shipmix_getPackageTypes(params) {
             let paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
 
-            const response = await this.$axios.$get(`/shipping/packagetypes?${paramString}`); // TODO: is there a XSS issue here?
+            const response = await this.$http.$get(`/shipping/packagetypes?${paramString}`); // TODO: is there a XSS issue here?
             return response.data;
         },
 
@@ -24,7 +24,7 @@ export default {
 
             params.id = id;
 
-            const response = await this.$axios.$get('/shipping/packagetype', {
+            const response = await this.$http.$get('/shipping/packagetype', {
                 params
             });
             return response.data;
@@ -35,10 +35,10 @@ export default {
             let response;
 
             if(packageType.id) {
-                response = await this.$axios.$put('/shipping/packagetype', packageType);
+                response = await this.$http.$put('/shipping/packagetype', packageType);
             }
             else {
-                response = await this.$axios.$post('/shipping/packagetype', packageType);
+                response = await this.$http.$post('/shipping/packagetype', packageType);
             }
 
             return response.data;
@@ -46,7 +46,7 @@ export default {
 
 
         async deletePackageType(id) {
-            const response = await this.$axios.$delete('/shipping/packagetype', {
+            const response = await this.$http.$delete('/shipping/packagetype', {
                 params: { id }
             });
             return response.data;

@@ -239,6 +239,9 @@ function isBoolean(val) {
 }
 
 
+const multiAuthStrategies = ['jwt', 'session'];
+
+
 module.exports.getSiteUrl = getSiteUrl;
 module.exports.getBrandName = getBrandName;
 module.exports.getDomainName = getDomainName;

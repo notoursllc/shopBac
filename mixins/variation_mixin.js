@@ -1,13 +1,13 @@
 export default {
     methods: {
         async varimix_search() {
-            const response = await this.$axios.$get('/variations');
+            const response = await this.$http.$get('/variations');
             return response.data;
         },
 
 
         async varimix_get(id) {
-            const response = await this.$axios.$get('/variation', {
+            const response = await this.$http.$get('/variation', {
                 params: {
                     id
                 }
@@ -21,10 +21,10 @@ export default {
             let response;
 
             if(data.id) {
-                response = await this.$axios.$put('/variation', data);
+                response = await this.$http.$put('/variation', data);
             }
             else {
-                response = await this.$axios.$post('/variation', data);
+                response = await this.$http.$post('/variation', data);
             }
 
             return response.data;
@@ -32,13 +32,13 @@ export default {
 
 
         async varimix_update(data) {
-            let response = await this.$axios.$put('/variation', data);
+            let response = await this.$http.$put('/variation', data);
             return response.data;
         },
 
 
         async varimix_delete(id) {
-            const response = await this.$axios.$delete('/variation', {
+            const response = await this.$http.$delete('/variation', {
                 params: {
                     id
                 }
@@ -49,7 +49,7 @@ export default {
 
 
         async varimix_options(product_variation_id) {
-            const response = await this.$axios.$get('/variation/options', {
+            const response = await this.$http.$get('/variation/options', {
                 params: {
                     product_variation_id
                 }

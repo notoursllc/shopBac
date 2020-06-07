@@ -5,13 +5,13 @@ export default {
          * Product Types
         /*********************/
         async getProductTypes() {
-            const response = await this.$axios.$get('/types');
+            const response = await this.$http.$get('/types');
             return response.data;
         },
 
 
         async getProductType(id) {
-            const response = await this.$axios.$get('/type', {
+            const response = await this.$http.$get('/type', {
                 params: {
                     id
                 }
@@ -24,17 +24,17 @@ export default {
             let response;
 
             if(data.hasOwnProperty('id')) {
-                response = await this.$axios.$put('/type', data);
+                response = await this.$http.$put('/type', data);
             }
             else {
-                response = await this.$axios.$post('/type', data);
+                response = await this.$http.$post('/type', data);
             }
 
             return response.data;
         },
 
         async deleteProductType(id) {
-            const response = await this.$axios.$delete('/type', {
+            const response = await this.$http.$delete('/type', {
                 params: {
                     id
                 }
@@ -51,7 +51,7 @@ export default {
 
 
         async getProductSubType(id) {
-            const response = await this.$axios.$get('/subtype', {
+            const response = await this.$http.$get('/subtype', {
                 params: {
                     id
                 }
@@ -64,17 +64,17 @@ export default {
             let response;
 
             if(data.hasOwnProperty('id')) {
-                response = await this.$axios.$put('/subtype', data);
+                response = await this.$http.$put('/subtype', data);
             }
             else {
-                response = await this.$axios.$post('/subtype', data);
+                response = await this.$http.$post('/subtype', data);
             }
 
             return response.data;
         },
 
         async deleteProductSubType(id) {
-            const response = await this.$axios.$delete('/subtype', {
+            const response = await this.$http.$delete('/subtype', {
                 params: {
                     id
                 }

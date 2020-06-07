@@ -1,7 +1,7 @@
-export default ($axios) => ({
+export default ($http) => ({
 
     async list(object) {
-        const { data } = await $axios.$get('/master_types', {
+        const { data } = await $http.$get('/master_types', {
             params: {
                 object
             }
@@ -11,7 +11,7 @@ export default ($axios) => ({
 
 
     async get(id) {
-        const response = await $axios.$get('/master_type', {
+        const response = await $http.$get('/master_type', {
             params: {
                 id
             }
@@ -25,10 +25,10 @@ export default ($axios) => ({
         let response;
 
         if(data.hasOwnProperty('id')) {
-            response = await $axios.$put('/master_type', data);
+            response = await $http.$put('/master_type', data);
         }
         else {
-            response = await $axios.$post('/master_type', data);
+            response = await $http.$post('/master_type', data);
         }
 
         return response.data;
@@ -36,7 +36,7 @@ export default ($axios) => ({
 
 
     async delete(id) {
-        const response = await $axios.$delete('/master_type', {
+        const response = await $http.$delete('/master_type', {
             params: {
                 id
             }

@@ -10,12 +10,12 @@ export default (context, inject) => {
 
     // Initialize API repositories
     const repositories = {
-        masterTypes: MasterTypes(context.$axios),
-        products: Products(context.$axios),
-        productSkus: ProductSkus(context.$axios),
-        productSkuVariantTypes: ProductSkuVariantTypes(context.$axios),
-        storage: Storage(context.$axios),
-        tenants: Tenants(context.$axios)
+        masterTypes: MasterTypes(context.$http),
+        products: Products(context.$http),
+        productSkus: ProductSkus(context.$http),
+        productSkuVariantTypes: ProductSkuVariantTypes(context.$http),
+        storage: Storage(context.$http),
+        tenants: Tenants(context.$http)
     };
 
     inject('api', repositories);

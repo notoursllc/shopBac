@@ -1,4 +1,3 @@
-import jwtDecode from 'jwt-decode';
 import Cookie from 'js-cookie';
 const jwt = require('jsonwebtoken');
 
@@ -15,14 +14,12 @@ export const getTokenFromCookieInRequest = (req) => {
 
     const jwt = jwtCookie.split('=')[1];
     return jwt;
-    // return jwtDecode(jwt);
 };
 
 
 export const getTokenFromCookie = () => {
     const jwt = Cookie.get('bv_session_token');
     return jwt;
-    // return jwtDecode(jwt);
 };
 
 
@@ -38,4 +35,14 @@ export const jwtTokenIsValid = (token, secret) => {
         // https://www.npmjs.com/package/jsonwebtoken#errors--codes
         return false;
     }
+};
+
+
+export const getCookie = (cookieName) => {
+    return Cookie.get(cookieName);
+};
+
+
+export const removeCookie = (cookieName) => {
+    return Cookie.remove(cookieName);
 };

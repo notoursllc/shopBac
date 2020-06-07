@@ -8,6 +8,7 @@ const isObject = require('lodash.isobject');
 const BaseController = require('../../core/BaseController');
 const { cryptPassword, testPasswordStrength } = require('../../../helpers.service');
 
+const SESSION_TOKEN_COOKIE = 'bv_session_token';
 
 class TenantUserCtrl extends BaseController {
 
@@ -62,23 +63,25 @@ class TenantUserCtrl extends BaseController {
      * @param {*} h
      */
     async loginHandler(request, h) {
-        const TenantUser = await this.modelForgeFetch(
-            { email: request.payload.email }
-        );
-
-        if(!TenantUser) {
-            throw Boom.unauthorized();
-        }
-        if(!bcrypt.compareSync(request.payload.password, TenantUser.get('password'))) {
-            throw Boom.unauthorized();
-        }
-
         try {
-            // return the auth token in a httpOnly cookie
+            const TenantUser = await this.modelForgeFetch(
+                { email: request.payload.email }
+            );
+
+            if(!TenantUser) {
+                throw Boom.unauthorized();
+            }
+            if(!bcrypt.compareSync(request.payload.password, TenantUser.get('password'))) {
+                throw Boom.unauthorized();
+            }
+
+            // This is a non httpOnly cookie that can be accessed
+            // by the client simply to tell if he is authenticated
             // TODO: this cookie should be SameSite
             h.state(
-                'bv_session_token',
-                this.createToken(TenantUser),
+                SESSION_TOKEN_COOKIE,
+                TenantUser.get('id'),
+                // this.createToken(TenantUser),
                 {
                     ttl: null,
                     isSecure: process.env.NODE_ENV === 'production',
@@ -89,6 +92,27 @@ class TenantUserCtrl extends BaseController {
                 }
             );
 
+            // This is the httpOnly cookie that is used by the server
+            // that is required for access
+            request.cookieAuth.set({ id: TenantUser.get('id') });
+            return h.apiSuccess();
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
+
+    logoutHandler(request, h) {
+        try {
+            request.cookieAuth.clear();
+            h.unstate(SESSION_TOKEN_COOKIE, {
+                isSecure: process.env.NODE_ENV === 'production',
+                isHttpOnly: false,
+                path: '/'
+            });
             return h.apiSuccess();
         }
         catch(err) {

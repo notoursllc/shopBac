@@ -9,8 +9,7 @@ const after = function (server) {
             // this key is only for testing.  In a multi tenant scenario I will need to look up the secret key in the db,
             // which hapi-auth-jwt2 supports:
             // https://www.npmjs.com/package/hapi-auth-jwt2#additional-notes-on-keys-and-key-lookup-functions
-            key: TenantCtrl.getTenantJwtSecretKey,
-            // key: process.env.JWT_TOKEN_SECRET,
+            key: process.env.JWT_TOKEN_SECRET,
             validate: (decoded, request) => {
                 return TenantCtrl.validateJwtKey(decoded, request);
             },
@@ -22,6 +21,30 @@ const after = function (server) {
         }
     );
     server.auth.default('jwt');
+
+
+    server.auth.strategy('session', 'cookie', {
+        // https://hapi.dev/module/cookie/api/?v=11.0.1
+        cookie: {
+            name: 'bv_session',
+            password: process.env.ADMIN_JWT_TOKEN_SECRET,
+            isSecure: process.env.NODE_ENV === 'production',
+            path: '/',
+            clearInvalid: true
+        },
+        // redirectTo: '/login',
+        validateFunc: async (request, session) => {
+            const TenantUser = await TenantUserCtrl.modelForgeFetch(
+                { id: session.id }
+            );
+
+            if(!TenantUser) {
+                return { valid: false };
+            }
+
+            return { valid: true, credentials: TenantUser };
+        }
+    });
 
 
     server.route([
@@ -168,6 +191,17 @@ const after = function (server) {
                 },
                 handler: (request, h) => {
                     return TenantUserCtrl.loginHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'POST',
+            path: '/tenant/user/logout',
+            options: {
+                auth: false,
+                description: 'Logs out a tenant user',
+                handler: (request, h) => {
+                    return TenantUserCtrl.logoutHandler(request, h);
                 }
             }
         }

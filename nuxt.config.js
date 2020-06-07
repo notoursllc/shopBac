@@ -44,7 +44,6 @@ module.exports = {
     */
     plugins: [
         // { src: '@/plugins/tenantLogin.js', mode: 'server' },
-        '@/plugins/axios.js',
         '@/plugins/api.js',
         '@/plugins/i18n.js',
         '@/plugins/element-ui',
@@ -67,8 +66,7 @@ module.exports = {
     ** Nuxt.js modules
     */
     modules: [
-        // Doc: https://axios.nuxtjs.org/usage
-        '@nuxtjs/axios',
+        '@nuxt/http',
         ['@nuxtjs/pwa', { oneSignal: false }],
         // Doc: https://github.com/nuxt-community/dotenv-module
         '@nuxtjs/dotenv'
@@ -81,14 +79,13 @@ module.exports = {
     },
 
     /*
-    ** Axios module configuration
-    ** See https://axios.nuxtjs.org/options
+    * HTTP module config
+    * https://http.nuxtjs.org/api/
     */
-    axios: {
-        debug: false,
+    http: {
+        proxyHeaders: true,
         https: process.env.API_USE_HTTPS,
-        // retry: { retries: 3 },
-        progress: true
+        retry: 1
     },
 
     /*

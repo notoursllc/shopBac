@@ -44,9 +44,19 @@ export default {
             }
         },
 
-        logout() {
-            this.$store.dispatch('auth/LOGOUT');
-            this.$router.push({ name: 'home' });
+        async logout() {
+            try {
+                await this.$api.tenants.logout();
+                this.$router.push({
+                    name: 'user-login'
+                });
+            }
+            catch(e) {
+                this.$errorMessage(
+                    e.message,
+                    { closeOthers: true }
+                );
+            }
         }
     }
 };
@@ -157,9 +167,12 @@ export default {
                             </template> -->
                             <!-- <template v-else> -->
                                 <nuxt-link
-                                    :to="{ name: 'login' }"
+                                    :to="{ name: 'user-login' }"
                                     tag="a">{{ $t('Login') }}</nuxt-link>
                             <!-- </template> -->
+                        </li>
+                        <li>
+                            <a @click="logout">Logout</a>
                         </li>
                     </ul>
                 </nav>

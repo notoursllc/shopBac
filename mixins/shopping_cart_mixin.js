@@ -11,46 +11,46 @@ export default {
 
 
         async getCart() {
-            return await this.$axios.get('/cart/get');
+            return await this.$http.get('/cart/get');
         },
 
 
         async addItem(params) {
-            return await this.$axios.post('/cart/item/add', params);
+            return await this.$http.post('/cart/item/add', params);
         },
 
 
         async updateItemQty(params) {
-            return await this.$axios.post('/cart/item/qty', params);
+            return await this.$http.post('/cart/item/qty', params);
         },
 
 
         async deleteItem(params) {
-            return await this.$axios.post('/cart/item/remove', params);
+            return await this.$http.post('/cart/item/remove', params);
         },
 
 
         async setShippingAddress(address) {
-            return await this.$axios.post('/cart/shipping/address', convertEmptyStringsToNull(address));
+            return await this.$http.post('/cart/shipping/address', convertEmptyStringsToNull(address));
         },
 
 
         async validateAddress(address) {
             // note: using $post instead of post
-            const response = await this.$axios.$post('/shipping/validateAddress', address);
+            const response = await this.$http.$post('/shipping/validateAddress', address);
             return response.data;
         },
 
 
         async getShippingRates(params) {
-            // const response = await this.$axios.post('/shipping/rates', params);
-            const response = await this.$axios.get('/cart/shipping/rates');
+            // const response = await this.$http.post('/shipping/rates', params);
+            const response = await this.$http.get('/cart/shipping/rates');
             return response.data.data;
         },
 
 
         async setShippingRate(obj) {
-            return await this.$axios.post('/cart/shipping/rate', {
+            return await this.$http.post('/cart/shipping/rate', {
                 shipping_rate: obj
             });
         },
@@ -58,7 +58,7 @@ export default {
 
         async checkout(params) {
             // note: using $post instead of post
-            const response = await this.$axios.$post('/cart/checkout', params);
+            const response = await this.$http.$post('/cart/checkout', params);
 
             // note: cart/checkout only returns an object containing a transaction id,
             // so no need to update the shopping cart or token state
@@ -67,13 +67,13 @@ export default {
 
 
         async paypalCreatePayment() {
-            const response = await this.$axios.post('/cart/paypal/create-payment');
+            const response = await this.$http.post('/cart/paypal/create-payment');
             return response.data.data;
         },
 
 
         async paypalExecutePayment(paymentToken) {
-            const response = await this.$axios.post('/cart/paypal/execute-payment', {
+            const response = await this.$http.post('/cart/paypal/execute-payment', {
                 paymentToken
             });
             return response.data.data;

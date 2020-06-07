@@ -28,8 +28,8 @@ export default {
         async getProducts(params) {
             const paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
 
-            // const response = await this.$axios.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
-            const response = await this.$axios.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
+            // const response = await this.$http.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
+            const response = await this.$http.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
             return response.data;
         },
 
@@ -37,20 +37,20 @@ export default {
         async getAdminProducts(params) {
             const paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
 
-            // const response = await this.$axios.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
-            const response = await this.$axios.$get(`/admin/products?${paramString}`); // TODO: is there a XSS issue here?
+            // const response = await this.$http.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
+            const response = await this.$http.$get(`/admin/products?${paramString}`); // TODO: is there a XSS issue here?
             return response.data;
         },
 
 
         async getProductInfo() {
-            const response = await this.$axios.$get('/product/info');
+            const response = await this.$http.$get('/product/info');
             return response.data;
         },
 
 
         async getProductBySeoUri(str) {
-            const response = await this.$axios.$get('/product/seo', {
+            const response = await this.$http.$get('/product/seo', {
                 params: {
                     id: str
                 }
@@ -70,7 +70,7 @@ export default {
 
             params.id = id;
 
-            const response = await this.$axios.$get('/product', {
+            const response = await this.$http.$get('/product', {
                 params
             });
             return response.data;
@@ -78,7 +78,7 @@ export default {
 
 
         async deleteProduct(id) {
-            const response = await this.$axios.$delete(`/product`, {
+            const response = await this.$http.$delete(`/product`, {
                 params: {
                     id
                 }
@@ -90,13 +90,13 @@ export default {
         async getProductArtists(params) {
             let paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
 
-            const response = await this.$axios.$get(`/artists?${paramString}`); // TODO: is there a XSS issue here?
+            const response = await this.$http.$get(`/artists?${paramString}`); // TODO: is there a XSS issue here?
             return response.data;
         },
 
 
         async getProductArtistById(artistId) {
-            const response = await this.$axios.$get('/artist', {
+            const response = await this.$http.$get('/artist', {
                 params: {
                     id: artistId
                 }
@@ -109,17 +109,17 @@ export default {
             let response;
 
             if(artist.id) {
-                response = await this.$axios.$put('/artist', artist);
+                response = await this.$http.$put('/artist', artist);
             }
             else {
-                response = await this.$axios.$post('/artist', artist);
+                response = await this.$http.$post('/artist', artist);
             }
 
             return response.data;
         },
 
         async deleteProductArtist(artistId) {
-            const response = await this.$axios.$delete('/artist', {
+            const response = await this.$http.$delete('/artist', {
                 params: {
                     id: artistId
                 }
@@ -130,7 +130,7 @@ export default {
 
 
         async getProductsForArtist(artistId) {
-            const response = await this.$axios.$get('/artist/products', {
+            const response = await this.$http.$get('/artist/products', {
                 params: {
                     id: artistId
                 }
@@ -141,7 +141,7 @@ export default {
 
 
         async prodmix_variations(product_id) {
-            const response = await this.$axios.$get('/product/variations', {
+            const response = await this.$http.$get('/product/variations', {
                 params: {
                     product_id
                 }
@@ -240,10 +240,10 @@ export default {
             const cleanProduct = stripRelations(product);
 
             if(product.id) {
-                response = await this.$axios.$put('/product', cleanProduct);
+                response = await this.$http.$put('/product', cleanProduct);
             }
             else {
-                response = await this.$axios.$post('/product', cleanProduct);
+                response = await this.$http.$post('/product', cleanProduct);
             }
 
             return response.data;
@@ -375,13 +375,13 @@ export default {
             delete size.updated_at;
             delete size.created_at;
 
-            const response = await this.$axios.$post(uri, size);
+            const response = await this.$http.$post(uri, size);
             return response.data;
         },
 
 
         async deleteProductSize(id) {
-            const response = await this.$axios.$delete('/product/size', {
+            const response = await this.$http.$delete('/product/size', {
                 params: {
                     id
                 }
@@ -395,7 +395,7 @@ export default {
          ******************************/
 
         async upsertProductPicture(formData) {
-            const response = await this.$axios.$post(
+            const response = await this.$http.$post(
                 '/product/pic',
                 formData,
                 { headers: { 'Content-Type': 'multipart/form-data' } }
@@ -405,7 +405,7 @@ export default {
 
 
         async deleteProductPicture(id) {
-            const response = await this.$axios.$delete('/product/pic', {
+            const response = await this.$http.$delete('/product/pic', {
                 params: {
                     id
                 }
