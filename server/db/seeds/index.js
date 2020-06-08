@@ -1,11 +1,8 @@
-let product_artists = require('../initial-data/product_artists');
-let product_pics = require('../initial-data/product_pics');
-let product_sizes = require('../initial-data/product_sizes');
-let product_types = require('../initial-data/product_types');
-let product_subtypes = require('../initial-data/product_subtypes');
-let products = require('../initial-data/products');
-let carts = require('../initial-data/carts');
-let package_types = require('../initial-data/package_types');
+const tenants = require('../initial-data/tenants');
+const tenant_users = require('../initial-data/tenant_users');
+const product_sku_variant_types = require('../initial-data/product_sku_variant_types');
+const master_types = require('../initial-data/master_types');
+
 
 /**
  * Knex.js's seed functionality does not provide any order of execution guarantees,
@@ -16,21 +13,22 @@ let package_types = require('../initial-data/package_types');
  * @returns {*}
  */
 exports.seed = (knex, Promise) => {
-
-    return product_artists.seed(knex, Promise)
+    return tenants
+        .seed(knex, Promise)
         .then(() => {
-            return products.seed(knex, Promise);
+            return tenant_users.seed(knex, Promise);
         })
         .then(() => {
-            return carts.seed(knex, Promise);
+            return product_sku_variant_types.seed(knex, Promise);
         })
         .then(() => {
-            return Promise.all([
-                product_pics.seed(knex, Promise),
-                product_sizes.seed(knex, Promise),
-                product_types.seed(knex, Promise),
-                product_subtypes.seed(knex, Promise),
-                package_types.seed(knex, Promise)
-            ])
+            return master_types.seed(knex, Promise);
         });
+        // .then(() => {
+        //     return Promise.all([
+        //         tenant_users.seed(knex, Promise),
+        //         product_sku_variant_types.seed(knex, Promise),
+        //         master_types.seed(knex, Promise)
+        //     ]);
+        // });
 };
