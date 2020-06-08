@@ -23,7 +23,7 @@ export default {
     },
 
     async asyncData({ params, store, app }) {
-        const payments = await payment_mixin.methods.getPayments.call(app, {
+        const payments = await app.$api.payments.list.call(app, {
             // where: ['is_available', '=', true],
             // andWhere: [
             //     ['total_inventory_count', '>', 0]
@@ -34,12 +34,12 @@ export default {
 
         return {
             payments
-        }
+        };
     },
 
     methods: {
         async fetchOrders() {
-            this.payments = await this.getPayments({
+            this.payments = await this.$api.payments.list({
                 // where: ['is_available', '=', true],
                 // whereRaw: ['sub_type & ? > 0', [productTypeId]],
                 // andWhere: [

@@ -40,13 +40,13 @@ export default{
 
     methods: {
         async viewPackingSlip() {
-            const response = await this.createPackingSlipFromPayment(this.payment.id);
+            const response = await this.$api.payments.createPackingSlip(this.payment.id);
             window.open(response.slip_url);
         },
 
         async loadPayment() {
             try {
-                this.payment = await this.getPayment(this.$route.params.id);
+                this.payment = await this.$api.payments.get(this.$route.params.id);
 
                 if(!this.payment) {
                     throw new Error(this.$t('Payment not found'));

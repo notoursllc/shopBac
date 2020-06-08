@@ -15,7 +15,6 @@ function stripRelations(data) {
 
 export default ($http) => ({
 
-    // was getProducts
     async list(params) {
         const paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
 
@@ -25,14 +24,6 @@ export default ($http) => ({
     },
 
 
-    // TODO: remove
-    async getProductInfo() {
-        const { data } = await $http.$get('/product/info');
-        return data;
-    },
-
-
-    // was getProductBySeoUri
     async getBySeoUri(str) {
         const { data } = await $http.$get('/product/seo', {
             searchParams: {

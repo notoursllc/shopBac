@@ -59,7 +59,7 @@ export default{
 
     methods: {
         async viewShippingLabel() {
-            const response = await this.getShippingLabel(this.payment.shippo_transaction_id);
+            const response = await this.$api.payments.getShippingLabel(this.payment.shippo_transaction_id);
             window.open(response.label_url);
         },
 
@@ -72,7 +72,7 @@ export default{
                     type: 'warning'
                 });
 
-                await this.deleteShippingLabelForPayment(this.payment.id);
+                await this.$api.payments.deleteShippingLabel(this.payment.id);
 
                 this.$emit('deleted', this.payment.id);
             }
@@ -93,7 +93,7 @@ export default{
                 this.shippingLabelModalIsActive = false;
                 this.labelForm.id = this.payment.id
 
-                const response = await this.purchaseShippingLabel(this.labelForm);
+                const response = await this.$api.payments.purchaseShippingLabel(this.labelForm);
 
                 this.$emit('purchased', response)
             }
@@ -104,7 +104,7 @@ export default{
 
         async buildParcelData() {
             let packageTypes = {};
-            this.shippingPackageTypes = await this.shipmix_getPackageTypes();
+            this.shippingPackageTypes = await this.$api.shipping.listPackageTypes();
 
             this.payment.shoppingCart.cart_items.forEach((obj) => {
                 let packageType = obj.product.shipping_package_type;

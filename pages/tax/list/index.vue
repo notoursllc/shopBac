@@ -23,7 +23,7 @@ export default {
 
     methods: {
         async fetchTaxes() {
-            this.taxes = await this.taxmix_search({
+            this.taxes = await this.$api.taxes.list({
                 // where: ['is_available', '=', true],
                 // whereRaw: ['sub_type & ? > 0', [productTypeId]],
                 // andWhere: [
@@ -51,7 +51,7 @@ export default {
                     type: 'warning'
                 });
 
-                await this.taxmix_delete(tax.id);
+                await this.$api.taxes.delete(tax.id);
                 this.$successMessage(`"${ tax.name }" deleted successfully`);
                 this.taxmix_goToList();
             }

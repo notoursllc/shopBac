@@ -356,7 +356,7 @@ class BaseController {
 
     getTenantId(request) {
         // https://github.com/BoseCorp/hapi-auth-jwt2#want-to-access-the-jwt-token-after-validation
-        return request.auth.credentials.id;
+        return request.auth.credentials.tenant_id;
     }
 
 

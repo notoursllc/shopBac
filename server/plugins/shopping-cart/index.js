@@ -16,7 +16,7 @@ const after = function (server) {
                     strategies: ['jwt', 'session']
                 },
                 pre: [
-                    { method: ShoppingCartController.pre_cart, assign: 'm1' },
+                    { method: ShoppingCartController.pre_cart, assign: 'm1' }
                 ],
                 handler: ShoppingCartController.cartGetHandler
             }
@@ -42,20 +42,20 @@ const after = function (server) {
             }
         },
         {
-            method: 'POST',
-            path: '/cart/item/remove',
+            method: 'DELETE',
+            path: '/cart/item',
             options: {
                 description: 'Removes an item from the cart',
                 auth: {
                     strategies: ['jwt', 'session']
                 },
                 validate: {
-                    payload: {
-                        id: Joi.string().uuid().required()
-                    }
+                    query: Joi.object({
+                        id: Joi.string().uuid().required() // payment ID
+                    })
                 },
                 pre: [
-                    { method: ShoppingCartController.pre_cart, assign: 'm1' },
+                    { method: ShoppingCartController.pre_cart, assign: 'm1' }
                 ],
                 handler: ShoppingCartController.cartItemRemoveHandler
             }
@@ -70,12 +70,12 @@ const after = function (server) {
                 },
                 validate: {
                     payload: Joi.object({
-                        id: Joi.string().uuid().required(),  // cart item id
+                        id: Joi.string().uuid().required(), // cart item id
                         qty: Joi.number().min(1).required()
                     })
                 },
                 pre: [
-                    { method: ShoppingCartController.pre_cart, assign: 'm1' },
+                    { method: ShoppingCartController.pre_cart, assign: 'm1' }
                 ],
                 handler: ShoppingCartController.cartItemQtyHandler
             }
@@ -92,7 +92,7 @@ const after = function (server) {
                     payload: Joi.reach(ShoppingCartController.getShoppingCartModelSchema(), 'shipping')
                 },
                 pre: [
-                    { method: ShoppingCartController.pre_cart, assign: 'm1' },
+                    { method: ShoppingCartController.pre_cart, assign: 'm1' }
                 ],
                 handler: ShoppingCartController.cartShippingSetAddressHandler
             }
@@ -106,7 +106,7 @@ const after = function (server) {
                     strategies: ['jwt', 'session']
                 },
                 pre: [
-                    { method: ShoppingCartController.pre_cart, assign: 'm1' },
+                    { method: ShoppingCartController.pre_cart, assign: 'm1' }
                 ],
                 handler: ShoppingCartController.getCartShippingRatesHandler
             }
@@ -123,7 +123,7 @@ const after = function (server) {
                     payload: Joi.reach(ShoppingCartController.getShoppingCartModelSchema(), 'shipping_rate')
                 },
                 pre: [
-                    { method: ShoppingCartController.pre_cart, assign: 'm1' },
+                    { method: ShoppingCartController.pre_cart, assign: 'm1' }
                 ],
                 handler: ShoppingCartController.cartShippingRateHandler
             }
@@ -146,7 +146,7 @@ const after = function (server) {
                     )
                 },
                 pre: [
-                    { method: ShoppingCartController.pre_cart, assign: 'm1' },
+                    { method: ShoppingCartController.pre_cart, assign: 'm1' }
                 ],
                 handler: ShoppingCartController.cartCheckoutHandler
             }
@@ -182,7 +182,7 @@ const after = function (server) {
             options: {
                 description: 'Returns a paypal transaction id', // is this the right description?
                 pre: [
-                    { method: ShoppingCartController.pre_cart, assign: 'm1' },
+                    { method: ShoppingCartController.pre_cart, assign: 'm1' }
                 ],
                 handler: ShoppingCartController.paypalCreatePayment  // working
             }
@@ -198,7 +198,7 @@ const after = function (server) {
                     })
                 },
                 pre: [
-                    { method: ShoppingCartController.pre_cart, assign: 'm1' },
+                    { method: ShoppingCartController.pre_cart, assign: 'm1' }
                 ],
                 handler: ShoppingCartController.paypalExecutePayment
             }

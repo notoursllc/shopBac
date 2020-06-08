@@ -40,7 +40,7 @@ const after = function (server) {
                 return { valid: false };
             }
 
-            return { valid: true, credentials: TenantUser };
+            return { valid: true, credentials: TenantUser.toJSON() };
         }
     });
 

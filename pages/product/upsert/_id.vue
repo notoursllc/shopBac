@@ -125,7 +125,7 @@ export default {
 
                 const title = p.id ? 'Product updated successfully' : 'Product added successfully';
                 this.$successMessage(`${title}: ${p.title}`);
-                this.goToAdminProductList();
+                this.goToProductList();
             }
             catch(e) {
                 this.$errorMessage(
@@ -194,7 +194,7 @@ export default {
 
                 const title = p.id ? this.$t('Product updated successfully') : this.$t('Product added successfully');
                 this.$successMessage(`${title}: ${p.title}`);
-                this.goToAdminProductList();
+                this.goToProductList();
             }
             catch(e) {
                 this.$errorMessage(

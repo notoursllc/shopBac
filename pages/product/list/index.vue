@@ -82,12 +82,20 @@ export default {
                     type: 'warning'
                 });
 
-                await this.deleteProduct(product.id);
-                this.$successMessage(`"${product.title}" deleted successfully`);
-                this.fetchProducts();
+                try {
+                    await this.$api.products.delete(product.id)
+                    this.$successMessage(`"${product.title}" deleted successfully`);
+                    this.fetchProducts();
+                }
+                catch(e) {
+                    this.$errorMessage(
+                        e.message,
+                        { closeOthers: true }
+                    );
+                }
             }
             catch(err) {
-                // Do nothing
+                // Do nothing when the confirm is cancelled
             }
         },
 
@@ -130,7 +138,7 @@ export default {
 
 <template>
     <div>
-        <fab type="add" @click="goToAdminProductUpsert" />
+        <fab type="add" @click="goToProductUpsert" />
 
         <el-table
             :data="products"
@@ -158,8 +166,8 @@ export default {
                 <template slot-scope="scope">
                     {{ scope.row.title }}
                     <operations-dropdown
-                        @view="goToAdminProductDetails(scope.row.id)"
-                        @edit="goToAdminProductUpsert(scope.row.id)"
+                        @view="goToProductDetails(scope.row.id)"
+                        @edit="goToProductUpsert(scope.row.id)"
                         @delete="onProductDelete(scope.row)" />
                 </template>
             </el-table-column>

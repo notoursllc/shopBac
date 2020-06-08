@@ -64,7 +64,7 @@ export default {
                 const loadingInstance = this.$loadingService({ target: `#cartItem${this.data.id}` });
 
 
-                const response = await this.updateItemQty(updateConfig);
+                const response = await this.$api.cart.updateItemQty(updateConfig);
 
                 this.setCartAndTokenStateFromResponse(response);
                 this.$emit('updated');
@@ -87,7 +87,7 @@ export default {
         async removeItem() {
             try {
                 const loadingInstance = this.$loadingService({ target: `#cartItem${this.data.id}` });
-                const response = await this.deleteItem({ id: this.data.id });
+                const response = await this.$api.cart.deleteItem(this.data.id);
 
                 this.setCartAndTokenStateFromResponse(response);
                 this.$emit('updated');

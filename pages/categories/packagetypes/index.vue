@@ -29,7 +29,7 @@ export default {
     methods: {
         async fetchPackageTypes() {
             try {
-                this.shippingPackageTypes = await this.shipmix_getPackageTypes({
+                this.shippingPackageTypes = await this.$api.shipping.listPackageTypes({
                     // where: ['is_available', '=', true],
                     // whereRaw: ['sub_type & ? > 0', [productTypeId]],
                     // andWhere: [
@@ -61,7 +61,7 @@ export default {
                 });
 
                 try {
-                    const packageTypeJson = await this.deletePackageType(data.id);
+                    const packageTypeJson = await this.$api.shipping.deletePackageType(data.id);
 
                     if(!packageTypeJson) {
                         throw new Error(this.$t('Package Type not found'));

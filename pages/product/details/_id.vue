@@ -28,7 +28,7 @@ export default{
 
     async created() {
         try {
-            this.product = await this.getProductById(this.$route.params.id);
+            this.product = await this.$api.products.get(this.$route.params.id);
 
             if(!this.product) {
                 throw new Error(this.$t('Product not found'));

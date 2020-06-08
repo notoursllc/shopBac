@@ -1,6 +1,3 @@
-import { convertEmptyStringsToNull } from '../utils/common';
-
-
 export default {
     methods: {
         setCartAndTokenStateFromResponse(response) {
@@ -9,95 +6,8 @@ export default {
             return response.data.data;
         },
 
-
-        async getCart() {
-            return await this.$http.get('/cart/get');
-        },
-
-
-        async addItem(params) {
-            return await this.$http.post('/cart/item/add', params);
-        },
-
-
-        async updateItemQty(params) {
-            return await this.$http.post('/cart/item/qty', params);
-        },
-
-
-        async deleteItem(params) {
-            return await this.$http.post('/cart/item/remove', params);
-        },
-
-
-        async setShippingAddress(address) {
-            return await this.$http.post('/cart/shipping/address', convertEmptyStringsToNull(address));
-        },
-
-
-        async validateAddress(address) {
-            // note: using $post instead of post
-            const response = await this.$http.$post('/shipping/validateAddress', address);
-            return response.data;
-        },
-
-
-        async getShippingRates(params) {
-            // const response = await this.$http.post('/shipping/rates', params);
-            const response = await this.$http.get('/cart/shipping/rates');
-            return response.data.data;
-        },
-
-
-        async setShippingRate(obj) {
-            return await this.$http.post('/cart/shipping/rate', {
-                shipping_rate: obj
-            });
-        },
-
-
-        async checkout(params) {
-            // note: using $post instead of post
-            const response = await this.$http.$post('/cart/checkout', params);
-
-            // note: cart/checkout only returns an object containing a transaction id,
-            // so no need to update the shopping cart or token state
-            return response.data;
-        },
-
-
-        async paypalCreatePayment() {
-            const response = await this.$http.post('/cart/paypal/create-payment');
-            return response.data.data;
-        },
-
-
-        async paypalExecutePayment(paymentToken) {
-            const response = await this.$http.post('/cart/paypal/execute-payment', {
-                paymentToken
-            });
-            return response.data.data;
-        },
-
-
-        getPaymentMonthYearClass(monthClasses, yearClasses) {
-            if(Array.isArray(monthClasses) && Array.isArray(yearClasses)) {
-                if(monthClasses[1] === yearClasses[1]) {
-                    return monthClasses;
-                }
-                // find which set has the error classes and return those;
-                else if(monthClasses[1] === 'icon-times-circle') {
-                    return monthClasses;
-                }
-                else {
-                    return yearClasses;
-                }
-            }
-        },
-
-
         getFormattedShippingName(firstName, lastName) {
-            let val = [];
+            const val = [];
 
             if(firstName) {
                 val.push(firstName);
@@ -112,10 +22,10 @@ export default {
 
 
         getFormattedCityStateZip(city, state, postalCode) {
-            let val = [];
+            const val = [];
 
             if(city) {
-                val.push(city)
+                val.push(city);
             }
 
             if(state || postalCode) {
@@ -131,32 +41,6 @@ export default {
             }
 
             return val.join('');
-        },
-
-
-        getFormattedCompanyName(name) {
-            if(name) {
-                return name.toUpperCase()
-            }
-            return null;
-        },
-
-
-        cartEmptyRedirect(shoppingCart) {
-            if(shoppingCart && !shoppingCart.num_items) {
-                this.$router.push({ name: 'cart-empty' });
-                return true;
-            }
-            return false;
-        },
-
-        invalidShippingFormRedirect() {
-            if(!this.$store.state.shoppingcart.shippingAddressIsValid) {
-                this.$router.push({ name: 'cart-checkout' });
-                return true;
-            }
-
-            return false;
         }
     }
-}
+};

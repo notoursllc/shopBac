@@ -1,21 +1,21 @@
 <script>
 import tax_mixin from '@/mixins/tax_mixin';
 
-export default{
-    mixins: [
-        tax_mixin
-    ],
-
+export default {
     components: {
         Fab: () => import('@/components/Fab')
     },
+
+    mixins: [
+        tax_mixin
+    ],
 
     data() {
         return {
             showShippoWarning: false,
             modalIsActive: false,
             tax: {}
-        }
+        };
     },
 
     methods: {
@@ -25,7 +25,7 @@ export default{
             }
 
             try {
-                this.tax = await this.taxmix_get(id);
+                this.tax = await this.$api.taxes.get(id);
 
                 if(!this.tax) {
                     throw new Error(this.$t('Tax not found'));
@@ -35,34 +35,27 @@ export default{
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
         },
 
         async onUpsert() {
             try {
-                let tax = null;
-
-                if(this.tax.id) {
-                    tax = await this.taxmix_update(this.tax);
-                }
-                else {
-                    tax = await this.taxmix_add(this.tax);
-                }
+                const tax = await this.$api.taxes[this.tax.id ? 'update' : 'add'](this.tax);
 
                 if(!tax) {
                     throw new Error('Update error');
                 }
 
-                let title = this.tax.id ? 'Updated successfully' : 'Added successfully';
-                this.$successMessage(`${title}: ${tax.name}`)
+                const title = this.tax.id ? 'Updated successfully' : 'Added successfully';
+                this.$successMessage(`${title}: ${tax.name}`);
                 this.taxmix_goToList();
             }
             catch(e) {
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
         },
 
@@ -74,7 +67,7 @@ export default{
     created() {
         this.getTax(this.$route.params.id);
     }
-}
+};
 </script>
 
 
