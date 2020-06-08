@@ -22,9 +22,6 @@ const after = function (server) {
             path: '/master_type',
             options: {
                 description: 'Gets an master type by ID',
-                auth: {
-                    strategy: 'session'
-                },
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required()
@@ -40,9 +37,6 @@ const after = function (server) {
             path: '/master_type',
             options: {
                 description: 'Adds a new master type',
-                auth: {
-                    strategy: 'session'
-                },
                 validate: {
                     payload: MasterTypeCtrl.getSchema()
                 },
@@ -56,9 +50,6 @@ const after = function (server) {
             path: '/master_type',
             options: {
                 description: 'Updates master type',
-                auth: {
-                    strategy: 'session'
-                },
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
@@ -75,9 +66,6 @@ const after = function (server) {
             path: '/master_type',
             options: {
                 description: 'Deletes a master type',
-                auth: {
-                    strategy: 'session'
-                },
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required()

@@ -40,7 +40,7 @@ const after = function(server) {
         },
         {
             method: 'GET',
-            path: '/robots.txt',  // NOTE: no routePrefix on this one
+            path: '/robots.txt', // NOTE: no routePrefix on this one
             options: {
                 auth: false,
                 description: 'For generating robots.txt',
@@ -93,7 +93,7 @@ const after = function(server) {
             },
             {
                 path: '/favicon.ico',
-                method: 'get',
+                method: 'GET',
                 options: {
                     auth: false,
                     cache: {

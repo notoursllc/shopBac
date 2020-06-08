@@ -20,8 +20,6 @@ const after = function (server) {
             }
         }
     );
-    server.auth.default('jwt');
-
 
     server.auth.strategy('session', 'cookie', {
         // https://hapi.dev/module/cookie/api/?v=11.0.1
@@ -45,6 +43,17 @@ const after = function (server) {
             return { valid: true, credentials: TenantUser };
         }
     });
+
+    // By default the admin can access all routes
+    // Routes accessable by the tenant (client app) will need to be
+    // specified intentionally by setting route options:
+    //
+    // auth: {
+    //     strategies: ['jwt', 'session']
+    // }
+
+
+    server.auth.default('session');
 
 
     server.route([

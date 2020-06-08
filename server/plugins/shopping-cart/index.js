@@ -12,6 +12,9 @@ const after = function (server) {
             path: '/cart/get',
             options: {
                 description: 'Finds the cart for the given jwt user',
+                auth: {
+                    strategies: ['jwt', 'session']
+                },
                 pre: [
                     { method: ShoppingCartController.pre_cart, assign: 'm1' },
                 ],
@@ -23,6 +26,9 @@ const after = function (server) {
             path: '/cart/item/add',
             options: {
                 description: 'Adds a new item to the cart',
+                auth: {
+                    strategies: ['jwt', 'session']
+                },
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
@@ -40,6 +46,9 @@ const after = function (server) {
             path: '/cart/item/remove',
             options: {
                 description: 'Removes an item from the cart',
+                auth: {
+                    strategies: ['jwt', 'session']
+                },
                 validate: {
                     payload: {
                         id: Joi.string().uuid().required()
@@ -56,6 +65,9 @@ const after = function (server) {
             path: '/cart/item/qty',
             options: {
                 description: 'Updates the quantity of a shopping cart item (ShoppingCartItem model)',
+                auth: {
+                    strategies: ['jwt', 'session']
+                },
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),  // cart item id
@@ -73,6 +85,9 @@ const after = function (server) {
             path: '/cart/shipping/address',
             options: {
                 description: 'Sets the shipping address for the cart, calculates the sales tax, and gets shipping rate',
+                auth: {
+                    strategies: ['jwt', 'session']
+                },
                 validate: {
                     payload: Joi.reach(ShoppingCartController.getShoppingCartModelSchema(), 'shipping')
                 },
@@ -87,6 +102,9 @@ const after = function (server) {
             path: '/cart/shipping/rates',
             options: {
                 description: 'Gets a list of shipping rates for the cart',
+                auth: {
+                    strategies: ['jwt', 'session']
+                },
                 pre: [
                     { method: ShoppingCartController.pre_cart, assign: 'm1' },
                 ],
@@ -98,6 +116,9 @@ const after = function (server) {
             path: '/cart/shipping/rate',
             options: {
                 description: 'Sets the selected shipping rate for the cart',
+                auth: {
+                    strategies: ['jwt', 'session']
+                },
                 validate: {
                     payload: Joi.reach(ShoppingCartController.getShoppingCartModelSchema(), 'shipping_rate')
                 },
@@ -112,6 +133,9 @@ const after = function (server) {
             path: '/cart/checkout',
             options: {
                 description: 'Complete the transaction',
+                auth: {
+                    strategies: ['jwt', 'session']
+                },
                 validate: {
                     // NOTE: shipping is not required here because the 'cart/shipping/address' route
                     // should have been called before this route, which persists the shipping info.
@@ -185,6 +209,9 @@ const after = function (server) {
             path: '/cart/{param*}',
             options: {
                 description: 'Returns 404 response',
+                auth: {
+                    strategies: ['jwt', 'session']
+                },
                 handler: (request, h) => {
                     throw Boom.notFound();
                 }
@@ -195,7 +222,7 @@ const after = function (server) {
 
     // LOADING BOOKSHELF MODEL:
     // let baseModel = bookshelf.Model.extend({});
-    let baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
+    const baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
 
     server.app.bookshelf.model(
         'ShoppingCart',

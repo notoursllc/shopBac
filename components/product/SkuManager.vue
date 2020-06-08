@@ -289,6 +289,7 @@ export default {
         async getVariantTypes() {
             try {
                 const { data } = await this.$api.productSkuVariantTypes.list();
+                console.log("VARIANT TYPES", data)
                 this.skuVariantTypes.all = data;
                 this.unusedSkuVariantTypes = cloneDeep(data);
             }
@@ -529,6 +530,7 @@ export default {
 
 
 <style lang="scss">
+@import "~assets/css/components/_table.scss";
 @import "~assets/css/components/_formRow.scss";
 @import "~assets/css/components/_mixins.scss";
 

@@ -11,6 +11,9 @@ const after = function (server) {
             path: '/payment',
             options: {
                 description: 'Returns payment data for a given id',
+                auth: {
+                    strategies: ['jwt', 'session']
+                },
                 validate: {
                     query: {
                         id: Joi.string().max(50),
@@ -32,6 +35,9 @@ const after = function (server) {
             path: '/payment/shipping/packingslip',
             options: {
                 description: 'Creates a packing slip for a given payment ID',
+                auth: {
+                    strategies: ['jwt', 'session']
+                },
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required()
@@ -67,6 +73,9 @@ const after = function (server) {
             path: '/payment/shipping/label',
             options: {
                 description: 'Gets a shipping label for a given payment ID',
+                auth: {
+                    strategies: ['jwt', 'session']
+                },
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required()

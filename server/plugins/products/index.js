@@ -50,6 +50,9 @@ exports.plugin = {
                         path: `${routePrefix}/product`,
                         options: {
                             description: 'Finds a product by ID',
+                            auth: {
+                                strategies: ['jwt', 'session']
+                            },
                             validate: {
                                 query: {
                                     id: Joi.string().uuid(),
@@ -95,6 +98,9 @@ exports.plugin = {
                         path: `${routePrefix}/product/seo`,
                         options: {
                             description: 'Finds a product by it\'s seo uri',
+                            auth: {
+                                strategies: ['jwt', 'session']
+                            },
                             validate: {
                                 query: {
                                     id: Joi.string().max(100)
@@ -318,7 +324,9 @@ exports.plugin = {
                         method: 'GET',
                         path: '/product/share', // NOTE: no routePrefix on this one
                         options: {
-                            auth: false,
+                            auth: {
+                                strategies: ['jwt', 'session']
+                            },
                             validate: {
                                 query: {
                                     uri: Joi.string()
@@ -334,6 +342,9 @@ exports.plugin = {
                         path: `${routePrefix}/product/info`,
                         options: {
                             description: 'Returns general info about products',
+                            auth: {
+                                strategies: ['jwt', 'session']
+                            },
                             handler: (request, h) => {
                                 return ProductCtrl.productInfoHandler(request, h);
                             }
@@ -361,7 +372,9 @@ exports.plugin = {
                         method: 'GET',
                         path: '/sitemap.xml', // NOTE: no routePrefix on this one
                         options: {
-                            auth: false
+                            auth: {
+                                strategies: ['jwt', 'session']
+                            }
                         },
                         handler: (request, h) => {
                             return ProductCtrl.sitemapHandler(request, h);
