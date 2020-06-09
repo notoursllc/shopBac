@@ -1,4 +1,5 @@
 const Joi = require('@hapi/joi');
+const Boom = require('@hapi/boom');
 const isObject = require('lodash.isobject');
 const BaseController = require('../../core/BaseController');
 const StorageService = require('../../core/services/StorageService');
@@ -32,11 +33,12 @@ class ProductImageCtrl extends BaseController {
         return {
             // images: Joi.alternatives().try(Joi.array().allow(null), Joi.binary().allow(null)),
             id: Joi.alternatives().try(Joi.array(), Joi.allow(null)),
+            tenant_id: Joi.string().uuid(),
             image: Joi.alternatives().try(Joi.array(), Joi.object().unknown(), Joi.allow(null)),
-            alt_text: Joi.alternatives().try( Joi.array(), Joi.string().trim().max(100), Joi.allow(null)),
-            ordinal: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null)),
+            alt_text: Joi.alternatives().try(Joi.array(), Joi.string().trim().max(100), Joi.allow(null)),
+            ordinal: Joi.alternatives().try(Joi.number().integer().positive(), Joi.allow(null)),
             product_id: Joi.string().uuid().required()
-        }
+        };
     }
 
 
@@ -47,12 +49,12 @@ class ProductImageCtrl extends BaseController {
         const image = makeArray(request.payload.image)[index];
 
         const upsertData = {
-            tenant_id: this.getTenantId(request),
+            tenant_id: request.payload.tenant_id,
             product_id: request.payload.product_id,
             published: true,
             alt_text: makeArray(request.payload.alt_text)[index],
             ordinal: makeArray(request.payload.ordinal)[index]
-        }
+        };
 
         if(id) {
             upsertData.id = id;
@@ -83,7 +85,7 @@ class ProductImageCtrl extends BaseController {
             for(let i=0; i<numImages; i++) {
                 promises.push(
                     this.upsertImageFromRequest(request, i)
-                )
+                );
             }
 
             const ProductImages = await Promise.all(promises);

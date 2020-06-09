@@ -5,7 +5,7 @@ const coreController = require('./coreController');
 
 
 const after = function(server) {
-    let routes = [
+    const routes = [
         // {
         //     method: 'GET',
         //     path: '/api/v1/jwt',
@@ -138,7 +138,7 @@ exports.plugin = {
 
 
         server.decorate('toolkit', 'apiSuccess', function (responseData, paginationObj) {
-            let response = {};
+            const response = {};
             response.data = responseData;
 
             if(isObject(paginationObj)) {
@@ -148,6 +148,25 @@ exports.plugin = {
             return this.response(response);
         });
 
+
+        server.ext('onPostAuth', (request, h) => {
+            console.log("IN ON REQUEST - AUTH", request.auth)
+
+            // https://github.com/BoseCorp/hapi-auth-jwt2#want-to-access-the-jwt-token-after-validation
+            if(isObject(request.auth.credentials) && request.auth.credentials.tenant_id) {
+                if(isObject(request.query)) {
+                    request.query.tenant_id = request.auth.credentials.tenant_id;
+                }
+                if(isObject(request.payload)) {
+                    request.payload.tenant_id = request.auth.credentials.tenant_id;
+                }
+
+                console.log("IN ON REQUEST - PAYLOAD", request.payload)
+                console.log("IN ON REQUEST - QUERY", request.query)
+            }
+
+            return h.continue;
+        });
 
         // Updates the response output with a 'data' property if a data
         // property also exists in the Boom error

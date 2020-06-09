@@ -11,6 +11,7 @@ class ProductSkuVariantTypeCtrl extends BaseController {
 
     getSchema() {
         return {
+            tenant_id: Joi.string().uuid(),
             label: Joi.string().max(100).required(),
             description: Joi.string().max(500).allow(null),
             optionData: Joi.array().allow(null).required(),
@@ -22,38 +23,13 @@ class ProductSkuVariantTypeCtrl extends BaseController {
 
     getByIdHandler(request, h) {
         return this.modelForgeFetchHandler(
-            { id: request.query.id, tenant_id: this.getTenantId(request) },
+            {
+                id: request.query.id,
+                tenant_id: request.query.tenant_id
+            },
             null,
             h
         );
-    }
-
-
-    // getAllHandler(request, h) {
-    //     return this.fetchAllHandler(h, (qb) => {
-    //         qb.where('tenant_id', '=', this.getTenantId(request));
-
-    //         if(request.query.object) {
-    //             qb.where('object', '=', request.query.object);
-    //         }
-    //     });
-    // }
-
-
-    getPageHandler(request, h) {
-        this.addTenantId(request, 'query');
-
-        return super.getPageHandler(
-            request,
-            null,
-            h
-        );
-    }
-
-
-    upsertHandler(request, h) {
-        this.addTenantId(request, 'payload');
-        return super.upsertHandler(request, h);
     }
 
 }

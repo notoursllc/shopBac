@@ -1,25 +1,24 @@
 const Joi = require('@hapi/joi');
 
+
 const after = function (server) {
     const TenantCtrl = new (require('./controllers/TenantCtrl'))(server);
     const TenantUserCtrl = new (require('./controllers/TenantUserCtrl'))(server);
 
-    server.auth.strategy('jwt', 'jwt',
-        {
-            // this key is only for testing.  In a multi tenant scenario I will need to look up the secret key in the db,
-            // which hapi-auth-jwt2 supports:
-            // https://www.npmjs.com/package/hapi-auth-jwt2#additional-notes-on-keys-and-key-lookup-functions
-            key: process.env.JWT_TOKEN_SECRET,
-            validate: (decoded, request) => {
-                return TenantCtrl.validateJwtKey(decoded, request);
-            },
-            // verify: TenantCtrl.validateJwtKey,
-            verifyOptions: {
-                // ignoreExpiration: true,
-                algorithms: [ 'HS256' ]
-            }
+    server.auth.strategy('jwt', 'jwt', {
+        // this key is only for testing.  In a multi tenant scenario I will need to look up the secret key in the db,
+        // which hapi-auth-jwt2 supports:
+        // https://www.npmjs.com/package/hapi-auth-jwt2#additional-notes-on-keys-and-key-lookup-functions
+        key: process.env.JWT_TOKEN_SECRET,
+        validate: (decoded, request) => {
+            return TenantCtrl.validateJwtKey(decoded, request);
+        },
+        // verify: TenantCtrl.validateJwtKey,
+        verifyOptions: {
+            // ignoreExpiration: true,
+            algorithms: [ 'HS256' ]
         }
-    );
+    });
 
     server.auth.strategy('session', 'cookie', {
         // https://hapi.dev/module/cookie/api/?v=11.0.1

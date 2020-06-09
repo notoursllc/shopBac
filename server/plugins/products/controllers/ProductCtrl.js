@@ -22,6 +22,7 @@ class ProductCtrl extends BaseController {
 
     getSchema() {
         return {
+            tenant_id: Joi.string().uuid(),
             published: Joi.boolean().default(false),
             title: Joi.alternatives().try(Joi.string().trim().max(100), Joi.allow(null)),
             caption: Joi.alternatives().try(Joi.string().trim().max(100), Joi.allow(null)),
@@ -87,7 +88,10 @@ class ProductCtrl extends BaseController {
 
     getByIdHandler(request, h) {
         return this.modelForgeFetchHandler(
-            { id: request.query.id, tenant_id: this.getTenantId(request) },
+            {
+                id: request.query.id,
+                tenant_id: request.query.tenant_id
+            },
             { withRelated: this.getWithRelated() },
             h
         );
@@ -106,16 +110,13 @@ class ProductCtrl extends BaseController {
 
     productSeoHandler(request, h) {
         return this.modelForgeFetchHandler(
-            { seo_uri: request.query.id, tenant_id: this.getTenantId(request) },
+            {
+                seo_uri: request.query.id,
+                tenant_id: request.query.tenant_id
+            },
             { withRelated: this.getWithRelated() },
             h
         );
-    }
-
-
-    upsertHandler(request, h) {
-        this.addTenantId(request, 'payload');
-        return super.upsertHandler(request, h);
     }
 
 
@@ -176,7 +177,7 @@ class ProductCtrl extends BaseController {
             });
 
             const productId = request.query.id;
-            const tenantId = this.getTenantId(request);
+            const tenantId = request.query.tenant_id;
 
             const Product = await this.modelForgeFetch(
                 { id: productId, tenant_id: tenantId },
@@ -208,7 +209,7 @@ class ProductCtrl extends BaseController {
     }
 
 
-    async getAdminProductList(request, h) {
+    getAdminProductList(request, h) {
         const withSelectedOpts = [
             'skus'
         ];

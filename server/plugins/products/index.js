@@ -255,7 +255,11 @@ exports.plugin = {
                         options: {
                             description: 'Finds SKU options',
                             handler: (request, h) => {
-                                return ProductSkuVariantTypeCtrl.getPageHandler(request, h);
+                                return ProductSkuVariantTypeCtrl.getPageHandler(
+                                    request,
+                                    null,
+                                    h
+                                );
                             }
                         }
                     },
@@ -266,7 +270,8 @@ exports.plugin = {
                             description: 'Finds a SKU variant by ID',
                             validate: {
                                 query: {
-                                    id: Joi.string().uuid()
+                                    id: Joi.string().uuid(),
+                                    tenant_id: Joi.string().uuid()
                                 }
                             },
                             handler: (request, h) => {

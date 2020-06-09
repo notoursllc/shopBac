@@ -36,12 +36,6 @@ class ProductSkuImageCtrl extends ProductImageCtrl {
     }
 
 
-    upsertHandler(request, h) {
-        this.addTenantId(request, 'payload');
-        return super.upsertHandler(request, h);
-    }
-
-
     async upsertImageFromRequest(request, index) {
         // request.payload.images and request.payload.alt_test are not arrays if only one image is
         // uploaded, so converting to arrays
@@ -49,7 +43,7 @@ class ProductSkuImageCtrl extends ProductImageCtrl {
         const image = makeArray(request.payload.image)[index];
 
         const upsertData = {
-            tenant_id: this.getTenantId(request),
+            tenant_id: request.payload.tenant_id,
             product_sku_id: request.payload.product_sku_id,
             published: true,
             alt_text: makeArray(request.payload.alt_text)[index],

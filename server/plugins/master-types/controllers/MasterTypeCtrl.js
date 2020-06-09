@@ -11,6 +11,7 @@ class MasterTypeCtrl extends BaseController {
 
     getSchema() {
         return {
+            tenant_id: Joi.string().uuid(),
             published: Joi.boolean().default(true),
             object: Joi.string().max(100).required(),
             name: Joi.string().max(100).required(),
@@ -26,7 +27,10 @@ class MasterTypeCtrl extends BaseController {
 
     getByIdHandler(request, h) {
         return this.modelForgeFetchHandler(
-            { id: request.query.id, tenant_id: this.getTenantId(request) },
+            {
+                id: request.query.id,
+                tenant_id: request.query.tenant_id
+            },
             null,
             h
         );
@@ -35,18 +39,12 @@ class MasterTypeCtrl extends BaseController {
 
     getAllHandler(request, h) {
         return this.fetchAllHandler(h, (qb) => {
-            qb.where('tenant_id', '=', this.getTenantId(request));
+            qb.where('tenant_id', '=', request.query.tenant_id);
 
             if(request.query.object) {
                 qb.where('object', '=', request.query.object);
             }
         });
-    }
-
-
-    upsertHandler(request, h) {
-        this.addTenantId(request, 'payload');
-        return super.upsertHandler(request, h);
     }
 
 }

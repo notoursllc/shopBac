@@ -96,7 +96,7 @@ class BaseController {
         try {
             const ModelInstance = await this.deleteModel(
                 request.query.id,
-                this.getTenantId(request)
+                request.query.tenant_id
             );
 
             if(!ModelInstance) {
@@ -157,14 +157,6 @@ class BaseController {
             h
         );
     }
-
-    // async getByIdHandler(request, fetchOptions, h) {
-    //     return await this.modelForgeFetchHandler(
-    //         { id: request.query.id, tenant_id: this.getTenantId(request) },
-    //         fetchOptions,
-    //         h
-    //     );
-    // }
 
 
     async fetchAll(queryBufferModiferFn) {
@@ -351,24 +343,6 @@ class BaseController {
             })
             .orderBy(queryData.orderBy, queryData.orderDir)
             .fetchPage(config);
-    }
-
-
-    getTenantId(request) {
-        // https://github.com/BoseCorp/hapi-auth-jwt2#want-to-access-the-jwt-token-after-validation
-        return request.auth.credentials.tenant_id;
-    }
-
-
-    addTenantId(request, requestKey) {
-        const tenantId = this.getTenantId(request);
-
-        if(requestKey) {
-            request[requestKey].tenant_id = tenantId;
-        }
-        else {
-            request.tenant_id = tenantId;
-        }
     }
 
 }

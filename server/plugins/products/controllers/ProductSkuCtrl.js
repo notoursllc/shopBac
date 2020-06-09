@@ -14,6 +14,7 @@ class ProductSkuCtrl extends BaseController {
 
     getSchema() {
         return {
+            tenant_id: Joi.string().uuid(),
             // published: Joi.boolean().default(false).allow(null),
             published: Joi.boolean().empty('').default(false),
             ordinal: Joi.number().integer().min(0).allow(null),
@@ -73,12 +74,6 @@ class ProductSkuCtrl extends BaseController {
     }
 
 
-    upsertHandler(request, h) {
-        this.addTenantId(request, 'payload');
-        return super.upsertHandler(request, h);
-    }
-
-
     /**
      * Deletes a sku, including all of its images
      *
@@ -135,7 +130,7 @@ class ProductSkuCtrl extends BaseController {
         try {
             await this.deleteSku(
                 request.query.id,
-                this.getTenantId(request)
+                request.query.tenant_id
             );
 
             return h.apiSuccess();

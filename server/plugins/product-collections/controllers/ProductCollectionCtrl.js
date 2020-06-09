@@ -27,15 +27,13 @@ class ProductCollectionCtrl extends BaseController {
 
     getByIdHandler(request, h) {
         return this.modelForgeFetchHandler(
-            { id: request.query.id, tenant_id: this.getTenantId(request) },
+            {
+                id: request.query.id,
+                tenant_id: request.query.tenant_id
+            },
             null,
             h
         );
-    }
-
-    upsertHandler(request, h) {
-        this.addTenantId(request, 'payload');
-        return super.upsertHandler(request, h);
     }
 
 }

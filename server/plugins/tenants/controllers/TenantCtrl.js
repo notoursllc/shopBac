@@ -63,7 +63,7 @@ class TenantCtrl extends BaseController {
     // TODO: needs more work
     getAllHandler(request, h) {
         return this.fetchAllHandler(h, (qb) => {
-            // qb.where('tenant_id', '=', this.getTenantId(request));
+            // qb.where('tenant_id', '=', request.query.tenant_id);
         });
     }
 

@@ -36,7 +36,6 @@ const webManifest = {
             { plugin: '@hapi/inert' },
             { plugin: '@hapi/vision' },
             { plugin: '@hapi/cookie' },
-
             {
                 plugin: 'hapi-rate-limit', // https://www.npmjs.com/package/hapi-rate-limit
                 options: {

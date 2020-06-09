@@ -13,9 +13,9 @@ const startServer = async function() {
         console.log('API server started, port:', Config.get('/port/api'));
     }
     catch(err) {
-        console.log("ERROR STARTING SERVER:", err);
+        console.log('ERROR STARTING SERVER:', err);
         process.exit(1);
     }
-}
+};
 
 startServer();

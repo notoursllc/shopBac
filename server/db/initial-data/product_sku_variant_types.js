@@ -16,7 +16,7 @@ exports.seed = (knex) => {
                     knex(CoreService.DB_TABLES.product_sku_variant_types).insert({
                         id: faker.random.uuid(),
                         label: 'Sizes',
-                        // optionData: [{'property':'S','value':'s'},{'property':'M','value':'m'},{'property':'L','value':'l'}],
+                        tenant_id: '11111111-1111-1111-1111-111111111111',
                         optionData: JSON.stringify([{'property':'S','value':'s'},{'property':'M','value':'m'},{'property':'L','value':'l'}]),
                         created_at: d,
                         updated_at: d
@@ -24,7 +24,7 @@ exports.seed = (knex) => {
                     knex(CoreService.DB_TABLES.product_sku_variant_types).insert({
                         id: faker.random.uuid(),
                         label: 'Colors',
-                        // optionData: [{'property':'Red','value':'red'},{'property':'Blue','value':'blue'}],
+                        tenant_id: '11111111-1111-1111-1111-111111111111',
                         optionData: JSON.stringify([{'property':'Red','value':'red'},{'property':'Blue','value':'blue'}]),
                         created_at: d,
                         updated_at: d
