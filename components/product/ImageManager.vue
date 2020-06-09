@@ -1,7 +1,6 @@
 <script>
 import Vue from 'vue';
 import { Tooltip } from 'element-ui';
-import isObject from 'lodash.isobject';
 
 Vue.use(Tooltip);
 
@@ -12,13 +11,15 @@ export default {
         AppDialog: () => import('@/components/AppDialog'),
         FileButton: () => import('@/components/FileButton'),
         IconDragHandle: () => import('@/components/icons/IconDragHandle'),
-        draggable: () => import('vuedraggable'),
+        draggable: () => import('vuedraggable')
     },
 
     props: {
         value: {
             type: Array,
-            default: []
+            default: () => {
+                return [];
+            }
         },
 
         maxNumImages: {
@@ -40,6 +41,17 @@ export default {
     computed: {
         numRemainingUploads() {
             return this.maxNumImages - this.fileList.length;
+        }
+    },
+
+    watch: {
+        value: {
+            handler(newVal) {
+                if(Array.isArray(newVal)) {
+                    this.fileList = newVal;
+                }
+            },
+            immediate: true
         }
     },
 
@@ -85,7 +97,7 @@ export default {
             if(files) {
                 // https://stackoverflow.com/a/40902462
                 Array.prototype.forEach.call(files, (file) => {
-                    let reader = new FileReader();
+                    const reader = new FileReader();
 
                     reader.onload = (e) => {
                         this.fileList.push({
@@ -107,7 +119,7 @@ export default {
             this.loading = false;
         },
 
-        async onDeleteImage(obj, index) {
+        onDeleteImage(obj, index) {
             if(obj.id) {
                 this.$emit('delete', obj.id);
             }
@@ -124,17 +136,6 @@ export default {
                 obj.ordinal = index;
             });
             // console.log("SET ORDINALS UPDATE", this.fileList)
-        }
-    },
-
-    watch: {
-        value: {
-            handler(newVal) {
-                if(Array.isArray(newVal)) {
-                    this.fileList = newVal;
-                }
-            },
-            immediate: true
         }
     }
 };

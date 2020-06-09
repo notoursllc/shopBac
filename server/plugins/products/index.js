@@ -118,7 +118,8 @@ exports.plugin = {
                             description: 'Deletes a product',
                             validate: {
                                 query: Joi.object({
-                                    id: Joi.string().uuid().required()
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid()
                                 })
                             },
                             handler: (request, h) => {
