@@ -1,7 +1,8 @@
 const Joi = require('@hapi/joi');
 const isObject = require('lodash.isobject');
 const ProductImageCtrl = require('./ProductImageCtrl');
-const StorageService = require('../../core/services/StorageService')
+const StorageService = require('../../core/services/StorageService');
+const { resizeBase64 } = require('../../core/services/ImageService');
 const { makeArray } = require('../../../helpers.service');
 
 class ProductSkuImageCtrl extends ProductImageCtrl {

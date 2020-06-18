@@ -148,21 +148,17 @@ export default {
                 const promises = [];
 
                 // save product images
-                const productData = new FormData();
-                productData.append('product_id', p.id);
-
-                console.log("PRODUCT IMAGES", this.product.images)
-
-                this.product.images.forEach((obj) => {
-                    productData.append('id', obj.id || '');
-                    productData.append('image', obj.raw || '');
-                    productData.append('alt_text', obj.alt_text || '');
-                    productData.append('ordinal', obj.ordinal);
-                });
-
                 if(this.product.images.length) {
+                    const imageData = [];
+                    this.product.images.forEach((obj) => {
+                        imageData.push({
+                            product_id: p.id,
+                            ...obj
+                        });
+                    });
+
                     promises.push(
-                        this.$api.products.upsertImage(productData)
+                        this.$api.products.upsertImages(imageData)
                     );
                 }
 

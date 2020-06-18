@@ -73,8 +73,8 @@ export default ($http) => ({
     },
 
 
-    async upsertImage(formData) {
-        const { data } = await $http.$post('/product/image', formData);
+    async upsertImages(formData) {
+        const { data } = await $http.$post('/product/images', formData);
         return data;
     },
 

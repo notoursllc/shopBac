@@ -104,7 +104,7 @@ export default {
                             id: null,
                             image_url: e.target.result,
                             alt_text: null,
-                            raw: file,
+                            // raw: file,
                             ordinal: this.fileList.length
                         });
                         // console.log("ADDING TO FILELIST", file.name)

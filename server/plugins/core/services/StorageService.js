@@ -35,15 +35,15 @@ function getCloudImagePath(fileName) {
 }
 
 
-function fileIsImage(fileData) {
-    let typeObj = fileType(fileData);
+// function fileIsImage(fileData) {
+//     const typeObj = fileType(fileData);
 
-    if(isObject(typeObj) && imageMimeTypeWhiteList.indexOf(typeObj.mime) > -1) {
-        return typeObj;
-    }
+//     if(isObject(typeObj) && imageMimeTypeWhiteList.indexOf(typeObj.mime) > -1) {
+//         return typeObj;
+//     }
 
-    return false;
-}
+//     return false;
+// }
 
 
 function deleteFile(url) {
@@ -84,6 +84,51 @@ function deleteFile(url) {
 }
 
 
+
+function writeBuffer(buffer, fileName) {
+    try {
+        return new Promise((resolve, reject) => {
+            const { mime } = fileType.fromBuffer(buffer);
+            const filePath = getCloudImagePath(fileName);
+
+            // https://gist.github.com/SylarRuby/b60eea29c1682519e422476cc5357b60
+            s3.upload(
+                {
+                    Bucket: process.env.DIGITAL_OCEAN_SPACE_NAME,
+                    Key: filePath,
+                    Body: buffer,
+                    ACL: 'public-read',
+                    ContentEncoding: 'base64', // required
+                    ContentType: mime
+                    // Metadata: {
+                    //     'Content-Type': typeObj.mime
+                    // }
+                },
+                (err, data) => {
+                    if (err) {
+                        global.logger.error('StorageService.writeBuffer - S3 SAVING FAILURE', err);
+                        return reject(err);
+                    }
+
+                    global.logger.info('StorageService.writeBuffer - S3 SAVING SUCCESS', {
+                        meta: {
+                            url: `${getCloudUrl()}/${filePath}`,
+                            ...data
+                        }
+                    });
+
+                    return resolve(`${getCloudUrl()}/${filePath}`);
+                }
+            );
+        });
+    }
+    catch(err) {
+        global.logger.error('StorageService.resizeAndWrite: ', err);
+        throw err;
+    }
+}
+
+
 /**
  * Saves a new picture file to disk, which is only temorary.
  * Nanobox does not persist file contents between deploys.  Therefore product pics
@@ -94,6 +139,9 @@ function deleteFile(url) {
  * https://docs.nanobox.io/app-config/writable-dirs/
  */
 function resizeAndWrite(fileObj, width) {
+    return;
+
+    /*
     try {
         return new Promise((resolve, reject) => {
             // Cloning is necessary because the file.pipe operation below seems
@@ -130,13 +178,13 @@ function resizeAndWrite(fileObj, width) {
                                 meta: info
                             });
 
-                            let fileKey = getCloudImagePath(fileName);
+                            let filePath = getCloudImagePath(fileName);
                             let { mime } = fileType(buffer);
 
                             // https://gist.github.com/SylarRuby/b60eea29c1682519e422476cc5357b60
                             const s3Config = {
                                 Bucket: process.env.DIGITAL_OCEAN_SPACE_NAME,
-                                Key: fileKey,
+                                Key: filePath,
                                 Body: buffer,
                                 ACL: 'public-read',
                                 ContentEncoding: 'base64', // required
@@ -154,14 +202,14 @@ function resizeAndWrite(fileObj, width) {
 
                                 global.logger.info('StorageService.resizeAndWrite - UPLOAD SUCCESS', {
                                     meta: {
-                                        url: `${getCloudUrl()}/${fileKey}`,
+                                        url: `${getCloudUrl()}/${filePath}`,
                                         width: w,
                                         ...data
                                     }
                                 });
 
                                 return resolve({
-                                    url: `${getCloudUrl()}/${fileKey}`,
+                                    url: `${getCloudUrl()}/${filePath}`,
                                     width: w
                                 });
                             })
@@ -183,12 +231,14 @@ function resizeAndWrite(fileObj, width) {
         global.logger.error("StorageService.resizeAndWrite: ", err)
         throw err;
     }
+    */
 }
 
 
 
 module.exports.getCloudUrl = getCloudUrl;
 module.exports.getCloudImagePath = getCloudImagePath;
-module.exports.fileIsImage = fileIsImage;
+// module.exports.fileIsImage = fileIsImage;
 module.exports.deleteFile = deleteFile;
 module.exports.resizeAndWrite = resizeAndWrite;
+module.exports.writeBuffer = writeBuffer;

@@ -56,6 +56,7 @@ exports.plugin = {
                             validate: {
                                 query: {
                                     id: Joi.string().uuid(),
+                                    tenant_id: Joi.string().uuid(),
                                     viewAllRelated: Joi.boolean().optional()
                                 }
                             },
@@ -130,16 +131,16 @@ exports.plugin = {
                     },
                     {
                         method: 'POST',
-                        path: `${routePrefix}/product/image`,
+                        path: `${routePrefix}/product/images`,
                         options: {
                             description: 'Add a Product image',
                             validate: {
                                 payload: ProductImageCtrl.getUploadSchema()
                             },
                             payload: {
-                                output: 'stream',
-                                parse: true,
-                                allow: 'multipart/form-data',
+                                // output: 'stream',
+                                // parse: true,
+                                // allow: 'multipart/form-data',
                                 maxBytes: process.env.PRODUCT_IMAGE_MAX_BYTES || 7 * 1000 * 1000
                             },
                             handler: (request, h) => {
