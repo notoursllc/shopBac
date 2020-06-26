@@ -37,6 +37,63 @@ class ProductSkuImageCtrl extends ProductImageCtrl {
     }
 
 
+    async resizeAndUpsertImage(image, productSkuId, tenantId) {
+        global.logger.info(`REQUEST: ProductSkuImageCtrl.resizeAndUpsertImage (${this.modelName})`, {
+            meta: {
+                productSkuId,
+                tenantId,
+                image
+            }
+        });
+
+        const resizeResults = await Promise.all([
+            resizeBase64(image.image_url, { width: 600 }, true),
+            resizeBase64(image.image_url, { width: 1000 }, true),
+            resizeBase64(image.image_url, { width: 75 }, true)
+        ]);
+
+        return this.upsertModel({
+            product_sku_id: productSkuId,
+            tenant_id: tenantId,
+            width: resizeResults[0].width,
+            image_url: resizeResults[0].image_url,
+            alt_text: image.alt_text,
+            ordinal: image.ordinal,
+            published: true,
+            variants: resizeResults.filter((obj, index) => index > 0)
+        });
+    }
+
+
+    upsertImages(images, productSkuId, tenantId) {
+        try {
+            const promises = [];
+
+            global.logger.info(`REQUEST: ProductSkuImageCtrl.upsertImages (${this.modelName})`, {
+                meta: {
+                    productSkuId,
+                    tenantId,
+                    images
+                }
+            });
+
+            if(Array.isArray(images)) {
+                images.forEach((img) => {
+                    promises.push(
+                        this.resizeAndUpsertImage(img, productSkuId, tenantId)
+                    );
+                });
+            }
+
+            return Promise.all(promises);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+        }
+    }
+
+
     async upsertImageFromRequest(request, index) {
         // request.payload.images and request.payload.alt_test are not arrays if only one image is
         // uploaded, so converting to arrays

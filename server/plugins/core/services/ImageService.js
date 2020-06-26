@@ -2,6 +2,8 @@ const FileType = require('file-type');
 const isObject = require('lodash.isobject');
 const Jimp = require('jimp');
 const Hoek = require('@hapi/hoek');
+const uuidV4 = require('uuid/v4');
+const StorageService = require('./StorageService');
 
 const imageMimeTypeWhiteList = [
     'image/png',
@@ -42,7 +44,7 @@ async function bufferIsImage(buffer) {
  * @param {*} quality
  * @returns {ext: 'png', mime: 'image/png', base64: ''}
  */
-async function resizeBase64(image_b64, options) {
+async function resizeBase64(image_b64, options, saveResult) {
     const buffer = await getBufferFromBase64(image_b64);
     const imageType = await bufferIsImage(buffer);
 
@@ -67,6 +69,8 @@ async function resizeBase64(image_b64, options) {
     imageType.result = settings.returnBase64 ? await j.getBase64Async(mimeType) : await j.getBufferAsync(mimeType);
     imageType.width = settings.width;
     imageType.height = settings.height;
+    imageType.image_url = saveResult ? await StorageService.writeBuffer(imageType.result, `${uuidV4()}.${imageType.ext}`) : null;
+
     return imageType;
 }
 

@@ -4,8 +4,8 @@ import cloneDeep from 'lodash.clonedeep';
 
 
 function stripRelations(data) {
-    delete data.skus;
-    delete data.images;
+    // delete data.skus;
+    // delete data.images;
     delete data.created_at;
     delete data.updated_at;
     delete data.deleted_at;
@@ -69,12 +69,6 @@ export default ($http) => ({
                 id
             }
         });
-        return data;
-    },
-
-
-    async upsertImages(formData) {
-        const { data } = await $http.$post('/product/images', formData);
         return data;
     },
 

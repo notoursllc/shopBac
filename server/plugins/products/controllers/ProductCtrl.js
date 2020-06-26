@@ -10,7 +10,6 @@ const ProductImageCtrl = require('./ProductImageCtrl');
 const ProductSkuCtrl = require('./ProductSkuCtrl');
 
 
-
 class ProductCtrl extends BaseController {
 
     constructor(server) {
@@ -52,6 +51,15 @@ class ProductCtrl extends BaseController {
             // MEDIA
             // images: Joi.array().allow(null),
             video_url: Joi.string().trim().max(500).empty('').allow(null).default(null),
+
+            // test
+            images: Joi.array().items(
+                Joi.object(this.ProductImageCtrl.getSchema())
+            ),
+
+            skus: Joi.array().items(
+                Joi.object(this.ProductSkuCtrl.getSchema())
+            ),
 
             // TIMESTAMPS
             created_at: Joi.date().optional(),
@@ -161,6 +169,48 @@ class ProductCtrl extends BaseController {
         }
 
         return Promise.all(promises);
+    }
+
+
+    async upsertHandler(request, h) {
+        try {
+            const images = cloneDeep(request.payload.images);
+            delete request.payload.images;
+
+            const skus = cloneDeep(request.payload.skus);
+            delete request.payload.skus;
+
+            const Product = await this.upsertModel(request.payload);
+
+            if(Product) {
+                const promises = [];
+                promises.push(
+                    this.ProductImageCtrl.upsertImages(
+                        images,
+                        Product.get('id'),
+                        request.payload.tenant_id
+                    )
+                );
+
+                // TODO: upsert product skus. IN PROGRESS.  Still need to build ProductSkuCtrl.upsertSkus
+                promises.push(
+                    this.ProductSkuCtrl.upsertSkus(
+                        skus,
+                        Product.get('id'),
+                        request.payload.tenant_id
+                    )
+                );
+
+                await Promise.all(promises);
+            }
+
+            return h.apiSuccess(Product);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
     }
 
 

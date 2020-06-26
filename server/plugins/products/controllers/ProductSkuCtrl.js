@@ -1,5 +1,6 @@
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
+const cloneDeep = require('lodash.clonedeep');
 const BaseController = require('../../core/BaseController');
 const ProductSkuImageCtrl = require('./ProductSkuImageCtrl');
 
@@ -51,11 +52,12 @@ class ProductSkuCtrl extends BaseController {
             customs_country_of_origin: Joi.alternatives().try(Joi.string().max(2), Joi.allow(null)),
             customs_harmonized_system_code: Joi.alternatives().try(Joi.string(), Joi.allow(null)),
 
-            product_id: Joi.string().uuid().required(),
+            // product_id: Joi.string().uuid().required(),
+            product_id: Joi.string().uuid(),
 
             // TIMESTAMPS
-            created_at: Joi.date().optional(),
-            updated_at: Joi.date().optional()
+            created_at: Joi.date(),
+            updated_at: Joi.date()
         };
     }
 
@@ -71,6 +73,79 @@ class ProductSkuCtrl extends BaseController {
         ];
 
         return related;
+    }
+
+
+    upsertSku(sku) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                global.logger.info(`REQUEST: ProductSkuCtrl.upsertSku (${this.modelName})`, {
+                    meta: {
+                        sku
+                    }
+                });
+
+                // remove images from the data so we can save the model
+                const images = cloneDeep(sku.images);
+                delete sku.images;
+
+                const Sku = await this.upsertModel(sku);
+
+                // resize and save sku images
+                if(Sku) {
+                    await this.ProductSkuImageCtrl.upsertImages(
+                        images,
+                        Sku.get('id'),
+                        Sku.get('tenant_id')
+                    );
+                }
+
+                global.logger.info(`RESPONSE: ProductSkuCtrl.upsertSku (${this.modelName})`, {
+                    meta: {
+                        sku: Sku.toJSON()
+                    }
+                });
+
+                resolve(Sku);
+            }
+            catch(err) {
+                global.logger.error(err);
+                global.bugsnag(err);
+                reject(err);
+            }
+        });
+    }
+
+
+    upsertSkus(skus, productId, tenantId) {
+        try {
+            const promises = [];
+
+            global.logger.info(`REQUEST: ProductSkuCtrl.upsertSkus (${this.modelName})`, {
+                meta: {
+                    productId,
+                    tenantId,
+                    skus
+                }
+            });
+
+            if(Array.isArray(skus)) {
+                skus.forEach((sku) => {
+                    sku.product_id = productId;
+                    sku.tenant_id = tenantId;
+
+                    promises.push(
+                        this.upsertSku(sku)
+                    );
+                });
+            }
+
+            return Promise.all(promises);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+        }
     }
 
 

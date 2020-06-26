@@ -139,57 +139,12 @@ export default {
         async onSaveClick() {
             try {
                 this.loading = true;
+                console.log("ON SAVE", this.product)
                 const p = await this.$api.products.upsert(this.product);
 
                 if(!p) {
                     throw new Error('Error updating product');
                 }
-
-                const promises = [];
-
-                // save product images
-                if(this.product.images.length) {
-                    const imageData = [];
-                    this.product.images.forEach((obj) => {
-                        imageData.push({
-                            product_id: p.id,
-                            ...obj
-                        });
-                    });
-
-                    promises.push(
-                        this.$api.products.upsertImages(imageData)
-                    );
-                }
-
-                // save product skus
-                if(Array.isArray(this.product.skus)) {
-                    this.product.skus.forEach(async (sku) => {
-                        sku.product_id = p.id;
-                        const s = await this.$api.productSkus.upsert(sku);
-
-                        if(!s) {
-                            throw new Error('Error updating product SKU');
-                        }
-
-                        // save sku images
-                        const formData = new FormData();
-                        formData.append('product_sku_id', s.id);
-
-                        sku.images.forEach((obj) => {
-                            formData.append('id', obj.id || '');
-                            formData.append('image', obj.raw || '');
-                            formData.append('alt_text', obj.alt_text || '');
-                            formData.append('ordinal', obj.ordinal);
-                        });
-
-                        promises.push(
-                            this.$api.productSkus.upsertImage(formData)
-                        );
-                    });
-                }
-
-                await Promise.all(promises);
 
                 const title = p.id ? this.$t('Product updated successfully') : this.$t('Product added successfully');
                 this.$successMessage(`${title}: ${p.title}`);

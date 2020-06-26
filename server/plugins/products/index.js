@@ -130,25 +130,6 @@ exports.plugin = {
                         }
                     },
                     {
-                        method: 'POST',
-                        path: `${routePrefix}/product/images`,
-                        options: {
-                            description: 'Add a Product image',
-                            validate: {
-                                payload: ProductImageCtrl.getUploadSchema()
-                            },
-                            payload: {
-                                // output: 'stream',
-                                // parse: true,
-                                // allow: 'multipart/form-data',
-                                maxBytes: process.env.PRODUCT_IMAGE_MAX_BYTES || 7 * 1000 * 1000
-                            },
-                            handler: (request, h) => {
-                                return ProductImageCtrl.upsertHandler(request, h);
-                            }
-                        }
-                    },
-                    {
                         method: 'DELETE',
                         path: `${routePrefix}/product/image`,
                         options: {
@@ -169,35 +150,6 @@ exports.plugin = {
                      * Product Skus
                      ******************************/
                     {
-                        method: 'POST',
-                        path: `${routePrefix}/product/sku`,
-                        options: {
-                            description: 'Creates a product SKU',
-                            validate: {
-                                payload: ProductSkuCtrl.getSchema()
-                            },
-                            handler: (request, h) => {
-                                return ProductSkuCtrl.upsertHandler(request, h);
-                            }
-                        }
-                    },
-                    {
-                        method: 'PUT',
-                        path: `${routePrefix}/product/sku`,
-                        options: {
-                            description: 'Updates a product SKU',
-                            validate: {
-                                payload: Joi.object({
-                                    id: Joi.string().uuid().required(),
-                                    ...ProductSkuCtrl.getSchema()
-                                })
-                            },
-                            handler: (request, h) => {
-                                return ProductSkuCtrl.upsertHandler(request, h);
-                            }
-                        }
-                    },
-                    {
                         method: 'DELETE',
                         path: `${routePrefix}/product/sku`,
                         options: {
@@ -209,25 +161,6 @@ exports.plugin = {
                             },
                             handler: (request, h) => {
                                 return ProductSkuCtrl.deleteHandler(request, h);
-                            }
-                        }
-                    },
-                    {
-                        method: 'POST',
-                        path: `${routePrefix}/product/sku/image`,
-                        options: {
-                            description: 'Add a SKU image',
-                            validate: {
-                                payload: ProductSkuImageCtrl.getUploadSchema()
-                            },
-                            payload: {
-                                output: 'stream',
-                                parse: true,
-                                allow: 'multipart/form-data',
-                                maxBytes: process.env.PRODUCT_IMAGE_MAX_BYTES || 7 * 1000 * 1000
-                            },
-                            handler: (request, h) => {
-                                return ProductSkuImageCtrl.upsertHandler(request, h);
                             }
                         }
                     },

@@ -70,7 +70,6 @@ export default {
 
         options: {
             handler(newVal) {
-                console.log("OPTIONS", newVal)
                 this.setSelectedValue();
             },
             immediate: true,
