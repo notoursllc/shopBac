@@ -1,9 +1,6 @@
 
 
 <script>
-import svg_icon_mixin from '@/mixins/svg_icon_mixin';
-
-
 export default {
     props: {
         viewBox: {
@@ -11,27 +8,31 @@ export default {
             default: '0 0 16 16'
         },
         width: {
-            type: String
+            type: String,
+            default: '12'
         },
         height: {
-            type: String
+            type: String,
+            default: '12'
+        },
+        stroke: {
+            type: String,
+            default: '#5d6674'
+        },
+        strokeWidth: {
+            type: String,
+            default: '2'
+        },
+        fill: {
+            type: String,
+            default: 'none'
         },
         className: {
             type: String,
-            default: 'fillGray'
-        },
-        iconName: {
-            type: String
-        },
-        title: {
-            type: String
+            default: ''
         }
-    },
-
-    // mixins: [
-    //     svg_icon_mixin
-    // ]
-}
+    }
+};
 </script>
 
 <template>
@@ -39,20 +40,27 @@ export default {
         version="1.1"
         xmlns="http://www.w3.org/2000/svg"
         xmlns:xlink="http://www.w3.org/1999/xlink"
-        :viewBox="viewBox"
-        :style="{'width':width, 'height':height}"
+        class="icon-bv"
+        :class="className"
+        viewBox="0 0 24 24"
+        :width="width"
+        :height="height"
+        :stroke="stroke"
+        :stroke-width="strokeWidth"
+        :fill="fill"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
         role="presentation">
-        <title :id="iconName" lang="en">{{title}}</title>
-        <g :class="className">
-            <slot></slot>
-        </g>
+        <slot></slot>
     </svg>
 </template>
 
-<style scoped>
-svg {
-  display: inline-block;
-  vertical-align: baseline;
-  margin-bottom: -2px; /* yes, I'm that particular about formatting */
+<style>
+.icon-bv {
+    display: inline-block;
+    margin-bottom: -1px;
+    stroke-miterlimit: 10;
+    fill: none;
 }
 </style>

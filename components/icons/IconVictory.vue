@@ -1,15 +1,17 @@
 <script>
-import svg_icon_mixin from '@/mixins/svg_icon_mixin';
+import IconBase from '@/components/icons/IconBase';
 
 export default {
-    mixins: [
-        svg_icon_mixin
-    ]
-}
+    components: {
+        IconBase
+    },
+
+    inheritAttrs: false
+};
 </script>
 
 <template>
-    <icon-base viewBox="0 0 63.3 30.4" :width="width" :height="height" :class-name="className" :icon-name="iconName">
+    <icon-base v-bind="$attrs">
         <path d="M59.2,0c-2.4,0-4.3,1.9-4.3,4.3c0,0.1,0,0.2,0,0.4l-8.8,8.8c0.3,1.3,0.5,2.6,0.5,3.9c0,1.4-0.2,2.7-0.5,4
             L58.8,8.7h0.4c2.4-0.1,4.2-2.1,4.1-4.5C63.2,1.9,61.4,0.1,59.2,0L59.2,0z M59.2,5.6c-0.7,0-1.3-0.6-1.3-1.3s0.6-1.3,1.3-1.3
             s1.3,0.6,1.3,1.3C60.5,5,59.9,5.6,59.2,5.6C59.2,5.6,59.2,5.6,59.2,5.6L59.2,5.6z"/>

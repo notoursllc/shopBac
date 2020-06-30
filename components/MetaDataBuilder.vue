@@ -113,10 +113,7 @@ export default {
                     <div class="meta-row-fields">
                         <!-- drag handle -->
                         <div class="meta-row-handle cursorGrab" v-if="canSortRows">
-                            <icon-drag-handle
-                                icon-name="drag-handle"
-                                width="15px"
-                                class-name="fillGrayLight vam" />
+                            <icon-drag-handle height="20" width="20" />
                         </div>
 
                         <div class="meta-row-property">
