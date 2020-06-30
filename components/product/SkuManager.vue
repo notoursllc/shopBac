@@ -313,6 +313,41 @@ export default {
 
         canShowRightIcon(index) {
             return this.product.attributes[index + 1];
+        },
+
+
+        getVariantThumbs(variant) {
+            const imageUrls = [];
+
+            if(Array.isArray(variant.images)) {
+                variant.images.forEach((img) => {
+
+                    // setting the main image as the smallest
+                    // until we can find a smaller one
+                    let smallest = {
+                        url: img.image_url,
+                        width: img.width || 9999
+                    };
+
+                    if(Array.isArray(img.variants)) {
+                        img.variants.forEach((variant) => {
+                            if(variant.width && variant.image_url && variant.width < smallest.width) {
+                                smallest = {
+                                    url: variant.image_url,
+                                    width: variant.width
+                                };
+                            }
+                        });
+                    }
+
+                    // done going through all of the images for this variant
+                    if(smallest.url) {
+                        imageUrls.push(smallest.url);
+                    }
+                });
+
+                return imageUrls;
+            }
         }
     }
 };
@@ -490,7 +525,11 @@ export default {
 
                     <!-- Images -->
                     <td>
-
+                        <span v-for="(url, index) in getVariantThumbs(obj)"
+                              :key="index"
+                              class="variant-thumb">
+                            <img :src="url" c>
+                        </span>
                     </td>
 
                     <td>
@@ -585,6 +624,16 @@ export default {
     text-align: center;
     margin-bottom: 3px;
     font-size: 16px;
+}
+
+.variant-thumb {
+    width: 40px;
+    margin-right: 5px;
+    display: inline-block;
+
+    img {
+        width: 100%;
+    }
 }
 
 </style>
