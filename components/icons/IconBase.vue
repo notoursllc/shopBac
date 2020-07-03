@@ -59,7 +59,6 @@ export default {
 <style>
 .icon-bv {
     display: inline-block;
-    margin-bottom: -1px;
     stroke-miterlimit: 10;
     fill: none;
 }

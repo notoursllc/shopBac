@@ -157,10 +157,7 @@ export default {
                 <div class="image-row-fields">
                     <div class="image-row-handle" v-if="maxNumImages > 1">
                         <i class="handle">
-                            <icon-drag-handle
-                                icon-name="drag-handle"
-                                width="15px"
-                                class-name="fillGrayLight" />
+                            <icon-drag-handle height="20" width="20" />
                         </i>
                     </div>
 

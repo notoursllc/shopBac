@@ -1,0 +1,15 @@
+.btn {
+    svg {
+        margin-bottom: 2px
+    }
+
+    &.btn-outline-secondary {
+        border-color: #ced4da;
+
+        &:hover {
+            background-color: #bcc2c7;
+            border-color: #bcc2c7;
+        }
+    }
+}
+

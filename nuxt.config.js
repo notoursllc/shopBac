@@ -69,13 +69,45 @@ module.exports = {
         '@nuxt/http',
         ['@nuxtjs/pwa', { oneSignal: false }],
         // Doc: https://github.com/nuxt-community/dotenv-module
-        '@nuxtjs/dotenv'
+        '@nuxtjs/dotenv',
+        'bootstrap-vue/nuxt'
     ],
 
     router: {
         middleware: [
             'check-auth'
         ]
+    },
+
+    /*
+    * Disabling automatic inclusion of bootstrap's compiled CSS files
+    * so we can import the SCSS files ourselves in base.scss
+    * https://bootstrap-vue.org/docs
+    */
+    bootstrapVue: {
+        bootstrapCSS: false, // Or `css: false`
+        bootstrapVueCSS: false, // Or `bvCSS: false`
+
+        // importing only the stuff we are using to reduce bundle size
+        components: [
+            'BContainer',
+            'BRow',
+            'BCol',
+            'BFormInput',
+            'BFormRadio',
+            'BFormSelect',
+            'BFormSelectOption',
+            'BButton',
+            'BTable',
+            'BModal',
+            'BTooltip',
+            'BPopover',
+            'BInputGroup',
+            'BInputGroupText',
+            'BInputGroupAppend',
+            'BOverlay',
+        ],
+        directives: ['VBModal', 'VBPopover', 'VBTooltip', 'VBScrollspy']
     },
 
     /*
