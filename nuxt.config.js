@@ -50,6 +50,7 @@ module.exports = {
         '@/plugins/vuelidate',
         '@/plugins/format8601',
         '@/plugins/prettyJson',
+        '@/plugins/vue-select',
         { src: '@/plugins/youtube', ssr: false },
         { src: '@/plugins/bugsnag', ssr: false }
     ],
@@ -90,14 +91,20 @@ module.exports = {
 
         // importing only the stuff we are using to reduce bundle size
         components: [
+            'BButton',
+            'BButtonGroup',
             'BContainer',
             'BRow',
             'BCol',
+            'BDropdown',
+            'BDropdownForm',
+            'BDropdownItem',
+            'BFormCheckbox',
+            'BFormGroup',
             'BFormInput',
             'BFormRadio',
             'BFormSelect',
             'BFormSelectOption',
-            'BButton',
             'BTable',
             'BModal',
             'BTooltip',

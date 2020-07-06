@@ -11,6 +11,14 @@
 @import "components/minireset";
 @import "components/bootstrap-overrides";
 
+// vue-select
+// https://vue-select.org/guide/css.html#scss-variables
+$vs-component-line-height: 1.9;
+$vs-controls-size: .8;
+$vs-border-color: #ced4da;
+@import "vue-select/src/scss/vue-select.scss";
+
+
 // importing Bootstrap SCSS
 // Custom Bootstrap variable overrides go first
 $grid-breakpoints: (

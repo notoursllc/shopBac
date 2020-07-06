@@ -10,7 +10,8 @@ export default {
         TextCard: () => import('@/components/TextCard'),
         CountrySelect: () => import('@/components/CountrySelect'),
         ImageManager: () => import('@/components/product/ImageManager'),
-        SkuAttributeInputs: () => import('@/components/product/sku/SkuAttributeInputs')
+        SkuAttributeInputs: () => import('@/components/product/sku/SkuAttributeInputs'),
+        NumberInput: () => import('@/components/NumberInput')
     },
 
     mixins: [
@@ -114,9 +115,8 @@ export default {
 
         <!-- published-->
         <div class="mbl">
-            <el-checkbox
-                v-model="sku.published"
-                border>{{ $t('This SKU is available for purchase') }}</el-checkbox>
+            <b-form-checkbox
+                v-model="sku.published">{{ $t('This SKU is available for purchase') }}</b-form-checkbox>
         </div>
 
         <!-- attributes -->
@@ -174,8 +174,8 @@ export default {
 
             <!-- Charge tax on this product -->
             <div class="mtm">
-                <el-checkbox
-                    v-model="sku.is_taxable">{{ $t('Charge tax on this product') }}</el-checkbox>
+                <b-form-checkbox
+                    v-model="sku.is_taxable">{{ $t('Charge tax on this product') }}</b-form-checkbox>
             </div>
         </text-card>
 
@@ -202,39 +202,36 @@ export default {
                 <!-- qty -->
                 <div class="inputGroup mrl mbm">
                     <label>{{ $t('Quantity') }}</label>
-                    <el-input-number
+                    <number-input
                         v-model="sku.inventory_count"
-                        :step="1"
-                        controls-position="right"
-                        step-strictly
                         class="input-number" />
                 </div>
 
                 <!-- sku -->
                 <div class="inputGroup mrl mbm">
                     <label>{{ $t('SKU (Stock Keeping Unit)') }}</label>
-                    <el-input
+                    <b-form-input
                         v-model="sku.sku" />
                 </div>
 
                 <!-- barcode -->
                 <div class="inputGroup mrl mbm">
                     <label>{{ $t('Barcode (ISBN, UPC, GTIN, etc.)') }}</label>
-                    <el-input
+                    <b-form-input
                         v-model="sku.barcode" />
                 </div>
             </div>
 
             <!-- track quantity -->
             <div class="mtm">
-                <el-checkbox
-                    v-model="sku.track_quantity">{{ $t('Track quantity') }}</el-checkbox>
+                <b-form-checkbox
+                    v-model="sku.track_quantity">{{ $t('Track quantity') }}</b-form-checkbox>
             </div>
 
             <!-- Continue selling when out of stock -->
             <div class="mtm">
-                <el-checkbox
-                    v-model="sku.visible_if_out_of_stock">{{ $t('Continue selling when out of stock') }}</el-checkbox>
+                <b-form-checkbox
+                    v-model="sku.visible_if_out_of_stock">{{ $t('Continue selling when out of stock') }}</b-form-checkbox>
             </div>
         </text-card>
 
@@ -247,12 +244,9 @@ export default {
                 <!-- weight -->
                 <div class="inputGroup mrl mbm">
                     <label>{{ $t('Weight (oz)') }}</label>
-                    <el-input-number
+                    <number-input
                         v-model="sku.weight_oz"
-                        :min="0"
                         :step=".01"
-                        controls-position="right"
-                        step-strictly
                         class="input-number" />
                 </div>
             </div>
@@ -273,7 +267,7 @@ export default {
                 <!-- hs code -->
                 <div class="inputGroup mrl mbm">
                     <label>{{ $t('HS (Harmonized System) code') }}</label>
-                    <el-input
+                    <b-form-input
                         v-model="sku.customs_harmonized_system_code" />
                     <div class="colorGrayLighter">{{ $t('customs_hs_code_desc') }}</div>
                 </div>
@@ -282,9 +276,9 @@ export default {
 
 
         <div class="tac">
-            <el-button
-                type="primary"
-                @click="onClickDone">{{ $t('Done') }}</el-button>
+            <b-button
+                variant="primary"
+                @click="onClickDone">{{ $t('Done') }}</b-button>
         </div>
     </div>
 </template>
@@ -294,6 +288,6 @@ export default {
 @import "~assets/css/components/_formRow.scss";
 
 .input-number {
-    width: 105px;
+    width: 150px;
 }
 </style>

@@ -1,279 +1,270 @@
 <script>
-    // NOTE: this object can not be formatted as { US: "United States of America (USA)" }
-    // because there are some duplicate 'alpha2' values, like Puerto Rico
-    // Also, in order the avoid duplicate <option value> values in the select element,
-    // I added a space after any duplicate 'alpha2' values in order to differentiate it.
-    // Without that extra space the last of the duplicate values will be displayed as the
-    // selected value.  For example, "Puerto Rico" will always be displayed for the "US" value.
-    // I hope this works.
-    // DATA SOURCE:  http://www.fedex.com/gb/tracking/codes.html
-    let countries = [
-        {alpha2: 'US', name: 'United States of America (USA)'},
-        {alpha2: 'CA', name: 'Canada'},
-        {alpha2: 'GB', name: 'Great Britain'},
-        {alpha2: 'AD', name: 'Andorra'},
-        {alpha2: 'AE', name: 'United Arab Emirates'},
-        {alpha2: 'AF', name: 'Afghanistan'},
-        {alpha2: 'AG', name: 'Barbuda'},
-        {alpha2: 'AI', name: 'Anguilla'},
-        {alpha2: 'AL', name: 'Albania'},
-        {alpha2: 'AM', name: 'Armenia'},
-        {alpha2: 'AO', name: 'Angola'},
-        {alpha2: 'AR', name: 'Argentina'},
-        {alpha2: 'AS', name: 'American Samoa'},
-        {alpha2: 'AT', name: 'Austria'},
-        {alpha2: 'AU', name: 'Australia'},
-        {alpha2: 'AW', name: 'Aruba'},
-        {alpha2: 'AZ', name: 'Azerbaijan'},
-        {alpha2: 'BA', name: 'Bosnia-Herzegovina'},
-        {alpha2: 'BB', name: 'Barbados'},
-        {alpha2: 'BD', name: 'Bangladesh'},
-        {alpha2: 'BE', name: 'Belgium'},
-        {alpha2: 'BF', name: 'Burkina Faso'},
-        {alpha2: 'BG', name: 'Bulgaria'},
-        {alpha2: 'BH', name: 'Bahrain'},
-        {alpha2: 'BI', name: 'Burundi'},
-        {alpha2: 'BJ', name: 'Benin'},
-        {alpha2: 'BM', name: 'Bermuda'},
-        {alpha2: 'BN', name: 'Brunei'},
-        {alpha2: 'BO', name: 'Bolivia'},
-        {alpha2: 'BQ', name: 'St. Eustatius'},
-        {alpha2: 'BR', name: 'Brazil'},
-        {alpha2: 'BS', name: 'Bahamas'},
-        {alpha2: 'BT', name: 'Bhutan'},
-        {alpha2: 'BW', name: 'Botswana'},
-        {alpha2: 'BY', name: 'Belarus'},
-        {alpha2: 'BZ', name: 'Belize'},
-        {alpha2: 'CD', name: 'Congo, Dem. Rep. of'},
-        {alpha2: 'CG', name: 'Congo'},
-        {alpha2: 'CH', name: 'Switzerland'},
-        {alpha2: 'CI', name: 'Ivory Coast'},
-        {alpha2: 'CK', name: 'Cook Islands'},
-        {alpha2: 'CL', name: 'Chile'},
-        {alpha2: 'CM', name: 'Cameroon'},
-        {alpha2: 'CN', name: 'China'},
-        {alpha2: 'CO', name: 'Colombia'},
-        {alpha2: 'CR', name: 'Costa Rica'},
-        {alpha2: 'CS', name: 'Serbia and Montenegro'},
-        {alpha2: 'CV', name: 'Cape Verde'},
-        {alpha2: 'CW', name: 'Curacao'},
-        {alpha2: 'CY', name: 'Cyprus'},
-        {alpha2: 'CZ', name: 'Czech Republic'},
-        {alpha2: 'DE', name: 'Germany'},
-        {alpha2: 'DJ', name: 'Djibouti'},
-        {alpha2: 'DK', name: 'Denmark'},
-        {alpha2: 'DM', name: 'Dominica'},
-        {alpha2: 'DO', name: 'Dominican Republic'},
-        {alpha2: 'DZ', name: 'Algeria'},
-        {alpha2: 'EC', name: 'Ecuador'},
-        {alpha2: 'EE', name: 'Estonia'},
-        {alpha2: 'EG', name: 'Egypt'},
-        {alpha2: 'ER', name: 'Eritrea'},
-        {alpha2: 'ES', name: 'Spain'},
-        {alpha2: 'ET', name: 'Ethiopia'},
-        {alpha2: 'FI', name: 'Finland'},
-        {alpha2: 'FJ', name: 'Fiji'},
-        {alpha2: 'FM', name: 'Micronesia'},
-        {alpha2: 'FO', name: 'Faeroe Islands'},
-        {alpha2: 'FR', name: 'France'},
-        {alpha2: 'GA', name: 'Gabon'},
-        {alpha2: 'GD', name: 'Grenada'},
-        {alpha2: 'GE', name: 'Georgia, Republic of'},
-        {alpha2: 'GF', name: 'French Guiana'},
-        {alpha2: 'GH', name: 'Ghana'},
-        {alpha2: 'GI', name: 'Gibraltar'},
-        {alpha2: 'GL', name: 'Greenland'},
-        {alpha2: 'GM', name: 'Gambia'},
-        {alpha2: 'GN', name: 'Guinea'},
-        {alpha2: 'GP', name: 'St. Barthelemy'},
-        {alpha2: 'GR', name: 'Greece'},
-        {alpha2: 'GT', name: 'Guatemala'},
-        {alpha2: 'GU', name: 'Guam'},
-        {alpha2: 'GY', name: 'Guyana'},
-        {alpha2: 'HK', name: 'Hong Kong'},
-        {alpha2: 'HN', name: 'Honduras'},
-        {alpha2: 'HR', name: 'Croatia'},
-        {alpha2: 'HT', name: 'Haiti'},
-        {alpha2: 'HU', name: 'Hungary'},
-        {alpha2: 'ID', name: 'Indonesia'},
-        {alpha2: 'IE', name: 'Ireland, Republic of'},
-        {alpha2: 'IL', name: 'Israel'},
-        {alpha2: 'IN', name: 'India'},
-        {alpha2: 'IQ', name: 'Iraq'},
-        {alpha2: 'IS', name: 'Iceland'},
-        {alpha2: 'IT', name: 'Vatican'},
-        {alpha2: 'JM', name: 'Jamaica'},
-        {alpha2: 'JO', name: 'Jordan'},
-        {alpha2: 'JP', name: 'Japan'},
-        {alpha2: 'KE', name: 'Kenya'},
-        {alpha2: 'KG', name: 'Kyrgyzstan'},
-        {alpha2: 'KH', name: 'Cambodia'},
-        {alpha2: 'KN', name: 'St. Kitts and Nevis'},
-        {alpha2: 'KR', name: 'Korea, South'},
-        {alpha2: 'KW', name: 'Kuwait'},
-        {alpha2: 'KY', name: 'Cayman Islands'},
-        {alpha2: 'KZ', name: 'Kazakhstan'},
-        {alpha2: 'LA', name: 'Laos'},
-        {alpha2: 'LB', name: 'Lebanon'},
-        {alpha2: 'LC', name: 'St. Lucia'},
-        {alpha2: 'LI', name: 'Liechtenstein'},
-        {alpha2: 'LK', name: 'Sri Lanka'},
-        {alpha2: 'LR', name: 'Liberia'},
-        {alpha2: 'LS', name: 'Lesotho'},
-        {alpha2: 'LT', name: 'Lithuania'},
-        {alpha2: 'LU', name: 'Luxembourg'},
-        {alpha2: 'LV', name: 'Latvia'},
-        {alpha2: 'LY', name: 'Libya'},
-        {alpha2: 'MA', name: 'Morocco'},
-        {alpha2: 'MC', name: 'Monaco'},
-        {alpha2: 'MD', name: 'Moldova'},
-        {alpha2: 'MF', name: 'St. Martin'},
-        {alpha2: 'MG', name: 'Madagascar'},
-        {alpha2: 'MH', name: 'Marshall Islands'},
-        {alpha2: 'MK', name: 'Macedonia'},
-        {alpha2: 'ML', name: 'Mali'},
-        {alpha2: 'MN', name: 'Mongolia'},
-        {alpha2: 'MO', name: 'Macau'},
-        {alpha2: 'MP', name: 'Saipan'},
-        {alpha2: 'MQ', name: 'Martinique'},
-        {alpha2: 'MR', name: 'Mauritania'},
-        {alpha2: 'MS', name: 'Montserrat'},
-        {alpha2: 'MT', name: 'Malta'},
-        {alpha2: 'MU', name: 'Mauritius'},
-        {alpha2: 'MV', name: 'Maldives, Republic of'},
-        {alpha2: 'MW', name: 'Malawi'},
-        {alpha2: 'MX', name: 'Mexico'},
-        {alpha2: 'MY', name: 'Malaysia'},
-        {alpha2: 'MZ', name: 'Mozambique'},
-        {alpha2: 'NA', name: 'Namibia'},
-        {alpha2: 'NC', name: 'New Caledonia'},
-        {alpha2: 'NE', name: 'Niger'},
-        {alpha2: 'NG', name: 'Nigeria'},
-        {alpha2: 'NI', name: 'Nicaragua'},
-        {alpha2: 'NL', name: 'Netherlands'},
-        {alpha2: 'NO', name: 'Norway'},
-        {alpha2: 'NP', name: 'Nepal'},
-        {alpha2: 'NZ', name: 'New Zealand'},
-        {alpha2: 'OM', name: 'Oman'},
-        {alpha2: 'PA', name: 'Panama'},
-        {alpha2: 'PE', name: 'Peru'},
-        {alpha2: 'PF', name: 'French Polynesia'},
-        {alpha2: 'PG', name: 'Papua New Guinea'},
-        {alpha2: 'PH', name: 'Philippines'},
-        {alpha2: 'PK', name: 'Pakistan'},
-        {alpha2: 'PL', name: 'Poland'},
-        {alpha2: 'PS', name: 'Palestine'},
-        {alpha2: 'PT', name: 'Portugal'},
-        {alpha2: 'PW', name: 'Palau'},
-        {alpha2: 'PY', name: 'Paraguay'},
-        {alpha2: 'US ', name: 'Puerto Rico'},
-        {alpha2: 'QA', name: 'Qatar'},
-        {alpha2: 'RE', name: 'Reunion'},
-        {alpha2: 'RO', name: 'Romania'},
-        {alpha2: 'RU', name: 'Russia'},
-        {alpha2: 'RW', name: 'Rwanda'},
-        {alpha2: 'SA', name: 'Saudi Arabia'},
-        {alpha2: 'SC', name: 'Seychelles'},
-        {alpha2: 'SE', name: 'Sweden'},
-        {alpha2: 'SG', name: 'Singapore'},
-        {alpha2: 'SI', name: 'Slovenia'},
-        {alpha2: 'SK', name: 'Slovak Republic'},
-        {alpha2: 'SN', name: 'Senegal'},
-        {alpha2: 'SR', name: 'Suriname'},
-        {alpha2: 'SV', name: 'El Salvador'},
-        {alpha2: 'SX', name: 'St. Maarten​'},
-        {alpha2: 'SY', name: 'Syria'},
-        {alpha2: 'SZ', name: 'Swaziland'},
-        {alpha2: 'TC', name: 'Turks and Caicos Islands'},
-        {alpha2: 'TD', name: 'Chad'},
-        {alpha2: 'TG', name: 'Togo'},
-        {alpha2: 'TH', name: 'Thailand'},
-        {alpha2: 'TL', name: 'East Timor'},
-        {alpha2: 'TN', name: 'Tunisia'},
-        {alpha2: 'TO', name: 'Tonga'},
-        {alpha2: 'TR', name: 'Turkey'},
-        {alpha2: 'TT', name: 'Trinidad and Tobago'},
-        {alpha2: 'TW', name: 'Taiwan'},
-        {alpha2: 'TZ', name: 'Tanzania'},
-        {alpha2: 'UA', name: 'Ukraine'},
-        {alpha2: 'UG', name: 'Uganda'},
-        {alpha2: 'UY', name: 'Uruguay'},
-        {alpha2: 'UZ', name: 'Uzbekistan'},
-        {alpha2: 'VC', name: 'St. Vincent'},
-        {alpha2: 'VE', name: 'Venezuela'},
-        {alpha2: 'VG', name: 'British Virgin Islands'},
-        {alpha2: 'VI', name: 'U.S. Virgin Islands'},
-        {alpha2: 'VN', name: 'Vietnam'},
-        {alpha2: 'VU', name: 'Vanuatu'},
-        {alpha2: 'WF', name: 'Wallis & Futuna Islands'},
-        {alpha2: 'WS', name: 'Samoa'},
-        {alpha2: 'YE', name: 'Yemen, The Republic of'},
-        {alpha2: 'ZA', name: 'South African Republic'},
-        {alpha2: 'ZM', name: 'Zambia'},
-        {alpha2: 'ZW', name: 'Zimbabwe'}
-    ];
+import isObject from 'lodash.isobject';
 
-    export default{
-        props: {
-            value: {
-                type: String
+// NOTE: this object can not be formatted as { US: "United States of America (USA)" }
+// because there are some duplicate 'alpha2' values, like Puerto Rico
+// Also, in order the avoid duplicate <option value> values in the select element,
+// I added a space after any duplicate 'alpha2' values in order to differentiate it.
+// Without that extra space the last of the duplicate values will be displayed as the
+// selected value.  For example, "Puerto Rico" will always be displayed for the "US" value.
+// I hope this works.
+// DATA SOURCE:  http://www.fedex.com/gb/tracking/codes.html
+
+export default {
+    components: {
+        VueSelect2: () => import('@/components/VueSelect2')
+    },
+
+    inheritAttrs: false,
+
+    props: {
+        value: {
+            type: String,
+            default: null
+        }
+    },
+
+    data() {
+        return {
+            selectedCountry: null,
+            countryList: [
+                {alpha2: 'US', name: this.$t('United States of America (USA)')},
+                {alpha2: 'CA', name: this.$t('Canada')},
+                {alpha2: 'GB', name: this.$t('Great Britain')},
+                {alpha2: 'AD', name: this.$t('Andorra')},
+                {alpha2: 'AE', name: this.$t('United Arab Emirates')},
+                {alpha2: 'AF', name: this.$t('Afghanistan')},
+                {alpha2: 'AG', name: this.$t('Barbuda')},
+                {alpha2: 'AI', name: this.$t('Anguilla')},
+                {alpha2: 'AL', name: this.$t('Albania')},
+                {alpha2: 'AM', name: this.$t('Armenia')},
+                {alpha2: 'AO', name: this.$t('Angola')},
+                {alpha2: 'AR', name: this.$t('Argentina')},
+                {alpha2: 'AS', name: this.$t('American Samoa')},
+                {alpha2: 'AT', name: this.$t('Austria')},
+                {alpha2: 'AU', name: this.$t('Australia')},
+                {alpha2: 'AW', name: this.$t('Aruba')},
+                {alpha2: 'AZ', name: this.$t('Azerbaijan')},
+                {alpha2: 'BA', name: this.$t('Bosnia-Herzegovina')},
+                {alpha2: 'BB', name: this.$t('Barbados')},
+                {alpha2: 'BD', name: this.$t('Bangladesh')},
+                {alpha2: 'BE', name: this.$t('Belgium')},
+                {alpha2: 'BF', name: this.$t('Burkina Faso')},
+                {alpha2: 'BG', name: this.$t('Bulgaria')},
+                {alpha2: 'BH', name: this.$t('Bahrain')},
+                {alpha2: 'BI', name: this.$t('Burundi')},
+                {alpha2: 'BJ', name: this.$t('Benin')},
+                {alpha2: 'BM', name: this.$t('Bermuda')},
+                {alpha2: 'BN', name: this.$t('Brunei')},
+                {alpha2: 'BO', name: this.$t('Bolivia')},
+                {alpha2: 'BQ', name: this.$t('St. Eustatius')},
+                {alpha2: 'BR', name: this.$t('Brazil')},
+                {alpha2: 'BS', name: this.$t('Bahamas')},
+                {alpha2: 'BT', name: this.$t('Bhutan')},
+                {alpha2: 'BW', name: this.$t('Botswana')},
+                {alpha2: 'BY', name: this.$t('Belarus')},
+                {alpha2: 'BZ', name: this.$t('Belize')},
+                {alpha2: 'CD', name: this.$t('Congo, Dem. Rep. of')},
+                {alpha2: 'CG', name: this.$t('Congo')},
+                {alpha2: 'CH', name: this.$t('Switzerland')},
+                {alpha2: 'CI', name: this.$t('Ivory Coast')},
+                {alpha2: 'CK', name: this.$t('Cook Islands')},
+                {alpha2: 'CL', name: this.$t('Chile')},
+                {alpha2: 'CM', name: this.$t('Cameroon')},
+                {alpha2: 'CN', name: this.$t('China')},
+                {alpha2: 'CO', name: this.$t('Colombia')},
+                {alpha2: 'CR', name: this.$t('Costa Rica')},
+                {alpha2: 'CS', name: this.$t('Serbia and Montenegro')},
+                {alpha2: 'CV', name: this.$t('Cape Verde')},
+                {alpha2: 'CW', name: this.$t('Curacao')},
+                {alpha2: 'CY', name: this.$t('Cyprus')},
+                {alpha2: 'CZ', name: this.$t('Czech Republic')},
+                {alpha2: 'DE', name: this.$t('Germany')},
+                {alpha2: 'DJ', name: this.$t('Djibouti')},
+                {alpha2: 'DK', name: this.$t('Denmark')},
+                {alpha2: 'DM', name: this.$t('Dominica')},
+                {alpha2: 'DO', name: this.$t('Dominican Republic')},
+                {alpha2: 'DZ', name: this.$t('Algeria')},
+                {alpha2: 'EC', name: this.$t('Ecuador')},
+                {alpha2: 'EE', name: this.$t('Estonia')},
+                {alpha2: 'EG', name: this.$t('Egypt')},
+                {alpha2: 'ER', name: this.$t('Eritrea')},
+                {alpha2: 'ES', name: this.$t('Spain')},
+                {alpha2: 'ET', name: this.$t('Ethiopia')},
+                {alpha2: 'FI', name: this.$t('Finland')},
+                {alpha2: 'FJ', name: this.$t('Fiji')},
+                {alpha2: 'FM', name: this.$t('Micronesia')},
+                {alpha2: 'FO', name: this.$t('Faeroe Islands')},
+                {alpha2: 'FR', name: this.$t('France')},
+                {alpha2: 'GA', name: this.$t('Gabon')},
+                {alpha2: 'GD', name: this.$t('Grenada')},
+                {alpha2: 'GE', name: this.$t('Georgia, Republic of')},
+                {alpha2: 'GF', name: this.$t('French Guiana')},
+                {alpha2: 'GH', name: this.$t('Ghana')},
+                {alpha2: 'GI', name: this.$t('Gibraltar')},
+                {alpha2: 'GL', name: this.$t('Greenland')},
+                {alpha2: 'GM', name: this.$t('Gambia')},
+                {alpha2: 'GN', name: this.$t('Guinea')},
+                {alpha2: 'GP', name: this.$t('St. Barthelemy')},
+                {alpha2: 'GR', name: this.$t('Greece')},
+                {alpha2: 'GT', name: this.$t('Guatemala')},
+                {alpha2: 'GU', name: this.$t('Guam')},
+                {alpha2: 'GY', name: this.$t('Guyana')},
+                {alpha2: 'HK', name: this.$t('Hong Kong')},
+                {alpha2: 'HN', name: this.$t('Honduras')},
+                {alpha2: 'HR', name: this.$t('Croatia')},
+                {alpha2: 'HT', name: this.$t('Haiti')},
+                {alpha2: 'HU', name: this.$t('Hungary')},
+                {alpha2: 'ID', name: this.$t('Indonesia')},
+                {alpha2: 'IE', name: this.$t('Ireland, Republic of')},
+                {alpha2: 'IL', name: this.$t('Israel')},
+                {alpha2: 'IN', name: this.$t('India')},
+                {alpha2: 'IQ', name: this.$t('Iraq')},
+                {alpha2: 'IS', name: this.$t('Iceland')},
+                {alpha2: 'IT', name: this.$t('Vatican')},
+                {alpha2: 'JM', name: this.$t('Jamaica')},
+                {alpha2: 'JO', name: this.$t('Jordan')},
+                {alpha2: 'JP', name: this.$t('Japan')},
+                {alpha2: 'KE', name: this.$t('Kenya')},
+                {alpha2: 'KG', name: this.$t('Kyrgyzstan')},
+                {alpha2: 'KH', name: this.$t('Cambodia')},
+                {alpha2: 'KN', name: this.$t('St. Kitts and Nevis')},
+                {alpha2: 'KR', name: this.$t('Korea, South')},
+                {alpha2: 'KW', name: this.$t('Kuwait')},
+                {alpha2: 'KY', name: this.$t('Cayman Islands')},
+                {alpha2: 'KZ', name: this.$t('Kazakhstan')},
+                {alpha2: 'LA', name: this.$t('Laos')},
+                {alpha2: 'LB', name: this.$t('Lebanon')},
+                {alpha2: 'LC', name: this.$t('St. Lucia')},
+                {alpha2: 'LI', name: this.$t('Liechtenstein')},
+                {alpha2: 'LK', name: this.$t('Sri Lanka')},
+                {alpha2: 'LR', name: this.$t('Liberia')},
+                {alpha2: 'LS', name: this.$t('Lesotho')},
+                {alpha2: 'LT', name: this.$t('Lithuania')},
+                {alpha2: 'LU', name: this.$t('Luxembourg')},
+                {alpha2: 'LV', name: this.$t('Latvia')},
+                {alpha2: 'LY', name: this.$t('Libya')},
+                {alpha2: 'MA', name: this.$t('Morocco')},
+                {alpha2: 'MC', name: this.$t('Monaco')},
+                {alpha2: 'MD', name: this.$t('Moldova')},
+                {alpha2: 'MF', name: this.$t('St. Martin')},
+                {alpha2: 'MG', name: this.$t('Madagascar')},
+                {alpha2: 'MH', name: this.$t('Marshall Islands')},
+                {alpha2: 'MK', name: this.$t('Macedonia')},
+                {alpha2: 'ML', name: this.$t('Mali')},
+                {alpha2: 'MN', name: this.$t('Mongolia')},
+                {alpha2: 'MO', name: this.$t('Macau')},
+                {alpha2: 'MP', name: this.$t('Saipan')},
+                {alpha2: 'MQ', name: this.$t('Martinique')},
+                {alpha2: 'MR', name: this.$t('Mauritania')},
+                {alpha2: 'MS', name: this.$t('Montserrat')},
+                {alpha2: 'MT', name: this.$t('Malta')},
+                {alpha2: 'MU', name: this.$t('Mauritius')},
+                {alpha2: 'MV', name: this.$t('Maldives, Republic of')},
+                {alpha2: 'MW', name: this.$t('Malawi')},
+                {alpha2: 'MX', name: this.$t('Mexico')},
+                {alpha2: 'MY', name: this.$t('Malaysia')},
+                {alpha2: 'MZ', name: this.$t('Mozambique')},
+                {alpha2: 'NA', name: this.$t('Namibia')},
+                {alpha2: 'NC', name: this.$t('New Caledonia')},
+                {alpha2: 'NE', name: this.$t('Niger')},
+                {alpha2: 'NG', name: this.$t('Nigeria')},
+                {alpha2: 'NI', name: this.$t('Nicaragua')},
+                {alpha2: 'NL', name: this.$t('Netherlands')},
+                {alpha2: 'NO', name: this.$t('Norway')},
+                {alpha2: 'NP', name: this.$t('Nepal')},
+                {alpha2: 'NZ', name: this.$t('New Zealand')},
+                {alpha2: 'OM', name: this.$t('Oman')},
+                {alpha2: 'PA', name: this.$t('Panama')},
+                {alpha2: 'PE', name: this.$t('Peru')},
+                {alpha2: 'PF', name: this.$t('French Polynesia')},
+                {alpha2: 'PG', name: this.$t('Papua New Guinea')},
+                {alpha2: 'PH', name: this.$t('Philippines')},
+                {alpha2: 'PK', name: this.$t('Pakistan')},
+                {alpha2: 'PL', name: this.$t('Poland')},
+                {alpha2: 'PS', name: this.$t('Palestine')},
+                {alpha2: 'PT', name: this.$t('Portugal')},
+                {alpha2: 'PW', name: this.$t('Palau')},
+                {alpha2: 'PY', name: this.$t('Paraguay')},
+                {alpha2: 'US ', name: this.$t('Puerto Rico')}, // NOTE: extra space after 'US' is intentional.  See note above.
+                {alpha2: 'QA', name: this.$t('Qatar')},
+                {alpha2: 'RE', name: this.$t('Reunion')},
+                {alpha2: 'RO', name: this.$t('Romania')},
+                {alpha2: 'RU', name: this.$t('Russia')},
+                {alpha2: 'RW', name: this.$t('Rwanda')},
+                {alpha2: 'SA', name: this.$t('Saudi Arabia')},
+                {alpha2: 'SC', name: this.$t('Seychelles')},
+                {alpha2: 'SE', name: this.$t('Sweden')},
+                {alpha2: 'SG', name: this.$t('Singapore')},
+                {alpha2: 'SI', name: this.$t('Slovenia')},
+                {alpha2: 'SK', name: this.$t('Slovak Republic')},
+                {alpha2: 'SN', name: this.$t('Senegal')},
+                {alpha2: 'SR', name: this.$t('Suriname')},
+                {alpha2: 'SV', name: this.$t('El Salvador')},
+                {alpha2: 'SX', name: this.$t('St. Maarten​')},
+                {alpha2: 'SY', name: this.$t('Syria')},
+                {alpha2: 'SZ', name: this.$t('Swaziland')},
+                {alpha2: 'TC', name: this.$t('Turks and Caicos Islands')},
+                {alpha2: 'TD', name: this.$t('Chad')},
+                {alpha2: 'TG', name: this.$t('Togo')},
+                {alpha2: 'TH', name: this.$t('Thailand')},
+                {alpha2: 'TL', name: this.$t('East Timor')},
+                {alpha2: 'TN', name: this.$t('Tunisia')},
+                {alpha2: 'TO', name: this.$t('Tonga')},
+                {alpha2: 'TR', name: this.$t('Turkey')},
+                {alpha2: 'TT', name: this.$t('Trinidad and Tobago')},
+                {alpha2: 'TW', name: this.$t('Taiwan')},
+                {alpha2: 'TZ', name: this.$t('Tanzania')},
+                {alpha2: 'UA', name: this.$t('Ukraine')},
+                {alpha2: 'UG', name: this.$t('Uganda')},
+                {alpha2: 'UY', name: this.$t('Uruguay')},
+                {alpha2: 'UZ', name: this.$t('Uzbekistan')},
+                {alpha2: 'VC', name: this.$t('St. Vincent')},
+                {alpha2: 'VE', name: this.$t('Venezuela')},
+                {alpha2: 'VG', name: this.$t('British Virgin Islands')},
+                {alpha2: 'VI', name: this.$t('U.S. Virgin Islands')},
+                {alpha2: 'VN', name: this.$t('Vietnam')},
+                {alpha2: 'VU', name: this.$t('Vanuatu')},
+                {alpha2: 'WF', name: this.$t('Wallis & Futuna Islands')},
+                {alpha2: 'WS', name: this.$t('Samoa')},
+                {alpha2: 'YE', name: this.$t('Yemen, The Republic of')},
+                {alpha2: 'ZA', name: this.$t('South African Republic')},
+                {alpha2: 'ZM', name: this.$t('Zambia')},
+                {alpha2: 'ZW', name: this.$t('Zimbabwe')}
+            ]
+        };
+    },
+
+    watch: {
+        value: {
+            handler(newVal) {
+                this.selectedCountry = this.getCountryObj(newVal);
             },
+            immediate: true
+        }
+    },
 
-            placeholder: {
-                type: String,
-                default: ''
-            }
+    methods: {
+        getCountryObj(alpha2) {
+            return this.countryList.find((obj) => obj.alpha2 === alpha2);
         },
 
-        data() {
-            return {
-                selectedCountry: null,
-                countryList: countries
-            }
-        },
-
-        methods: {
-            emitChange(val) {
-                this.selectedCountry = val;
-                this.$emit('input', val)
-            },
-
-            emitVisibleChange(isVisible) {
-                this.$emit('visible-change', isVisible)
-            },
-
-            onClear() {
-                this.selectedCountry = null;
-            }
-        },
-
-        watch: {
-            value: {
-                handler(newVal) {
-                    this.selectedCountry = newVal;
-                },
-                immediate: true
-            },
+        onChange(obj) {
+            const val = isObject(obj) ? obj.alpha2 : null;
+            this.selectedCountry = this.getCountryObj(val);
+            this.$emit('input', val);
         }
     }
+};
 </script>
 
 
 <template>
-    <el-select
+    <vue-select2
         v-model="selectedCountry"
-        filterable
-        :placeholder="placeholder"
-        :no-match-text="$t('No matching values')"
-        :clearable="true"
-        @change="emitChange"
-        @visible-change="emitVisibleChange"
-        @clear="onClear"
-        class="widthAll">
-        <el-option
-            v-for="obj in countryList"
-            :key="obj.alpha2"
-            :label="$t(obj.name)"
-            :value="obj.alpha2" />
-    </el-select>
+        :options="countryList"
+        label="name"
+        @input="onChange"
+        v-bind="$attrs">
+    </vue-select2>
 </template>

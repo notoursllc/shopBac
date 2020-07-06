@@ -21,7 +21,7 @@ export default {
         },
         strokeWidth: {
             type: String,
-            default: '2'
+            default: '1'
         },
         fill: {
             type: String,

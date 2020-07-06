@@ -1,5 +1,9 @@
 <script>
 export default {
+    components: {
+        InputDatalist: () => import('@/components/InputDatalist')
+    },
+
     props: {
         skuVariantTypes: {
             type: Array,
@@ -44,6 +48,21 @@ export default {
                 }
             });
             return opts;
+        },
+
+        datalistOptions() {
+            let opts = [];
+            this.skuVariantTypes.forEach((obj) => {
+                if(obj.id === this.attribute.optionId) {
+                    obj.optionData.forEach((obj) => {
+                        opts.push({
+                            label: obj.property,
+                            value: obj.value
+                        });
+                    });
+                }
+            });
+            return opts;
         }
     },
 
@@ -76,7 +95,11 @@ export default {
                     // console.log("OPTION DATA SET", obj.optionData);
 
                     obj.optionData.forEach((option) => {
-                        if(option.property === newLabelValue) {
+                        // if(option.property === newLabelValue) {
+                        //     newValue = option.value;
+                        //     newLabel = option.property;
+                        // }
+                        if(option.value === newLabelValue) {
                             newValue = option.value;
                             newLabel = option.property;
                         }
@@ -94,32 +117,6 @@ export default {
 
         onValueChange(val) {
             this.$emit('valueChange', val);
-        },
-
-        // createFilter(queryString) {
-        //     return (obj) => {
-        //         console.log("QS LABEL", queryString, obj);
-        //         return (obj.property.toLowerCase().indexOf(queryString.toLowerCase()) === 0);
-        //     };
-        // },
-
-        // querySearch(queryString, cb) {
-        //     const opts = this.customAttributeOptions;
-        //     console.log("QS OPTS", opts)
-        //     const results = queryString ? opts.filter(this.createFilter(queryString)) : opts;
-        //     cb(results);
-        // }
-
-        // In a normal autocomplete we would want to filter the results
-        // However we always want to display all request, just like a select element, so
-        // the callback always returns everything.
-        // I'm doing this because it's a better UX.  If results were filtered based on the value of the
-        // input, then the dropdown will only show those filtered values, making it unclear that there
-        // are other options (like you would always see in a select element)
-        // The reason why I am not using a select element is because the autocomplete allows the user to
-        // enter his own custom value if desired, something that can't be done with a select element.
-        querySearch(queryString, cb) {
-            cb(this.customAttributeOptions);
         }
     }
 };
@@ -130,25 +127,26 @@ export default {
         <!-- label -->
         <div class="labelContainer">
             <label>{{ $t('Label') }}:</label>
-            <el-autocomplete
-                v-model="selectedLabel"
-                :fetch-suggestions="querySearch"
-                size="mini"
-                @input="onLabelChange"
-                value-key="property"
-                placeholder=""
-                class="width100"
-            ></el-autocomplete>
+            <div class="inlineBlock">
+                <input-datalist
+                    v-model="selectedLabel"
+                    :options="datalistOptions"
+                    @input="onLabelChange"
+                    size="sm"
+                    class="width100" />
+            </div>
         </div>
 
         <!-- value -->
         <div>
             <label>{{ $t('Value') }}:</label>
-            <el-input
-                v-model="selectedValue"
-                @change="onValueChange"
-                size="mini"
-                class="width100" />
+            <div class="inlineBlock">
+                <b-form-input
+                    v-model="selectedValue"
+                    @change="onValueChange"
+                    size="sm"
+                    class="width100"></b-form-input>
+            </div>
         </div>
 
     </div>

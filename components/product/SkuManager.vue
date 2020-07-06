@@ -18,7 +18,11 @@ export default {
         IconPlus: () => import('@/components/icons/IconPlus'),
         IconArrowRight: () => import('@/components/icons/IconArrowRight'),
         IconArrowLeft: () => import('@/components/icons/IconArrowLeft'),
-        PopConfirm: () => import('@/components/PopConfirm')
+        IconTrashCan: () => import('@/components/icons/IconTrashCan'),
+        IconEditOutline: () => import('@/components/icons/IconEditOutline'),
+        Pop: () => import('@/components/Pop'),
+        PopConfirm: () => import('@/components/PopConfirm'),
+        NumberInput: () => import('@/components/NumberInput')
     },
 
     mixins: [
@@ -48,8 +52,6 @@ export default {
                     attributes: []
                 }
             },
-            visibleInputTypePopovers: [],
-            visibleConfirmDeletePopovers: [],
             addColumnPopoverVisible: false,
             addColumnOverlayVisible: false,
             skuVariantTypes: {
@@ -257,8 +259,6 @@ export default {
 
 
         onClickDeleteColumn(index) {
-            this.hideAllPopovers();
-
             // Remove from device attributes
             const deletedAttributes = this.product.attributes.splice(index, 1);
 
@@ -364,27 +364,27 @@ export default {
             }
         },
 
-        hideAllPopovers() {
-            this.visibleInputTypePopovers.forEach((val, i) => {
-                Vue.set(this.visibleInputTypePopovers, i, false);
-            });
-            this.visibleConfirmDeletePopovers.forEach((val, i) => {
-                Vue.set(this.visibleConfirmDeletePopovers, i, false);
-            });
+        hideInputTypePopover(index, show) {
+            const ref = this.$refs[`input-type-popover-${index}`];
+            const pop = Array.isArray(ref) ? ref[0] : ref;
+            pop.hide();
         },
 
-        showInputTypePopover(index, show) {
-            if(show) {
-                this.hideAllPopovers();
-            }
-            Vue.set(this.visibleInputTypePopovers, index, show);
+        onInputTypePopoverReady(index) {
+            const ref = this.$refs[`input-select-${index}`];
+            this.focusRef(Array.isArray(ref) ? ref[0] : ref);
         },
 
-        showConfirmDeletePopover(index, show) {
-            if(show) {
-                this.hideAllPopovers();
-            }
-            Vue.set(this.visibleConfirmDeletePopovers, index, show);
+        focusRef(ref) {
+            // Some references may be a component, functional component, or plain element
+            // This handles that check before focusing, assuming a `focus()` method exists
+            // We do this in a double `$nextTick()` to ensure components have
+            // updated & popover positioned first
+            this.$nextTick(() => {
+                this.$nextTick(() => {
+                    ;(ref.$el || ref).focus();
+                });
+            });
         }
     }
 };
@@ -451,7 +451,8 @@ export default {
                                 id="btn_add_variant">
                                 <icon-plus
                                     width="16"
-                                    height="16" />
+                                    height="16"
+                                    stroke-width="2" />
                             </b-button>
                         </th>
 
@@ -461,43 +462,43 @@ export default {
                                 :key="index"
                                 class="width125">
                                 <div class="sku-item-col-icon">
-                                    <i :id="`popover-target-trash-${index}`"
-                                       @click="showConfirmDeletePopover(index, true)"
-                                       class="el-icon-delete mrl cursorPointer" />
-
-                                    <i :id="`popover-target-edit-${index}`"
-                                       @click="showInputTypePopover(index, true)"
-                                       class="el-icon-edit-outline cursorPointer" />
-
-                                    <pop-confirm
-                                        :target="`popover-target-trash-${index}`"
-                                        :show.sync="visibleConfirmDeletePopovers[index]"
-                                        @onConfirm="onClickDeleteColumn(index);"
-                                        @onCancel="showConfirmDeletePopover(index, false)">
+                                    <pop-confirm @onConfirm="onClickDeleteColumn(index);">
                                         {{ $t('Delete this column?') }}
+
+                                        <icon-trash-can
+                                            slot="reference"
+                                            width="20"
+                                            height="20"
+                                            class="cursorPointer" />
                                     </pop-confirm>
 
-                                    <!-- input type popover -->
-                                    <b-popover
-                                        :target="`popover-target-edit-${index}`"
-                                        :show.sync="visibleInputTypePopovers[index]"
-                                        placement="top">
-                                        <template v-slot:title>{{ $t('Input type') }}:</template>
 
+                                    <!-- input type popover -->
+                                    <pop :ref="`input-type-popover-${index}`"
+                                         @shown="onInputTypePopoverReady(index)">
+                                        <div class="fs12 mbs">{{ $t('Input type') }}:</div>
                                         <b-form-select
+                                            :id="`input-select-${index}`"
+                                            :ref="`input-select-${index}`"
                                             v-model="product.attributes[index].inputType"
                                             size="sm">
                                             <b-form-select-option value="select">{{ $t('Select menu') }}</b-form-select-option>
                                             <b-form-select-option value="buttons">{{ $t('Buttons') }}</b-form-select-option>
                                         </b-form-select>
 
-                                        <div class="ptm">
+                                        <div class="ptl">
                                             <b-button
                                                 variant="primary"
                                                 size="sm"
-                                                @click="showInputTypePopover(index, false)">{{ $t('Done') }}</b-button>
+                                                @click="hideInputTypePopover(index, false)">{{ $t('Done') }}</b-button>
                                         </div>
-                                    </b-popover>
+
+                                        <icon-edit-outline
+                                            slot="reference"
+                                            width="20"
+                                            height="20"
+                                            class="cursorPointer mll" />
+                                    </pop>
                                 </div>
 
                                 <b-input-group size="sm">
@@ -507,7 +508,10 @@ export default {
                                         <b-input-group-text
                                             class="header-input"
                                             @click="onColumnMove(index, true)">
-                                            <icon-arrow-left width="20" height="20" />
+                                            <icon-arrow-left
+                                                width="20"
+                                                height="20"
+                                                stroke-width="2" />
                                         </b-input-group-text>
                                     </template>
 
@@ -520,7 +524,10 @@ export default {
                                         <b-input-group-text
                                             class="header-input"
                                             @click="onColumnMove(index, false)">
-                                            <icon-arrow-right width="20" height="20" />
+                                            <icon-arrow-right
+                                                width="20"
+                                                height="20"
+                                                stroke-width="2" />
                                         </b-input-group-text>
                                     </template>
                                 </b-input-group>
@@ -567,50 +574,54 @@ export default {
 
                         <!-- Qty -->
                         <td>
-                            <el-input-number
-                                v-model="obj.inventory_count"
-                                :min="0"
-                                :step="1"
-                                controls-position="right"
-                                step-strictly />
+                            <number-input
+                                v-model="obj.inventory_count" />
                         </td>
 
                         <!-- Sku -->
                         <td>
-                            <el-input v-model="obj.sku" />
+                            <b-form-input
+                                v-model="obj.sku"></b-form-input>
                         </td>
 
                         <!-- Images -->
                         <td>
-                            <span v-for="(url, index) in getVariantThumbs(obj)"
+                            <span
+                                v-for="(url, index) in getVariantThumbs(obj)"
                                 :key="index"
                                 class="variant-thumb">
-                                <img :src="url" c>
+                                <img :src="url">
                             </span>
                         </td>
 
                         <td>
-                            <el-button-group>
-                                <el-button @click="onClickMoreSkuInfo(idx)">{{ $t('more') }}</el-button>
+                            <b-button
+                                variant="outline-secondary"
+                                @click="onClickMoreSkuInfo(idx)"
+                                class="mrs">{{ $t('more') }}</b-button>
 
-                                <el-popconfirm
-                                    :title="$t('Delete this row?')"
-                                    :confirmButtonText="$t('OK')"
-                                    :cancelButtonText="$t('cancel')"
-                                    @onConfirm="deleteSku(idx)">
-                                    <el-button slot="reference" icon="el-icon-delete"></el-button>
-                                </el-popconfirm>
-                            </el-button-group>
+                            <pop-confirm @onConfirm="deleteSku(idx)">
+                                {{ $t('Delete this row?') }}
+
+                                <b-button
+                                    slot="reference"
+                                    variant="outline-secondary">
+                                    <icon-trash-can
+                                        width="20"
+                                        height="20" />
+                                </b-button>
+                            </pop-confirm>
                         </td>
                     </tr>
                 </draggable>
             </table>
 
             <div class="pvl" v-if="product.attributes.length">
-                <el-button
-                    type="primary"
-                    @click="addEmptySku"
-                    size="mini">{{ $t('Add row') }}</el-button>
+                <b-button
+                    variant="primary"
+                    size="sm"
+                    @click="addEmptySku">
+                    {{ $t('Add row') }}</b-button>
             </div>
         </b-overlay>
 

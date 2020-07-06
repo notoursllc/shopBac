@@ -8,17 +8,20 @@ import { isNumeric } from '@/utils/common';
 // Vue.use(money, {precision: 2})
 
 export default{
+    components: {
+        Money
+    },
+
     props: {
-        value: {},
+        value: {
+            type: Number,
+            default: 0
+        },
 
         maxlength: {
             type: Number,
             default: 14
         }
-    },
-
-    components: {
-        Money
     },
 
 
@@ -33,6 +36,17 @@ export default{
                 precision: 2,
                 masked: false
             }
+        };
+    },
+
+    watch: {
+        value: {
+            handler(newVal) {
+                const val = parseInt(newVal);
+                const cleanVal = isNumeric(val) ? val : 0;
+                this.selectedPrice = cleanVal > 0 ? cleanVal/100 : 0;
+            },
+            immediate: true
         }
     },
 
@@ -42,28 +56,18 @@ export default{
             clean = accounting.toFixed(parseFloat(clean) * 100, 0);
             this.$emit('input', parseInt(clean, 10));
         }
-    },
-
-    watch: {
-        value: {
-            handler(newVal) {
-                let val = parseInt(newVal);
-                let cleanVal = isNumeric(val) ? val : 0;
-                this.selectedPrice = cleanVal > 0 ? cleanVal/100 : 0;
-            },
-            immediate: true
-        },
     }
-}
+};
 </script>
 
 
 <template>
     <div class="el-input">
-        <money v-model="selectedPrice"
+        <money
+            v-model="selectedPrice"
             v-bind="money"
             @input="emitInput"
-            class="el-input__inner"
+            class="form-control"
             :maxlength="maxlength"></money>
     </div>
 </template>

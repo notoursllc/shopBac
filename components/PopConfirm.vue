@@ -1,12 +1,14 @@
 <script>
+import uuid from 'uuid';
+
 export default {
+    components: {
+        Pop: () => import('@/components/Pop')
+    },
+
     inheritAttrs: false,
 
     props: {
-        target: {
-            type: String,
-            required: true
-        },
         confirmButtonText: {
             type: String,
             default: ''
@@ -17,22 +19,51 @@ export default {
         }
     },
 
+    data() {
+        return {
+            uuid: uuid()
+        };
+    },
+
     computed: {
         confirmLabel() {
             return this.confirmButtonText || this.$t('OK');
         },
+
         cancelLabel() {
             return this.cancelButtonText || this.$t('cancel');
+        },
+
+        confirmRef() {
+            return `btn-confirm-${this.uuid}`;
+        },
+
+        cancelRef() {
+            return `btn-cancel-${this.uuid}`;
+        },
+
+        popoverRef() {
+            return `popover-target-${this.uuid}`;
         }
     },
 
     methods: {
         onConfirmClick(e) {
             this.$emit('onConfirm', e);
+            this.hide();
         },
 
         onCancelClick(e) {
             this.$emit('onCancel', e);
+            this.hide();
+        },
+
+        focusCancelButton() {
+            this.$refs[this.cancelRef].focus();
+        },
+
+        hide() {
+            this.$refs[this.popoverRef].hide();
         }
     }
 };
@@ -40,8 +71,9 @@ export default {
 
 
 <template>
-    <b-popover
-        :target="target"
+    <pop
+        :ref="popoverRef"
+        @shown="focusCancelButton"
         v-bind="$attrs"
         v-on="$listeners">
         <slot></slot>
@@ -50,12 +82,18 @@ export default {
             <b-button
                 variant="link"
                 size="sm"
-                @click="onCancelClick">{{ cancelLabel }}</b-button>
+                @click="onCancelClick"
+                :ref="cancelRef">{{ cancelLabel }}</b-button>
 
             <b-button
                 variant="primary"
                 size="sm"
-                @click="onConfirmClick">{{ confirmLabel }}</b-button>
+                @click="onConfirmClick"
+                :ref="confirmRef">{{ confirmLabel }}</b-button>
         </div>
-    </b-popover>
+
+        <template v-slot:reference>
+            <slot name="reference"></slot>
+        </template>
+    </pop>
 </template>
