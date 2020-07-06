@@ -1,16 +1,11 @@
 <script>
-import Vue from 'vue';
-import { Tooltip } from 'element-ui';
-
-Vue.use(Tooltip);
-
 export default {
     name: 'ImageManager',
 
     components: {
-        AppDialog: () => import('@/components/AppDialog'),
-        FileButton: () => import('@/components/FileButton'),
         IconDragHandle: () => import('@/components/icons/IconDragHandle'),
+        IconTrashCan: () => import('@/components/icons/IconTrashCan'),
+        PopConfirm: () => import('@/components/PopConfirm'),
         draggable: () => import('vuedraggable')
     },
 
@@ -32,7 +27,6 @@ export default {
         return {
             loading: false,
             dialogImageUrl: '',
-            dialogVisible: false,
             fileList: [],
             accept: 'image/png, image/jpeg, image/gif'
         };
@@ -62,7 +56,7 @@ export default {
 
         onPreview(file) {
             this.dialogImageUrl = file;
-            this.dialogVisible = true;
+            this.$refs.image_preview_modal.show();
         },
 
         filesAreAcceptedTypes(files) {
@@ -89,6 +83,7 @@ export default {
 
             this.createTempImages(files);
             this.emitChange();
+            this.$refs['file-input'].reset();
         },
 
         createTempImages(files) {
@@ -135,7 +130,6 @@ export default {
             this.fileList.forEach((obj, index) => {
                 obj.ordinal = index;
             });
-            // console.log("SET ORDINALS UPDATE", this.fileList)
         }
     }
 };
@@ -155,40 +149,42 @@ export default {
 
             <div class="image-row" v-for="(obj, index) in fileList" :key="index">
                 <div class="image-row-fields">
-                    <div class="image-row-handle" v-if="maxNumImages > 1">
+                    <div class="image-row-handle" v-if="fileList.length > 1">
                         <i class="handle">
                             <icon-drag-handle height="20" width="20" />
                         </i>
                     </div>
 
                     <div class="image-row-pic">
-                        <img
-                            class="cursorPointer"
+                        <b-img
                             :src="obj.image_url"
-                            alt=""
-                            @click="onPreview(obj.image_url)">
+                            class="cursorPointer"
+                            @click="onPreview(obj.image_url)"
+                            alt=""></b-img>
                     </div>
 
                     <div class="image-row-input">
                         <div class="phm widthAll">
-                            <el-input
+                            <b-form-input
                                 v-model="obj.alt_text"
                                 class="widthAll"
                                 placeholder="Image alt text"
-                                @input="emitChange" />
+                                @input="emitChange"
+                                multiple />
                             <div class="input-tip">{{ $t('Image_alt_text_description') }}</div>
                         </div>
 
-                        <el-popconfirm
-                            :hideIcon="true"
-                            :title="$t('Delete this item?')"
-                            :confirmButtonText="$t('OK')"
-                            :cancelButtonText="$t('cancel')"
-                            @onConfirm="onDeleteImage(obj, index)">
-                            <el-button
+                        <pop-confirm @onConfirm="onDeleteImage(obj, index)">
+                            {{ $t('Delete this item?') }}
+
+                            <b-button
                                 slot="reference"
-                                icon="el-icon-delete" />
-                        </el-popconfirm>
+                                variant="outline-secondary">
+                                <icon-trash-can
+                                    width="20"
+                                    height="20" />
+                            </b-button>
+                        </pop-confirm>
                     </div>
                 </div>
             </div>
@@ -196,17 +192,25 @@ export default {
         </draggable>
 
         <div class="mtm">
-            <file-button
+            <b-form-file
+                id="file-input"
+                ref="file-input"
                 :accept="accept"
                 :multiple="true"
-                :disabled="numRemainingUploads < 1"
-                @change="onFileChange">{{ fileList.length ? $t('Choose another file') : $t('Choose file') }}</file-button>
+                v-show="numRemainingUploads > 0"
+                @input="onFileChange"
+                :placeholder="$t('No file chosen')"
+                :browse-text="$t('Choose images')"></b-form-file>
         </div>
 
-        <app-dialog :visible.sync="dialogVisible">
-            <img width="100%" :src="dialogImageUrl" alt="">
-        </app-dialog>
-
+        <b-modal
+            ref="image_preview_modal"
+            size="xl"
+            hide-footer>
+            <b-img
+                :src="dialogImageUrl"
+                alt=""></b-img>
+        </b-modal>
     </div>
 </template>
 
@@ -219,7 +223,6 @@ export default {
     padding: 0;
     height: auto;
 }
-
 
 .ghost {
     opacity: 0.5;

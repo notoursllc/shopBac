@@ -56,8 +56,7 @@
     "CHOOSE": "CHOOSE",
     "Choose a delivery option": "Choose a delivery option",
     "Choose a payment method": "Choose a payment method",
-    "Choose another file": "Choose another file",
-    "Choose file": "Choose file",
+    "Choose images": "Choose images",
     "Collection added successfully": "Collection added successfully",
     "Collection updated successfully": "Collection updated successfully",
     "Collections": "Collections",
@@ -166,6 +165,7 @@
     "Name": "Name",
     "New item": "New item",
     "New option": "New option",
+    "No file chosen": "No file chosen",
     "No matching values": "No matching values",
     "No results": "No results",
 
