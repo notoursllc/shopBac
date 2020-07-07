@@ -267,7 +267,7 @@ export default {
 
 <template>
     <div>
-        <table class="table">
+        <table class="bv-table">
             <tr>
                 <th>{{ $t('Options') }}</th>
                 <th>{{ $t('Values') }}</th>

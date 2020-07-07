@@ -2,7 +2,10 @@
 export default {
     components: {
         draggable: () => import('vuedraggable'),
-        IconDragHandle: () => import('@/components/icons/IconDragHandle')
+        IconDragHandle: () => import('@/components/icons/IconDragHandle'),
+        IconTrashCan: () => import('@/components/icons/IconTrashCan'),
+        IconPlus: () => import('@/components/icons/IconPlus'),
+        PopConfirm: () => import('@/components/PopConfirm')
     },
 
     props: {
@@ -117,22 +120,30 @@ export default {
                         </div>
 
                         <div class="meta-row-property">
-                            <el-input
+                            <b-form-input
                                 v-model="obj.property"
                                 @input="onInputChange"
                                 :placeholder="propertyPlaceholder" />
                         </div>
 
                         <div class="meta-row-value">
-                            <el-input
+                            <b-form-input
                                 v-model="obj.value"
                                 @input="onInputChange"
                                 :placeholder="valuePlaceholder" />
 
-                            <el-button
-                                @click="onClickDeleteRow(index)"
-                                class="mlm"
-                                icon="el-icon-delete" />
+                            <pop-confirm @onConfirm="onClickDeleteRow(index)">
+                                {{ $t('Delete this row?') }}
+
+                                <b-button
+                                    slot="reference"
+                                    class="mlm"
+                                    variant="outline-secondary">
+                                    <icon-trash-can
+                                        width="20"
+                                        height="20" />
+                                </b-button>
+                            </pop-confirm>
                         </div>
                     </div>
                 </div>
@@ -140,10 +151,13 @@ export default {
         </div>
 
         <div class="metaDataFooter">
-            <el-button
+            <b-button
                 @click="addNewItem"
-                size="small"
-                icon="el-icon-circle-plus-outline">{{ $t('New item') }}</el-button>
+                variant="outline-secondary">
+                <icon-plus
+                    width="16"
+                    height="16" />&nbsp;{{ $t('New item') }}
+            </b-button>
         </div>
     </div>
 </template>
@@ -177,7 +191,7 @@ export default {
 }
 
 .metaDataFooter {
-    padding-top: 5px;
+    padding-top: 10px;
     text-align: left;
 }
 </style>

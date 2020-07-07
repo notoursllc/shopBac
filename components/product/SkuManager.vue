@@ -52,8 +52,6 @@ export default {
                     attributes: []
                 }
             },
-            addColumnPopoverVisible: false,
-            addColumnOverlayVisible: false,
             skuVariantTypes: {
                 all: [],
                 selected: null,
@@ -166,8 +164,7 @@ export default {
             // adding a blank attribute
             if(this.skuVariantTypes.choose === '1') {
                 this.addNewProductAttribute();
-                // this.addColumnPopoverVisible = false;
-                this.addColumnOverlayVisible = false;
+                this.showAddColumnPopover(false);
                 return;
             }
 
@@ -182,8 +179,7 @@ export default {
                 }
             }
 
-            // this.addColumnPopoverVisible = false;
-            this.addColumnOverlayVisible = false;
+            this.showAddColumnPopover(false);
         },
 
 
@@ -246,15 +242,13 @@ export default {
             // straight away without displaying the popup
             if(!this.unusedSkuVariantTypes.length) {
                 this.addNewProductAttribute();
-                // this.addColumnPopoverVisible = false;
-                this.addColumnOverlayVisible = false;
+                this.showAddColumnPopover(false);
                 return;
             }
 
             // Otherwise display the popover and allow the user to choose to add
             // a blank attribute or a pre-defined one
-            // this.addColumnPopoverVisible = true;
-            this.addColumnOverlayVisible = true;
+            this.showAddColumnPopover();
         },
 
 
@@ -375,6 +369,21 @@ export default {
             this.focusRef(Array.isArray(ref) ? ref[0] : ref);
         },
 
+        showAddColumnPopover(show) {
+            const ref = this.$refs.add_column_popover;
+            const pop = Array.isArray(ref) ? ref[0] : ref;
+            if(!show) {
+                pop.hide();
+            }
+            else {
+                pop.show();
+            }
+        },
+
+        onAddColumnPopoverReady() {
+            this.$refs.add_column_popover_radio_custom.focus();
+        },
+
         focusRef(ref) {
             // Some references may be a component, functional component, or plain element
             // This handles that check before focusing, assuming a `focus()` method exists
@@ -392,57 +401,52 @@ export default {
 
 
 <template>
-    <div style="min-height:150px; overflow-x:auto;">
+    <div style="overflow-x:auto;">
+        <table class="bv-table">
+            <thead>
+                <tr>
+                    <th class="vabtm" :class="{'width50': canAddColumn || canShowGrabHandles}">
+                        <pop
+                            ref="add_column_popover"
+                            @shown="onAddColumnPopoverReady">
 
-        <b-overlay :show="addColumnOverlayVisible" no-center>
-            <template v-slot:overlay>
-                <div class="vat">
-                    <div class="fwb">{{ $t('Adding a new column') }}:</div>
-                    <div class="mtm">
-                        <div>
-                            <b-form-radio
-                                v-model="skuVariantTypes.choose"
-                                size="sm"
-                                inline
-                                name="sku-variant-type"
-                                value="2">{{ $t('Choose a pre-defined attribute') }}:</b-form-radio>
+                            <div>
+                                <b-form-radio
+                                    v-model="skuVariantTypes.choose"
+                                    ref="add_column_popover_radio_custom"
+                                    size="sm"
+                                    inline
+                                    name="sku-variant-type"
+                                    value="2">{{ $t('Use a pre-defined attribute') }}:</b-form-radio>
 
-                            <b-form-select
-                                v-model="skuVariantTypes.selected"
-                                size="sm"
-                                class="width150"
-                                placeholder="Choose a pre-defined attribute">
-                                <b-form-select-option
-                                    v-for="obj in unusedSkuVariantTypes"
-                                    :key="obj.id"
-                                    :value="obj.id">{{ obj.label }}</b-form-select-option>
-                            </b-form-select>
-                        </div>
+                                <b-form-select
+                                    v-model="skuVariantTypes.selected"
+                                    size="sm">
+                                    <b-form-select-option
+                                        v-for="obj in unusedSkuVariantTypes"
+                                        :key="obj.id"
+                                        :value="obj.id">{{ obj.label }}</b-form-select-option>
+                                </b-form-select>
+                            </div>
 
-                        <div class="ptm">
-                            <b-form-radio
-                                v-model="skuVariantTypes.choose"
-                                size="sm"
-                                inline
-                                name="sku-variant-type"
-                                value="1">{{ $t('Use a blank attribute') }}</b-form-radio>
-                        </div>
+                            <div class="ptl">
+                                <b-form-radio
+                                    v-model="skuVariantTypes.choose"
+                                    size="sm"
+                                    inline
+                                    name="sku-variant-type"
+                                    value="1">{{ $t('Use a blank attribute') }}</b-form-radio>
+                            </div>
 
-                        <div class="ptl tal">
+                            <div class="ptl tal">
+                                <b-button
+                                    variant="primary"
+                                    size="sm"
+                                    @click="addSkuVariantType">{{ $t('Done') }}</b-button>
+                            </div>
+
                             <b-button
-                                variant="primary"
-                                size="sm"
-                                @click="addSkuVariantType">{{ $t('Done') }}</b-button>
-                        </div>
-                    </div>
-                </div>
-            </template>
-
-            <table class="table" id="popover-target">
-                <thead>
-                    <tr>
-                        <th class="vabtm" :class="{'width50': canAddColumn || canShowGrabHandles}">
-                            <b-button
+                                slot="reference"
                                 v-if="canAddColumn"
                                 variant="outline-secondary"
                                 size="sm"
@@ -454,176 +458,177 @@ export default {
                                     height="16"
                                     stroke-width="2" />
                             </b-button>
-                        </th>
+                        </pop>
+                    </th>
 
-                        <template v-if="Array.isArray(product.attributes)">
-                            <th
-                                v-for="(obj, index) in product.attributes"
-                                :key="index"
-                                class="width125">
-                                <div class="sku-item-col-icon">
-                                    <pop-confirm @onConfirm="onClickDeleteColumn(index);">
-                                        {{ $t('Delete this column?') }}
+                    <template v-if="Array.isArray(product.attributes)">
+                        <th
+                            v-for="(obj, index) in product.attributes"
+                            :key="index"
+                            class="width125">
+                            <div class="sku-item-col-icon">
+                                <pop-confirm @onConfirm="onClickDeleteColumn(index);">
+                                    {{ $t('Delete this column?') }}
 
-                                        <icon-trash-can
-                                            slot="reference"
-                                            width="20"
-                                            height="20"
-                                            class="cursorPointer" />
-                                    </pop-confirm>
-
-
-                                    <!-- input type popover -->
-                                    <pop :ref="`input-type-popover-${index}`"
-                                         @shown="onInputTypePopoverReady(index)">
-                                        <div class="fs12 mbs">{{ $t('Input type') }}:</div>
-                                        <b-form-select
-                                            :id="`input-select-${index}`"
-                                            :ref="`input-select-${index}`"
-                                            v-model="product.attributes[index].inputType"
-                                            size="sm">
-                                            <b-form-select-option value="select">{{ $t('Select menu') }}</b-form-select-option>
-                                            <b-form-select-option value="buttons">{{ $t('Buttons') }}</b-form-select-option>
-                                        </b-form-select>
-
-                                        <div class="ptl">
-                                            <b-button
-                                                variant="primary"
-                                                size="sm"
-                                                @click="hideInputTypePopover(index, false)">{{ $t('Done') }}</b-button>
-                                        </div>
-
-                                        <icon-edit-outline
-                                            slot="reference"
-                                            width="20"
-                                            height="20"
-                                            class="cursorPointer mll" />
-                                    </pop>
-                                </div>
-
-                                <b-input-group size="sm">
-                                    <template
-                                        v-if="canShowLeftIcon(index)"
-                                        v-slot:prepend>
-                                        <b-input-group-text
-                                            class="header-input"
-                                            @click="onColumnMove(index, true)">
-                                            <icon-arrow-left
-                                                width="20"
-                                                height="20"
-                                                stroke-width="2" />
-                                        </b-input-group-text>
-                                    </template>
-
-                                    <b-form-input
-                                        v-model="product.attributes[index].label"></b-form-input>
-
-                                    <template
-                                        v-if="canShowRightIcon(index)"
-                                        v-slot:append>
-                                        <b-input-group-text
-                                            class="header-input"
-                                            @click="onColumnMove(index, false)">
-                                            <icon-arrow-right
-                                                width="20"
-                                                height="20"
-                                                stroke-width="2" />
-                                        </b-input-group-text>
-                                    </template>
-                                </b-input-group>
-                            </th>
-                        </template>
-
-                        <th class="vabtm">{{ $t('Price') }}</th>
-                        <th class="vabtm input-number">{{ $t('Quantity') }}</th>
-                        <th class="vabtm">{{ $t('SKU') }}</th>
-                        <th class="vabtm">{{ $t('Images') }}</th>
-                        <th class="vabtm"></th>
-                    </tr>
-                </thead>
-
-                <draggable
-                    v-model="product.skus"
-                    handle=".handle"
-                    @update="setOrdinals"
-                    ghost-class="ghost"
-                    tag="tbody">
-                    <tr v-for="(obj, idx) in product.skus" :key="obj.id">
-                        <!-- drag handle -->
-                        <td>
-                            <i class="handle cursorGrab" v-show="canShowGrabHandles">
-                                <icon-drag-handle height="20" width="20" />
-                            </i>
-                        </td>
-
-                        <!-- custom attributes -->
-                        <td v-for="attr in obj.attributes" :key="attr.optionId" class="attributeLabelValue">
-                            <sku-attribute-inputs
-                                :sku-variant-types="skuVariantTypes.all"
-                                :attribute="attr"
-                                :initital-label="attr.label"
-                                :initital-value="attr.value"
-                                @labelChange="(val) => { attr.label = val }"
-                                @valueChange="(val) => { attr.value = val }" />
-                        </td>
-
-                        <!-- Price -->
-                        <td>
-                            <input-money v-model="obj.base_price" />
-                        </td>
-
-                        <!-- Qty -->
-                        <td>
-                            <number-input
-                                v-model="obj.inventory_count" />
-                        </td>
-
-                        <!-- Sku -->
-                        <td>
-                            <b-form-input
-                                v-model="obj.sku"></b-form-input>
-                        </td>
-
-                        <!-- Images -->
-                        <td>
-                            <span
-                                v-for="(url, index) in getVariantThumbs(obj)"
-                                :key="index"
-                                class="variant-thumb">
-                                <img :src="url">
-                            </span>
-                        </td>
-
-                        <td>
-                            <b-button
-                                variant="outline-secondary"
-                                @click="onClickMoreSkuInfo(idx)"
-                                class="mrs">{{ $t('more') }}</b-button>
-
-                            <pop-confirm @onConfirm="deleteSku(idx)">
-                                {{ $t('Delete this row?') }}
-
-                                <b-button
-                                    slot="reference"
-                                    variant="outline-secondary">
                                     <icon-trash-can
+                                        slot="reference"
                                         width="20"
-                                        height="20" />
-                                </b-button>
-                            </pop-confirm>
-                        </td>
-                    </tr>
-                </draggable>
-            </table>
+                                        height="20"
+                                        class="cursorPointer" />
+                                </pop-confirm>
 
-            <div class="pvl" v-if="product.attributes.length">
-                <b-button
-                    variant="primary"
-                    size="sm"
-                    @click="addEmptySku">
-                    {{ $t('Add row') }}</b-button>
-            </div>
-        </b-overlay>
+
+                                <!-- input type popover -->
+                                <pop
+                                    :ref="`input-type-popover-${index}`"
+                                    @shown="onInputTypePopoverReady(index)">
+                                    <div class="fs12 mbs">{{ $t('Input type') }}:</div>
+                                    <b-form-select
+                                        :id="`input-select-${index}`"
+                                        :ref="`input-select-${index}`"
+                                        v-model="product.attributes[index].inputType"
+                                        size="sm">
+                                        <b-form-select-option value="select">{{ $t('Select menu') }}</b-form-select-option>
+                                        <b-form-select-option value="buttons">{{ $t('Buttons') }}</b-form-select-option>
+                                    </b-form-select>
+
+                                    <div class="ptl">
+                                        <b-button
+                                            variant="primary"
+                                            size="sm"
+                                            @click="hideInputTypePopover(index, false)">{{ $t('Done') }}</b-button>
+                                    </div>
+
+                                    <icon-edit-outline
+                                        slot="reference"
+                                        width="20"
+                                        height="20"
+                                        class="cursorPointer mll" />
+                                </pop>
+                            </div>
+
+                            <b-input-group size="sm">
+                                <template
+                                    v-if="canShowLeftIcon(index)"
+                                    v-slot:prepend>
+                                    <b-input-group-text
+                                        class="header-input"
+                                        @click="onColumnMove(index, true)">
+                                        <icon-arrow-left
+                                            width="20"
+                                            height="20"
+                                            stroke-width="2" />
+                                    </b-input-group-text>
+                                </template>
+
+                                <b-form-input
+                                    v-model="product.attributes[index].label"></b-form-input>
+
+                                <template
+                                    v-if="canShowRightIcon(index)"
+                                    v-slot:append>
+                                    <b-input-group-text
+                                        class="header-input"
+                                        @click="onColumnMove(index, false)">
+                                        <icon-arrow-right
+                                            width="20"
+                                            height="20"
+                                            stroke-width="2" />
+                                    </b-input-group-text>
+                                </template>
+                            </b-input-group>
+                        </th>
+                    </template>
+
+                    <th class="vabtm">{{ $t('Price') }}</th>
+                    <th class="vabtm input-number">{{ $t('Quantity') }}</th>
+                    <th class="vabtm">{{ $t('SKU') }}</th>
+                    <th class="vabtm">{{ $t('Images') }}</th>
+                    <th class="vabtm"></th>
+                </tr>
+            </thead>
+
+            <draggable
+                v-model="product.skus"
+                handle=".handle"
+                @update="setOrdinals"
+                ghost-class="ghost"
+                tag="tbody">
+                <tr v-for="(obj, idx) in product.skus" :key="obj.id">
+                    <!-- drag handle -->
+                    <td>
+                        <i class="handle cursorGrab" v-show="canShowGrabHandles">
+                            <icon-drag-handle height="20" width="20" />
+                        </i>
+                    </td>
+
+                    <!-- custom attributes -->
+                    <td v-for="attr in obj.attributes" :key="attr.optionId" class="attributeLabelValue">
+                        <sku-attribute-inputs
+                            :sku-variant-types="skuVariantTypes.all"
+                            :attribute="attr"
+                            :initital-label="attr.label"
+                            :initital-value="attr.value"
+                            @labelChange="(val) => { attr.label = val }"
+                            @valueChange="(val) => { attr.value = val }" />
+                    </td>
+
+                    <!-- Price -->
+                    <td>
+                        <input-money v-model="obj.base_price" />
+                    </td>
+
+                    <!-- Qty -->
+                    <td>
+                        <number-input
+                            v-model="obj.inventory_count" />
+                    </td>
+
+                    <!-- Sku -->
+                    <td>
+                        <b-form-input
+                            v-model="obj.sku"></b-form-input>
+                    </td>
+
+                    <!-- Images -->
+                    <td>
+                        <span
+                            v-for="(url, index) in getVariantThumbs(obj)"
+                            :key="index"
+                            class="variant-thumb">
+                            <img :src="url">
+                        </span>
+                    </td>
+
+                    <td>
+                        <b-button
+                            variant="outline-secondary"
+                            @click="onClickMoreSkuInfo(idx)"
+                            class="mrs">{{ $t('more') }}</b-button>
+
+                        <pop-confirm @onConfirm="deleteSku(idx)">
+                            {{ $t('Delete this row?') }}
+
+                            <b-button
+                                slot="reference"
+                                variant="outline-secondary">
+                                <icon-trash-can
+                                    width="20"
+                                    height="20" />
+                            </b-button>
+                        </pop-confirm>
+                    </td>
+                </tr>
+            </draggable>
+        </table>
+
+        <div class="pvl" v-if="product.attributes.length">
+            <b-button
+                variant="primary"
+                size="sm"
+                @click="addEmptySku">
+                {{ $t('Add row') }}</b-button>
+        </div>
 
 
         <app-dialog :visible.sync="skuDialog.show">

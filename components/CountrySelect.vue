@@ -250,9 +250,10 @@ export default {
         },
 
         onChange(obj) {
-            const val = isObject(obj) ? obj.alpha2 : null;
-            this.selectedCountry = this.getCountryObj(val);
-            this.$emit('input', val);
+            this.$emit(
+                'input',
+                isObject(obj) ? obj.alpha2 : null
+            );
         }
     }
 };

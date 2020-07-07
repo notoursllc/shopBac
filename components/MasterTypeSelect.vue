@@ -2,6 +2,10 @@
 export default {
     name: 'MasterTypeSelect',
 
+    components: {
+        BitwiseMultiSelect: () => import('@/components/BitwiseMultiSelect')
+    },
+
     props: {
         object: {
             type: String,
@@ -9,7 +13,8 @@ export default {
         },
 
         value: {
-            type: Number
+            type: Number,
+            default: null
         },
 
         multiple: {
@@ -18,15 +23,24 @@ export default {
         }
     },
 
-    components: {
-        BitwiseMultiSelect: () => import('@/components/BitwiseMultiSelect')
-    },
-
     data: function() {
         return {
             selectedVal: null,
             selectOptions: []
+        };
+    },
+
+    watch: {
+        value: {
+            handler(newVal) {
+                this.selectedVal = newVal;
+            },
+            immediate: true
         }
+    },
+
+    created() {
+        this.createOptions();
     },
 
     methods: {
@@ -34,16 +48,16 @@ export default {
             // when the select clear button is clicked then the val changes to "0",
             // but we want null instead:
             if(!val) {
-                this.$emit('input', null)
+                this.$emit('input', null);
             }
             else {
-                this.$emit('input', val)
+                this.$emit('input', val);
             }
         },
 
         async createOptions() {
-            let opts = [];
-            let types = await this.$api.masterTypes.list(this.object);
+            const opts = [];
+            const types = await this.$api.masterTypes.list(this.object);
 
             types.forEach((obj) => {
                 opts.push(
@@ -52,26 +66,13 @@ export default {
                         value: obj.value,
                         disabled: !obj.published
                     }
-                )
+                );
             });
 
-            this.selectOptions = opts
-        }
-    },
-
-    created() {
-        this.createOptions();
-    },
-
-    watch: {
-        value: {
-            handler(newVal) {
-                this.selectedVal = newVal;
-            },
-            immediate: true,
+            this.selectOptions = opts;
         }
     }
-}
+};
 </script>
 
 

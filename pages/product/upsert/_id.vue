@@ -210,9 +210,8 @@ export default {
 
         <!-- published-->
         <div class="mbl">
-            <el-checkbox
-                v-model="product.published"
-                border>{{ $t('This product is available for purchase') }}</el-checkbox>
+            <b-form-checkbox
+                v-model="product.published">{{ $t('This product is available for purchase') }}</b-form-checkbox>
         </div>
 
 
@@ -272,30 +271,26 @@ export default {
             <!-- page title -->
             <div class="inputGroup mrl mbm">
                 <label>{{ $t('Title') }}</label>
-                <el-input
+                <b-form-input
                     v-model="product.title"
-                    maxlength="70"
-                    show-word-limit />
+                    maxlength="70" />
             </div>
 
             <!-- caption -->
             <div class="inputGroup mrl mbm">
                 <label>{{ $t('Caption') }}</label>
-                <el-input
+                <b-form-input
                     v-model="product.caption"
-                    maxlength="70"
-                    show-word-limit />
+                    maxlength="70" />
             </div>
 
             <!-- description -->
             <div class="inputGroup mrl mbm">
                 <label>{{ $t('Description') }}</label>
-                <el-input
+                <b-form-textarea
                     v-model="product.description"
-                    type="textarea"
                     :rows="2"
-                    maxlength="320"
-                    show-word-limit />
+                    maxlength="320" />
             </div>
         </text-card>
 
@@ -336,32 +331,28 @@ export default {
             <!-- page title -->
             <div class="inputGroup mrl mbm">
                 <label>{{ $t('Page title') }}</label>
-                <el-input
+                <b-form-input
                     v-model="product.seo_page_title"
-                    maxlength="70"
-                    show-word-limit />
+                    maxlength="70" />
             </div>
 
             <!-- description -->
             <div class="inputGroup mrl mbm">
                 <label>{{ $t('Description') }}</label>
-                <el-input
+                <b-form-textarea
                     v-model="product.seo_page_desc"
-                    type="textarea"
                     :rows="2"
-                    maxlength="320"
-                    show-word-limit />
+                    maxlength="320" />
             </div>
 
             <!-- URI -->
             <div class="inputGroup mrl mbm">
                 <label>{{ $t('URL and handle') }}</label>
-                <el-input
-                    v-model="product.seo_uri"
-                    maxlength="50"
-                    show-word-limit>
-                    <template slot="prepend">https://{{ domainName }}/p/</template>
-                </el-input>
+                <b-input-group :prepend="`https://${domainName}/p/`">
+                    <b-form-input
+                        v-model="product.seo_uri"
+                        maxlength="50" />
+                </b-input-group>
             </div>
 
             <div class="pvl" v-show="product.seo_page_title">
@@ -379,7 +370,8 @@ export default {
             <div slot="header">{{ $t('Metadata') }}</div>
 
             <div class="inputGroup mrl mbm">
-                <el-checkbox v-model="productHasMetaData">{{ $t('Metadata_description') }}</el-checkbox>
+                <b-form-checkbox
+                    v-model="productHasMetaData">{{ $t('Metadata_description') }}</b-form-checkbox>
             </div>
 
             <div v-if="productHasMetaData">
@@ -389,7 +381,9 @@ export default {
 
 
         <div>
-            <el-button type="primary" @click="onSaveClick">{{ $t('Save') }}</el-button>
+            <b-button
+                variant="primary"
+                @click="onSaveClick">{{ $t('Save') }}</b-button>
         </div>
     </div>
 </template>

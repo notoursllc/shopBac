@@ -106,6 +106,7 @@ module.exports = {
             'BFormRadio',
             'BFormSelect',
             'BFormSelectOption',
+            'BFormTextarea',
             'BImg',
             'BInputGroup',
             'BInputGroupText',
