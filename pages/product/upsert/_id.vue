@@ -201,12 +201,14 @@ export default {
 
 <template>
     <div v-loading="loading">
-        <!-- <div class="tar mbm" v-if="product.id">
-            <el-button @click="goToStore(product.seo_uri)">
-                <icon-new-window icon-name="new_window" width="15px" />
-                &nbsp;&nbsp;VIEW PRODUCT IN STORE
-            </el-button>
-        </div> -->
+        <div class="tar mbm" v-if="product.id">
+            <b-button
+                variant="outline-secondary"
+                @click="goToStore(product.seo_uri)">
+                <icon-new-window
+                    width="20"
+                    height="20" />&nbsp;{{ $t('View product in store') }}</b-button>
+        </div>
 
         <!-- published-->
         <div class="mbl">

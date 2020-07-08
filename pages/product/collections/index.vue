@@ -19,8 +19,18 @@ export default {
                 name: null,
                 value: null
             },
-            domainName: process.env.DOMAIN_NAME
-        }
+            domainName: process.env.DOMAIN_NAME,
+            tableData: {
+                headers: [
+                    { key: 'name', label: this.$t('Name') },
+                    { key: 'published', label: this.$t('Published') }
+                ]
+            }
+        };
+    },
+
+    created() {
+        this.fetchCollections();
     },
 
     methods: {
@@ -32,7 +42,7 @@ export default {
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
         },
 
@@ -59,7 +69,7 @@ export default {
                     this.$errorMessage(
                         e.message,
                         { closeOthers: true }
-                    )
+                    );
                 }
             }
             catch(err) {
@@ -90,7 +100,7 @@ export default {
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
         },
 
@@ -102,7 +112,7 @@ export default {
                     throw new Error(this.$t('Error updating Collection'));
                 }
 
-                let title = collection.id ? this.$t('Collection updated successfully') : this.$t('Collection added successfully');
+                const title = collection.id ? this.$t('Collection updated successfully') : this.$t('Collection added successfully');
                 this.$successMessage(`${title}: ${collection.name}`);
 
                 this.showDialog = false;
@@ -113,7 +123,7 @@ export default {
                 this.$errorMessage(
                     e.message,
                     { closeOthers: true }
-                )
+                );
             }
         },
 
@@ -126,14 +136,10 @@ export default {
             this.form = {
                 name: null,
                 value: null
-            }
+            };
         }
-    },
-
-    created() {
-        this.fetchCollections();
     }
-}
+};
 </script>
 
 
@@ -141,39 +147,27 @@ export default {
     <div>
         <fab type="add" @click="onClickAdd" />
 
-        <el-table
-            :data="collections"
-            class="widthAll">
+        <b-table
+            :items="collections"
+            :fields="tableData.headers"
+            borderless
+            striped
+            hover>
 
-            <el-table-column type="expand">
-                <template slot-scope="scope">
-                    <pre style="overflow-x:scroll">{{ scope.row | formatJson }}</pre>
-                </template>
-            </el-table-column>
+            <!-- title -->
+            <template v-slot:cell(name)="row">
+                {{ row.item.name }}
+                <operations-dropdown
+                    :show-view="false"
+                    @edit="onUpsertClick(row.item.id)"
+                    @delete="onDeleteClick(row.item)" />
+            </template>
 
-            <!-- name -->
-            <el-table-column
-                prop="name"
-                label="Name">
-                <template slot-scope="scope">
-                    {{ scope.row.name }}
-                    <operations-dropdown
-                        :show-view="false"
-                        @edit="onUpsertClick(scope.row.id)"
-                        @delete="onDeleteCollection(scope.row)" />
-                </template>
-            </el-table-column>
-
-            <!-- Is Available -->
-            <el-table-column
-                prop="published"
-                label="Published">
-                <template slot-scope="scope">
-                    <boolean-tag :value="scope.row.published" />
-                </template>
-            </el-table-column>
-        </el-table>
-
+            <!-- published -->
+            <template v-slot:cell(published)="row">
+                <boolean-tag :value="row.item.published" />
+            </template>
+        </b-table>
 
 
         <app-dialog

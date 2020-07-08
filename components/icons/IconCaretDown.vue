@@ -12,9 +12,9 @@ export default {
 
 <template>
     <icon-base v-bind="$attrs">
-        <rect x="8" y="4" width="13.1" height="11.27" />
-        <line x1="14.56" y1="6.47" x2="14.56" y2="12.53" />
-        <line x1="11.69" y1="9.5" x2="17.42" y2="9.5" />
-        <polyline points="16 16 16 19 3 19 3 8 7 8" />
+        <polygon points="12 16.73 3 7.27 21 7.27 12 16.73" />
     </icon-base>
 </template>
+
+
+

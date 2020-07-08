@@ -12,19 +12,19 @@ export default {
 
     computed: {
         label() {
-            return this.value ? "Yes" : "No"
+            return this.value ? this.$t('Yes') : this.$t('No');
         },
 
         tagType() {
-            return this.value ? 'success' : 'danger'
+            return this.value ? 'success' : 'danger';
         }
     }
-}
+};
 </script>
 
 <template>
-    <el-tag
-        :type="tagType"
+    <b-badge
+        :variant="tagType"
         v-on="$listeners"
-        v-bind="$attrs">{{ label }}</el-tag>
+        v-bind="$attrs">{{ label }}</b-badge>
 </template>

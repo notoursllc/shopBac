@@ -662,10 +662,6 @@ export default {
     }
 }
 
-.el-popconfirm__action {
-    margin-top: 10px;
-}
-
 .input-number {
     width: 105px;
 }
@@ -689,14 +685,6 @@ export default {
     padding: 2px 1px !important;
     cursor: pointer;
 }
-
-// .header-input {
-//     .el-input-group__prepend,
-//     .el-input-group__append {
-//         padding: 0 3px;
-//         cursor: pointer;
-//     }
-// }
 
 .sku-item-col-icon {
     text-align: center;

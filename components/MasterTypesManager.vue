@@ -4,7 +4,6 @@ import slugify from 'slugify';
 
 export default {
     components: {
-        AppDialog: () => import('@/components/AppDialog'),
         Fab: () => import('@/components/Fab'),
         OperationsDropdown: () => import('@/components/OperationsDropdown'),
         BooleanTag: () => import('@/components/BooleanTag'),
@@ -20,7 +19,6 @@ export default {
 
     data() {
         return {
-            showDialog: false,
             form: {
                 name: null,
                 slug: null,
@@ -29,7 +27,14 @@ export default {
                 metadata: null
             },
             formHasMetaData: false,
-            types: []
+            types: [],
+            tableData: {
+                headers: [
+                    { key: 'name', label: this.$t('Name') },
+                    { key: 'slug', label: this.$t('Slug') },
+                    { key: 'published', label: this.$t('Published') }
+                ]
+            }
         };
     },
 
@@ -116,7 +121,7 @@ export default {
                     this.form.value = this.$api.masterTypes.getNextAvailableTypeValue(types);
                 }
 
-                this.showDialog = true;
+                this.showDialog();
             }
             catch(e) {
                 this.$errorMessage(
@@ -151,7 +156,7 @@ export default {
                 const title = this.form.id ? 'Master Type updated successfully' : 'Master Type added successfully';
                 this.$successMessage(`${title}: ${mt.name}`);
 
-                this.showDialog = false;
+                this.showDialog(false);
                 this.clearForm();
                 this.fetchTypes();
             }
@@ -163,8 +168,12 @@ export default {
             }
         },
 
+        showDialog(show) {
+            show === false ? this.$refs.type_upsert_modal.hide() : this.$refs.type_upsert_modal.show();
+        },
+
         onUpsertFormCancel() {
-            this.showDialog = false;
+            this.showDialog(false);
             this.clearForm();
         },
 
@@ -180,57 +189,46 @@ export default {
     <div>
         <fab type="add" @click="onUpsertClick" />
 
-        <el-table
-            :data="types"
-            class="widthAll">
+        <b-table
+            :items="types"
+            :fields="tableData.headers"
+            borderless
+            striped
+            hover>
 
-            <el-table-column type="expand">
-                <template slot-scope="scope">
-                    <pre style="overflow-x:scroll">{{ scope.row | formatJson }}</pre>
-                </template>
-            </el-table-column>
+            <!-- title -->
+            <template v-slot:cell(name)="row">
+                {{ row.item.name }}
+                <operations-dropdown
+                    :show-view="false"
+                    @edit="onUpsertClick(row.item)"
+                    @delete="onDeleteClick(row.item)" />
+            </template>
 
-            <!-- label -->
-            <el-table-column
-                prop="name"
-                label="Name">
-                <template slot-scope="scope">
-                    {{ scope.row.name }}
-                    <operations-dropdown
-                        :show-view="false"
-                        @edit="onUpsertClick(scope.row)"
-                        @delete="onDeleteClick(scope.row)" />
-                </template>
-            </el-table-column>
+            <!-- slug -->
+            <template v-slot:cell(slow)="row">
+                {{ row.item.slug }}
+            </template>
 
-            <!-- Slug -->
-            <el-table-column
-                prop="slug"
-                label="Slug" />
+            <!-- published -->
+            <template v-slot:cell(published)="row">
+                <boolean-tag :value="row.item.published" />
+            </template>
+        </b-table>
 
-            <!-- Is Available -->
-            <el-table-column
-                prop="published"
-                label="Published">
-                <template slot-scope="scope">
-                    <boolean-tag :value="scope.row.published" />
-                </template>
-            </el-table-column>
-        </el-table>
-
-
-        <app-dialog
-            :key="object"
-            :title="form.id ? `Edit Master Type (${object})` : `Add Master Type (${object})`"
-            :visible.sync="showDialog">
+        <b-modal
+            ref="type_upsert_modal"
+            size="xl"
+            hide-footer
+            :title="form.id ? `Edit Master Type (${object})` : `Add Master Type (${object})`">
 
             <div class="displayTable widthAll">
-
                 <!-- Available -->
                 <div class="formRow">
                     <label class="width100">{{ $t('Published') }}:</label>
                     <span>
-                        <el-checkbox v-model="form.published" />
+                        <b-form-checkbox
+                            v-model="form.published"></b-form-checkbox>
                     </span>
                 </div>
 
@@ -238,7 +236,7 @@ export default {
                 <div class="formRow">
                     <label>{{ $t('Name') }}:</label>
                     <span>
-                        <el-input v-model="form.name" />
+                        <b-form-input v-model="form.name" />
                     </span>
                 </div>
 
@@ -246,7 +244,7 @@ export default {
                 <div class="formRow">
                     <label>{{ $t('Slug') }}:</label>
                     <span>
-                        <el-input v-model="form.slug" />
+                        <b-form-input v-model="form.slug" />
                         <div class="fs12" v-show="slugIdea">
                             <span class="colorGrayLighter">Suggestion:</span>&nbsp;&nbsp;{{ slugIdea }}&nbsp;&nbsp;(<a @click="onUseSlugSuggestion">use this</a>)
                         </div>
@@ -263,9 +261,8 @@ export default {
                 <div class="formRow">
                     <label>{{ $t('Description') }}:</label>
                     <span>
-                        <el-input
+                        <b-form-textarea
                             v-model="form.description"
-                            type="textarea"
                             :rows="2" />
                     </span>
                 </div>
@@ -274,9 +271,8 @@ export default {
                 <div class="formRow">
                     <label>{{ $t('Meta data') }}:</label>
                     <span>
-                        <el-checkbox
-                            v-model="formHasMetaData">{{ $t('This item has additional meta data') }}</el-checkbox>
-
+                        <b-form-checkbox
+                            v-model="formHasMetaData">{{ $t('This item has additional meta data') }}</b-form-checkbox>
                         <div class="mtm" v-show="formHasMetaData">
                             <meta-data-builder v-model="form.metadata" />
                         </div>
@@ -287,18 +283,17 @@ export default {
                 <div class="formRow">
                     <label></label>
                     <span class="ptl">
-                        <el-button
-                            type="primary"
-                            @click="onUpsertFormSave">{{ $t('Save') }}</el-button>
+                        <b-button
+                            variant="primary"
+                            @click="onUpsertFormSave">{{ $t('Save') }}</b-button>
 
-                        <el-button
-                            @click="onUpsertFormCancel">{{ $t('Cancel') }}</el-button>
+                        <b-button
+                            variant="light"
+                            @click="onUpsertFormCancel">{{ $t('Cancel') }}</b-button>
                     </span>
                 </div>
-
             </div>
-
-        </app-dialog>
+        </b-modal>
     </div>
 </template>
 

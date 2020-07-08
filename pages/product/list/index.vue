@@ -5,7 +5,8 @@ import product_mixin from '@/mixins/product_mixin';
 export default {
     components: {
         OperationsDropdown: () => import('@/components/OperationsDropdown'),
-        Fab: () => import('@/components/Fab')
+        Fab: () => import('@/components/Fab'),
+        BooleanTag: () => import('@/components/BooleanTag')
     },
 
     mixins: [
@@ -19,6 +20,16 @@ export default {
             sortData: {
                 orderBy: 'updated_at',
                 orderDir: 'DESC'
+            },
+            tableData: {
+                headers: [
+                    { key: 'featuredImage', label: null },
+                    { key: 'title', label: this.$t('Title'), sortable: true, sortDirection: 'desc' },
+                    { key: 'inventory', label: this.$t('Inventory') },
+                    { key: 'published', label: this.$t('Published'), sortable: true },
+                    { key: 'sub_type', label: this.$t('Sub Type'), sortable: true },
+                    { key: 'vendor', label: this.$t('Vendor') }
+                ]
             }
         };
     },
@@ -140,82 +151,58 @@ export default {
     <div>
         <fab type="add" @click="goToProductUpsert" />
 
-        <el-table
-            :data="products"
-            class="widthAll"
-            @sort-change="sortChanged">
+        <b-table
+            :items="products"
+            :fields="tableData.headers"
+            borderless
+            striped
+            hover>
 
             <!-- featured image -->
-            <el-table-column
-                width="140">
-                <template slot-scope="scope">
-                    <template v-if="featuredProductPic(scope.row)">
-                        <img :src="featuredProductPic(scope.row)"
-                             alt="Image"
-                             class="prodPicSmall">
-                        <div class="fs12"># pictures: {{ numberOfPicsInProduct(scope.row) }}</div>
-                    </template>
+            <template v-slot:cell(featuredImage)="row">
+                <template v-if="featuredProductPic(row.value)">
+                    <img
+                        :src="featuredProductPic(row.value)"
+                        alt="Image"
+                        class="prodPicSmall">
+                    <div class="fs12"># pictures: {{ numberOfPicsInProduct(row.value) }}</div>
                 </template>
-            </el-table-column>
+            </template>
 
             <!-- title -->
-            <el-table-column
-                prop="title"
-                label="Title"
-                sortable="custom">
-                <template slot-scope="scope">
-                    {{ scope.row.title }}
-                    <operations-dropdown
-                        @view="goToProductDetails(scope.row.id)"
-                        @edit="goToProductUpsert(scope.row.id)"
-                        @delete="onProductDelete(scope.row)" />
-                </template>
-            </el-table-column>
+            <template v-slot:cell(title)="row">
+                {{ row.item.title }}
+                <operations-dropdown
+                    :show-edit="false"
+                    @view="goToProductUpsert(row.item.id)"
+                    @delete="onProductDelete(row.item)" />
+            </template>
 
             <!-- inventory count -->
-            <el-table-column
-                label="Inventory">
-                <template slot-scope="scope">
-                    {{ getInventoryCountString(scope.row) }}
-                </template>
-            </el-table-column>
+            <template v-slot:cell(inventory)="row">
+                {{ getInventoryCountString(row.item) }}
+            </template>
 
             <!-- published -->
-            <el-table-column
-                label="Published"
-                width="120"
-                prop="published"
-                sortable="custom">
-                <template slot-scope="scope">
-                    <span v-bind:class="{'colorGreen':scope.row.published, 'colorRed':!scope.row.published}">
-                        {{ scope.row.published ? 'Yes' : 'No '}}
-                    </span>
-                </template>
-            </el-table-column>
+            <template v-slot:cell(published)="row">
+                <boolean-tag :value="row.item.published" />
+            </template>
 
-            <!-- product sub-type -->
-            <el-table-column
-                label="Sub Type"
-                prop="sub_type"
-                width="120"
-                sortable="custom">
-                <template slot-scope="scope">
-                    {{ getSubTypeLabel(scope.row.sub_type) }}
-                </template>
-            </el-table-column>
+            <!-- sub-type -->
+            <template v-slot:cell(sub_type)="row">
+                {{ getSubTypeLabel(row.item.sub_type) }}
+            </template>
 
             <!-- vendor -->
-            <el-table-column
-                prop="vendor"
-                label="Vendor" />
-        </el-table>
+            <template v-slot:cell(vendor)="row">
+                {{ row.item.vendor }}
+            </template>
+        </b-table>
     </div>
 </template>
 
 
 <style lang="scss">
-    @import "~assets/css/components/_table.scss";
-
     .prodPicSmall {
         width: 70px;
     }

@@ -5,47 +5,35 @@ export default {
     props: {
         showView: {
             type: Boolean,
-            default: true,
+            default: true
         },
 
         showEdit: {
             type: Boolean,
-            default: true,
+            default: true
         },
 
         showDelete: {
             type: Boolean,
-            default: true,
-        }
-    },
-
-    methods: {
-        onCommand(command) {
-            console.log("EMITTING", command)
-            this.$emit(command);
+            default: true
         }
     }
-}
+};
 </script>
 
 <template>
-    <el-dropdown @command="onCommand">
-        <slot>
-            <el-button size="mini">
-                <i class="el-icon-more" />
-            </el-button>
-        </slot>
-        <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="view" v-if="showView">View</el-dropdown-item>
-            <el-dropdown-item command="edit" v-if="showEdit">Edit</el-dropdown-item>
-            <el-dropdown-item command="delete" v-if="showDelete">Delete</el-dropdown-item>
-        </el-dropdown-menu>
-    </el-dropdown>
+    <b-dropdown
+        variant="outline-secondary"
+        size="sm"
+        toggle-class="bv-ops-dropdown">
+        <b-dropdown-item-button v-if="showView" @click="$emit('view')">{{ $t('View') }}</b-dropdown-item-button>
+        <b-dropdown-item-button v-if="showEdit" @click="$emit('edit')">{{ $t('Edit') }}</b-dropdown-item-button>
+        <b-dropdown-item-button v-if="showDelete" @click="$emit('delete')">{{ $t('Delete') }}</b-dropdown-item-button>
+    </b-dropdown>
 </template>
 
-<style scoped>
-.el-button--mini {
-    padding: 4px !important;
-    margin-left: 5px;
+<style lang="scss">
+.bv-ops-dropdown {
+    padding: 1px 7px !important;
 }
 </style>

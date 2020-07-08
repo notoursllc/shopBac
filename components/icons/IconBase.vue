@@ -27,9 +27,23 @@ export default {
             type: String,
             default: 'none'
         },
+        standardFill: {
+            type: Boolean,
+            default: false
+        },
         className: {
             type: String,
             default: ''
+        }
+    },
+
+    computed: {
+        iconStrokeWidth() {
+            return this.standardFill ? null : this.strokeWidth;
+        },
+
+        iconFill() {
+            return this.standardFill ? '#5d6674' : this.fill;
         }
     }
 };
@@ -46,8 +60,8 @@ export default {
         :width="width"
         :height="height"
         :stroke="stroke"
-        :stroke-width="strokeWidth"
-        :fill="fill"
+        :stroke-width="iconStrokeWidth"
+        :fill="iconFill"
         stroke-linecap="round"
         stroke-linejoin="round"
         aria-hidden="true"

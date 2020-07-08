@@ -91,6 +91,7 @@ module.exports = {
 
         // importing only the stuff we are using to reduce bundle size
         components: [
+            'BBadge',
             'BButton',
             'BButtonGroup',
             'BContainer',
@@ -99,6 +100,7 @@ module.exports = {
             'BDropdown',
             'BDropdownForm',
             'BDropdownItem',
+            'BDropdownItemButton',
             'BFormCheckbox',
             'BFormFile',
             'BFormGroup',
