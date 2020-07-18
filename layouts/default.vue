@@ -1,6 +1,6 @@
 <script>
 import { mapState } from 'vuex';
-import alerts_mixin from '@/mixins/alerts_mixin';
+import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     components: {
@@ -13,7 +13,7 @@ export default {
 
 
     mixins: [
-        alerts_mixin
+        notifications_mixin
     ],
 
     computed: {
@@ -61,7 +61,7 @@ export default {
                 });
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         }
     }
@@ -92,7 +92,6 @@ export default {
                         <menu-item
                             :route="{ name: 'product-types' }"
                             index="productTypes"
-                            :disabled="true"
                             @click="menuItemClick">{{ $t('Types') }}</menu-item>
 
                         <menu-item

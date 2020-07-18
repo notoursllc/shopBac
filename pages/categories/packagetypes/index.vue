@@ -1,6 +1,6 @@
 <script>
 import shipping_mixin from '@/mixins/shipping_mixin';
-import alerts_mixin from '@/mixins/alerts_mixin';
+import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     components: {
@@ -12,7 +12,7 @@ export default {
 
     mixins: [
         shipping_mixin,
-        alerts_mixin
+        notifications_mixin
     ],
 
     data() {
@@ -56,7 +56,7 @@ export default {
                 });
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         },
 
@@ -84,10 +84,10 @@ export default {
                 }
 
                 this.fetchPackageTypes();
-                this.successMessage(`Package Type deleted: ${data.label}`);
+                this.successToast(`Package Type deleted: ${data.label}`);
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         },
 

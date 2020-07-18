@@ -151,23 +151,23 @@ exports.plugin = {
 
         server.ext('onPostAuth', (request, h) => {
             // https://github.com/BoseCorp/hapi-auth-jwt2#want-to-access-the-jwt-token-after-validation
-            if(isObject(request.auth.credentials) && request.auth.credentials.tenant_id) {
+            if(isObject(request.auth.credentials) && request.auth.credentials.id) {
                 // query
                 // I don't think query can be an array, right?
                 if(isObject(request.query)) {
-                    request.query.tenant_id = request.auth.credentials.tenant_id;
+                    request.query.tenant_id = request.auth.credentials.id;
                 }
 
                 // payload
                 if(Array.isArray(request.payload)) {
                     request.payload.forEach((item) => {
                         if(isObject(item)) {
-                            item.tenant_id = request.auth.credentials.tenant_id;
+                            item.tenant_id = request.auth.credentials.id;
                         }
                     });
                 }
                 else if(isObject(request.payload)) {
-                    request.payload.tenant_id = request.auth.credentials.tenant_id;
+                    request.payload.tenant_id = request.auth.credentials.id;
                 }
             }
 

@@ -1,6 +1,6 @@
 <script>
 import product_mixin from '@/mixins/product_mixin';
-import alerts_mixin from '@/mixins/alerts_mixin';
+import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     components: {
@@ -12,7 +12,7 @@ export default {
 
     mixins: [
         product_mixin,
-        alerts_mixin
+        notifications_mixin
     ],
 
     data() {
@@ -56,7 +56,7 @@ export default {
                 });
             }
             catch(err) {
-                this.errorMessage(err.message);
+                this.errorToast(err.message);
             }
         },
 
@@ -96,11 +96,11 @@ export default {
 
             try {
                 await this.$api.products.delete(product.id);
-                this.successMessage(`"${product.title}" deleted successfully`);
+                this.successToast(`"${product.title}" deleted successfully`);
                 this.fetchProducts();
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         },
 

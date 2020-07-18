@@ -22,7 +22,7 @@ export default {
                 });
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         }
     }

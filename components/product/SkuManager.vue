@@ -3,7 +3,7 @@ import isObject from 'lodash.isobject';
 import cloneDeep from 'lodash.clonedeep';
 import uuid from 'uuid/v4';
 import storage_mixin from '@/mixins/storage_mixin';
-import alerts_mixin from '@/mixins/alerts_mixin';
+import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     name: 'SkuManager',
@@ -26,7 +26,7 @@ export default {
 
     mixins: [
         storage_mixin,
-        alerts_mixin
+        notifications_mixin
     ],
 
     props: {
@@ -133,11 +133,11 @@ export default {
                 this.product.skus.splice(index, 1);
 
                 if(sku.id) {
-                    this.successMessage(this.$t('Variant deleted successfully'));
+                    this.successToast(this.$t('Variant deleted successfully'));
                 }
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         },
 
@@ -300,7 +300,7 @@ export default {
                 this.unusedSkuVariantTypes = cloneDeep(data);
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         },
 

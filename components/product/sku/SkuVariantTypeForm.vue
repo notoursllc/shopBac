@@ -1,5 +1,5 @@
 <script>
-import alerts_mixin from '@/mixins/alerts_mixin';
+import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     components: {
@@ -7,7 +7,7 @@ export default {
     },
 
     mixins: [
-        alerts_mixin
+        notifications_mixin
     ],
 
     props: {
@@ -40,7 +40,7 @@ export default {
                 this.type = await this.$api.productSkuVariantTypes.get(this.id);
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         },
 
@@ -53,11 +53,11 @@ export default {
                 }
 
                 const title = this.id ? this.$t('Item updated successfully') : this.$t('Item added successfully');
-                this.successMessage(`${title}: ${mt.name}`);
+                this.successToast(`${title}: ${mt.name}`);
                 this.$emit('success');
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         }
     }

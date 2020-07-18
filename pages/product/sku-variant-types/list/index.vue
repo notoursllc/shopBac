@@ -1,5 +1,5 @@
 <script>
-import alerts_mixin from '@/mixins/alerts_mixin';
+import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     components: {
@@ -10,7 +10,7 @@ export default {
     },
 
     mixins: [
-        alerts_mixin
+        notifications_mixin
     ],
 
     data() {
@@ -43,7 +43,7 @@ export default {
                 this.types = data;
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         },
 
@@ -71,10 +71,10 @@ export default {
                 }
 
                 this.fetchTypes();
-                this.successMessage(this.$t('item_deleted_label', {label: data.label}));
+                this.successToast(this.$t('item_deleted_label', {label: data.label}));
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         },
 

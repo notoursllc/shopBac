@@ -1,6 +1,6 @@
 <script>
 import { getNextAvailableTypeValue } from '@/utils/common';
-import alerts_mixin from '@/mixins/alerts_mixin';
+import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     components: {
@@ -8,7 +8,7 @@ export default {
     },
 
     mixins: [
-        alerts_mixin
+        notifications_mixin
     ],
 
     data() {
@@ -43,7 +43,7 @@ export default {
                 }
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         },
 
@@ -53,7 +53,7 @@ export default {
                 this.collection.value = getNextAvailableTypeValue(collections);
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         },
 
@@ -66,12 +66,12 @@ export default {
                 }
 
                 const title = collection.id ? this.$t('Collection updated successfully') : this.$t('Collection added successfully');
-                this.successMessage(`${title}: ${collection.name}`);
+                this.successToast(`${title}: ${collection.name}`);
                 this.goToProductCollectionList();
 
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         }
     }

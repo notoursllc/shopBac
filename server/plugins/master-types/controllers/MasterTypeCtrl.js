@@ -17,7 +17,7 @@ class MasterTypeCtrl extends BaseController {
             name: Joi.string().max(100).required(),
             value: Joi.number().integer().min(0).required(),
             slug: Joi.string().required(),
-            description: Joi.string().max(500).allow(null),
+            description: Joi.string().max(500).allow('').allow(null),
             metadata: Joi.array().allow(null),
             created_at: Joi.date(),
             updated_at: Joi.date()
@@ -42,7 +42,7 @@ class MasterTypeCtrl extends BaseController {
             qb.where('tenant_id', '=', request.query.tenant_id);
 
             if(request.query.object) {
-                qb.where('object', '=', request.query.object);
+                qb.andWhere('object', '=', request.query.object);
             }
         });
     }

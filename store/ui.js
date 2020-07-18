@@ -16,24 +16,25 @@ export const state = () => ({
     siteName: domainName,
     siteUrlLong: process.env.NODE_ENV === 'development' ? `http://localhost:${process.env.API_PORT}` : `https://www.${domainName}`,
     siteUrlShort: process.env.NODE_ENV === 'development' ? `localhost:${process.env.API_PORT}` : `www.${domainName}`,
-    twitterUser: 'gmnstLife'
+    twitterUser: 'gmnstLife',
+    visibleToasts: []
 });
 
 export const mutations = {
     CLOSE_SIDEBAR: (state) => {
-        state.sidebarOpened = false
+        state.sidebarOpened = false;
     },
 
     OPEN_SIDEBAR: (state) => {
-        state.sidebarOpened = true
+        state.sidebarOpened = true;
     },
 
     TOGGLE_SIDEBAR: (state) => {
-        state.sidebarOpened = !state.sidebarOpened
+        state.sidebarOpened = !state.sidebarOpened;
     },
 
     LOCATION_CHANGE: (state) => {
-        state.sidebarOpened = false
+        state.sidebarOpened = false;
     },
 
     WINDOW_RESIZE: (state) => {
@@ -61,8 +62,16 @@ export const mutations = {
         messageInstances.forEach((messageInstance) => {
             messageInstance.close();
         });
+    },
+
+    ADD_TOAST: (state, id) => {
+        state.visibleToasts.push(id);
+    },
+
+    DELETE_TOAST: (state, id) => {
+        state.visibleToasts.splice(state.visibleToasts.indexOf(id), 1);
     }
-}
+};
 
 export const actions = {
     openSidebar ({ commit }) {
@@ -91,6 +100,14 @@ export const actions = {
 
     CLOSE_MESSAGE_INSTANCES: ({ commit }) => {
         commit('CLOSE_MESSAGE_INSTANCES');
+    },
+
+    addToast: ({ commit }, id) => {
+        commit('ADD_TOAST', id);
+    },
+
+    deleteToast: ({ commit }, id) => {
+        commit('DELETE_TOAST', id);
     }
 };
 

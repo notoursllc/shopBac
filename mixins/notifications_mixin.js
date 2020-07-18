@@ -1,52 +1,103 @@
+import uuid from 'uuid';
+import cloneDeep from 'lodash.clonedeep';
 import IconWarningOutine from '@/components/icons/IconWarningOutline';
 
 export default {
     methods: {
-        errorMessage(message, config) {
+        errorToast(message, toastConfig, opts) {
             const cfg = Object.assign(
                 {},
                 {
                     variant: 'danger',
                     title: this.$t('Error')
                 },
-                config
+                toastConfig
             );
 
             return this.toastMessage(
                 message || this.$t('An error occurred'),
-                cfg
+                cfg,
+                opts
             );
         },
 
-        successMessage(message, config) {
+        successToast(message, toastConfig, opts) {
             const cfg = Object.assign(
                 {},
                 {
                     variant: 'success',
                     title: this.$t('Success'),
-                    autoHideDelay: 5000,
+                    // autoHideDelay: 5000,
                     noAutoHide: false
                 },
-                config
+                toastConfig
             );
 
-            return this.toastMessage(message, cfg);
+            return this.toastMessage(message, cfg, opts);
         },
 
-        toastMessage(message, config) {
+        toastMessage(message, toastConfig, opts) {
+            const options = Object.assign(
+                {},
+                {
+                    persistAcrossRoute: false,
+                    hideOthers: true
+                },
+                opts
+            );
+
+            if(options.hideOthers) {
+                // keeping this outside of setTimeout in case visibleToasts gets updated below before
+                // the setTimeout function is executed
+                const closeIds = cloneDeep(this.$store.state.ui.visibleToasts);
+                setTimeout(() => {
+                    this.hideToast(closeIds, true);
+                }, 250);
+            }
+
             const cfg = Object.assign(
                 {},
                 {
                     variant: 'default',
                     toaster: 'b-toaster-top-center',
                     solid: true,
-                    noAutoHide: true
-                    // noCloseButton: true
+                    noAutoHide: true,
+                    noCloseButton: false,
+                    id: uuid()
                 },
-                config
+                toastConfig
             );
 
-            return this.$bvToast.toast(message, cfg);
+            // not saving the id of toasts that will be auto-hidden anyhow
+            if(cfg.noAutoHide) {
+                this.$store.dispatch('ui/addToast', cfg.id);
+            }
+
+            // https://bootstrap-vue.org/docs/components/toast#toasts-on-demand
+            if(options.persistAcrossRoute) {
+                this.$root.$bvToast.toast(message, cfg);
+            }
+            else {
+                this.$bvToast.toast(message, cfg);
+            }
+
+            return cfg.id;
+        },
+
+        hideToast(id, deleteToast) {
+            if(!Array.isArray(id)) {
+                this.$bvToast.hide(id);
+                return;
+            }
+
+            const ids = Array.isArray(id) ? id : this.$store.state.ui.visibleToasts;
+            ids.forEach((toastId) => {
+                this.$bvToast.hide(toastId);
+
+                if(deleteToast) {
+                    this.$store.dispatch('ui/deleteToast', toastId);
+                }
+            });
         },
 
         confirmModal(message, variant, config) {

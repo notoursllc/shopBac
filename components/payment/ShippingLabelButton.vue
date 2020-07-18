@@ -4,7 +4,7 @@ import forEach from 'lodash.foreach';
 import TreeView from 'vue-json-tree-view';
 import payment_mixin from '@/mixins/payment_mixin';
 import shipping_mixin from '@/mixins/shipping_mixin';
-import alerts_mixin from '@/mixins/alerts_mixin';
+import notifications_mixin from '@/mixins/notifications_mixin';
 
 // Vue.use(TreeView);
 
@@ -18,7 +18,7 @@ export default {
     mixins: [
         payment_mixin,
         shipping_mixin,
-        alerts_mixin
+        notifications_mixin
     ],
 
     data() {
@@ -196,7 +196,7 @@ export default {
 
             }
             catch(err) {
-                this.errorMessage(err.message);
+                this.errorToast(err.message);
                 this.$bugsnag.notify(err);
             }
         }

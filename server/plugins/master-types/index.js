@@ -25,7 +25,7 @@ const after = function (server) {
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required(),
-                        tenant_id: Joi.string().uuid()
+                        tenant_id: Joi.string().uuid().required()
                     })
                 },
                 handler: (request, h) => {
@@ -69,7 +69,8 @@ const after = function (server) {
                 description: 'Deletes a master type',
                 validate: {
                     query: Joi.object({
-                        id: Joi.string().uuid().required()
+                        id: Joi.string().uuid().required(),
+                        tenant_id: Joi.string().uuid().required()
                     })
                 },
                 handler: (request, h) => {

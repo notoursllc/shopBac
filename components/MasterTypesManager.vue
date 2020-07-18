@@ -1,7 +1,7 @@
 <script>
 import isObject from 'lodash.isobject';
 import slugify from 'slugify';
-import alerts_mixin from '@/mixins/alerts_mixin';
+import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     components: {
@@ -13,7 +13,7 @@ export default {
     },
 
     mixins: [
-        alerts_mixin
+        notifications_mixin
     ],
 
     props: {
@@ -69,7 +69,7 @@ export default {
                 this.types = await this.$api.masterTypes.list(this.object);
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         },
 
@@ -91,10 +91,12 @@ export default {
                 }
 
                 this.fetchTypes();
-                this.successMessage(`Deleted: ${data.name}`);
+                this.successToast(
+                    this.$t('deleted_name', { name: data.name })
+                );
             }
             catch(err) {
-                this.errorMessage(err.message);
+                this.errorToast(err.message);
             }
         },
 
@@ -122,7 +124,7 @@ export default {
                 this.showDialog();
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         },
 
@@ -148,15 +150,17 @@ export default {
                     throw new Error(this.$t('Error updating Master Type'));
                 }
 
-                const title = this.form.id ? 'Master Type updated successfully' : 'Master Type added successfully';
-                this.successMessage(`${title}: ${mt.name}`);
-
+                this.successToast(
+                    this.$t(this.form.id ? 'updated_name' : 'added_name', { name: mt.name }),
+                    null,
+                    { hideOthers: true }
+                );
                 this.showDialog(false);
                 this.clearForm();
                 this.fetchTypes();
             }
             catch(e) {
-                this.errorMessage(e.message);
+                this.errorToast(e.message);
             }
         },
 
