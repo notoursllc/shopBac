@@ -62,9 +62,10 @@ export default {
                 <!-- email -->
                 <div class="inputGroup mrl mbm">
                     <label>{{ $t('Email') }}</label>
-                    <el-input
+                    <b-form-input
                         v-model="userData.email"
                         @input="delayTouch($v.userData.email)" />
+
                     <div v-if="$v.userData.email.$invalid" class="form-validation-error">
                         <div v-if="!$v.userData.email.required">{{ $t('required') }}</div>
                         <div v-if="$v.userData.email.$dirty && !$v.userData.email.email">{{ $t('invalid email address format') }}</div>
@@ -75,9 +76,10 @@ export default {
                 <div class="inputGroup mrl mbm">
                     <label>{{ $t('Password') }}</label>
                     <div>
-                        <el-input
+                        <b-form-input
                             v-model="userData.password"
-                            show-password />
+                            type="password" />
+
                         <div class="form-validation-error">
                             <password-input-errors
                                 :password="userData.password"
@@ -87,10 +89,10 @@ export default {
                 </div>
 
                 <div class="ptl">
-                    <el-button
-                        type="primary"
+                    <b-button
+                        variant="primary"
                         @click="onSubmit"
-                        :disabled="$v.userData.$invalid || numPasswordErrors > 0">{{ $t('Submit') }}</el-button>
+                        :disabled="$v.userData.$invalid || numPasswordErrors > 0">{{ $t('Submit') }}</b-button>
                 </div>
             </form>
         </div>

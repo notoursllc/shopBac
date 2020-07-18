@@ -11,6 +11,7 @@ class ProductCollectionCtrl extends BaseController {
 
     getSchema() {
         return {
+            tenant_id: Joi.string().uuid(),
             published: Joi.boolean().default(false),
             name: Joi.string().max(100).required(),
             value: Joi.number().integer().min(0).required(),

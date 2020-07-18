@@ -79,7 +79,9 @@ export default {
         * https://stackoverflow.com/questions/588004/is-floating-point-math-broken/51723472#51723472
         */
         floatify(number) {
-            return parseFloat((number).toFixed(10));
+            if(number) {
+                return parseFloat((number).toFixed(10));
+            }
         },
 
         emitVal() {

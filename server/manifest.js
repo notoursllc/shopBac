@@ -71,12 +71,6 @@ const webManifest = {
                 }
             },
             {
-                plugin: './plugins/product-collections',
-                routes: {
-                    prefix: routePrefix
-                }
-            },
-            {
                 plugin: './plugins/storage',
                 routes: {
                     prefix: routePrefix

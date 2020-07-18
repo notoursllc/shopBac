@@ -1,8 +1,14 @@
 <script>
+import alerts_mixin from '@/mixins/alerts_mixin';
+
 export default {
     components: {
         MetaDataBuilder: () => import('@/components/MetaDataBuilder')
     },
+
+    mixins: [
+        alerts_mixin
+    ],
 
     props: {
         id: {
@@ -34,10 +40,7 @@ export default {
                 this.type = await this.$api.productSkuVariantTypes.get(this.id);
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(e.message);
             }
         },
 
@@ -50,14 +53,11 @@ export default {
                 }
 
                 const title = this.id ? this.$t('Item updated successfully') : this.$t('Item added successfully');
-                this.$successMessage(`${title}: ${mt.name}`);
+                this.successMessage(`${title}: ${mt.name}`);
                 this.$emit('success');
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(e.message);
             }
         }
     }
@@ -71,7 +71,8 @@ export default {
         <div class="formRow">
             <label>{{ $t('Label') }}:</label>
             <span>
-                <el-input v-model="type.label" />
+                <b-form-input
+                    v-model="type.label" />
             </span>
         </div>
 
@@ -79,9 +80,8 @@ export default {
         <div class="formRow">
             <label>{{ $t('Description') }}:</label>
             <span>
-                <el-input
+                <b-form-textarea
                     v-model="type.description"
-                    type="textarea"
                     :rows="2" />
             </span>
         </div>
@@ -102,9 +102,9 @@ export default {
         <div class="formRow">
             <label></label>
             <span class="ptl">
-                <el-button
-                    type="primary"
-                    @click="onFormSave">{{ $t('Save') }}</el-button>
+                <b-button
+                    variant="primary"
+                    @click="onFormSave">{{ $t('Save') }}</b-button>
             </span>
         </div>
     </form>

@@ -1,16 +1,15 @@
 <script>
-import Vue from 'vue';
 import isObject from 'lodash.isobject';
 import cloneDeep from 'lodash.clonedeep';
 import uuid from 'uuid/v4';
 import storage_mixin from '@/mixins/storage_mixin';
+import alerts_mixin from '@/mixins/alerts_mixin';
 
 export default {
     name: 'SkuManager',
 
     components: {
         InputMoney: () => import('@/components/InputMoney'),
-        AppDialog: () => import('@/components/AppDialog'),
         SkuUpsertForm: () => import('@/components/product/SkuUpsertForm'),
         SkuAttributeInputs: () => import('@/components/product/sku/SkuAttributeInputs'),
         draggable: () => import('vuedraggable'),
@@ -26,7 +25,8 @@ export default {
     },
 
     mixins: [
-        storage_mixin
+        storage_mixin,
+        alerts_mixin
     ],
 
     props: {
@@ -96,7 +96,8 @@ export default {
 
             this.skuDialog.sku = sku;
             this.skuDialog.action = 'append';
-            this.skuDialog.show = true;
+
+            this.$bvModal.show('sku_upsert_form_modal');
         },
 
 
@@ -116,7 +117,7 @@ export default {
                 attributes: []
             };
             this.skuDialog.action = 'append';
-            this.skuDialog.show = false;
+            this.$bvModal.hide('sku_upsert_form_modal');
         },
 
 
@@ -132,14 +133,11 @@ export default {
                 this.product.skus.splice(index, 1);
 
                 if(sku.id) {
-                    this.$successMessage(this.$t('Variant deleted successfully'));
+                    this.successMessage(this.$t('Variant deleted successfully'));
                 }
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(e.message);
             }
         },
 
@@ -302,10 +300,7 @@ export default {
                 this.unusedSkuVariantTypes = cloneDeep(data);
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(e.message);
             }
         },
 
@@ -631,12 +626,12 @@ export default {
         </div>
 
 
-        <app-dialog :visible.sync="skuDialog.show">
+        <b-modal id="sku_upsert_form_modal" size="xl" hide-footer>
             <sku-upsert-form
                 :sku="skuDialog.sku"
                 :product-attributes="product.attributes"
                 @done="onSkuUpsertDone" />
-        </app-dialog>
+        </b-modal>
     </div>
 </template>
 

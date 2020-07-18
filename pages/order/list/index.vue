@@ -1,16 +1,8 @@
 <script>
-import payment_mixin from '@/mixins/payment_mixin'
-import shipping_mixin from '@/mixins/shipping_mixin'
-
-
 export default {
     components: {
-        IconPencil: () => import('@/components/icons/IconPencil')
+        AppTable: () => import('@/components/AppTable')
     },
-
-    mixins: [
-        shipping_mixin
-    ],
 
     data() {
         return {
@@ -18,8 +10,16 @@ export default {
             sortData: {
                 orderBy: 'updated_at',
                 orderDir: 'DESC'
+            },
+            tableData: {
+                headers: [
+                    { key: 'updated_at', label: this.$t('Updated'), sortable: true },
+                    { key: 'updated_at', label: this.$t('Status') },
+                    { key: 'updated_at', label: this.$t('Shipping total') },
+                    { key: 'updated_at', label: this.$t('Grand total') }
+                ]
             }
-        }
+        };
     },
 
     async asyncData({ params, store, app }) {
@@ -55,57 +55,39 @@ export default {
             this.fetchOrders();
         }
     }
-}
+};
 </script>
 
 
 <template>
-    <el-table
-        :data="payments"
-        class="widthAll"
-        @sort-change="sortChanged">
+    <app-table
+        :items="payments"
+        :fields="tableData.headers"
+        @sort-changed="sortChanged">
 
-        <el-table-column type="expand">
-            <template slot-scope="scope">
-                <pre style="overflow-x:scroll">{{ scope.row | formatJson }}</pre>
-            </template>
-        </el-table-column>
-
-        <!-- updated -->
-        <el-table-column
-            label="Updated"
-            prop="updated_at"
-            sortable="custom">
-            <template slot-scope="scope">
-                <nuxt-link :to="{ name: 'order-id', params: { id: scope.row.id } }"
-                            tag="a">{{ scope.row.updated_at | format8601 }}</nuxt-link>
-            </template>
-        </el-table-column>
+        <template v-slot:cell(updated_at)="row">
+            <nuxt-link
+                :to="{ name: 'order-id', params: { id: row.item.id } }"
+                tag="a">{{ row.item.updated_at | format8601 }}</nuxt-link>
+        </template>
 
         <!-- success -->
-        <el-table-column
-            label="Square Status">
-            <template slot-scope="scope">
-                <div v-for="obj in scope.row.transaction.tenders" :key="obj.id">
-                    {{ obj.card_details.status }}
-                </div>
-            </template>
-        </el-table-column>
+        <template v-slot:cell()="row">
+            <div v-for="obj in row.item.transaction.tenders" :key="obj.id">
+                {{ obj.card_details.status }}
+            </div>
+        </template>
 
         <!-- shipping total -->
-        <el-table-column label="Shipping total">
-            <template slot-scope="scope">
-                {{ scope.row.shoppingCart.shipping_total }}
-            </template>
-        </el-table-column>
+        <template v-slot:cell()="row">
+            {{ row.item.shoppingCart.shipping_total }}
+        </template>
 
         <!-- grand total -->
-        <el-table-column label="Grand total">
-            <template slot-scope="scope">
-                {{ scope.row.shoppingCart.grand_total }}
-            </template>
-        </el-table-column>
-    </el-table>
+        <template v-slot:cell()="row">
+            {{ row.item.shoppingCart.grand_total }}
+        </template>
+    </app-table>
 </template>
 
 

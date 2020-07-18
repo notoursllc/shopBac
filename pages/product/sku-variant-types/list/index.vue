@@ -1,22 +1,33 @@
 <script>
+import alerts_mixin from '@/mixins/alerts_mixin';
 
 export default {
     components: {
+        AppTable: () => import('@/components/AppTable'),
         OperationsDropdown: () => import('@/components/OperationsDropdown'),
         SkuVariantTypeForm: () => import('@/components/product/sku/SkuVariantTypeForm'),
         Fab: () => import('@/components/Fab')
     },
 
+    mixins: [
+        alerts_mixin
+    ],
+
     data() {
         return {
             dialog: {
-                show: false,
                 id: null
             },
             types: [],
             sortData: {
                 orderBy: 'updated_at',
                 orderDir: 'DESC'
+            },
+            tableData: {
+                headers: [
+                    { key: 'label', label: this.$t('Label'), sortable: true },
+                    { key: 'description', label: this.$t('Description') }
+                ]
             }
         };
     },
@@ -32,60 +43,48 @@ export default {
                 this.types = data;
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(e.message);
             }
         },
 
         sortChanged(val) {
-            this.sortData.orderBy = val.prop || 'updated_at';
-            this.sortData.orderDir = val.order === 'ascending' ? 'ASC' : 'DESC';
+            this.sortData.orderBy = val.sortBy || 'updated_at';
+            this.sortData.orderDir = val.sortDesc ? 'DESC' : 'ASC';
             this.fetchTypes();
         },
 
         async deleteType(data) {
-            try {
-                await this.$confirm(
-                    this.$t('remove_label?', {label: data.label}),
-                    this.$t('Please confirm'),
-                    {
-                        confirmButtonText: 'OK',
-                        cancelButtonText: 'Cancel',
-                        type: 'warning'
-                    }
-                );
+            const confirmed = await this.confirmModal(
+                this.$t('remove_label?', {label: data.label}),
+                'warning'
+            );
 
-                try {
-                    const typeJson = await this.$api.productSkuVariantTypes.delete(data.id);
-
-                    if(!typeJson) {
-                        throw new Error(this.$t('Item not found'));
-                    }
-
-                    this.fetchTypes();
-                    this.$successMessage(this.$t('item_deleted_label', {label: data.label}));
-                }
-                catch(e) {
-                    this.$errorMessage(
-                        e.message,
-                        { closeOthers: true }
-                    );
-                }
+            if(!confirmed) {
+                return;
             }
-            catch(err) {
-                // Do nothing
+
+            try {
+                const typeJson = await this.$api.productSkuVariantTypes.delete(data.id);
+
+                if(!typeJson) {
+                    throw new Error(this.$t('Item not found'));
+                }
+
+                this.fetchTypes();
+                this.successMessage(this.$t('item_deleted_label', {label: data.label}));
+            }
+            catch(e) {
+                this.errorMessage(e.message);
             }
         },
 
         onUpsertClick(id) {
             this.dialog.id = id || null;
-            this.dialog.show = true;
+            this.$refs.upsert_modal.show();
         },
 
         onUpsertSuccess() {
-            this.dialog.show = false;
+            this.$refs.upsert_modal.hide();
             this.fetchTypes();
         }
     }
@@ -97,47 +96,35 @@ export default {
     <div>
         <fab type="add" @click="onUpsertClick" />
 
-        <el-table
-            :data="types"
-            class="widthAll"
-            @sort-change="sortChanged">
-
-            <el-table-column type="expand">
-                <template slot-scope="scope">
-                    <pre style="overflow-x:scroll">{{ scope.row | formatJson }}</pre>
-                </template>
-            </el-table-column>
+        <app-table
+            :items="types"
+            :fields="tableData.headers"
+            @sort-changed="sortChanged">
 
             <!-- label -->
-            <el-table-column
-                prop="label"
-                label="Label"
-                sortable="custom">
-                <template slot-scope="scope">
-                    {{ scope.row.label }}
-                    <operations-dropdown
-                        :show-view="false"
-                        @edit="onUpsertClick(scope.row.id)"
-                        @delete="deleteType(scope.row)" />
-                </template>
-            </el-table-column>
+            <template v-slot:cell(label)="row">
+                {{ row.item.label }}
+                <operations-dropdown
+                    :show-view="false"
+                    @edit="onUpsertClick(row.item.id)"
+                    @delete="deleteType(row.item)"
+                    class="mls" />
+            </template>
 
             <!-- description -->
-            <el-table-column
-                prop="description"
-                :label="$t('Description')">
-            </el-table-column>
-        </el-table>
+            <template v-slot:cell(description)="row">
+                {{ row.item.description }}
+            </template>
+        </app-table>
 
-        <el-dialog
-            :visible.sync="dialog.show"
-            :destroy-on-close="true"
-            width="600px"
-            top="5vh">
+        <b-modal
+            ref="upsert_modal"
+            size="lg"
+            :title="dialog.id ? $t('Edit custom SKU attribute') : $t('Add custom SKU attribute')"
+            hide-footer>
             <sku-variant-type-form
                 :id="dialog.id"
                 @success="onUpsertSuccess" />
-        </el-dialog>
-
+        </b-modal>
     </div>
 </template>

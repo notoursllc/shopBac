@@ -87,13 +87,13 @@ export default ($http) => ({
     * Collections
     */
     async listProductCollections() {
-        const { data } = await $http.$get('/collections');
+        const { data } = await $http.$get('/product/collections');
         return data;
     },
 
 
     async getProductCollection(id) {
-        const { data } = await $http.$get('/collection', {
+        const { data } = await $http.$get('/product/collection', {
             searchParams: {
                 id
             }
@@ -104,13 +104,13 @@ export default ($http) => ({
 
 
     async upsertProductCollection(data) {
-        const response = await $http[data.hasOwnProperty('id') ? '$put' : '$post']('/collection', data);
+        const response = await $http[data.hasOwnProperty('id') ? '$put' : '$post']('/product/collection', data);
         return response.data;
     },
 
 
     async deleteProductCollection(id) {
-        const { data } = await $http.$delete('/collection', {
+        const { data } = await $http.$delete('/product/collection', {
             searchParams: {
                 id
             }

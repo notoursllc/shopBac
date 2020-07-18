@@ -1,14 +1,20 @@
 <script>
 import isObject from 'lodash.isobject';
 import slugify from 'slugify';
+import alerts_mixin from '@/mixins/alerts_mixin';
 
 export default {
     components: {
         Fab: () => import('@/components/Fab'),
         OperationsDropdown: () => import('@/components/OperationsDropdown'),
         BooleanTag: () => import('@/components/BooleanTag'),
-        MetaDataBuilder: () => import('@/components/MetaDataBuilder')
+        MetaDataBuilder: () => import('@/components/MetaDataBuilder'),
+        AppTable: () => import('@/components/AppTable')
     },
+
+    mixins: [
+        alerts_mixin
+    ],
 
     props: {
         object: {
@@ -63,40 +69,32 @@ export default {
                 this.types = await this.$api.masterTypes.list(this.object);
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(e.message);
             }
         },
 
         async onDeleteClick(data) {
             try {
-                await this.$confirm(`Delete "${data.name}"?`, 'Please confirm', {
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
-                });
+                const confirmed = await this.confirmModal(
+                    this.$t('delete_name?', {'name': data.name}),
+                    'warning'
+                );
 
-                try {
-                    const typeJson = await this.$api.masterTypes.delete(data.id);
-
-                    if(!typeJson) {
-                        throw new Error(this.$t('Master type not found'));
-                    }
-
-                    this.fetchTypes();
-                    this.$successMessage(`Deleted: ${data.name}`);
+                if(!confirmed) {
+                    return;
                 }
-                catch(e) {
-                    this.$errorMessage(
-                        e.message,
-                        { closeOthers: true }
-                    );
+
+                const typeJson = await this.$api.masterTypes.delete(data.id);
+
+                if(!typeJson) {
+                    throw new Error(this.$t('Master type not found'));
                 }
+
+                this.fetchTypes();
+                this.successMessage(`Deleted: ${data.name}`);
             }
             catch(err) {
-                // Do nothing
+                this.errorMessage(err.message);
             }
         },
 
@@ -124,10 +122,7 @@ export default {
                 this.showDialog();
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(e.message);
             }
         },
 
@@ -154,17 +149,14 @@ export default {
                 }
 
                 const title = this.form.id ? 'Master Type updated successfully' : 'Master Type added successfully';
-                this.$successMessage(`${title}: ${mt.name}`);
+                this.successMessage(`${title}: ${mt.name}`);
 
                 this.showDialog(false);
                 this.clearForm();
                 this.fetchTypes();
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(e.message);
             }
         },
 
@@ -189,24 +181,21 @@ export default {
     <div>
         <fab type="add" @click="onUpsertClick" />
 
-        <b-table
+        <app-table
             :items="types"
-            :fields="tableData.headers"
-            borderless
-            striped
-            hover>
-
-            <!-- title -->
+            :fields="tableData.headers">
+            <!-- name -->
             <template v-slot:cell(name)="row">
                 {{ row.item.name }}
                 <operations-dropdown
                     :show-view="false"
                     @edit="onUpsertClick(row.item)"
-                    @delete="onDeleteClick(row.item)" />
+                    @delete="onDeleteClick(row.item)"
+                    class="mls" />
             </template>
 
             <!-- slug -->
-            <template v-slot:cell(slow)="row">
+            <template v-slot:cell(slug)="row">
                 {{ row.item.slug }}
             </template>
 
@@ -214,7 +203,7 @@ export default {
             <template v-slot:cell(published)="row">
                 <boolean-tag :value="row.item.published" />
             </template>
-        </b-table>
+        </app-table>
 
         <b-modal
             ref="type_upsert_modal"
@@ -285,7 +274,8 @@ export default {
                     <span class="ptl">
                         <b-button
                             variant="primary"
-                            @click="onUpsertFormSave">{{ $t('Save') }}</b-button>
+                            @click="onUpsertFormSave"
+                            class="mrm">{{ $t('Save') }}</b-button>
 
                         <b-button
                             variant="light"

@@ -22,10 +22,7 @@ export default {
                 });
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(e.message);
             }
         }
     }
@@ -41,20 +38,22 @@ export default {
                 <!-- email -->
                 <div class="inputGroup mrl mbm">
                     <label>{{ $t('Email address') }}</label>
-                    <el-input v-model="userInfo.email" />
+                    <b-form-input
+                        v-model="userInfo.email" />
                 </div>
 
                 <!-- password -->
                 <div class="inputGroup mrl mbm">
                     <label>{{ $t('Password') }}</label>
-                    <el-input
+                    <!-- TODO: create password input component -->
+                    <b-form-input
                         v-model="userInfo.password"
-                        show-password />
+                        type="password" />
                 </div>
 
-                <el-button
-                    type="primary"
-                    @click="onSubmit">{{ $t('Submit') }}</el-button>
+                <b-button
+                    variant="primary"
+                    @click="onSubmit">{{ $t('Submit') }}</b-button>
             </form>
         </div>
     </div>

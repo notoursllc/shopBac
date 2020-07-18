@@ -1,29 +1,22 @@
 <script>
-import product_mixin from '@/mixins/product_mixin'
+import product_mixin from '@/mixins/product_mixin';
+import alerts_mixin from '@/mixins/alerts_mixin';
 
-export default{
+export default {
     components: {
         ProductDetailsJsonView: () => import('@/components/product/ProductDetailsJsonView'),
         Fab: () => import('@/components/Fab')
     },
 
     mixins: [
-        product_mixin
+        product_mixin,
+        alerts_mixin
     ],
 
     data() {
         return {
             product: {}
-        }
-    },
-
-    methods: {
-        goToEdit() {
-            this.$router.push({
-                name: 'product-upsert-id',
-                params: { id: this.product.id }
-            });
-        }
+        };
     },
 
     async created() {
@@ -35,13 +28,19 @@ export default{
             }
         }
         catch(e) {
-            this.$errorMessage(
-                e.message,
-                { closeOthers: true }
-            )
+            this.errorMessage(e.message);
+        }
+    },
+
+    methods: {
+        goToEdit() {
+            this.$router.push({
+                name: 'product-upsert-id',
+                params: { id: this.product.id }
+            });
         }
     }
-}
+};
 </script>
 
 

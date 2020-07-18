@@ -1,13 +1,13 @@
 <script>
-import Vue from 'vue'
-import forEach from 'lodash.foreach';
-import TreeView from 'vue-json-tree-view'
-import payment_mixin from '@/mixins/payment_mixin'
+import Vue from 'vue';
+import TreeView from 'vue-json-tree-view';
+import payment_mixin from '@/mixins/payment_mixin';
+import alerts_mixin from '@/mixins/alerts_mixin';
 
 Vue.use(TreeView);
 
 
-export default{
+export default {
     components: {
         AddressDisplay: () => import('@/components/AddressDisplay'),
         // ShippingLabelButton: () => import('@/components/payment/ShippingLabelButton'),
@@ -15,7 +15,8 @@ export default{
     },
 
     mixins: [
-        payment_mixin
+        payment_mixin,
+        alerts_mixin
     ],
 
     data() {
@@ -26,7 +27,7 @@ export default{
                 transaction: {
                     creditCard: {},
                     shipping: {},
-                    billing: {},
+                    billing: {}
                 },
                 shoppingCart: {
                     cart_items: [],
@@ -35,7 +36,11 @@ export default{
                     }
                 }
             }
-        }
+        };
+    },
+
+    created() {
+        this.loadPayment();
     },
 
     methods: {
@@ -55,32 +60,23 @@ export default{
                 if(!this.payment.shippo_order_id) {
                     this.showShippoWarning = true;
                 }
-
-                console.log("PAYMENT", this.payment)
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                )
+                this.errorMessage(e.message);
             }
         },
 
         labelPurchased() {
             this.loadPayment();
-            this.$successMessage('Shipping label purchased successfully');
+            this.successMessage('Shipping label purchased successfully');
         },
 
         labelDeleted() {
             this.loadPayment();
-            this.$successMessage('Shipping label deleted successfully');
+            this.successMessage('Shipping label deleted successfully');
         }
-    },
-
-    created() {
-        this.loadPayment();
     }
-}
+};
 </script>
 
 

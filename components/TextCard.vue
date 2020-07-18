@@ -5,11 +5,16 @@ export default {
 </script>
 
 <template>
-    <div class="textCard">
-        <div class="textCardHeader" v-if="$slots.header">
-            <slot name="header"></slot>
+    <div class="text-card">
+        <div class="text-card-header" v-if="$slots.header || $slots.headerRight">
+            <div class="text-card-header-left">
+                <slot name="header"></slot>
+            </div>
+            <div v-if="$slots.headerRight">
+                <slot name="headerRight"></slot>
+            </div>
         </div>
-        <div class="textCardContent">
+        <div class="text-card-content">
             <slot></slot>
         </div>
     </div>
@@ -19,7 +24,7 @@ export default {
 <style lang="scss" scoped>
 @import "~assets/css/components/_mixins.scss";
 
-.textCard {
+.text-card {
     box-shadow: 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
     background-color: #fff;
 
@@ -29,12 +34,17 @@ export default {
         padding-bottom: 10px;
     }
 
-    .textCardHeader {
+    .text-card-header {
         padding: 5px 10px;
         background: #f5f5f5;
         font-weight: 500;
+        display: flex;
+
+        .text-card-header-left {
+            flex-grow: 1
+        }
     }
-    .textCardContent {
+    .text-card-content {
         padding: 15px 20px;
     }
 }

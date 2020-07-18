@@ -1,16 +1,18 @@
 <script>
 import product_mixin from '@/mixins/product_mixin';
-
+import alerts_mixin from '@/mixins/alerts_mixin';
 
 export default {
     components: {
+        AppTable: () => import('@/components/AppTable'),
         OperationsDropdown: () => import('@/components/OperationsDropdown'),
         Fab: () => import('@/components/Fab'),
         BooleanTag: () => import('@/components/BooleanTag')
     },
 
     mixins: [
-        product_mixin
+        product_mixin,
+        alerts_mixin
     ],
 
     data() {
@@ -54,10 +56,7 @@ export default {
                 });
             }
             catch(err) {
-                this.$errorMessage(
-                    err.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(err.message);
             }
         },
 
@@ -80,33 +79,28 @@ export default {
         },
 
         sortChanged(val) {
-            this.sortData.orderBy = val.prop || 'updated_at';
-            this.sortData.orderDir = val.order === 'ascending' ? 'ASC' : 'DESC';
+            this.sortData.orderBy = val.sortBy || 'updated_at';
+            this.sortData.orderDir = val.sortDesc ? 'DESC' : 'ASC';
             this.fetchProducts();
         },
 
         async onProductDelete(product) {
-            try {
-                await this.$confirm(`Delete product "${product.title}"?`, 'Please confirm', {
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
-                });
+            const confirmed = await this.confirmModal(
+                `Delete product "${product.title}"?`,
+                'warning'
+            );
 
-                try {
-                    await this.$api.products.delete(product.id)
-                    this.$successMessage(`"${product.title}" deleted successfully`);
-                    this.fetchProducts();
-                }
-                catch(e) {
-                    this.$errorMessage(
-                        e.message,
-                        { closeOthers: true }
-                    );
-                }
+            if(!confirmed) {
+                return;
             }
-            catch(err) {
-                // Do nothing when the confirm is cancelled
+
+            try {
+                await this.$api.products.delete(product.id);
+                this.successMessage(`"${product.title}" deleted successfully`);
+                this.fetchProducts();
+            }
+            catch(e) {
+                this.errorMessage(e.message);
             }
         },
 
@@ -151,12 +145,10 @@ export default {
     <div>
         <fab type="add" @click="goToProductUpsert" />
 
-        <b-table
+        <app-table
             :items="products"
             :fields="tableData.headers"
-            borderless
-            striped
-            hover>
+            @sort-changed="sortChanged">
 
             <!-- featured image -->
             <template v-slot:cell(featuredImage)="row">
@@ -175,7 +167,8 @@ export default {
                 <operations-dropdown
                     :show-edit="false"
                     @view="goToProductUpsert(row.item.id)"
-                    @delete="onProductDelete(row.item)" />
+                    @delete="onProductDelete(row.item)"
+                    class="mls" />
             </template>
 
             <!-- inventory count -->
@@ -197,7 +190,7 @@ export default {
             <template v-slot:cell(vendor)="row">
                 {{ row.item.vendor }}
             </template>
-        </b-table>
+        </app-table>
     </div>
 </template>
 

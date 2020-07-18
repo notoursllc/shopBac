@@ -15,6 +15,7 @@ exports.plugin = {
                 const ProductSkuCtrl = new (require('./controllers/ProductSkuCtrl'))(server);
                 const ProductSkuImageCtrl = new (require('./controllers/ProductSkuImageCtrl'))(server);
                 const ProductSkuVariantTypeCtrl = new (require('./controllers/ProductSkuVariantTypeCtrl'))(server);
+                const ProductCollectionCtrl = new (require('./controllers/ProductCollectionCtrl'))(server);
 
 
                 // Yes this was aleady set in the Core plugin, but apparently
@@ -259,7 +260,84 @@ exports.plugin = {
                         }
                     },
 
+                    /******************************
+                     * Product Collections
+                     ******************************/
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/collections`,
+                        options: {
+                            description: 'Gets a list of product collections',
+                            handler: (request, h) => {
+                                return ProductCollectionCtrl.getPageHandler(request, null, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/collection`,
+                        options: {
+                            description: 'Gets a product collection by ID',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductCollectionCtrl.getByIdHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'POST',
+                        path: `${routePrefix}/product/collection`,
+                        options: {
+                            description: 'Adds a new product collection',
+                            validate: {
+                                payload: ProductCollectionCtrl.getSchema()
+                            },
+                            handler: (request, h) => {
+                                return ProductCollectionCtrl.upsertHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'PUT',
+                        path: `${routePrefix}/product/collection`,
+                        options: {
+                            description: 'Updates a product collection',
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    ...ProductCollectionCtrl.getSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductCollectionCtrl.upsertHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'DELETE',
+                        path: `${routePrefix}/product/collection`,
+                        options: {
+                            description: 'Deletes a product collection',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductCollectionCtrl.deleteHandler(request, h);
+                            }
+                        }
+                    },
 
+
+                    /******************************
+                     * Misc
+                     ******************************/
                     {
                         method: 'GET',
                         path: '/product/share', // NOTE: no routePrefix on this one
@@ -349,6 +427,11 @@ exports.plugin = {
                 server.app.bookshelf.model(
                     'ProductSkuVariant',
                     require('./models/ProductSkuVariant')(baseModel, server.app.bookshelf, server)
+                );
+
+                server.app.bookshelf.model(
+                    'ProductCollection',
+                    require('./models/ProductCollection')(baseModel, server.app.bookshelf, server)
                 );
             }
         );

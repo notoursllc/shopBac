@@ -75,45 +75,5 @@ export default ({ store }) => {
     Vue.use(Tooltip);
     Vue.use(Upload);
 
-    Vue.prototype.$confirm = MessageBox.confirm;
     Vue.prototype.$loadingService = Loading.service;
-
-
-    Vue.prototype.$successMessage = function(message, config) {
-        let cfg = Object.assign({
-            message: message,
-            showClose: false,
-            duration: 5000
-        }, config);
-
-        openMessage('success', cfg);
-    }
-
-    Vue.prototype.$errorMessage = function(message, config) {
-        let cfg = Object.assign({
-            message: message,
-            showClose: true,
-            duration: 0
-        }, config);
-
-        openMessage('error', cfg);
-    }
-
-
-    async function openMessage(type, config) {
-        // this is my own attribute, it shouldn't get passed to element-ui:
-        if(config.hasOwnProperty('closeOthers')) {
-            if(config.closeOthers) {
-                await store.dispatch('ui/CLOSE_MESSAGE_INSTANCES');
-            }
-
-            delete config.closeOthers;
-        }
-
-        let messageInstance = Message[type](config);
-
-        if(config.duration === 0) {
-            store.dispatch('ui/ADD_MESSAGE_INSTANCE', messageInstance);
-        }
-    }
 }

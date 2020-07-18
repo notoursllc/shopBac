@@ -4,10 +4,11 @@ import forEach from 'lodash.foreach';
 import TreeView from 'vue-json-tree-view';
 import payment_mixin from '@/mixins/payment_mixin';
 import shipping_mixin from '@/mixins/shipping_mixin';
+import alerts_mixin from '@/mixins/alerts_mixin';
 
 // Vue.use(TreeView);
 
-export default{
+export default {
     props: {
         payment: {
             type: Object
@@ -16,7 +17,8 @@ export default{
 
     mixins: [
         payment_mixin,
-        shipping_mixin
+        shipping_mixin,
+        alerts_mixin
     ],
 
     data() {
@@ -65,41 +67,35 @@ export default{
 
 
         async deleteShippingLabel() {
-            try {
-                await this.$confirm('Delete this shipping label?', 'Please confirm', {
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
-                });
+            const confirmed = await this.confirmModal(
+                this.$t('Delete this shipping label?'),
+                'warning'
+            );
 
-                await this.$api.payments.deleteShippingLabel(this.payment.id);
+            if(!confirmed) {
+                return;
+            }
 
-                this.$emit('deleted', this.payment.id);
-            }
-            catch(err) {
-                // DO NOTHING
-            }
+            await this.$api.payments.deleteShippingLabel(this.payment.id);
+            this.$emit('deleted', this.payment.id);
         },
 
 
         async buyShippingLabel() {
-            try {
-                await this.$confirm('Purchase a shipping label from Shippo?', 'Please confirm', {
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
-                });
+            const confirmed = await this.confirmModal(
+                this.$t('Purchase a shipping label from Shippo?'),
+                'warning'
+            );
 
-                this.shippingLabelModalIsActive = false;
-                this.labelForm.id = this.payment.id
-
-                const response = await this.$api.payments.purchaseShippingLabel(this.labelForm);
-
-                this.$emit('purchased', response)
+            if(!confirmed) {
+                return;
             }
-            catch(err) {
-                // DO NOTHING
-            }
+
+            this.shippingLabelModalIsActive = false;
+            this.labelForm.id = this.payment.id
+
+            const response = await this.$api.payments.purchaseShippingLabel(this.labelForm);
+            this.$emit('purchased', response)
         },
 
         async buildParcelData() {
@@ -149,21 +145,19 @@ export default{
 
 
         async removeParcel(index) {
-            try {
-                await this.$confirm(`Remove Parcel #${index + 1}?`, 'Please confirm', {
-                    confirmButtonText: 'OK',
-                    cancelButtonText: 'Cancel',
-                    type: 'warning'
-                });
+            const confirmed = await this.confirmModal(
+                `Remove Parcel #${index + 1}?`,
+                'warning'
+            );
 
-                this.labelForm.shipment.parcels.splice(index, 1);
-
-                if(!this.labelForm.shipment.parcels.length) {
-                    this.addParcel();
-                }
+            if(!confirmed) {
+                return;
             }
-            catch(err) {
-                // DO NOTHING
+
+            this.labelForm.shipment.parcels.splice(index, 1);
+
+            if(!this.labelForm.shipment.parcels.length) {
+                this.addParcel();
             }
         },
 
@@ -202,11 +196,7 @@ export default{
 
             }
             catch(err) {
-                this.$errorMessage(
-                    err.message,
-                    { closeOthers: true }
-                );
-
+                this.errorMessage(err.message);
                 this.$bugsnag.notify(err);
             }
         }

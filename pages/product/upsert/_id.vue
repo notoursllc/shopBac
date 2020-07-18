@@ -2,7 +2,7 @@
 import cloneDeep from 'lodash.clonedeep';
 import product_mixin from '@/mixins/product_mixin';
 import shipping_mixin from '@/mixins/shipping_mixin';
-
+import alerts_mixin from '@/mixins/alerts_mixin';
 
 export default {
     components: {
@@ -21,7 +21,8 @@ export default {
 
     mixins: [
         product_mixin,
-        shipping_mixin
+        shipping_mixin,
+        alerts_mixin
     ],
 
     data() {
@@ -56,10 +57,7 @@ export default {
             }
         }
         catch(e) {
-            this.$errorMessage(
-                e.message,
-                { closeOthers: true }
-            );
+            this.errorMessage(e.message);
         }
     },
 
@@ -84,10 +82,7 @@ export default {
                 this.product = product;
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(e.message);
             }
 
             this.loading = false;
@@ -98,13 +93,10 @@ export default {
             try {
                 this.loadingProductImages = true;
                 await this.$api.products.deleteImage(id);
-                this.$successMessage(this.$t('Image deleted successfully'));
+                this.successMessage(this.$t('Image deleted successfully'));
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(e.message);
             }
 
             this.loadingProductImages = false;
@@ -124,14 +116,11 @@ export default {
                 await this.saveSkus(p.id);
 
                 const title = p.id ? 'Product updated successfully' : 'Product added successfully';
-                this.$successMessage(`${title}: ${p.title}`);
+                this.successMessage(`${title}: ${p.title}`);
                 this.goToProductList();
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(e.message);
             }
         },
 
@@ -139,7 +128,6 @@ export default {
         async onSaveClick() {
             try {
                 this.loading = true;
-                console.log("ON SAVE", this.product)
                 const p = await this.$api.products.upsert(this.product);
 
                 if(!p) {
@@ -147,14 +135,11 @@ export default {
                 }
 
                 const title = p.id ? this.$t('Product updated successfully') : this.$t('Product added successfully');
-                this.$successMessage(`${title}: ${p.title}`);
+                this.successMessage(`${title}: ${p.title}`);
                 this.goToProductList();
             }
             catch(e) {
-                this.$errorMessage(
-                    e.message,
-                    { closeOthers: true }
-                );
+                this.errorMessage(e.message);
             }
 
             this.loading = false;

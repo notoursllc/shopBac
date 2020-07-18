@@ -2,7 +2,7 @@ import isObject from 'lodash.isobject';
 
 export const convertEmptyStringsToNull = (obj) => {
     if(isObject(obj)) {
-        let objCopy = Object.assign({}, obj);
+        const objCopy = Object.assign({}, obj);
 
         Object.keys(objCopy).forEach((key) => {
             if(typeof objCopy[key] === 'string' && !objCopy[key].trim().length) {
@@ -12,7 +12,7 @@ export const convertEmptyStringsToNull = (obj) => {
 
         return objCopy;
     }
-}
+};
 
 
 export const getNextAvailableTypeValue = (allTypes) => {
@@ -37,33 +37,35 @@ export const getNextAvailableTypeValue = (allTypes) => {
 
 
 export const stripTags = (str) => {
-    return str.replace(/<\/?[^>]+(>|$)/g, "");
+    return str.replace(/<\/?[^>]+(>|$)/g, '');
 };
 
 
 export const arrayDiff = (a1, a2) => {
-    var a = [], diff = [];
+    const a = [];
+    const diff = [];
 
-    for (var i = 0; i < a1.length; i++) {
+    for (let i = 0; i < a1.length; i++) {
         a[a1[i]] = true;
     }
 
-    for (var i = 0; i < a2.length; i++) {
+    for (let i = 0; i < a2.length; i++) {
         if (a[a2[i]]) {
             delete a[a2[i]];
-        } else {
+        }
+        else {
             a[a2[i]] = true;
         }
     }
 
-    for (var k in a) {
+    for (const k in a) {
         diff.push(k);
     }
 
     return diff;
-}
+};
 
 
 export const isNumeric = (n) => {
     return !isNaN(parseFloat(n)) && isFinite(n);
-}
+};

@@ -1,10 +1,26 @@
 <script>
 import product_mixin from '@/mixins/product_mixin';
 import shopping_cart_mixin from '@/mixins/shopping_cart_mixin';
+import alerts_mixin from '@/mixins/alerts_mixin';
 import IconTimesSquare from '@/components/icons/IconTimesSquare';
 
 export default {
     name: 'CartItem',
+
+    components: {
+        ProductPrice: () => import('@/components/product/ProductPrice'),
+        ProductDetailsLayout: () => import('@/components/product/ProductDetailsLayout'),
+        ProductImageCarousel: () => import('@/components/product/ProductImageCarousel'),
+        NumberInput: () => import('@/components/NumberInput'),
+        ProductQuantityWarning: () => import('@/components/product/ProductQuantityWarning'),
+        IconTimesSquare
+    },
+
+    mixins: [
+        product_mixin,
+        shopping_cart_mixin,
+        alerts_mixin
+    ],
 
     props: {
         data: {
@@ -28,25 +44,11 @@ export default {
         }
     },
 
-    components: {
-        ProductPrice: () => import('@/components/product/ProductPrice'),
-        ProductDetailsLayout: () => import('@/components/product/ProductDetailsLayout'),
-        ProductImageCarousel: () => import('@/components/product/ProductImageCarousel'),
-        NumberInput: () => import('@/components/NumberInput'),
-        ProductQuantityWarning: () => import('@/components/product/ProductQuantityWarning'),
-        IconTimesSquare
-    },
-
-    mixins: [
-        product_mixin,
-        shopping_cart_mixin
-    ],
-
     data() {
         return {
             showConfirmDeleteModal: false,
             showDialog: false
-        }
+        };
     },
 
     methods: {
@@ -71,10 +73,7 @@ export default {
                 loadingInstance.close();
             }
             catch(err) {
-                this.$errorMessage(
-                    this.$t('An error occurred'),
-                    { closeOthers: true }
-                );
+                this.errorMessage();
 
                 this.$bugsnag.notify(err, {
                     request: {
@@ -94,10 +93,7 @@ export default {
                 loadingInstance.close();
             }
             catch(err) {
-                this.$errorMessage(
-                    this.$t('An error occurred'),
-                    { closeOthers: true }
-                );
+                this.errorMessage();
 
                 this.$bugsnag.notify(err, {
                     request: { deleteItem: { id: this.data.id } }

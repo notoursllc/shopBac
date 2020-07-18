@@ -89,11 +89,37 @@ module.exports = {
         bootstrapCSS: false, // Or `css: false`
         bootstrapVueCSS: false, // Or `bvCSS: false`
 
+        // https://bootstrap-vue.org/docs/reference/settings#default-configuration
+        // https://getbootstrap.com/docs/4.4/utilities/borders/
+        config: {
+            BModal: {
+                buttonSize: 'md',
+                bodyBgVariant: null,
+                // bodyTextVariant: 'secondary',
+                cancelVariant: 'outline-secondary',
+                centered: true,
+                footerBgVariant: 'light',
+                footerBorderVariant: '0',
+                footerClass: 'p-1',
+                footerTextVariant: null,
+                headerBgVariant: null,
+                headerBorderVariant: null,
+                headerCloseContent: '&times;',
+                headerTextVariant: null,
+                headerCloseVariant: null,
+                hideHeaderClose: false,
+                okVariant: 'primary',
+                size: 'md',
+                titleTag: 'h6'
+            }
+        },
+
         // importing only the stuff we are using to reduce bundle size
         components: [
             'BBadge',
             'BButton',
             'BButtonGroup',
+            'BCollapse',
             'BContainer',
             'BRow',
             'BCol',
@@ -119,7 +145,19 @@ module.exports = {
             'BTable',
             'BTooltip'
         ],
-        directives: ['VBModal', 'VBPopover', 'VBTooltip', 'VBScrollspy']
+        componentPlugins: [
+            // 'LayoutPlugin',
+            // 'FormPlugin',
+            // 'FormCheckboxPlugin',
+            // 'FormInputPlugin',
+            // 'FormRadioPlugin',
+            'ToastPlugin',
+            'ModalPlugin',
+            'BVModalPlugin'
+        ],
+        directives: ['VBModal', 'VBPopover', 'VBToggle', 'VBTooltip', 'VBScrollspy'],
+
+
     },
 
     /*
