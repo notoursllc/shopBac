@@ -100,8 +100,8 @@ export default {
         }
 
         label {
-            height: 30px;
-            line-height: 30px;
+            height: 40px;
+            line-height: 40px;
             padding: 0 20px;
             font-size: 14px;
             position: relative;
