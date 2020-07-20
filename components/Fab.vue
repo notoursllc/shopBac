@@ -86,8 +86,8 @@ export default {
                     icon,
                     {
                         attrs: {
-                            height: '30',
-                            width: '30',
+                            height: 30,
+                            width: 30,
                             stroke: '#fff',
                             'stroke-width': 2
                         }

@@ -211,7 +211,6 @@ export default {
                             <icon-times-square
                                 icon-name="times"
                                 class-name="fillGrayLight"
-                                width="20px"
                                 class="status-icon" />
                         </el-tooltip>
                     </span>

@@ -449,9 +449,9 @@ export default {
                                 @click="onClickAddColumnButton"
                                 id="btn_add_variant">
                                 <icon-plus
-                                    width="16"
-                                    height="16"
-                                    stroke-width="2" />
+                                    :width="16"
+                                    :height="16"
+                                    :stroke-width="2" />
                             </b-button>
                         </pop>
                     </th>
@@ -467,8 +467,6 @@ export default {
 
                                     <icon-trash-can
                                         slot="reference"
-                                        width="20"
-                                        height="20"
                                         class="cursorPointer" />
                                 </pop-confirm>
 
@@ -496,8 +494,6 @@ export default {
 
                                     <icon-edit-outline
                                         slot="reference"
-                                        width="20"
-                                        height="20"
                                         class="cursorPointer mll" />
                                 </pop>
                             </div>
@@ -510,9 +506,7 @@ export default {
                                         class="header-input"
                                         @click="onColumnMove(index, true)">
                                         <icon-arrow-left
-                                            width="20"
-                                            height="20"
-                                            stroke-width="2" />
+                                            :stroke-width="2" />
                                     </b-input-group-text>
                                 </template>
 
@@ -526,9 +520,7 @@ export default {
                                         class="header-input"
                                         @click="onColumnMove(index, false)">
                                         <icon-arrow-right
-                                            width="20"
-                                            height="20"
-                                            stroke-width="2" />
+                                            :stroke-width="2" />
                                     </b-input-group-text>
                                 </template>
                             </b-input-group>
@@ -553,7 +545,7 @@ export default {
                     <!-- drag handle -->
                     <td>
                         <i class="handle cursorGrab" v-show="canShowGrabHandles">
-                            <icon-drag-handle height="20" width="20" />
+                            <icon-drag-handle />
                         </i>
                     </td>
 
@@ -607,9 +599,7 @@ export default {
                             <b-button
                                 slot="reference"
                                 variant="outline-secondary">
-                                <icon-trash-can
-                                    width="20"
-                                    height="20" />
+                                <icon-trash-can />
                             </b-button>
                         </pop-confirm>
                     </td>

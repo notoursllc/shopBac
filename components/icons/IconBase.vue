@@ -8,20 +8,20 @@ export default {
             default: '0 0 16 16'
         },
         width: {
-            type: String,
-            default: '12'
+            type: Number,
+            default: 20
         },
         height: {
-            type: String,
-            default: '12'
+            type: Number,
+            default: 20
         },
         stroke: {
             type: String,
             default: '#5d6674'
         },
         strokeWidth: {
-            type: String,
-            default: '1'
+            type: Number,
+            default: 1
         },
         fill: {
             type: String,

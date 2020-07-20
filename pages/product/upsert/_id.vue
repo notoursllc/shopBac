@@ -190,9 +190,7 @@ export default {
             <b-button
                 variant="outline-secondary"
                 @click="goToStore(product.seo_uri)">
-                <icon-new-window
-                    width="20"
-                    height="20" />&nbsp;{{ $t('View product in store') }}</b-button>
+                <icon-new-window />&nbsp;{{ $t('View product in store') }}</b-button>
         </div>
 
         <!-- published-->

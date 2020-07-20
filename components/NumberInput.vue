@@ -136,7 +136,7 @@ export default {
                 <icon-minus
                     width="16"
                     height="16"
-                    stroke-width="2" />
+                    :stroke-width="2" />
             </b-button>
         </template>
 
@@ -159,9 +159,9 @@ export default {
                 @click="up"
                 tabindex="-1">
                 <icon-plus
-                    width="16"
-                    height="16"
-                    stroke-width="2" />
+                    :width="16"
+                    :height="16"
+                    :stroke-width="2" />
             </b-button>
         </template>
 
