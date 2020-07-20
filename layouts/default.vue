@@ -5,9 +5,9 @@ import notifications_mixin from '@/mixins/notifications_mixin';
 export default {
     components: {
         IconVictory: () => import('@/components/icons/IconVictory'),
-        MenuList: () => import('@/components/menuList/MenuList'),
-        MenuItem: () => import('@/components/menuList/MenuItem'),
-        MenuCollapse: () => import('@/components/menuList/MenuCollapse')
+        NavigationList: () => import('@/components/navigationList/NavigationList'),
+        NavigationItem: () => import('@/components/navigationList/NavigationItem'),
+        NavigationCollapse: () => import('@/components/navigationList/NavigationCollapse')
     },
 
 
@@ -73,68 +73,58 @@ export default {
         <div class="sidenav-container">
             <aside class="sidenav" :class="{'sidenav-fixed': $store.state.ui.sidebarOpened}">
                 <div class="sidenav-header ptm">
-                    <icon-victory icon-name="logo" class-name="fillWhite" width="60px" />
+                    <icon-victory icon-name="logo" class-name="fillWhite" :width="60" />
                 </div>
 
-                <menu-list
+                <navigation-list
                     text-color="#fff"
                     active-text-color="#eec708"
                     hover-background-color="rgba(255,255,255,.1)">
 
-                    <menu-collapse>
+                    <navigation-collapse>
                         <template slot="label">{{ $t('Products') }}</template>
 
-                        <menu-item
+                        <navigation-item
                             :route="{ name: 'product-list' }"
-                            index="products"
-                            @click="menuItemClick">{{ $t('All products') }}</menu-item>
+                            @click="menuItemClick">{{ $t('All products') }}</navigation-item>
 
-                        <menu-item
+                        <navigation-item
                             :route="{ name: 'product-types' }"
-                            index="productTypes"
-                            @click="menuItemClick">{{ $t('Types') }}</menu-item>
+                            @click="menuItemClick">{{ $t('Types') }}</navigation-item>
 
-                        <menu-item
+                        <navigation-item
                             :route="{ name: 'product-sub-types' }"
-                            index="productSubTypes"
-                            @click="menuItemClick">{{ $t('Sub-Types') }}</menu-item>
+                            @click="menuItemClick">{{ $t('Sub-Types') }}</navigation-item>
 
-                        <menu-item
+                        <navigation-item
                             :route="{ name: 'product-fit-types' }"
-                            index="productFitTypes"
-                            @click="menuItemClick">{{ $t('Fit-Types') }}</menu-item>
+                            @click="menuItemClick">{{ $t('Fit-Types') }}</navigation-item>
 
-                        <menu-item
+                        <navigation-item
                             :route="{ name: 'product-sales-channel-types' }"
-                            index="productSalesChannelTypes"
-                            @click="menuItemClick">{{ $t('Sales Channels') }}</menu-item>
+                            @click="menuItemClick">{{ $t('Sales Channels') }}</navigation-item>
 
-                        <menu-item
+                        <navigation-item
                             :route="{ name: 'product-vendors' }"
-                            index="productVendors"
-                            @click="menuItemClick">{{ $t('Vendors') }}</menu-item>
+                            @click="menuItemClick">{{ $t('Vendors') }}</navigation-item>
 
-                        <menu-item
+                        <navigation-item
                             :route="{ name: 'product-collections' }"
-                            index="productCollections"
-                            @click="menuItemClick">{{ $t('Collections') }}</menu-item>
+                            @click="menuItemClick">{{ $t('Collections') }}</navigation-item>
 
-                        <menu-item
+                        <navigation-item
                             :route="{ name: 'product-sku-variant-types-list' }"
-                            index="productVariantProps"
-                            @click="menuItemClick">{{ $t('Variant properties') }}</menu-item>
-                    </menu-collapse>
+                            @click="menuItemClick">{{ $t('Variant properties') }}</navigation-item>
+                    </navigation-collapse>
 
-                    <menu-item
+                    <navigation-item
                         :route="{ name: 'order-list' }"
-                        index="payments"
-                        @click="menuItemClick">{{ $t('Payments') }}</menu-item>
+                        @click="menuItemClick">{{ $t('Payments') }}</navigation-item>
 
-                    <menu-item
+                    <navigation-item
                         :route="{ name: 'reports' }"
-                        index="reports"
-                        @click="menuItemClick">{{ $t('Reports') }}</menu-item>
-                </menu-list>
+                        @click="menuItemClick">{{ $t('Reports') }}</navigation-item>
+                </navigation-list>
             </aside>
 
             <div
@@ -191,7 +181,7 @@ $header-height: 50px;
 
 // some overrides
 .sidenav {
-    .el-menu-item,
+    .el-navigation-item,
     .el-submenu__title {
         height: 30px;
         line-height: 30px;
@@ -236,7 +226,7 @@ $header-height: 50px;
 
 
 .nav-menu-bar-container {
-    > .nav-menu-item > label {
+    > .nav-navigation-item > label {
         font-weight: 700;
     }
 }
@@ -249,7 +239,7 @@ $header-height: 50px;
     padding: 0;
     display: block;
 
-    .nav-menu-item {
+    .nav-navigation-item {
         list-style: none;
         margin: 0;
         padding: 0;
@@ -270,7 +260,7 @@ $header-height: 50px;
             transition: border-color .3s, background-color .3s, color .3s;
             display: block;
 
-            .nav-menu-item-arrow {
+            .nav-navigation-item-arrow {
                 position: absolute;
                 top: 50%;
                 right: 20px;
@@ -282,16 +272,16 @@ $header-height: 50px;
             }
         }
 
-        &.not-collapsed > label .nav-menu-item-arrow {
+        &.not-collapsed > label .nav-navigation-item-arrow {
             transform: rotateZ(180deg);
         }
     }
 
-    .nav-menu-item > .nav-menu-bar {
+    .nav-navigation-item > .nav-menu-bar {
         margin-left: 10px;
     }
 
-    label.not-collapsed .nav-menu-item-arrow {
+    label.not-collapsed .nav-navigation-item-arrow {
         transform: rotateZ(180deg);
     }
 

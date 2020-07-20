@@ -13,10 +13,20 @@ export default {
             default: null
         },
 
+        activeBackgroundColor: {
+            type: String,
+            default: null
+        },
+
         hoverBackgroundColor: {
             type: String,
             default: null
         },
+
+        defaultActive: {
+            type: String,
+            default: ''
+        }
     },
 
     provide() {
@@ -28,30 +38,51 @@ export default {
     data() {
         return {
             sharedState: {
-                activeItem: 1,
+                activeItem: this.defaultActive,
                 activeTextColor: this.activeTextColor,
                 hoverBackgroundColor: this.hoverBackgroundColor,
+                activeBackgroundColor: this.activeBackgroundColor,
                 textColor: this.textColor
             }
         };
+    },
+
+    watch: {
+        defaultActive(value) {
+            this.activeIndex = value;
+        },
+
+        $route(to, from) {
+            this.updateActiveItem(to.name);
+        }
+    },
+
+    created() {
+        this.updateActiveItem(this.$route.name);
+    },
+
+    methods: {
+        updateActiveItem(val) {
+            this.$set(this.sharedState, 'activeItem', val);
+        }
     }
 };
 </script>
 
 
 <template>
-    <ul class="menu-list menu-list-container" :style="{color: textColor || 'inherit'}">
+    <ul class="navigation-list navigation-list-container" :style="{color: textColor || 'inherit'}">
         <slot></slot>
     </ul>
 </template>
 
 
 <style lang="scss">
-.menu-list-container > .menu-item > label {
+.navigation-list-container > .navigation-item > label {
     font-weight: 700;
 }
 
-.menu-list {
+.navigation-list {
     border: 0;
     list-style: none;
     position: relative;
@@ -59,7 +90,7 @@ export default {
     padding: 0;
     display: block;
 
-    .menu-item {
+    .navigation-item {
         list-style: none;
         margin: 0;
         padding: 0;
@@ -80,7 +111,7 @@ export default {
             transition: border-color .3s, background-color .3s, color .3s;
             display: block;
 
-            .menu-item-arrow {
+            .navigation-item-arrow {
                 position: absolute;
                 top: 50%;
                 right: 20px;
@@ -92,23 +123,21 @@ export default {
             }
         }
 
-        &.not-collapsed > label .menu-item-arrow {
+        &.not-collapsed > label .navigation-item-arrow {
             transform: rotateZ(180deg);
         }
 
-        .is-active {
-        }
         .is-disabled,
         .is-disabled label {
             cursor: not-allowed !important;
         }
     }
 
-    .menu-item > .menu-list {
+    .navigation-item > .navigation-list {
         margin-left: 10px;
     }
 
-    label.not-collapsed .menu-item-arrow {
+    label.not-collapsed .navigation-item-arrow {
         transform: rotateZ(180deg);
     }
 
