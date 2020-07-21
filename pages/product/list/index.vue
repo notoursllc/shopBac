@@ -7,7 +7,8 @@ export default {
         AppTable: () => import('@/components/AppTable'),
         OperationsDropdown: () => import('@/components/OperationsDropdown'),
         Fab: () => import('@/components/Fab'),
-        BooleanTag: () => import('@/components/BooleanTag')
+        BooleanTag: () => import('@/components/BooleanTag'),
+        Vnodes: () => import('@/components/Vnodes')
     },
 
     mixins: [
@@ -104,23 +105,26 @@ export default {
             }
         },
 
-        numberOfPicsInProduct(product) {
+        getNumPublishedPics(product) {
             let count = 0;
 
-            if(Array.isArray(product.variations)) {
-                product.variations.forEach((variation) => {
-                    if(variation.published && Array.isArray(variation.pics)) {
-                        variation.pics.forEach((pic) => {
-                            if(pic.is_visible) {
-                                count++;
-                            }
-                        });
-                    }
+            const reducer = (accumulator, currentObj) => {
+                return currentObj.published ? accumulator + 1 : accumulator;
+            };
+
+            if(Array.isArray(product.images)) {
+                count += product.images.reduce(reducer, 0);
+            }
+
+            if(Array.isArray(product.skus)) {
+                product.skus.forEach((sku) => {
+                    count += sku.images.reduce(reducer, 0);
                 });
             }
 
             return count;
         },
+
 
         getInventoryCountString(prod) {
             const numVariants = Array.isArray(prod.variants) ? prod.variants.length : 0;
@@ -135,6 +139,57 @@ export default {
             }
 
             return this.$t('n_in_stock', { numInventory: totalInventoryCount })
+        },
+
+
+        /*
+        * The first published image in the images array is intended to be the 'featured' image
+        */
+        getSmallestFeaturedImage(product) {
+            let url = null;
+            let altText = null;
+            let smallestWidth = 0;
+
+            if(Array.isArray(product.images)) {
+                // To make sure we only get the first published image
+                let publishedImage = null;
+
+                product.images.forEach((obj) => {
+                    if(!publishedImage && obj.published) {
+                        publishedImage = obj;
+
+                        // the first published image is the baseline.
+                        smallestWidth = publishedImage.width;
+                        url = publishedImage.image_url;
+                        altText = publishedImage.alt_text;
+
+                        // now check to see if any of it's variants are smaller
+                        if(Array.isArray(publishedImage.variants)) {
+                            publishedImage.variants.forEach((variant) => {
+                                if(variant.width < smallestWidth) {
+                                    smallestWidth = variant.width;
+                                    url = variant.image_url;
+                                    // NOTE: variants do not have a separate alt_text property
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+
+            if(url) {
+                const h = this.$createElement;
+                return h(
+                    'img',
+                    {
+                        attrs: {
+                            src: url,
+                            alt: altText
+                        },
+                        class: ['prodPicSmall']
+                    }
+                );
+            }
         }
     }
 };
@@ -152,21 +207,16 @@ export default {
 
             <!-- featured image -->
             <template v-slot:cell(featuredImage)="row">
-                <template v-if="featuredProductPic(row.value)">
-                    <img
-                        :src="featuredProductPic(row.value)"
-                        alt="Image"
-                        class="prodPicSmall">
-                    <div class="fs12"># pictures: {{ numberOfPicsInProduct(row.value) }}</div>
-                </template>
+                <vnodes :vnodes="getSmallestFeaturedImage(row.item)" />
+                <div class="fs12">{{ $t('n_pictures', { num: getNumPublishedPics(row.item)}) }}</div>
             </template>
 
             <!-- title -->
             <template v-slot:cell(title)="row">
                 {{ row.item.title }}
                 <operations-dropdown
-                    :show-edit="false"
-                    @view="goToProductUpsert(row.item.id)"
+                    :show-view="false"
+                    @edit="goToProductUpsert(row.item.id)"
                     @delete="onProductDelete(row.item)"
                     class="mls" />
             </template>
@@ -197,6 +247,6 @@ export default {
 
 <style lang="scss">
     .prodPicSmall {
-        width: 70px;
+        width: 50px;
     }
 </style>

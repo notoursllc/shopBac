@@ -163,6 +163,7 @@
 
     "n_in_stock": "{numInventory} in stock",
     "n_in_stock_for_n_variants": "{numInventory} in stock for {numVariants} variant | {numInventory} in stock for {numVariants} variants",
+    "n_pictures": "# pictures: {num}",
     "Name": "Name",
     "New item": "New item",
     "New option": "New option",
