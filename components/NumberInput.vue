@@ -134,8 +134,8 @@ export default {
                 :disabled="minusDisabled"
                 tabindex="-1">
                 <icon-minus
-                    width="16"
-                    height="16"
+                    :width="16"
+                    :height="16"
                     :stroke-width="2" />
             </b-button>
         </template>
