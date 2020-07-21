@@ -151,6 +151,7 @@ module.exports = {
             // 'FormCheckboxPlugin',
             // 'FormInputPlugin',
             // 'FormRadioPlugin',
+            'TablePlugin',
             'ToastPlugin',
             'ModalPlugin',
             'BVModalPlugin'
