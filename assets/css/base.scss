@@ -9,7 +9,7 @@
 @import "components/animations";
 @import "components/svg";
 @import "components/minireset";
-@import "components/bootstrap-overrides";
+// @import "components/bootstrap-overrides";
 
 // vue-select
 // https://vue-select.org/guide/css.html#scss-variables
@@ -63,6 +63,7 @@ $dark: $gray-800;
 
 @import 'bootstrap/scss/bootstrap.scss';
 @import 'bootstrap-vue/src/index.scss';
+@import "components/bootstrap-overrides";
 // end importing Bootstrap SCSS
 
 

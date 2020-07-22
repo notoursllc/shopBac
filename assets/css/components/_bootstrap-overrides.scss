@@ -46,3 +46,25 @@
         flex: 1;
     }
 }
+
+.b-toast {
+    border: 0;
+    border-top: 4px solid;
+}
+.b-toast-success {
+    border-color: $success;
+}
+.b-toast-danger {
+    border-color: $danger;
+}
+.toast {
+    .toast-header{
+        padding: 0.2rem 0.75rem 0 1rem;
+        background-color: inherit !important;
+        border: 0;
+    }
+    .toast-body {
+        padding: 0.2rem 0.75rem 0.75rem 1rem;
+    }
+}
+
