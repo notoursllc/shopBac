@@ -1,12 +1,11 @@
 <script>
-import uuid from 'uuid';
+import isObject from 'lodash.isobject';
 
 export default {
     components: {
         draggable: () => import('vuedraggable'),
         IconDragHandle: () => import('@/components/icons/IconDragHandle'),
         IconTrashCan: () => import('@/components/icons/IconTrashCan'),
-        IconPlus: () => import('@/components/icons/IconPlus'),
         IconArrowRight: () => import('@/components/icons/IconArrowRight'),
         IconArrowLeft: () => import('@/components/icons/IconArrowLeft'),
         IconAddTableRow: () => import('@/components/icons/IconAddTableRow'),
@@ -16,46 +15,21 @@ export default {
 
     props: {
         value: {
-            type: Array,
+            type: Object,
             default: function() {
-                return [];
+                return {};
             }
-        },
-
-        propertyPlaceholder: {
-            type: String,
-            default: null
-        },
-
-        valuePlaceholder: {
-            type: String,
-            default: function() {
-                return this.$t('Value');
-            }
-        },
-
-        isSortable: {
-            type: Boolean,
-            default: true
         }
     },
 
     data: function() {
         return {
             columns: [],
-            rows: [],
-
-
-
-            newdata: []
+            rows: []
         };
     },
 
     computed: {
-        // canSortRows() {
-        //     return this.isSortable && this.newdata.length > 1;
-        // },
-
         canShowRowGrabHandles() {
             return Array.isArray(this.rows) && this.rows.length > 1;
         }
@@ -64,10 +38,42 @@ export default {
     // watch: {
     //     value: {
     //         handler(newVal) {
-    //             this.newdata = Array.isArray(newVal) ? newVal : [];
+    //             if(isObject(newVal)) {
+    //                 // this.$set('columns', Array.isArray(newVal.columns) ? newVal.columns : []);
+    //                 // this.$set('rows', Array.isArray(newVal.rows) ? newVal.rows : []);
 
-    //             if(!this.newdata.length) {
-    //                 this.addRow();
+    //                 // if(Array.isArray(newVal.columns)) {
+    //                 //     newVal.columns.forEach((obj) => {
+    //                 //         this.pushNewColumn(isObject(obj) ? obj.label : null)
+    //                 //     });
+    //                 // }
+
+    //                 // if(Array.isArray(newVal.rows)) {
+    //                 //     newVal.rows.forEach((obj) => {
+    //                 //         // Instead of simply doing this:  this.rows.push(obj)
+    //                 //         // I think adding the rows manually is a safer approach than just
+    //                 //         // trusting the value has the correct structure
+    //                 //         if(isObject(obj)) {
+    //                 //             const newRow = {
+    //                 //                 label: obj.label,
+    //                 //                 cells: []
+    //                 //             };
+
+    //                 //             this.columns.forEach((col, index) => {
+    //                 //                 if(obj.cells[index]) {
+    //                 //                     newRow.cells.push(
+    //                 //                         { value: obj.cells[index].value }
+    //                 //                     );
+    //                 //                 }
+    //                 //             });
+
+    //                 //             this.rows.push(newRow);
+    //                 //         }
+    //                 //     });
+    //                 // }
+    //             }
+    //             else {
+    //                 this.init();
     //             }
     //         },
     //         immediate: true
@@ -75,22 +81,14 @@ export default {
     // },
 
     methods: {
-        // emitInput() {
-        //     if(!this.newdata.length) {
-        //         this.$emit('input', null);
-        //         return;
-        //     }
-
-        //     this.$emit('input', this.newdata);
-        // },
-
-        // onInputChange() {
-        //     this.sanitize();
-        //     this.emitInput();
-        // },
-
         emitInput() {
-
+            this.$emit(
+                'input',
+                Object.assign({}, {
+                    columns: this.columns,
+                    rows: this.rows
+                })
+            );
         },
 
         canShowLeftIcon(index) {
@@ -111,32 +109,67 @@ export default {
                 const removed = row.cells.splice(index, 1);
                 row.cells.splice(new_index, 0, removed[0]);
             });
+
+            this.emitInput();
+        },
+
+        pushNewColumn(label) {
+            this.columns.push(
+                { label: label || null }
+            );
         },
 
         addColumn() {
-            this.columns.push(
-                { label: null }
-            );
+            this.pushNewColumn();
 
-            // push a new value on to each row
-            this.rows.forEach((row) => {
-                row.cells.push({ value: null });
-            });
+            if(!this.rows.length) {
+                this.addRow();
+            }
+            else {
+                // push a new value on to each row
+                this.rows.forEach((row) => {
+                    row.cells.push({ value: null });
+                });
+            }
+
+            this.emitInput();
         },
 
+        // pushNewRow() {
+        //     const row = {
+        //         label: null,
+        //         cells: []
+        //     };
+
+        //     this.columns.forEach((obj) => {
+        //         row.cells.push(
+        //             { value: null }
+        //         );
+        //     });
+
+        //     this.rows.push(row);
+        // },
+
         addRow() {
-            const row = {
-                label: null,
-                cells: []
-            };
+            if(!this.columns.length) {
+                this.addColumn();
+            }
+            else {
+                const row = {
+                    label: null,
+                    cells: []
+                };
 
-            this.columns.forEach((obj) => {
-                row.cells.push(
-                    { value: null }
-                );
-            });
+                this.columns.forEach((obj) => {
+                    row.cells.push(
+                        { value: null }
+                    );
+                });
 
-            this.rows.push(row);
+                this.rows.push(row);
+            }
+
+            this.emitInput();
         },
 
         deleteRow(index) {
@@ -163,6 +196,10 @@ export default {
             this.init();
         },
 
+        onInputChange(val) {
+            this.emitInput();
+        },
+
         init() {
             if(!this.columns.length) {
                 this.addColumn();
@@ -171,6 +208,8 @@ export default {
             if(!this.rows.length) {
                 this.addRow();
             }
+
+            this.emitInput();
         }
     }
 };
@@ -246,7 +285,8 @@ export default {
                             <b-form-input
                                 v-model="columns[index].label"
                                 :placeholder="$t('Column label')"
-                                size="sm"></b-form-input>
+                                size="sm"
+                                @input="onInputChange"></b-form-input>
 
                             <template
                                 v-if="canShowRightIcon(index)"
@@ -282,13 +322,15 @@ export default {
                         <b-form-input
                             v-model="row.label"
                             size="sm"
-                            :placeholder="$t('Row label')"></b-form-input>
+                            :placeholder="$t('Row label')"
+                            @input="onInputChange"></b-form-input>
                     </b-td>
 
                     <b-td v-for="obj in row.cells" :key="obj.columnId">
                         <b-form-input
                             v-model="obj.value"
-                            size="sm"></b-form-input>
+                            size="sm"
+                            @input="onInputChange"></b-form-input>
                     </b-td>
 
                     <b-td class="no-color">
