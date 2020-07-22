@@ -4,7 +4,6 @@ import forEach from 'lodash.foreach';
 import TreeView from 'vue-json-tree-view';
 import payment_mixin from '@/mixins/payment_mixin';
 import shipping_mixin from '@/mixins/shipping_mixin';
-import notifications_mixin from '@/mixins/notifications_mixin';
 
 // Vue.use(TreeView);
 
@@ -17,8 +16,7 @@ export default {
 
     mixins: [
         payment_mixin,
-        shipping_mixin,
-        notifications_mixin
+        shipping_mixin
     ],
 
     data() {
@@ -67,7 +65,7 @@ export default {
 
 
         async deleteShippingLabel() {
-            const confirmed = await this.confirmModal(
+            const confirmed = await this.$confirmModal(
                 this.$t('Delete this shipping label?'),
                 'warning'
             );
@@ -82,7 +80,7 @@ export default {
 
 
         async buyShippingLabel() {
-            const confirmed = await this.confirmModal(
+            const confirmed = await this.$confirmModal(
                 this.$t('Purchase a shipping label from Shippo?'),
                 'warning'
             );
@@ -145,7 +143,7 @@ export default {
 
 
         async removeParcel(index) {
-            const confirmed = await this.confirmModal(
+            const confirmed = await this.$confirmModal(
                 `Remove Parcel #${index + 1}?`,
                 'warning'
             );
@@ -196,7 +194,7 @@ export default {
 
             }
             catch(err) {
-                this.errorToast(err.message);
+                this.$errorToast(err.message);
                 this.$bugsnag.notify(err);
             }
         }

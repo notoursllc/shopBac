@@ -1,6 +1,5 @@
 <script>
 import { mapState } from 'vuex';
-import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     components: {
@@ -9,12 +8,6 @@ export default {
         NavigationItem: () => import('@/components/navigationList/NavigationItem'),
         NavigationCollapse: () => import('@/components/navigationList/NavigationCollapse')
     },
-
-
-
-    mixins: [
-        notifications_mixin
-    ],
 
     computed: {
         ...mapState({
@@ -61,7 +54,7 @@ export default {
                 });
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         }
     }

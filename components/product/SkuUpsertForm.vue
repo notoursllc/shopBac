@@ -1,7 +1,6 @@
 <script>
 import isObject from 'lodash.isobject';
 import storage_mixin from '@/mixins/storage_mixin'; // TODO: not needed?
-import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     name: 'SkuUpsertForm',
@@ -16,8 +15,7 @@ export default {
     },
 
     mixins: [
-        storage_mixin,
-        notifications_mixin
+        storage_mixin
     ],
 
     props: {
@@ -85,7 +83,7 @@ export default {
                 this.skuVariantTypes = data;
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 
@@ -93,10 +91,10 @@ export default {
             try {
                 this.loadingImages = true;
                 await this.$api.productSkus.deleteImage(id);
-                this.successToast(this.$t('Image deleted successfully'));
+                this.$successToast(this.$t('Image deleted successfully'));
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
 
             this.loadingImages = false;

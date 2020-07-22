@@ -1,7 +1,6 @@
 <script>
 import isObject from 'lodash.isobject';
 import slugify from 'slugify';
-import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     components: {
@@ -11,10 +10,6 @@ export default {
         MetaDataBuilder: () => import('@/components/MetaDataBuilder'),
         AppTable: () => import('@/components/AppTable')
     },
-
-    mixins: [
-        notifications_mixin
-    ],
 
     props: {
         object: {
@@ -69,13 +64,13 @@ export default {
                 this.types = await this.$api.masterTypes.list(this.object);
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 
         async onDeleteClick(data) {
             try {
-                const confirmed = await this.confirmModal(
+                const confirmed = await this.$confirmModal(
                     this.$t('delete_name?', {'name': data.name}),
                     'warning'
                 );
@@ -91,12 +86,12 @@ export default {
                 }
 
                 this.fetchTypes();
-                this.successToast(
+                this.$successToast(
                     this.$t('deleted_name', { name: data.name })
                 );
             }
             catch(err) {
-                this.errorToast(err.message);
+                this.$errorToast(err.message);
             }
         },
 
@@ -124,7 +119,7 @@ export default {
                 this.showDialog();
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 
@@ -150,7 +145,7 @@ export default {
                     throw new Error(this.$t('Error updating Master Type'));
                 }
 
-                this.successToast(
+                this.$successToast(
                     this.$t(this.form.id ? 'updated_name' : 'added_name', { name: mt.name }),
                     null,
                     { hideOthers: true }
@@ -160,7 +155,7 @@ export default {
                 this.fetchTypes();
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 

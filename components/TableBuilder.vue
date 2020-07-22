@@ -24,88 +24,56 @@ export default {
 
     data: function() {
         return {
-            columns: [],
-            rows: []
+            tableData: {
+                columns: [],
+                rows: []
+            }
         };
     },
 
     computed: {
         canShowRowGrabHandles() {
-            return Array.isArray(this.rows) && this.rows.length > 1;
+            return Array.isArray(this.tableData.rows) && this.tableData.rows.length > 1;
         }
     },
 
-    // watch: {
-    //     value: {
-    //         handler(newVal) {
-    //             if(isObject(newVal)) {
-    //                 // this.$set('columns', Array.isArray(newVal.columns) ? newVal.columns : []);
-    //                 // this.$set('rows', Array.isArray(newVal.rows) ? newVal.rows : []);
-
-    //                 // if(Array.isArray(newVal.columns)) {
-    //                 //     newVal.columns.forEach((obj) => {
-    //                 //         this.pushNewColumn(isObject(obj) ? obj.label : null)
-    //                 //     });
-    //                 // }
-
-    //                 // if(Array.isArray(newVal.rows)) {
-    //                 //     newVal.rows.forEach((obj) => {
-    //                 //         // Instead of simply doing this:  this.rows.push(obj)
-    //                 //         // I think adding the rows manually is a safer approach than just
-    //                 //         // trusting the value has the correct structure
-    //                 //         if(isObject(obj)) {
-    //                 //             const newRow = {
-    //                 //                 label: obj.label,
-    //                 //                 cells: []
-    //                 //             };
-
-    //                 //             this.columns.forEach((col, index) => {
-    //                 //                 if(obj.cells[index]) {
-    //                 //                     newRow.cells.push(
-    //                 //                         { value: obj.cells[index].value }
-    //                 //                     );
-    //                 //                 }
-    //                 //             });
-
-    //                 //             this.rows.push(newRow);
-    //                 //         }
-    //                 //     });
-    //                 // }
-    //             }
-    //             else {
-    //                 this.init();
-    //             }
-    //         },
-    //         immediate: true
-    //     }
-    // },
+    watch: {
+        value: {
+            handler(newVal) {
+                if(isObject(newVal) && Object.keys(newVal).length) {
+                    this.tableData = newVal;
+                }
+                else {
+                    this.init();
+                }
+            },
+            immediate: true
+        }
+    },
 
     methods: {
         emitInput() {
             this.$emit(
                 'input',
-                Object.assign({}, {
-                    columns: this.columns,
-                    rows: this.rows
-                })
+                this.tableData
             );
         },
 
         canShowLeftIcon(index) {
-            return this.columns[index - 1];
+            return this.tableData.columns[index - 1];
         },
 
         canShowRightIcon(index) {
-            return this.columns[index + 1];
+            return this.tableData.columns[index + 1];
         },
 
         onColumnMove(index, moveLeft) {
             const new_index = moveLeft ? index - 1 : index + 1;
 
-            const removedCols = this.columns.splice(index, 1);
-            this.columns.splice(new_index, 0, removedCols[0]);
+            const removedCols = this.tableData.columns.splice(index, 1);
+            this.tableData.columns.splice(new_index, 0, removedCols[0]);
 
-            this.rows.forEach((row) => {
+            this.tableData.rows.forEach((row) => {
                 const removed = row.cells.splice(index, 1);
                 row.cells.splice(new_index, 0, removed[0]);
             });
@@ -114,7 +82,7 @@ export default {
         },
 
         pushNewColumn(label) {
-            this.columns.push(
+            this.tableData.columns.push(
                 { label: label || null }
             );
         },
@@ -122,12 +90,12 @@ export default {
         addColumn() {
             this.pushNewColumn();
 
-            if(!this.rows.length) {
+            if(!this.tableData.rows.length) {
                 this.addRow();
             }
             else {
                 // push a new value on to each row
-                this.rows.forEach((row) => {
+                this.tableData.rows.forEach((row) => {
                     row.cells.push({ value: null });
                 });
             }
@@ -141,17 +109,17 @@ export default {
         //         cells: []
         //     };
 
-        //     this.columns.forEach((obj) => {
+        //     this.tableData.columns.forEach((obj) => {
         //         row.cells.push(
         //             { value: null }
         //         );
         //     });
 
-        //     this.rows.push(row);
+        //     this.tableData.rows.push(row);
         // },
 
         addRow() {
-            if(!this.columns.length) {
+            if(!this.tableData.columns.length) {
                 this.addColumn();
             }
             else {
@@ -160,36 +128,36 @@ export default {
                     cells: []
                 };
 
-                this.columns.forEach((obj) => {
+                this.tableData.columns.forEach((obj) => {
                     row.cells.push(
                         { value: null }
                     );
                 });
 
-                this.rows.push(row);
+                this.tableData.rows.push(row);
             }
 
             this.emitInput();
         },
 
         deleteRow(index) {
-            this.rows.splice(index, 1);
+            this.tableData.rows.splice(index, 1);
             this.init();
         },
 
         deleteColumn(index) {
-            this.columns.splice(index, 1);
+            this.tableData.columns.splice(index, 1);
 
-            this.rows.forEach((row) => {
+            this.tableData.rows.forEach((row) => {
                 row.cells.splice(index, 1);
             });
 
             // if all columns have been removed then remove all rows too
-            // if(!this.columns.length) {
-            //     let i = this.rows.length;
+            // if(!this.tableData.columns.length) {
+            //     let i = this.tableData.rows.length;
 
             //     while (i--) {
-            //         this.rows.splice(i, 1);
+            //         this.tableData.rows.splice(i, 1);
             //     }
             // }
 
@@ -201,11 +169,11 @@ export default {
         },
 
         init() {
-            if(!this.columns.length) {
+            if(!this.tableData.columns.length) {
                 this.addColumn();
             }
 
-            if(!this.rows.length) {
+            if(!this.tableData.rows.length) {
                 this.addRow();
             }
 
@@ -225,7 +193,7 @@ export default {
             <b-thead>
                 <b-tr>
                     <b-th class="no-color"></b-th>
-                    <b-th :colspan="columns.length + 1" class="tal no-color header-button">
+                    <b-th :colspan="tableData.columns.length + 1" class="tal no-color header-button">
                         <b-button
                             @click="addRow"
                             variant="outline-secondary"
@@ -254,7 +222,7 @@ export default {
                     <b-th class="vabtm width50 no-color"></b-th>
                     <b-th class="th"></b-th>
                     <b-th
-                        v-for="(obj, index) in columns"
+                        v-for="(obj, index) in tableData.columns"
                         :key="index"
                         class="th">
                         <div class="col-icon-container">
@@ -283,7 +251,7 @@ export default {
                             </template>
 
                             <b-form-input
-                                v-model="columns[index].label"
+                                v-model="tableData.columns[index].label"
                                 :placeholder="$t('Column label')"
                                 size="sm"
                                 @input="onInputChange"></b-form-input>
@@ -305,11 +273,11 @@ export default {
             </b-thead>
 
             <draggable
-                v-model="rows"
+                v-model="tableData.rows"
                 handle=".handle"
                 ghost-class="ghost"
                 tag="b-tbody">
-                <b-tr v-for="(row, idx) in rows" :key="idx">
+                <b-tr v-for="(row, idx) in tableData.rows" :key="idx">
                     <!-- drag handle -->
                     <b-td class="no-color">
                         <i class="handle cursorGrab" v-show="canShowRowGrabHandles">

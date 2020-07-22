@@ -2,7 +2,6 @@
 import Vue from 'vue';
 import TreeView from 'vue-json-tree-view';
 import payment_mixin from '@/mixins/payment_mixin';
-import notifications_mixin from '@/mixins/notifications_mixin';
 
 Vue.use(TreeView);
 
@@ -15,8 +14,7 @@ export default {
     },
 
     mixins: [
-        payment_mixin,
-        notifications_mixin
+        payment_mixin
     ],
 
     data() {
@@ -62,18 +60,18 @@ export default {
                 }
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 
         labelPurchased() {
             this.loadPayment();
-            this.successToast('Shipping label purchased successfully');
+            this.$successToast('Shipping label purchased successfully');
         },
 
         labelDeleted() {
             this.loadPayment();
-            this.successToast('Shipping label deleted successfully');
+            this.$successToast('Shipping label deleted successfully');
         }
     }
 };

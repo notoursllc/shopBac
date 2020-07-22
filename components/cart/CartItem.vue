@@ -1,7 +1,6 @@
 <script>
 import product_mixin from '@/mixins/product_mixin';
 import shopping_cart_mixin from '@/mixins/shopping_cart_mixin';
-import notifications_mixin from '@/mixins/notifications_mixin';
 import IconTimesSquare from '@/components/icons/IconTimesSquare';
 
 export default {
@@ -18,8 +17,7 @@ export default {
 
     mixins: [
         product_mixin,
-        shopping_cart_mixin,
-        notifications_mixin
+        shopping_cart_mixin
     ],
 
     props: {
@@ -73,7 +71,7 @@ export default {
                 loadingInstance.close();
             }
             catch(err) {
-                this.errorToast();
+                this.$errorToast();
 
                 this.$bugsnag.notify(err, {
                     request: {
@@ -93,7 +91,7 @@ export default {
                 loadingInstance.close();
             }
             catch(err) {
-                this.errorToast();
+                this.$errorToast();
 
                 this.$bugsnag.notify(err, {
                     request: { deleteItem: { id: this.data.id } }

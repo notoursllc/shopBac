@@ -1,6 +1,4 @@
 <script>
-import notifications_mixin from '@/mixins/notifications_mixin';
-
 export default {
     components: {
         AppTable: () => import('@/components/AppTable'),
@@ -8,10 +6,6 @@ export default {
         SkuVariantTypeForm: () => import('@/components/product/sku/SkuVariantTypeForm'),
         Fab: () => import('@/components/Fab')
     },
-
-    mixins: [
-        notifications_mixin
-    ],
 
     data() {
         return {
@@ -43,7 +37,7 @@ export default {
                 this.types = data;
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 
@@ -54,7 +48,7 @@ export default {
         },
 
         async deleteType(data) {
-            const confirmed = await this.confirmModal(
+            const confirmed = await this.$confirmModal(
                 this.$t('remove_label?', {label: data.label}),
                 'warning'
             );
@@ -71,10 +65,10 @@ export default {
                 }
 
                 this.fetchTypes();
-                this.successToast(this.$t('item_deleted_label', {label: data.label}));
+                this.$successToast(this.$t('item_deleted_label', {label: data.label}));
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 

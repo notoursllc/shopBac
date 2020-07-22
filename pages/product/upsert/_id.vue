@@ -2,7 +2,6 @@
 import cloneDeep from 'lodash.clonedeep';
 import product_mixin from '@/mixins/product_mixin';
 import shipping_mixin from '@/mixins/shipping_mixin';
-import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     components: {
@@ -21,8 +20,7 @@ export default {
 
     mixins: [
         product_mixin,
-        shipping_mixin,
-        notifications_mixin
+        shipping_mixin
     ],
 
     data() {
@@ -57,7 +55,7 @@ export default {
             }
         }
         catch(e) {
-            this.errorToast(e.message);
+            this.$errorToast(e.message);
         }
     },
 
@@ -82,7 +80,7 @@ export default {
                 this.product = product;
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
 
             this.loading = false;
@@ -93,10 +91,10 @@ export default {
             try {
                 this.loadingProductImages = true;
                 await this.$api.products.deleteImage(id);
-                this.successToast(this.$t('Image deleted successfully'));
+                this.$successToast(this.$t('Image deleted successfully'));
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
 
             this.loadingProductImages = false;
@@ -116,11 +114,11 @@ export default {
                 await this.saveSkus(p.id);
 
                 const title = p.id ? 'Product updated successfully' : 'Product added successfully';
-                this.successToast(`${title}: ${p.title}`);
+                this.$successToast(`${title}: ${p.title}`);
                 this.goToProductList();
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 
@@ -135,11 +133,11 @@ export default {
                 }
 
                 const title = p.id ? this.$t('Product updated successfully') : this.$t('Product added successfully');
-                this.successToast(`${title}: ${p.title}`);
+                this.$successToast(`${title}: ${p.title}`);
                 this.goToProductList();
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
 
             this.loading = false;

@@ -1,14 +1,8 @@
 <script>
-import notifications_mixin from '@/mixins/notifications_mixin';
-
 export default {
     components: {
         MetaDataBuilder: () => import('@/components/MetaDataBuilder')
     },
-
-    mixins: [
-        notifications_mixin
-    ],
 
     props: {
         id: {
@@ -40,7 +34,7 @@ export default {
                 this.type = await this.$api.productSkuVariantTypes.get(this.id);
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 
@@ -53,11 +47,11 @@ export default {
                 }
 
                 const title = this.id ? this.$t('Item updated successfully') : this.$t('Item added successfully');
-                this.successToast(`${title}: ${mt.name}`);
+                this.$successToast(`${title}: ${mt.name}`);
                 this.$emit('success');
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         }
     }

@@ -1,6 +1,4 @@
 <script>
-import notifications_mixin from '@/mixins/notifications_mixin';
-
 export default {
     components: {
         AppTable: () => import('@/components/AppTable'),
@@ -8,10 +6,6 @@ export default {
         OperationsDropdown: () => import('@/components/OperationsDropdown'),
         BooleanTag: () => import('@/components/BooleanTag')
     },
-
-    mixins: [
-        notifications_mixin
-    ],
 
     data() {
         return {
@@ -35,12 +29,12 @@ export default {
                 this.collections = await this.$api.products.listProductCollections();
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 
         async onDeleteCollection(data) {
-            const confirmed = await this.confirmModal(
+            const confirmed = await this.$confirmModal(
                 this.$t('delete_name?', {'name': data.name}),
                 'warning'
             );
@@ -57,10 +51,10 @@ export default {
                 }
 
                 this.fetchCollections();
-                this.successToast(this.$t('deleted_name', {'name': data.name}));
+                this.$successToast(this.$t('deleted_name', {'name': data.name}));
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 

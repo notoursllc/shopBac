@@ -1,6 +1,5 @@
 <script>
 import shipping_mixin from '@/mixins/shipping_mixin';
-import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     components: {
@@ -11,8 +10,7 @@ export default {
     },
 
     mixins: [
-        shipping_mixin,
-        notifications_mixin
+        shipping_mixin
     ],
 
     data() {
@@ -56,7 +54,7 @@ export default {
                 });
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 
@@ -67,7 +65,7 @@ export default {
         },
 
         async deleteType(data) {
-            const confirmed = await this.confirmModal(
+            const confirmed = await this.$confirmModal(
                 `Remove this package type? "${data.label}"`,
                 'warning'
             );
@@ -84,10 +82,10 @@ export default {
                 }
 
                 this.fetchPackageTypes();
-                this.successToast(`Package Type deleted: ${data.label}`);
+                this.$successToast(`Package Type deleted: ${data.label}`);
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 

@@ -1,6 +1,5 @@
 <script>
 import product_mixin from '@/mixins/product_mixin';
-import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     components: {
@@ -12,8 +11,7 @@ export default {
     },
 
     mixins: [
-        product_mixin,
-        notifications_mixin
+        product_mixin
     ],
 
     data() {
@@ -57,7 +55,7 @@ export default {
                 });
             }
             catch(err) {
-                this.errorToast(err.message);
+                this.$errorToast(err.message);
             }
         },
 
@@ -86,7 +84,7 @@ export default {
         },
 
         async onProductDelete(product) {
-            const confirmed = await this.confirmModal(
+            const confirmed = await this.$confirmModal(
                 `Delete product "${product.title}"?`,
                 'warning'
             );
@@ -97,11 +95,11 @@ export default {
 
             try {
                 await this.$api.products.delete(product.id);
-                this.successToast(`"${product.title}" deleted successfully`);
+                this.$successToast(`"${product.title}" deleted successfully`);
                 this.fetchProducts();
             }
             catch(e) {
-                this.errorToast(e.message);
+                this.$errorToast(e.message);
             }
         },
 

@@ -1,6 +1,5 @@
 <script>
 import product_mixin from '@/mixins/product_mixin';
-import notifications_mixin from '@/mixins/notifications_mixin';
 
 export default {
     components: {
@@ -9,8 +8,7 @@ export default {
     },
 
     mixins: [
-        product_mixin,
-        notifications_mixin
+        product_mixin
     ],
 
     data() {
@@ -28,7 +26,7 @@ export default {
             }
         }
         catch(e) {
-            this.errorToast(e.message);
+            this.$errorToast(e.message);
         }
     },
 
