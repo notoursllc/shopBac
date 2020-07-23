@@ -74,7 +74,8 @@ export default {
                     active-text-color="#eec708"
                     hover-background-color="rgba(255,255,255,.1)">
 
-                    <navigation-collapse>
+                    <navigation-collapse
+                        :fuzzy-route-match="['product-']">
                         <template slot="label">{{ $t('Products') }}</template>
 
                         <navigation-item
@@ -110,8 +111,8 @@ export default {
                             @click="menuItemClick">{{ $t('Variant properties') }}</navigation-item>
 
                         <navigation-item
-                            :route="{ name: 'product-specs-list' }"
-                            @click="menuItemClick">{{ $t('Specs') }}</navigation-item>
+                            :route="{ name: 'product-spectables-list' }"
+                            @click="menuItemClick">{{ $t('Spec Tables') }}</navigation-item>
                     </navigation-collapse>
 
                     <navigation-item

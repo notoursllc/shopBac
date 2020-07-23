@@ -4,11 +4,48 @@ import uuid from 'uuid';
 export default {
     inject: ['menuListState'],
 
+    props: {
+
+        /*
+        * @example ['products-'] - beginning of route name must match
+        * @example ['*products-'] - any part of the route name must match
+        */
+        fuzzyRouteMatch: {
+            type: Array,
+            default: () => {
+                return [];
+            }
+        },
+
+        disabled: {
+            type: Boolean,
+            default: false
+        }
+    },
+
     data() {
         return {
             targetId: uuid(),
             toggleIsOpen: false
         };
+    },
+
+    watch: {
+        '$route': {
+            handler: function(to, from) {
+                const matches = this.fuzzyRouteMatch.filter(id => {
+                    const isFuzzy = id.indexOf('*') === 0;
+
+                    // remove the "*" if it's a fuzzy search
+                    const matcher = isFuzzy ? id.substring(1) : id;
+                    const idx = to.name.indexOf(matcher);
+                    return isFuzzy ? idx > -1 : idx === 0;
+                });
+
+                this.toggleIsOpen = matches.length ? true : false;
+            },
+            immediate: true
+        }
     },
 
     methods: {
@@ -17,6 +54,7 @@ export default {
         },
 
         onChildMenuItemActive() {
+            console.log("ON CHILD MENU ACTIVE")
             this.toggleIsOpen = true;
         }
     }
