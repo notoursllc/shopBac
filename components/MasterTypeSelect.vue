@@ -57,7 +57,9 @@ export default {
 
         async createOptions() {
             const opts = [];
-            const types = await this.$api.masterTypes.list(this.object);
+            const types = await this.$api.masterTypes.list({
+                where: ['object', '=', this.object]
+            });
 
             types.forEach((obj) => {
                 opts.push(

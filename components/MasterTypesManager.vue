@@ -123,7 +123,9 @@ export default {
                     this.formHasMetaData = Array.isArray(this.form.metadata);
                 }
                 else {
-                    const types = await this.$api.masterTypes.list(this.object);
+                    const types = await this.$api.masterTypes.list({
+                        where: ['object', '=', this.object],
+                    });
                     this.form.published = true;
                     this.form.value = this.$api.masterTypes.getNextAvailableTypeValue(types);
                 }

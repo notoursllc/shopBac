@@ -49,7 +49,9 @@ export default {
         },
 
         async fetchProductSubTypes() {
-            this.productSubTypes = await this.$api.masterTypes.list('product_sub_type');
+            this.productSubTypes = await this.$api.masterTypes.list({
+                where: ['object', '=', 'product_sub_type']
+            });
         },
 
         getSubTypeLabel(value) {
