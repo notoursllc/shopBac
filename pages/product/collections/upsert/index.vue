@@ -31,7 +31,7 @@ export default {
 
         async fetchCollection(id) {
             try {
-                this.collection = await this.$api.products.getProductCollection(id);
+                this.collection = await this.$api.productCollections.get(id);
 
                 if(!this.collection) {
                     throw new Error(this.$t('Collection not found'));
@@ -44,7 +44,7 @@ export default {
 
         async setNextAvailableValue() {
             try {
-                const collections = await this.$api.products.listProductCollections();
+                const collections = await this.$api.productCollections.list();
                 this.collection.value = getNextAvailableTypeValue(collections);
             }
             catch(e) {
@@ -54,7 +54,7 @@ export default {
 
         async onFormSave() {
             try {
-                const collection = await this.$api.products.upsertProductCollection(this.collection);
+                const collection = await this.$api.productCollections.upsert(this.collection);
 
                 if(!collection) {
                     throw new Error(this.$t('Error updating Collection'));

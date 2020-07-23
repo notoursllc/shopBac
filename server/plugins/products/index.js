@@ -16,6 +16,7 @@ exports.plugin = {
                 const ProductSkuImageCtrl = new (require('./controllers/ProductSkuImageCtrl'))(server);
                 const ProductSkuVariantTypeCtrl = new (require('./controllers/ProductSkuVariantTypeCtrl'))(server);
                 const ProductCollectionCtrl = new (require('./controllers/ProductCollectionCtrl'))(server);
+                const ProductSpecTableCtrl = new (require('./controllers/ProductSpecTableCtrl'))(server);
 
 
                 // Yes this was aleady set in the Core plugin, but apparently
@@ -325,11 +326,88 @@ exports.plugin = {
                             description: 'Deletes a product collection',
                             validate: {
                                 query: Joi.object({
-                                    id: Joi.string().uuid().required()
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required()
                                 })
                             },
                             handler: (request, h) => {
                                 return ProductCollectionCtrl.deleteHandler(request, h);
+                            }
+                        }
+                    },
+
+
+                    /******************************
+                     * Product Spec Tables
+                     ******************************/
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/spec_tables`,
+                        options: {
+                            description: 'Gets a list of product spec tables',
+                            handler: (request, h) => {
+                                return ProductSpecTableCtrl.getPageHandler(request, null, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/spec_table`,
+                        options: {
+                            description: 'Gets a product spec table by ID',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductSpecTableCtrl.getByIdHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'POST',
+                        path: `${routePrefix}/product/spec_table`,
+                        options: {
+                            description: 'Adds a new product spec table',
+                            validate: {
+                                payload: ProductSpecTableCtrl.getSchema()
+                            },
+                            handler: (request, h) => {
+                                return ProductSpecTableCtrl.upsertHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'PUT',
+                        path: `${routePrefix}/product/spec_table`,
+                        options: {
+                            description: 'Updates a product spec table',
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    ...ProductSpecTableCtrl.getSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductSpecTableCtrl.upsertHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'DELETE',
+                        path: `${routePrefix}/product/spec_table`,
+                        options: {
+                            description: 'Deletes a product spec table',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductSpecTableCtrl.deleteHandler(request, h);
                             }
                         }
                     },
@@ -432,6 +510,11 @@ exports.plugin = {
                 server.app.bookshelf.model(
                     'ProductCollection',
                     require('./models/ProductCollection')(baseModel, server.app.bookshelf, server)
+                );
+
+                server.app.bookshelf.model(
+                    'ProductSpecTable',
+                    require('./models/ProductSpecTable')(baseModel, server.app.bookshelf, server)
                 );
             }
         );

@@ -31,9 +31,9 @@ export default {
             types: [],
             tableData: {
                 headers: [
-                    { key: 'name', label: this.$t('Name') },
-                    { key: 'slug', label: this.$t('Slug') },
-                    { key: 'published', label: this.$t('Published') }
+                    { key: 'name', label: this.$t('Name'), sortable: true },
+                    { key: 'slug', label: this.$t('Slug'), sortable: true },
+                    { key: 'published', label: this.$t('Published'), sortable: true }
                 ]
             }
         };
@@ -59,13 +59,25 @@ export default {
     },
 
     methods: {
-        async fetchTypes() {
+        async fetchTypes(paramsObj) {
             try {
-                this.types = await this.$api.masterTypes.list(this.object);
+                this.types = await this.$api.masterTypes.list({
+                    where: ['object', '=', this.object],
+                    // whereRaw: ['sub_type & ? > 0', [productTypeId]],
+                    // andWhere: [
+                    //     ['total_inventory_count', '>', 0]
+                    // ],
+                    ...paramsObj
+                });
+
             }
             catch(e) {
                 this.$errorToast(e.message);
             }
+        },
+
+        sortChanged(val) {
+            this.fetchTypes(val);
         },
 
         async onDeleteClick(data) {
@@ -182,7 +194,9 @@ export default {
 
         <app-table
             :items="types"
-            :fields="tableData.headers">
+            :fields="tableData.headers"
+            @column-sort="sortChanged">
+
             <!-- name -->
             <template v-slot:cell(name)="row">
                 {{ row.item.name }}

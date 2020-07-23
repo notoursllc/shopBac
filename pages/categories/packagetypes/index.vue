@@ -20,10 +20,6 @@ export default {
                 packageTypeId: null
             },
             shippingPackageTypes: [],
-            sortData: {
-                orderBy: 'updated_at',
-                orderDir: 'DESC'
-            },
             tableData: {
                 headers: [
                     { key: 'label', label: this.$t('Label'), sortable: true },
@@ -42,16 +38,9 @@ export default {
     },
 
     methods: {
-        async fetchPackageTypes() {
+        async fetchPackageTypes(paramsObj) {
             try {
-                this.shippingPackageTypes = await this.$api.shipping.listPackageTypes({
-                    // where: ['is_available', '=', true],
-                    // whereRaw: ['sub_type & ? > 0', [productTypeId]],
-                    // andWhere: [
-                    //     ['total_inventory_count', '>', 0]
-                    // ],
-                    ...this.sortData
-                });
+                this.shippingPackageTypes = await this.$api.shipping.listPackageTypes(paramsObj);
             }
             catch(e) {
                 this.$errorToast(e.message);
@@ -59,9 +48,7 @@ export default {
         },
 
         sortChanged(val) {
-            this.sortData.orderBy = val.sortBy || 'updated_at';
-            this.sortData.orderDir = val.sortDesc ? 'DESC' : 'ASC';
-            this.fetchPackageTypes();
+            this.fetchPackageTypes(val);
         },
 
         async deleteType(data) {
@@ -110,7 +97,7 @@ export default {
         <app-table
             :items="shippingPackageTypes"
             :fields="tableData.headers"
-            @sort-changed="sortChanged">
+            @column-sort="sortChanged">
 
             <!-- label -->
             <template v-slot:cell(label)="row">

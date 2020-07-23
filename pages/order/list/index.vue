@@ -7,10 +7,6 @@ export default {
     data() {
         return {
             products: [],
-            sortData: {
-                orderBy: 'updated_at',
-                orderDir: 'DESC'
-            },
             tableData: {
                 headers: [
                     { key: 'updated_at', label: this.$t('Updated'), sortable: true },
@@ -38,21 +34,12 @@ export default {
     },
 
     methods: {
-        async fetchOrders() {
-            this.payments = await this.$api.payments.list({
-                // where: ['is_available', '=', true],
-                // whereRaw: ['sub_type & ? > 0', [productTypeId]],
-                // andWhere: [
-                //     ['total_inventory_count', '>', 0]
-                // ],
-                ...this.sortData
-            });
+        async fetchOrders(paramsObj) {
+            this.payments = await this.$api.payments.list(paramsObj);
         },
 
         sortChanged(val) {
-            this.sortData.orderBy = val.prop || 'updated_at';
-            this.sortData.orderDir = val.order === 'ascending' ? 'ASC' : 'DESC';
-            this.fetchOrders();
+            this.fetchOrders(val);
         }
     }
 };
@@ -63,7 +50,7 @@ export default {
     <app-table
         :items="payments"
         :fields="tableData.headers"
-        @sort-changed="sortChanged">
+        @column-sort="sortChanged">
 
         <template v-slot:cell(updated_at)="row">
             <nuxt-link

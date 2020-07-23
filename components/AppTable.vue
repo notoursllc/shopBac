@@ -2,7 +2,17 @@
 // https://gist.github.com/Loilo/73c55ed04917ecf5d682ec70a2a1b8e2
 
 export default {
-    inheritAttrs: false
+    inheritAttrs: false,
+
+    methods: {
+        // emitting a convenience event with just the sort params
+        sortChanged(val) {
+            this.$emit('column-sort', {
+                sortBy: val.sortBy,
+                sortDesc: val.sortDesc
+            });
+        }
+    }
 };
 </script>
 
@@ -11,6 +21,7 @@ export default {
     <b-table
         v-on="$listeners"
         v-bind="$attrs"
+        @sort-changed="sortChanged"
         sort-icon-left
         responsive="md"
         no-local-sorting

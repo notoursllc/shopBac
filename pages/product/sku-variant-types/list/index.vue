@@ -13,14 +13,10 @@ export default {
                 id: null
             },
             types: [],
-            sortData: {
-                orderBy: 'updated_at',
-                orderDir: 'DESC'
-            },
             tableData: {
                 headers: [
                     { key: 'label', label: this.$t('Label'), sortable: true },
-                    { key: 'description', label: this.$t('Description') }
+                    { key: 'description', label: this.$t('Description'), sortable: true }
                 ]
             }
         };
@@ -31,9 +27,9 @@ export default {
     },
 
     methods: {
-        async fetchTypes() {
+        async fetchTypes(paramsObj) {
             try {
-                const { data } = await this.$api.productSkuVariantTypes.list(this.sortData);
+                const { data } = await this.$api.productSkuVariantTypes.list(paramsObj);
                 this.types = data;
             }
             catch(e) {
@@ -42,9 +38,7 @@ export default {
         },
 
         sortChanged(val) {
-            this.sortData.orderBy = val.sortBy || 'updated_at';
-            this.sortData.orderDir = val.sortDesc ? 'DESC' : 'ASC';
-            this.fetchTypes();
+            this.fetchTypes(val);
         },
 
         async deleteType(data) {
@@ -93,7 +87,7 @@ export default {
         <app-table
             :items="types"
             :fields="tableData.headers"
-            @sort-changed="sortChanged">
+            @column-sort="sortChanged">
 
             <!-- label -->
             <template v-slot:cell(label)="row">

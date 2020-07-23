@@ -15,10 +15,18 @@ function stripRelations(data) {
 
 export default ($http) => ({
 
+    // Example params object:
+    // See BaseController.queryHelper() for all attributes
+    // ============================
+    // {
+    // where: ['is_available', '=', true],
+    // whereRaw: ['sub_type & ? > 0', [productTypeId]],
+    // andWhere: [
+    //     ['total_inventory_count', '>', 0]
+    // ],
+    // }
     async list(params) {
         const paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
-
-        // const response = await $http.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
         const { data } = await $http.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
         return data;
     },
@@ -79,43 +87,6 @@ export default ($http) => ({
                 id
             }
         });
-        return data;
-    },
-
-
-    /*
-    * Collections
-    */
-    async listProductCollections() {
-        const { data } = await $http.$get('/product/collections');
-        return data;
-    },
-
-
-    async getProductCollection(id) {
-        const { data } = await $http.$get('/product/collection', {
-            searchParams: {
-                id
-            }
-        });
-
-        return data;
-    },
-
-
-    async upsertProductCollection(data) {
-        const response = await $http[data.hasOwnProperty('id') ? '$put' : '$post']('/product/collection', data);
-        return response.data;
-    },
-
-
-    async deleteProductCollection(id) {
-        const { data } = await $http.$delete('/product/collection', {
-            searchParams: {
-                id
-            }
-        });
-
         return data;
     }
 

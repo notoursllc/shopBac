@@ -8,8 +8,8 @@ export default {
         IconTrashCan: () => import('@/components/icons/IconTrashCan'),
         IconArrowRight: () => import('@/components/icons/IconArrowRight'),
         IconArrowLeft: () => import('@/components/icons/IconArrowLeft'),
-        IconAddTableRow: () => import('@/components/icons/IconAddTableRow'),
-        IconAddTableColumn: () => import('@/components/icons/IconAddTableColumn'),
+        IconArrowDown: () => import('@/components/icons/IconArrowDown'),
+        IconPlus: () => import('@/components/icons/IconPlus'),
         PopConfirm: () => import('@/components/PopConfirm')
     },
 
@@ -103,21 +103,6 @@ export default {
             this.emitInput();
         },
 
-        // pushNewRow() {
-        //     const row = {
-        //         label: null,
-        //         cells: []
-        //     };
-
-        //     this.tableData.columns.forEach((obj) => {
-        //         row.cells.push(
-        //             { value: null }
-        //         );
-        //     });
-
-        //     this.tableData.rows.push(row);
-        // },
-
         addRow() {
             if(!this.tableData.columns.length) {
                 this.addColumn();
@@ -192,33 +177,6 @@ export default {
             table-class="table-builder-table">
             <b-thead>
                 <b-tr>
-                    <b-th class="no-color"></b-th>
-                    <b-th :colspan="tableData.columns.length + 1" class="tal no-color header-button">
-                        <b-button
-                            @click="addRow"
-                            variant="outline-secondary"
-                            size="sm"
-                            class="mrm"
-                            v-b-tooltip :title="$t('Add row')">
-                            <icon-add-table-row
-                                :width="30"
-                                :height="30" />
-                        </b-button>
-
-                        <b-button
-                            @click="addColumn"
-                            variant="outline-secondary"
-                            size="sm"
-                            class="mrm"
-                            v-b-tooltip :title="$t('Add column')">
-                            <icon-add-table-column
-                                :width="30"
-                                :height="30" />
-                        </b-button>
-                    </b-th>
-                </b-tr>
-
-                <b-tr>
                     <b-th class="vabtm width50 no-color"></b-th>
                     <b-th class="th"></b-th>
                     <b-th
@@ -233,7 +191,7 @@ export default {
                                     slot="reference"
                                     variant="outline-secondary"
                                     size="sm">
-                                    <icon-trash-can />
+                                    <icon-trash-can /><icon-arrow-down :stroke-width="2" />
                                 </b-button>
                             </pop-confirm>
                         </div>
@@ -262,11 +220,21 @@ export default {
                                 <b-input-group-text
                                     class="header-input-btn"
                                     @click="onColumnMove(index, false)">
-                                    <icon-arrow-right
-                                        :stroke-width="2" />
+                                    <icon-arrow-right :stroke-width="2" />
                                 </b-input-group-text>
                             </template>
                         </b-input-group>
+                    </b-th>
+                    <b-th class="no-color">
+                        <b-button
+                            @click="addColumn"
+                            variant="outline-secondary"
+                            size="sm">
+                            <icon-plus
+                                :stroke-width="2"
+                                :width="16"
+                                :height="16" /> {{ $t('column') }}
+                        </b-button>
                     </b-th>
                     <b-th class="no-color"></b-th>
                 </b-tr>
@@ -294,6 +262,7 @@ export default {
                             @input="onInputChange"></b-form-input>
                     </b-td>
 
+                    <!-- row inputs -->
                     <b-td v-for="obj in row.cells" :key="obj.columnId">
                         <b-form-input
                             v-model="obj.value"
@@ -301,6 +270,7 @@ export default {
                             @input="onInputChange"></b-form-input>
                     </b-td>
 
+                    <!-- delete button -->
                     <b-td class="no-color">
                         <pop-confirm @onConfirm="deleteRow(idx)">
                             {{ $t('Delete this row?') }}
@@ -309,12 +279,31 @@ export default {
                                 slot="reference"
                                 variant="outline-secondary"
                                 size="sm">
-                                <icon-trash-can />
+                                <icon-arrow-left :stroke-width="2" /><icon-trash-can />
                             </b-button>
                         </pop-confirm>
                     </b-td>
                 </b-tr>
             </draggable>
+
+            <b-tr>
+                <b-td class="no-color"></b-td>
+
+                <!-- add row button -->
+                <b-td class="no-color">
+                    <b-button
+                        @click="addRow"
+                        variant="outline-secondary"
+                        size="sm">
+                        <icon-plus
+                            :stroke-width="2"
+                            :width="16"
+                            :height="16" /> {{ $t('row') }}
+                    </b-button>
+                </b-td>
+
+                <b-td class="no-color" :colspan="tableData.columns.length"></b-td>
+            </b-tr>
         </b-table-simple>
     </div>
 </template>
@@ -345,16 +334,6 @@ $borderColor: #e0e1e2;
     th, td {
         border: 1px solid #cdcbcb;
     }
-    // th {
-    //     border: 1px solid $borderColor;
-    //     border-bottom: 1px solid #000;
-    //     border-right: 1px solid #000;
-    //     border-left: 1px solid #000;
-    // }
-    // td {
-    //     // border-top: 1px solid $borderColor;
-    //     border: 0;
-    // }
 
     thead th {
         padding: 0.4rem;

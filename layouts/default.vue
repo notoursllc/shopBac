@@ -92,7 +92,7 @@ export default {
 
                         <navigation-item
                             :route="{ name: 'product-fit-types' }"
-                            @click="menuItemClick">{{ $t('Fit-Types') }}</navigation-item>
+                            @click="menuItemClick">{{ $t('Fit Types') }}</navigation-item>
 
                         <navigation-item
                             :route="{ name: 'product-sales-channel-types' }"

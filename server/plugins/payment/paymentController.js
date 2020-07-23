@@ -91,6 +91,7 @@ async function getPaymentsHandler(request, h) {
     });
 
     try {
+        // TODO: this needs refactoring.  fetchPage now lives in BaseController
         const payments = await HelperService.fetchPage(
             request,
             getPaymentModel(),

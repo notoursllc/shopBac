@@ -1,11 +1,10 @@
+import queryString from 'query-string';
+
 export default ($http) => ({
 
-    async list(object) {
-        const { data } = await $http.$get('/master_types', {
-            searchParams: {
-                object
-            }
-        });
+    async list(params) {
+        const paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
+        const { data } = await $http.$get(`/master_types?${paramString}`); // TODO: is there a XSS issue here?
         return data;
     },
 

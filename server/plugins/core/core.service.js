@@ -33,10 +33,11 @@ const DB_TABLES = {
     product_skus: 'product_skus',
     product_sku_images: 'product_sku_images',
     product_sku_variant_types: 'product_sku_variant_types',
+    product_spec_tables: 'product_spec_tables',
     products: 'products',
     product_images: 'product_images',
     tenants: 'tenants',
-    tenant_users: 'tenant_users',
+    tenant_users: 'tenant_users'
 };
 
 module.exports.DB_TABLES = DB_TABLES;

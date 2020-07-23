@@ -12,8 +12,8 @@ export default {
             collections: [],
             tableData: {
                 headers: [
-                    { key: 'name', label: this.$t('Name') },
-                    { key: 'published', label: this.$t('Published') }
+                    { key: 'name', label: this.$t('Name'), sortable: true },
+                    { key: 'published', label: this.$t('Published'), sortable: true }
                 ]
             }
         };
@@ -24,13 +24,17 @@ export default {
     },
 
     methods: {
-        async fetchCollections() {
+        async fetchCollections(paramsObj) {
             try {
-                this.collections = await this.$api.products.listProductCollections();
+                this.collections = await this.$api.productCollections.list(paramsObj);
             }
             catch(e) {
                 this.$errorToast(e.message);
             }
+        },
+
+        sortChanged(val) {
+            this.fetchCollections(val);
         },
 
         async onDeleteCollection(data) {
@@ -44,7 +48,7 @@ export default {
             }
 
             try {
-                const collection = await this.$api.products.deleteProductCollection(data.id);
+                const collection = await this.$api.productCollections.delete(data.id);
 
                 if(!collection) {
                     throw new Error(this.$t('Collection not found'));
@@ -75,7 +79,8 @@ export default {
 
         <app-table
             :items="collections"
-            :fields="tableData.headers">
+            :fields="tableData.headers"
+            @column-sort="sortChanged">
 
             <!-- title -->
             <template v-slot:cell(name)="row">
@@ -83,7 +88,7 @@ export default {
                 <operations-dropdown
                     :show-view="false"
                     @edit="goToCollectionUpsert(row.item.id)"
-                    @delete="onDeleteClick(row.item)"
+                    @delete="onDeleteCollection(row.item)"
                     class="mls" />
             </template>
 

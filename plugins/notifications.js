@@ -131,8 +131,8 @@ export default ({ store }) => {
             case 'warning':
                 childNode = h(IconWarningOutine, {
                     attrs: {
-                        width: '35',
-                        height: '35',
+                        width: 35,
+                        height: 35,
                         stroke: 'none',
                         className: 'vabtm fillYellow'
                     }

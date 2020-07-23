@@ -13,7 +13,7 @@ const after = function (server) {
                     strategies: ['jwt', 'session']
                 },
                 handler: (request, h) => {
-                    return MasterTypeCtrl.getAllHandler(request, h);
+                    return MasterTypeCtrl.getPageHandler(request, null, h);
                 }
             }
         },

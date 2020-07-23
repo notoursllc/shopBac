@@ -2,6 +2,7 @@ const Boom = require('@hapi/boom');
 const queryString = require('query-string');
 const isString = require('lodash.isstring');
 const forEach = require('lodash.foreach');
+const isObject = require('lodash.isobject');
 
 class BaseController {
 
@@ -227,7 +228,7 @@ class BaseController {
 
 
     queryHelper(request) {
-        let response = {
+        const response = {
             pageSize: null,
             page: null,
             orderBy: null,
@@ -249,11 +250,11 @@ class BaseController {
         if(parsed.limit) {
             response.limit = parseInt(parsed.limit, 10) || null;
         }
-        if(parsed.orderDir === 'DESC' || parsed.orderDir === 'ASC') {
-            response.orderDir = parsed.orderDir;
+        if(parsed.sortDesc) {
+            response.orderDir = parsed.sortDesc === 'true' ? 'DESC' : 'ASC';
         }
-        if(parsed.orderBy) {
-            response.orderBy = parsed.orderBy;
+        if(parsed.sortBy) {
+            response.orderBy = parsed.sortBy;
         }
         if(parsed.whereRaw) {
             response.whereRaw = parsed.whereRaw;

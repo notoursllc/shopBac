@@ -4,8 +4,6 @@ export default ($http) => ({
 
     async list(params) {
         const paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
-
-        // const response = await $http.$get(`/products?${paramString}`); // TODO: is there a XSS issue here?
         const { data } = await $http.$get(`/payments?${paramString}`); // TODO: is there a XSS issue here?
         return data;
     },

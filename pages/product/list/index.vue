@@ -18,10 +18,6 @@ export default {
         return {
             products: [],
             productSubTypes: [],
-            sortData: {
-                orderBy: 'updated_at',
-                orderDir: 'DESC'
-            },
             tableData: {
                 headers: [
                     { key: 'featuredImage', label: null },
@@ -43,16 +39,9 @@ export default {
     },
 
     methods: {
-        async fetchProducts() {
+        async fetchProducts(paramsObj) {
             try {
-                this.products = await this.$api.products.list({
-                    // where: ['is_available', '=', true],
-                    // whereRaw: ['sub_type & ? > 0', [productTypeId]],
-                    // andWhere: [
-                    //     ['total_inventory_count', '>', 0]
-                    // ],
-                    ...this.sortData
-                });
+                this.products = await this.$api.products.list(paramsObj);
             }
             catch(err) {
                 this.$errorToast(err.message);
@@ -78,9 +67,7 @@ export default {
         },
 
         sortChanged(val) {
-            this.sortData.orderBy = val.sortBy || 'updated_at';
-            this.sortData.orderDir = val.sortDesc ? 'DESC' : 'ASC';
-            this.fetchProducts();
+            this.fetchProducts(val);
         },
 
         async onProductDelete(product) {
@@ -201,7 +188,7 @@ export default {
         <app-table
             :items="products"
             :fields="tableData.headers"
-            @sort-changed="sortChanged">
+            @column-sort="sortChanged">
 
             <!-- featured image -->
             <template v-slot:cell(featuredImage)="row">

@@ -2,23 +2,18 @@ const Joi = require('@hapi/joi');
 const BaseController = require('../../core/BaseController');
 
 
-class MasterTypeCtrl extends BaseController {
+class ProductCollectionCtrl extends BaseController {
 
     constructor(server) {
-        super(server, 'MasterType');
+        super(server, 'ProductSpecTable');
     }
 
 
     getSchema() {
         return {
             tenant_id: Joi.string().uuid(),
-            published: Joi.boolean().default(true),
-            object: Joi.string().max(100).required(),
             name: Joi.string().max(100).required(),
-            value: Joi.number().integer().min(0).required(),
-            slug: Joi.string().required(),
-            description: Joi.string().max(500).allow('').allow(null),
-            metadata: Joi.array().allow(null),
+            table_data: Joi.object().allow(null),
             created_at: Joi.date(),
             updated_at: Joi.date()
         };
@@ -38,4 +33,4 @@ class MasterTypeCtrl extends BaseController {
 
 }
 
-module.exports = MasterTypeCtrl;
+module.exports = ProductCollectionCtrl;
