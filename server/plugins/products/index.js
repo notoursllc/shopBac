@@ -106,7 +106,8 @@ exports.plugin = {
                             },
                             validate: {
                                 query: {
-                                    id: Joi.string().max(100)
+                                    id: Joi.string().max(100),
+                                    tenant_id: Joi.string().uuid()
                                 }
                             },
                             handler: (request, h) => {
@@ -138,7 +139,8 @@ exports.plugin = {
                             description: 'Deletes a Product image',
                             validate: {
                                 query: Joi.object({
-                                    id: Joi.string().uuid().required()
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid()
                                 })
                             },
                             handler: (request, h) => {
@@ -158,7 +160,8 @@ exports.plugin = {
                             description: 'Deletes a product SKU',
                             validate: {
                                 query: Joi.object({
-                                    id: Joi.string().uuid().required()
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid()
                                 })
                             },
                             handler: (request, h) => {
@@ -173,7 +176,8 @@ exports.plugin = {
                             description: 'Deletes a product SKU image',
                             validate: {
                                 query: Joi.object({
-                                    id: Joi.string().uuid().required()
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid()
                                 })
                             },
                             handler: (request, h) => {
@@ -252,7 +256,8 @@ exports.plugin = {
                             description: 'Deletes a SKU variant',
                             validate: {
                                 query: Joi.object({
-                                    id: Joi.string().uuid().required()
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid()
                                 })
                             },
                             handler: (request, h) => {

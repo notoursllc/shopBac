@@ -37,7 +37,7 @@ const DB_TABLES = {
     products: 'products',
     product_images: 'product_images',
     tenants: 'tenants',
-    tenant_users: 'tenant_users'
+    tenant_members: 'tenant_members'
 };
 
 module.exports.DB_TABLES = DB_TABLES;

@@ -2,7 +2,7 @@ const CoreService = require('../../plugins/core/core.service');
 
 module.exports.up = (knex) => {
     return knex.schema.createTable(
-        CoreService.DB_TABLES.tenant_users,
+        CoreService.DB_TABLES.tenant_members,
         (t) => {
             t.uuid('id').primary();
             t.uuid('tenant_id').nullable();

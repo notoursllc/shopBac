@@ -3,7 +3,7 @@ const Joi = require('@hapi/joi');
 
 const after = function (server) {
     const TenantCtrl = new (require('./controllers/TenantCtrl'))(server);
-    const TenantUserCtrl = new (require('./controllers/TenantUserCtrl'))(server);
+    const TenantMemberCtrl = new (require('./controllers/TenantMemberCtrl'))(server);
 
     server.auth.strategy('jwt', 'jwt', {
         // this key is only for testing.  In a multi tenant scenario I will need to look up the secret key in the db,
@@ -31,15 +31,15 @@ const after = function (server) {
         },
         // redirectTo: '/login',
         validateFunc: async (request, session) => {
-            const TenantUser = await TenantUserCtrl.modelForgeFetch(
+            const TenantMember = await TenantMemberCtrl.modelForgeFetch(
                 { id: session.id }
             );
 
-            if(!TenantUser) {
+            if(!TenantMember) {
                 return { valid: false };
             }
 
-            return { valid: true, credentials: TenantUser.toJSON() };
+            return { valid: true, credentials: TenantMember.toJSON() };
         }
     });
 
@@ -181,10 +181,10 @@ const after = function (server) {
                 auth: false,
                 description: 'Creates a new tenant user',
                 validate: {
-                    payload: TenantUserCtrl.getCreateSchema()
+                    payload: TenantMemberCtrl.getCreateSchema()
                 },
                 handler: (request, h) => {
-                    return TenantUserCtrl.createHandler(request, h);
+                    return TenantMemberCtrl.createHandler(request, h);
                 }
             }
         },
@@ -195,10 +195,10 @@ const after = function (server) {
                 auth: false,
                 description: 'Authenticates a tenant user and returns a cookie containing JWT',
                 validate: {
-                    payload: TenantUserCtrl.getLoginSchema()
+                    payload: TenantMemberCtrl.getLoginSchema()
                 },
                 handler: (request, h) => {
-                    return TenantUserCtrl.loginHandler(request, h);
+                    return TenantMemberCtrl.loginHandler(request, h);
                 }
             }
         },
@@ -209,7 +209,7 @@ const after = function (server) {
                 auth: false,
                 description: 'Logs out a tenant user',
                 handler: (request, h) => {
-                    return TenantUserCtrl.logoutHandler(request, h);
+                    return TenantMemberCtrl.logoutHandler(request, h);
                 }
             }
         }
@@ -224,8 +224,8 @@ const after = function (server) {
     );
 
     server.app.bookshelf.model(
-        'TenantUser',
-        require('./models/TenantUser')(baseModel, server.app.bookshelf, server)
+        'TenantMember',
+        require('./models/TenantMember')(baseModel, server.app.bookshelf, server)
     );
 };
 

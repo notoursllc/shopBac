@@ -2,7 +2,7 @@ const CoreService = require('../../core/core.service');
 
 module.exports = function (baseModel, bookshelf) {
     return baseModel.extend({
-        tableName: CoreService.DB_TABLES.tenant_users,
+        tableName: CoreService.DB_TABLES.tenant_members,
 
         uuid: true,
 

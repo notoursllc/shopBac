@@ -10,10 +10,10 @@ const { cryptPassword, testPasswordStrength } = require('../../../helpers.servic
 
 const SESSION_TOKEN_COOKIE = 'bv_session_token';
 
-class TenantUserCtrl extends BaseController {
+class TenantMemberCtrl extends BaseController {
 
     constructor(server) {
-        super(server, 'TenantUser');
+        super(server, 'TenantMember');
         this.validTenantCache = [];
         this.TenantCtrl = new (require('./TenantCtrl'))(server);
     }
@@ -64,14 +64,14 @@ class TenantUserCtrl extends BaseController {
      */
     async loginHandler(request, h) {
         try {
-            const TenantUser = await this.modelForgeFetch(
+            const TenantMember = await this.modelForgeFetch(
                 { email: request.payload.email }
             );
 
-            if(!TenantUser) {
+            if(!TenantMember) {
                 throw Boom.unauthorized();
             }
-            if(!bcrypt.compareSync(request.payload.password, TenantUser.get('password'))) {
+            if(!bcrypt.compareSync(request.payload.password, TenantMember.get('password'))) {
                 throw Boom.unauthorized();
             }
 
@@ -80,8 +80,8 @@ class TenantUserCtrl extends BaseController {
             // TODO: this cookie should be SameSite
             h.state(
                 SESSION_TOKEN_COOKIE,
-                TenantUser.get('id'),
-                // this.createToken(TenantUser),
+                TenantMember.get('id'),
+                // this.createToken(TenantMember),
                 {
                     ttl: null,
                     isSecure: process.env.NODE_ENV === 'production',
@@ -94,7 +94,7 @@ class TenantUserCtrl extends BaseController {
 
             // This is the httpOnly cookie that is used by the server
             // that is required for access
-            request.cookieAuth.set({ id: TenantUser.get('id') });
+            request.cookieAuth.set({ id: TenantMember.get('id') });
             return h.apiSuccess();
         }
         catch(err) {
@@ -124,7 +124,7 @@ class TenantUserCtrl extends BaseController {
 
 
     async createHandler(request, h) {
-        const [ TenantUser, Tenant ] = await Promise.all([
+        const [ TenantMember, Tenant ] = await Promise.all([
             this.modelForgeFetch(
                 { email: request.payload.email }
             ),
@@ -133,8 +133,8 @@ class TenantUserCtrl extends BaseController {
             )
         ]);
 
-        if(TenantUser) {
-            throw Boom.badData('A TenantUser with the specified email address already exists');
+        if(TenantMember) {
+            throw Boom.badData('A TenantMember with the specified email address already exists');
         }
         if(!Tenant) {
             throw Boom.badData('A Tenant with the specified ID does not exist');
@@ -238,4 +238,4 @@ class TenantUserCtrl extends BaseController {
 }
 
 
-module.exports = TenantUserCtrl;
+module.exports = TenantMemberCtrl;

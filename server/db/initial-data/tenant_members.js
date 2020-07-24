@@ -3,7 +3,7 @@ const CoreService = require('../../plugins/core/core.service');
 
 
 exports.seed = (knex) => {
-    return knex(CoreService.DB_TABLES.tenant_users)
+    return knex(CoreService.DB_TABLES.tenant_members)
         .del()
         // .then(() => {
         //     return knex.raw(`ALTER SEQUENCE ${CoreService.DB_TABLES.product_artists}_id_seq RESTART WITH 1`);
@@ -12,7 +12,7 @@ exports.seed = (knex) => {
             () => {
                 const d = new Date();
 
-                return knex(CoreService.DB_TABLES.tenant_users).insert({
+                return knex(CoreService.DB_TABLES.tenant_members).insert({
                     id: faker.random.uuid(),
                     tenant_id: '11111111-1111-1111-1111-111111111111',
                     email: 'greg@greg.com',

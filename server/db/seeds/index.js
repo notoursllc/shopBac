@@ -1,7 +1,8 @@
 const tenants = require('../initial-data/tenants');
-const tenant_users = require('../initial-data/tenant_users');
+const tenant_members = require('../initial-data/tenant_members');
 const product_sku_variant_types = require('../initial-data/product_sku_variant_types');
 const master_types = require('../initial-data/master_types');
+const product_collections = require('../initial-data/product_collections');
 
 
 /**
@@ -16,19 +17,21 @@ exports.seed = (knex, Promise) => {
     return tenants
         .seed(knex, Promise)
         .then(() => {
-            return tenant_users.seed(knex, Promise);
+            return tenant_members.seed(knex, Promise);
         })
         .then(() => {
             return product_sku_variant_types.seed(knex, Promise);
         })
         .then(() => {
             return master_types.seed(knex, Promise);
+        })
+        .then(() => {
+            return product_collections.seed(knex, Promise);
         });
         // .then(() => {
         //     return Promise.all([
-        //         tenant_users.seed(knex, Promise),
-        //         product_sku_variant_types.seed(knex, Promise),
-        //         master_types.seed(knex, Promise)
+        //         master_types.seed(knex, Promise),
+        //         product_collections.seed(knex, Promise)
         //     ]);
         // });
 };
