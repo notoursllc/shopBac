@@ -69,7 +69,7 @@ class ProductImageCtrl extends BaseController {
             alt_text: image.alt_text,
             ordinal: image.ordinal,
             published: true,
-            variants: resizeResults.filter((obj, index) => index > 0)
+            variants: resizeResults.filter((obj, index) => index > 0)  // remove the first one because we just used it above
         });
     }
 

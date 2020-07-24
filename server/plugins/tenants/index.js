@@ -62,7 +62,17 @@ const after = function (server) {
             options: {
                 description: 'Gets a list of tenants',
                 handler: (request, h) => {
-                    return TenantCtrl.getAllHandler(request, h);
+                    return TenantCtrl.getPageHandler(request, null, h);
+                }
+            }
+        },
+        {
+            method: 'GET',
+            path: '/tenants/all',
+            options: {
+                description: 'Gets a list of tenants',
+                handler: (request, h) => {
+                    return TenantCtrl.getAllHandler(request, null, h);
                 }
             }
         },

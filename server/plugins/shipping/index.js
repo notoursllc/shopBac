@@ -32,7 +32,7 @@ const after = function (server) {
             options: {
                 description: 'Gets a list of package types',
                 handler: (request, h) => {
-                    return ShippingCtrl.getAllHandler(request, h);
+                    return ShippingCtrl.getAllHandler(request, null, h);
                 }
             }
         },

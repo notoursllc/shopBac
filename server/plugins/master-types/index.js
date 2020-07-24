@@ -19,6 +19,19 @@ const after = function (server) {
         },
         {
             method: 'GET',
+            path: '/master_types/all',
+            options: {
+                description: 'Gets a list of master types',
+                auth: {
+                    strategies: ['jwt', 'session']
+                },
+                handler: (request, h) => {
+                    return MasterTypeCtrl.getAllHandler(request, null, h);
+                }
+            }
+        },
+        {
+            method: 'GET',
             path: '/master_type',
             options: {
                 description: 'Gets an master type by ID',

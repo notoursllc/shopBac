@@ -57,7 +57,8 @@ async function resizeBase64(image_b64, options, saveResult) {
             width: 600,
             height: Jimp.AUTO,
             quality: 60,
-            returnBase64: false
+            returnBase64: false,
+            returnBuffer: false
         },
         options || {}
     );
@@ -66,10 +67,18 @@ async function resizeBase64(image_b64, options, saveResult) {
     const mimeType = img.getMIME();
     const j = img.resize(settings.width, settings.height).quality(settings.quality);
 
-    imageType.result = settings.returnBase64 ? await j.getBase64Async(mimeType) : await j.getBufferAsync(mimeType);
+    const imageResultBuffer = await j.getBufferAsync(mimeType);
+
     imageType.width = settings.width;
     imageType.height = settings.height;
-    imageType.image_url = saveResult ? await StorageService.writeBuffer(imageType.result, `${uuidV4()}.${imageType.ext}`) : null;
+    imageType.image_url = saveResult ? await StorageService.writeBuffer(imageResultBuffer, `${uuidV4()}.${imageType.ext}`) : null;
+
+    if(settings.returnBase64) {
+        imageType.result = await j.getBase64Async(mimeType);
+    }
+    else if(settings.returnBuffer) {
+        imageType.result = imageResultBuffer;
+    }
 
     return imageType;
 }

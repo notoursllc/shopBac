@@ -160,13 +160,85 @@ class BaseController {
     }
 
 
-    async fetchAll(queryBufferModiferFn) {
+    async getAll(request, withRelated) {
         try {
-            global.logger.info(`REQUEST: BaseController.fetchAll (${this.modelName})`);
+            global.logger.info(`REQUEST: BaseController.getAll (${this.modelName})`);
+
+            const queryData = this.queryHelperParseWhere(request);
+            const config = {};
+
+            if(Array.isArray(withRelated) && withRelated.length) {
+                config.withRelated = withRelated;
+            }
+
+            const Models = await this.getModel()
+                .query((qb) => {
+                    // qb.innerJoin('manufacturers', 'cars.manufacturer_id', 'manufacturers.id');
+                    // qb.groupBy('cars.id');
+
+                    if(queryData.where) {
+                        qb.where(queryData.where[0], queryData.where[1], queryData.where[2]);
+                    }
+
+                    if(queryData.whereRaw) {
+                        if(queryData.whereRaw.length === 1) {
+                            qb.whereRaw(queryData.whereRaw);
+                        }
+                        else {
+                            qb.whereRaw(queryData.whereRaw.shift(), queryData.whereRaw);
+                        }
+                    }
+
+                    if(queryData.andWhere) {
+                        forEach(queryData.andWhere, function(arr) {
+                            qb.andWhere(arr[0], arr[1], arr[2]);
+                        });
+                    }
+
+                    // tenant id
+                    if(request.query && request.query.tenant_id) {
+                        qb.andWhere('tenant_id', '=', request.query.tenant_id);
+                    }
+                })
+                .orderBy(queryData.orderBy, queryData.orderDir)
+                .fetchAll(config);
+
+            global.logger.info(`RESPONSE: BaseController.getAll (${this.modelName})`, {
+                meta: {
+                    num_results: Models ? Models.length : 0
+                }
+            });
+
+            return Models;
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
+
+    async getAllHandler(request, withRelated, h) {
+        try {
+            const Models = await this.getAll(request, withRelated);
+            return h.apiSuccess(Models);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
+
+    async getAllFromQueryBuffer(queryBufferModiferFn) {
+        try {
+            global.logger.info(`REQUEST: BaseController.getAllFromQueryBuffer (${this.modelName})`);
 
             const Models = await this.getModel().query(queryBufferModiferFn).fetchAll();
 
-            global.logger.info(`RESPONSE: BaseController.fetchAll (${this.modelName})`, {
+            global.logger.info(`RESPONSE: BaseController.getAllFromQueryBuffer (${this.modelName})`, {
                 meta: Models ? Models.toJSON() : null
             });
 
@@ -180,9 +252,9 @@ class BaseController {
     }
 
 
-    async fetchAllHandler(h, queryBufferModiferFn) {
+    async getAllFromQueryBufferHandler(h, queryBufferModiferFn) {
         try {
-            const Models = await this.fetchAll(queryBufferModiferFn);
+            const Models = await this.getAllFromQueryBuffer(queryBufferModiferFn);
             return h.apiSuccess(Models);
         }
         catch(err) {
@@ -193,105 +265,7 @@ class BaseController {
     }
 
 
-    async getPageHandler(request, withRelatedConfig, h) {
-        try {
-            global.logger.info(`REQUEST: BaseController.getPageHandler (${this.modelName})`, {
-                meta: {
-                    query: request.query,
-                    withRelatedConfig
-                }
-            });
-
-            const Models = await this.fetchPage(request, withRelatedConfig);
-            const pagination = Models ? Models.pagination : null;
-
-            global.logger.info(`RESPONSE: BaseController.getPageHandler (${this.modelName})`, {
-                meta: {
-                    // logging the entire products json can be quite large,
-                    // so avoiding it for now, and just logging the pagination data
-                    pagination
-                }
-            });
-
-            return h.apiSuccess(
-                Models,
-                pagination
-            );
-        }
-        catch(err) {
-            console.log(err)
-            global.logger.error(err);
-            global.bugsnag(err);
-            throw Boom.notFound(err);
-        }
-    }
-
-
-    queryHelper(request) {
-        const response = {
-            pageSize: null,
-            page: null,
-            orderBy: null,
-            orderDir: 'DESC',
-            where: null,
-            whereRaw: null,
-            andWhere: null,
-            limit: null
-        };
-
-        const parsed = queryString.parse(request.url.search, {arrayFormat: 'bracket'});
-
-        if(parsed.pageSize) {
-            response.pageSize = parseInt(parsed.pageSize, 10) || null;
-        }
-        if(parsed.page) {
-            response.page = parseInt(parsed.page, 10) || null;
-        }
-        if(parsed.limit) {
-            response.limit = parseInt(parsed.limit, 10) || null;
-        }
-        if(parsed.sortDesc) {
-            response.orderDir = parsed.sortDesc === 'true' ? 'DESC' : 'ASC';
-        }
-        if(parsed.sortBy) {
-            response.orderBy = parsed.sortBy;
-        }
-        if(parsed.whereRaw) {
-            response.whereRaw = parsed.whereRaw;
-        }
-        if(parsed.where) {
-            response.where = parsed.where;
-
-            // and where:
-            // andWhere: [ 'product_type_id,=,3', 'total_inventory_count,>,0' ]
-            if(parsed.andWhere) {
-                const andWhere = [];
-
-                if(Array.isArray(parsed.andWhere)) {
-                    forEach(parsed.andWhere, (val) => {
-                        if(isString(val)) {
-                            val = val.split(',').map((item) => {
-                                return item.trim()
-                            });
-                        }
-
-                        if(Array.isArray(val) && val.length === 3) {
-                            andWhere.push(val);
-                        }
-                    });
-
-                    if(andWhere.length) {
-                        response.andWhere = andWhere;
-                    }
-                }
-            }
-        }
-
-        return response;
-    }
-
-
-    fetchPage(request, withRelated) {
+    getPage(request, withRelated) {
         const queryData = this.queryHelper(request);
         let config = {};
 
@@ -344,6 +318,115 @@ class BaseController {
             })
             .orderBy(queryData.orderBy, queryData.orderDir)
             .fetchPage(config);
+    }
+
+
+    async getPageHandler(request, withRelatedConfig, h) {
+        try {
+            global.logger.info(`REQUEST: BaseController.getPageHandler (${this.modelName})`, {
+                meta: {
+                    query: request.query,
+                    withRelatedConfig
+                }
+            });
+
+            const Models = await this.getPage(request, withRelatedConfig);
+            const pagination = Models ? Models.pagination : null;
+
+            global.logger.info(`RESPONSE: BaseController.getPageHandler (${this.modelName})`, {
+                meta: {
+                    // logging the entire products json can be quite large,
+                    // so avoiding it for now, and just logging the pagination data
+                    pagination
+                }
+            });
+
+            return h.apiSuccess(
+                Models,
+                pagination
+            );
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.notFound(err);
+        }
+    }
+
+
+    queryHelperParseWhere(request) {
+        const response = {
+            where: null,
+            whereRaw: null,
+            andWhere: null
+        };
+
+        const parsed = queryString.parse(request.url.search, {arrayFormat: 'bracket'});
+
+        if(parsed.whereRaw) {
+            response.whereRaw = parsed.whereRaw;
+        }
+        if(parsed.where) {
+            response.where = parsed.where;
+
+            // and where:
+            // andWhere: [ 'product_type_id,=,3', 'total_inventory_count,>,0' ]
+            if(parsed.andWhere) {
+                const andWhere = [];
+
+                if(Array.isArray(parsed.andWhere)) {
+                    forEach(parsed.andWhere, (val) => {
+                        if(isString(val)) {
+                            val = val.split(',').map((item) => {
+                                return item.trim();
+                            });
+                        }
+
+                        if(Array.isArray(val) && val.length === 3) {
+                            andWhere.push(val);
+                        }
+                    });
+
+                    if(andWhere.length) {
+                        response.andWhere = andWhere;
+                    }
+                }
+            }
+        }
+
+        return response;
+    }
+
+
+    queryHelper(request) {
+        const response = {
+            pageSize: null,
+            page: null,
+            orderBy: null,
+            orderDir: 'DESC',
+            limit: null,
+            ...this.queryHelperParseWhere(request)
+        };
+
+        const parsed = queryString.parse(request.url.search, {arrayFormat: 'bracket'});
+
+        if(parsed.pageSize) {
+            response.pageSize = parseInt(parsed.pageSize, 10) || null;
+        }
+        if(parsed.page) {
+            response.page = parseInt(parsed.page, 10) || null;
+        }
+        if(parsed.limit) {
+            response.limit = parseInt(parsed.limit, 10) || null;
+        }
+        if(parsed.sortDesc) {
+            response.orderDir = parsed.sortDesc === 'true' ? 'DESC' : 'ASC';
+        }
+        if(parsed.sortBy) {
+            response.orderBy = parsed.sortBy;
+        }
+
+        return response;
     }
 
 }
