@@ -33,6 +33,13 @@ exports.plugin = {
         // Log DNA setup:
         if(process.env.NODE_ENV === 'production') {
             logger = winston.createLogger({
+                format: winston.format.combine(
+                    winston.format.errors({ stack: true }),
+                    // This doesn't acutally format the results in LogDNA, except that it does cause
+                    // the 'meta' object to be stringified in the LogDNA UI, which is all I really want.
+                    // A 'prettiefied' meta object in LogDNA is kind of annoying read, I think.
+                    prettyJson
+                ),
                 transports: [
                     new logdnaWinston({
                         key: process.env.LOG_DNA_INGESTION_KEY,
@@ -46,31 +53,26 @@ exports.plugin = {
                         handleExceptions: true,
                         exitOnError: false
                     })
-                ],
-                format: winston.format.combine(
-                    // This doesn't acutally format the results in LogDNA, except that it does cause
-                    // the 'meta' object to be stringified in the LogDNA UI, which is all I really want.
-                    // A 'prettiefied' meta object in LogDNA is kind of annoying read, I think.
-                    prettyJson
-                )
+                ]
             });
         }
         else {
             logger = winston.createLogger({
-                transports: [
-                    new winston.transports.Console({
-                        level: process.env.NODE_ENV === 'test' ? 'error' : (process.env.LOG_LEVEL || 'info')
-                    })
-                ],
                 format: winston.format.combine(
+                    winston.format.errors({ stack: true }),
                     winston.format.colorize(),
                     winston.format.timestamp(),
                     winston.format.prettyPrint(),
                     // winston.format.json(),
                     // winston.format.splat(),
                     // winston.format.simple(),
-                    prettyJson
-                )
+                    // prettyJson
+                ),
+                transports: [
+                    new winston.transports.Console({
+                        level: process.env.NODE_ENV === 'test' ? 'error' : (process.env.LOG_LEVEL || 'info')
+                    })
+                ]
             });
         }
 
