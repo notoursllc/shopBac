@@ -109,25 +109,27 @@ export default {
 
         async onUpsertClick(data) {
             try {
-                if(isObject(data) && data.id) {
-                    const type = await this.$api.masterTypes.get(data.id);
+                this.clearForm();
 
-                    if(!type) {
+                if(isObject(data) && data.id) {
+                    const masterType = await this.$api.masterTypes.get(data.id);
+
+                    if(!masterType) {
                         throw new Error(this.$t('Master Type not found'));
                     }
 
-                    Object.keys(type).forEach((key) => {
-                        this.form[key] = type[key];
+                    Object.keys(masterType).forEach((key) => {
+                        this.form[key] = masterType[key];
                     });
 
                     this.formHasMetaData = Array.isArray(this.form.metadata);
                 }
                 else {
-                    const types = await this.$api.masterTypes.list({
+                    const masterTypes = await this.$api.masterTypes.all({
                         where: ['object', '=', this.object]
                     });
                     this.form.published = true;
-                    this.form.value = this.$api.masterTypes.getNextAvailableTypeValue(types);
+                    this.form.value = this.$api.masterTypes.getNextAvailableTypeValue(masterTypes);
                 }
 
                 this.showDialog();
@@ -165,7 +167,6 @@ export default {
                     { hideOthers: true }
                 );
                 this.showDialog(false);
-                this.clearForm();
                 this.fetchTypes();
             }
             catch(e) {
@@ -179,7 +180,6 @@ export default {
 
         onUpsertFormCancel() {
             this.showDialog(false);
-            this.clearForm();
         },
 
         onUseSlugSuggestion() {
