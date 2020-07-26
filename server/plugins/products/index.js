@@ -2,6 +2,7 @@ const Joi = require('@hapi/joi');
 const path = require('path');
 
 
+
 exports.plugin = {
     once: true,
     pkg: require('./package.json'),
@@ -18,6 +19,7 @@ exports.plugin = {
                 const ProductCollectionCtrl = new (require('./controllers/ProductCollectionCtrl'))(server);
                 const ProductSpecTableCtrl = new (require('./controllers/ProductSpecTableCtrl'))(server);
 
+                const payloadMaxBytes = process.env.ROUTE_PAYLOAD_MAXBYTES || 10485760; // 10MB (1048576 (1 MB) is the default)
 
                 // Yes this was aleady set in the Core plugin, but apparently
                 // it must be set in every plugin that needs a view engine:
@@ -77,6 +79,9 @@ exports.plugin = {
                             },
                             handler: (request, h) => {
                                 return ProductCtrl.upsertHandler(request, h);
+                            },
+                            payload: {
+                                maxBytes: payloadMaxBytes
                             }
                         }
                     },
@@ -86,13 +91,14 @@ exports.plugin = {
                         options: {
                             description: 'Updates a product',
                             validate: {
-                                payload: Joi.object({
-                                    id: Joi.string().uuid().required(),
-                                    ...ProductCtrl.getSchema()
-                                })
+                                payload: ProductCtrl.getSchema(true)
                             },
                             handler: (request, h) => {
                                 return ProductCtrl.upsertHandler(request, h);
+                            },
+                            payload: {
+
+                                maxBytes: payloadMaxBytes
                             }
                         }
                     },
