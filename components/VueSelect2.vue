@@ -11,6 +11,12 @@ export default {
         }
     },
 
+    data: function() {
+        return {
+            selectedVal: null
+        };
+    },
+
     computed: {
         sizeClass() {
             switch(this.size) {
@@ -22,6 +28,21 @@ export default {
                     return 'bv-select-md';
             }
         }
+    },
+
+    watch: {
+        value: {
+            handler(newVal) {
+                this.selectedVal = newVal;
+            },
+            immediate: true
+        }
+    },
+
+    methods: {
+        emitChange(val) {
+            this.$emit('input', val);
+        }
     }
 };
 </script>
@@ -29,11 +50,12 @@ export default {
 
 <template>
     <v-select
-        v-model="value"
+        v-model="selectedVal"
         v-on="$listeners"
         v-bind="$attrs"
         class="bv-select"
-        :class="sizeClass">
+        :class="sizeClass"
+        @input="emitChange">
         <slot name="no-options">{{ $t('No matching values') }}</slot>
         <slot></slot>
     </v-select>
