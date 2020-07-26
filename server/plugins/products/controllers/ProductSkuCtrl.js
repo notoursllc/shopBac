@@ -13,8 +13,9 @@ class ProductSkuCtrl extends BaseController {
     }
 
 
-    getSchema() {
-        return {
+    getSchema(isUpdate) {
+        const schema = {
+            id: Joi.string().uuid(),
             tenant_id: Joi.string().uuid(),
             // published: Joi.boolean().default(false).allow(null),
             published: Joi.boolean().empty('').default(false),
@@ -59,6 +60,12 @@ class ProductSkuCtrl extends BaseController {
             created_at: Joi.date(),
             updated_at: Joi.date()
         };
+
+        if(isUpdate) {
+            schema.id = Joi.string().uuid().required();
+        }
+
+        return schema;
     }
 
 
@@ -123,8 +130,8 @@ class ProductSkuCtrl extends BaseController {
 
             global.logger.info(`REQUEST: ProductSkuCtrl.upsertSkus (${this.modelName})`, {
                 meta: {
-                    productId,
                     tenantId,
+                    productId,
                     skus
                 }
             });
@@ -139,6 +146,8 @@ class ProductSkuCtrl extends BaseController {
                     );
                 });
             }
+
+            global.logger.info(`RESPONSE: ProductSkuCtrl.upsertSkus (${this.modelName}) - returning ${promises.length} promises`);
 
             return Promise.all(promises);
         }

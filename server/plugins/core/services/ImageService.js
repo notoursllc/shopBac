@@ -36,6 +36,30 @@ async function bufferIsImage(buffer) {
 
 
 /**
+ * A convenience method for 'resizeBase64' that will resize a single image into multiple sizes
+ *
+ * @param {A} image_b64
+ * @param {*} options   An array of resize configs.  One config for every size that you want created
+ * @param {*} saveResult
+ */
+function resizeBase64ToMultipleImages(image_b64, options, saveResult) {
+    const promises = [];
+
+    if(Array.isArray(options)) {
+        options.forEach((optionObj) => {
+            if(image_b64 && image_b64.trim().indexOf('data:') === 0) {
+                promises.push(
+                    resizeBase64(image_b64, optionObj, saveResult)
+                );
+            }
+        });
+    }
+
+    return promises;
+}
+
+
+/**
  * Resizes an image from a base64 string
  *
  * @param {*} image_b64
@@ -84,6 +108,7 @@ async function resizeBase64(image_b64, options, saveResult) {
 }
 
 
+module.exports.resizeBase64ToMultipleImages = resizeBase64ToMultipleImages;
 module.exports.getBufferFromBase64 = getBufferFromBase64;
 module.exports.bufferIsImage = bufferIsImage;
 module.exports.resizeBase64 = resizeBase64;

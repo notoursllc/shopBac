@@ -4,12 +4,16 @@ import cloneDeep from 'lodash.clonedeep';
 
 
 function stripRelations(data) {
-    // delete data.skus;
-    // delete data.images;
     delete data.created_at;
     delete data.updated_at;
     delete data.deleted_at;
     delete data.total_inventory_count;
+
+    if(Array.isArray(data.skus)) {
+        data.skus.forEach((obj) => {
+            delete obj.is_displayable;
+        });
+    }
 }
 
 

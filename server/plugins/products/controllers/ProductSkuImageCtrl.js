@@ -2,7 +2,7 @@ const Joi = require('@hapi/joi');
 const isObject = require('lodash.isobject');
 const ProductImageCtrl = require('./ProductImageCtrl');
 const StorageService = require('../../core/services/StorageService');
-const { resizeBase64 } = require('../../core/services/ImageService');
+const { resizeBase64ToMultipleImages } = require('../../core/services/ImageService');
 const { makeArray } = require('../../../helpers.service');
 
 class ProductSkuImageCtrl extends ProductImageCtrl {
@@ -46,22 +46,38 @@ class ProductSkuImageCtrl extends ProductImageCtrl {
             }
         });
 
-        const resizeResults = await Promise.all([
-            resizeBase64(image.image_url, { width: 600 }, true),
-            resizeBase64(image.image_url, { width: 1000 }, true),
-            resizeBase64(image.image_url, { width: 75 }, true)
-        ]);
+        const resizeResults = await Promise.all(
+            resizeBase64ToMultipleImages(
+                image.image_url,
+                [
+                    { width: 600 },
+                    { width: 1000 },
+                    { width: 75 }
+                ],
+                true
+            )
+        );
 
-        return this.upsertModel({
+        const upsertData = {
             product_sku_id: productSkuId,
             tenant_id: tenantId,
-            width: resizeResults[0].width,
-            image_url: resizeResults[0].image_url,
             alt_text: image.alt_text,
             ordinal: image.ordinal,
-            published: true,
-            variants: resizeResults.filter((obj, index) => index > 0)
-        });
+            published: true
+        };
+
+        if(image.id) {
+            upsertData.id = image.id;
+        }
+
+
+        if(resizeResults[0]) {
+            upsertData.width = resizeResults[0].width;
+            upsertData.image_url = resizeResults[0].image_url;
+            upsertData.variants = resizeResults.filter((obj, index) => index > 0); // remove the first one because we just used it above
+        }
+
+        return this.upsertModel(upsertData);
     }
 
 
@@ -71,8 +87,8 @@ class ProductSkuImageCtrl extends ProductImageCtrl {
 
             global.logger.info(`REQUEST: ProductSkuImageCtrl.upsertImages (${this.modelName})`, {
                 meta: {
-                    productSkuId,
                     tenantId,
+                    productSkuId,
                     images
                 }
             });
@@ -84,6 +100,8 @@ class ProductSkuImageCtrl extends ProductImageCtrl {
                     );
                 });
             }
+
+            global.logger.info(`RESPONSE: ProductSkuImageCtrl.upsertImages (${this.modelName}) - returning ${promises.length} promises`);
 
             return Promise.all(promises);
         }

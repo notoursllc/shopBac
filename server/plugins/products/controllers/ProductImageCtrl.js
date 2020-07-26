@@ -1,9 +1,6 @@
 const Joi = require('@hapi/joi');
-const Boom = require('@hapi/boom');
-const uuidV4 = require('uuid/v4');
 const BaseController = require('../../core/BaseController');
-const StorageService = require('../../core/services/StorageService');
-const { resizeBase64 } = require('../../core/services/ImageService');
+const { resizeBase64ToMultipleImages } = require('../../core/services/ImageService');
 
 
 class ProductImageCtrl extends BaseController {
@@ -47,30 +44,45 @@ class ProductImageCtrl extends BaseController {
 
 
     async resizeAndUpsertImage(image, productId, tenantId) {
-        global.logger.info(`REQUEST: ProductImageCtrl.upsertImage (${this.modelName})`, {
+        global.logger.info(`REQUEST: ProductImageCtrl.resizeAndUpsertImage (${this.modelName})`, {
             meta: {
-                productId,
                 tenantId,
+                productId,
                 image
             }
         });
 
-        const resizeResults = await Promise.all([
-            resizeBase64(image.image_url, { width: 600 }, true),
-            resizeBase64(image.image_url, { width: 1000 }, true),
-            resizeBase64(image.image_url, { width: 75 }, true)
-        ]);
+        const resizeResults = await Promise.all(
+            resizeBase64ToMultipleImages(
+                image.image_url,
+                [
+                    { width: 600 },
+                    { width: 1000 },
+                    { width: 75 }
+                ],
+                true
+            )
+        );
 
-        return this.upsertModel({
+        const upsertData = {
             product_id: productId,
             tenant_id: tenantId,
-            width: resizeResults[0].width,
-            image_url: resizeResults[0].image_url,
             alt_text: image.alt_text,
             ordinal: image.ordinal,
-            published: true,
-            variants: resizeResults.filter((obj, index) => index > 0)  // remove the first one because we just used it above
-        });
+            published: true
+        };
+
+        if(image.id) {
+            upsertData.id = image.id;
+        }
+
+        if(resizeResults[0]) {
+            upsertData.width = resizeResults[0].width;
+            upsertData.image_url = resizeResults[0].image_url;
+            upsertData.variants = resizeResults.filter((obj, index) => index > 0); // remove the first one because we just used it above
+        }
+
+        return this.upsertModel(upsertData);
     }
 
 
@@ -80,8 +92,8 @@ class ProductImageCtrl extends BaseController {
 
             global.logger.info(`REQUEST: ProductImageCtrl.upsertImages (${this.modelName})`, {
                 meta: {
-                    productId,
                     tenantId,
+                    productId,
                     images
                 }
             });
@@ -94,6 +106,8 @@ class ProductImageCtrl extends BaseController {
                 });
             }
 
+            global.logger.info(`RESPONSE: ProductImageCtrl.upsertImages (${this.modelName}) - returning ${promises.length} promises`);
+
             return Promise.all(promises);
         }
         catch(err) {
@@ -101,6 +115,7 @@ class ProductImageCtrl extends BaseController {
             global.bugsnag(err);
         }
     }
+
 
     // async upsertHandler(request, h) {
     //     try {

@@ -19,8 +19,8 @@ class ProductCtrl extends BaseController {
     }
 
 
-    getSchema() {
-        return {
+    getSchema(isUpdate) {
+        const schema = {
             tenant_id: Joi.string().uuid(),
             published: Joi.boolean().default(false),
             title: Joi.alternatives().try(Joi.string().trim().max(100), Joi.allow(null)),
@@ -58,13 +58,23 @@ class ProductCtrl extends BaseController {
             ),
 
             skus: Joi.array().items(
+                // Note: should not pass the 'isUpdate' flag to getSchema() in this case.
+                // When creating a product, the user doesn't necessarily have to also cretae skus,
+                // therefore updating a product may be the first time that a sku is added, in
+                // which case the sku will not have an id
                 Joi.object(this.ProductSkuCtrl.getSchema())
             ),
 
             // TIMESTAMPS
-            created_at: Joi.date().optional(),
-            updated_at: Joi.date().optional()
+            // created_at: Joi.date().optional(),
+            // updated_at: Joi.date().optional()
         };
+
+        if(isUpdate) {
+            schema.id = Joi.string().uuid().required();
+        }
+
+        return schema;
     }
 
 
@@ -192,7 +202,6 @@ class ProductCtrl extends BaseController {
                     )
                 );
 
-                // TODO: upsert product skus. IN PROGRESS.  Still need to build ProductSkuCtrl.upsertSkus
                 promises.push(
                     this.ProductSkuCtrl.upsertSkus(
                         skus,
@@ -283,47 +292,48 @@ class ProductCtrl extends BaseController {
         // https://www.sitemaps.org/protocol.html
         const sitemapConfig = {
             hostname: `http://www.${process.env.DOMAIN_NAME}`,
-            cacheTime: 600000,        // 600 sec - cache purge period
+            cacheTime: 600000, // 600 sec - cache purge period
             urls: [
-              { url: '/returns/',  changefreq: 'monthly', priority: 0.5 },
-              { url: '/contact-us/',  changefreq: 'monthly', priority: 0.5 },
-              { url: '/privacy/',  changefreq: 'monthly', priority: 0.5 },
-              { url: '/conditions-of-use/',  changefreq: 'monthly', priority: 0.5 },
+                { url: '/returns/', changefreq: 'monthly', priority: 0.5 },
+                { url: '/contact-us/', changefreq: 'monthly', priority: 0.5 },
+                { url: '/privacy/', changefreq: 'monthly', priority: 0.5 },
+                { url: '/conditions-of-use/', changefreq: 'monthly', priority: 0.5 }
             ]
         };
 
         Object.keys(globalTypes.product.subtypes).forEach((key) => {
             if(key) {
-                let parts = key.split('_');
+                const parts = key.split('_');
                 if(parts[2]) {
                     sitemapConfig.urls.push({
                         url: `/${parts[2].toLowerCase()}/`,
                         changefreq: 'weekly',
                         priority: 0.8
-                    })
+                    });
                 }
             }
         });
 
-        const Products = await this.getModel().query((qb) => {
-            // qb.innerJoin('manufacturers', 'cars.manufacturer_id', 'manufacturers.id');
-            // qb.groupBy('cars.id');
-            qb.where('published', '=', true);
-            // qb.andWhere(arr[0], arr[1], arr[2]);
-        })
-        .fetchPage({
-            pageSize: 100,
-            page: 1,
-            withRelated: {
-                pics: (query) => {
-                    query.where('published', '=', true);
-                    query.orderBy('sort_order', 'ASC');
+        const Products = await this.getModel()
+            .query((qb) => {
+                // qb.innerJoin('manufacturers', 'cars.manufacturer_id', 'manufacturers.id');
+                // qb.groupBy('cars.id');
+                qb.where('published', '=', true);
+                // qb.andWhere(arr[0], arr[1], arr[2]);
+            })
+            .fetchPage({
+                pageSize: 100,
+                page: 1,
+                withRelated: {
+                    pics: (query) => {
+                        query.where('published', '=', true);
+                        query.orderBy('sort_order', 'ASC');
+                    }
                 }
-            }
-        });
+            });
 
         Products.toJSON().forEach((obj) => {
-            let prod = {
+            const prod = {
                 url: `/q/${obj.seo_uri}`,
                 changefreq: 'weekly',
                 priority: 1
@@ -353,8 +363,8 @@ class ProductCtrl extends BaseController {
     // TODO STILL NEEDS REFACTORING
     async productShareHandler(request, h) {
         try {
-            let uriParts = request.query.uri.split('/');
-            let seoUri = uriParts[uriParts.length - 1];
+            const uriParts = request.query.uri.split('/');
+            const seoUri = uriParts[uriParts.length - 1];
 
             const Product = await getProductByAttribute('seo_uri', seoUri);
             const p = isObject(Product) ? Product.toJSON() : {};
@@ -382,7 +392,7 @@ class ProductCtrl extends BaseController {
         let pic = null;
 
         if(Array.isArray(productJson.pics)) {
-            let len = productJson.pics.length;
+            const len = productJson.pics.length;
 
             // The related pics for a product are ordered by sort order (ASC)
             // so the first 'published' pic will be the featured pic
