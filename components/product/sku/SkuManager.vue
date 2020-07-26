@@ -9,7 +9,7 @@ export default {
 
     components: {
         InputMoney: () => import('@/components/InputMoney'),
-        SkuUpsertForm: () => import('@/components/product/SkuUpsertForm'),
+        SkuUpsertForm: () => import('@/components/product/sku/SkuUpsertForm'),
         SkuAttributeInputs: () => import('@/components/product/sku/SkuAttributeInputs'),
         draggable: () => import('vuedraggable'),
         IconDragHandle: () => import('@/components/icons/IconDragHandle'),

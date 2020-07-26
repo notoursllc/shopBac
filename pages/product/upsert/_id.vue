@@ -15,7 +15,7 @@ export default {
         MetaDataBuilder: () => import('@/components/MetaDataBuilder'),
         ImageManager: () => import('@/components/product/ImageManager'),
         SeoPreview: () => import('@/components/product/SeoPreview'),
-        SkuManager: () => import('@/components/product/SkuManager')
+        SkuManager: () => import('@/components/product/sku/SkuManager')
     },
 
     mixins: [
