@@ -8,7 +8,7 @@ module.exports.up = (knex) => {
             t.uuid('id').primary();
             t.uuid('tenant_id').nullable();
             t.string('name').notNullable();
-            t.json('table_data').nullable();
+            t.jsonb('table_data').nullable();
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();
 

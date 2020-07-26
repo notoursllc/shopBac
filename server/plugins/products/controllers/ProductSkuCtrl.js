@@ -56,6 +56,10 @@ class ProductSkuCtrl extends BaseController {
             // product_id: Joi.string().uuid().required(),
             product_id: Joi.string().uuid(),
 
+            // SPEC TABLE
+            spec_table_id: Joi.string().uuid().allow(null),
+            spec_table_data: Joi.object().allow(null),
+
             // TIMESTAMPS
             created_at: Joi.date(),
             updated_at: Joi.date()

@@ -16,15 +16,20 @@ module.exports = function (baseModel, bookshelf) {
             return this.belongsTo('Product', 'product_id');
         },
 
+        // One-to-One relation with Product
+        // spec_table_id is the foreign key in this model
+        productSpecTable: function() {
+            return this.belongsTo('ProductSpecTable', 'spec_table_id');
+        },
+
         images: function() {
             // product_sku_id is the foreign key in ProductSkuImage
             return this.hasMany('ProductSkuImage', 'product_sku_id');
         },
 
-
         format(attributes) {
             if (attributes.attributes) {
-                attributes.attributes = JSON.stringify(attributes.attributes)
+                attributes.attributes = JSON.stringify(attributes.attributes);
             }
 
             return attributes;
@@ -37,7 +42,7 @@ module.exports = function (baseModel, bookshelf) {
             }
         },
 
-        // tenant_id is not visible
+        // not visible: tenant_id, deleted_at
         visible: [
             'id',
             'product_id',
@@ -62,6 +67,8 @@ module.exports = function (baseModel, bookshelf) {
             'weight_oz',
             'customs_country_of_origin',
             'customs_harmonized_system_code',
+            'spec_table_id',
+            'spec_table_data',
             'created_at',
             'updated_at',
 

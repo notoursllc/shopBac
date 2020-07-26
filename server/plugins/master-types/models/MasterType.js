@@ -10,7 +10,7 @@ module.exports = function (baseModel, bookshelf) {
 
         format(attributes) {
             if (attributes.metadata) {
-                attributes.metadata = JSON.stringify(attributes.metadata)
+                attributes.metadata = JSON.stringify(attributes.metadata);
             }
 
             return attributes;

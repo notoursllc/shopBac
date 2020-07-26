@@ -42,13 +42,22 @@ module.exports.up = (knex) => {
             t.uuid('product_id')
                 .notNullable()
                 .references('id')
-                .inTable(CoreService.DB_TABLES.products)
-                .onDelete('CASCADE');
+                .inTable(CoreService.DB_TABLES.products);
+            // .onDelete('CASCADE');
+
+            // SPEC TABLE
+            t.uuid('spec_table_id')
+                .nullable()
+                .references('id')
+                .inTable(CoreService.DB_TABLES.product_spec_tables);
+
+            t.jsonb('spec_table_data').nullable();
 
             t.index([
                 'id',
                 'tenant_id',
-                'product_id'
+                'product_id',
+                'spec_table_id'
             ]);
         }
     );
