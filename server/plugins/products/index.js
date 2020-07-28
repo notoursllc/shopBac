@@ -363,6 +363,16 @@ exports.plugin = {
                     },
                     {
                         method: 'GET',
+                        path: `${routePrefix}/product/spec_tables/all`,
+                        options: {
+                            description: 'Gets a list of product spec tables',
+                            handler: (request, h) => {
+                                return ProductSpecTableCtrl.getAllHandler(request, null, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
                         path: `${routePrefix}/product/spec_table`,
                         options: {
                             description: 'Gets a product spec table by ID',

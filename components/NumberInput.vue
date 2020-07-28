@@ -1,5 +1,6 @@
 <script>
 import isFinite from 'lodash.isfinite';
+import { isString, isNumber } from '@/utils/common';
 
 export default {
     name: 'NumberInput',
@@ -11,7 +12,7 @@ export default {
 
     props: {
         value: {
-            type: Number,
+            type: [Number, String],
             default: null
         },
 
@@ -45,10 +46,10 @@ export default {
 
     computed: {
         plusDisabled() {
-            return isFinite(this.max) && parseInt(this.selectedVal, 10) >= this.max;
+            return isFinite(this.max) && parseFloat(this.selectedVal) >= this.max;
         },
         minusDisabled() {
-            return isFinite(this.min) && parseInt(this.selectedVal, 10) <= this.min;
+            return isFinite(this.min) && parseFloat(this.selectedVal) <= this.min;
         },
         styleMinWidth() {
             const stringVal = this.selectedVal + '';
@@ -80,7 +81,10 @@ export default {
         */
         floatify(number) {
             if(number) {
-                return parseFloat((number).toFixed(10));
+                if(!isNumber(number)) {
+                    number = parseFloat(number);
+                }
+                return parseFloat(number).toFixed(10);
             }
         },
 

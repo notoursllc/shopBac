@@ -56,22 +56,17 @@ export default {
         },
 
         async createOptions() {
-            const opts = [];
-            const types = await this.$api.masterTypes.list({
+            const types = await this.$api.masterTypes.all({
                 where: ['object', '=', this.object]
             });
 
-            types.forEach((obj) => {
-                opts.push(
-                    {
-                        label: obj.name,
-                        value: obj.value,
-                        disabled: !obj.published
-                    }
-                );
+            this.selectOptions = types.map(obj => {
+                return {
+                    label: obj.name,
+                    value: obj.value,
+                    disabled: !obj.published
+                };
             });
-
-            this.selectOptions = opts;
         }
     }
 };

@@ -34,6 +34,14 @@ export default {
     computed: {
         canShowRowGrabHandles() {
             return Array.isArray(this.tableData.rows) && this.tableData.rows.length > 1;
+        },
+
+        numColumns() {
+            return Array.isArray(this.tableData.columns) ? this.tableData.columns.length : 0;
+        },
+
+        numRows() {
+            return Array.isArray(this.tableData.rows) ? this.tableData.rows.length : 0;
         }
     },
 
@@ -90,7 +98,7 @@ export default {
         addColumn() {
             this.pushNewColumn();
 
-            if(!this.tableData.rows.length) {
+            if(!this.numRows) {
                 this.addRow();
             }
             else {
@@ -104,7 +112,7 @@ export default {
         },
 
         addRow() {
-            if(!this.tableData.columns.length) {
+            if(!this.numColumns) {
                 this.addColumn();
             }
             else {
@@ -154,11 +162,11 @@ export default {
         },
 
         init() {
-            if(!this.tableData.columns.length) {
+            if(!this.numColumns) {
                 this.addColumn();
             }
 
-            if(!this.tableData.rows.length) {
+            if(!this.numRows) {
                 this.addRow();
             }
 
@@ -177,7 +185,7 @@ export default {
             table-class="table-builder-table">
             <b-thead>
                 <b-tr>
-                    <b-th class="vabtm width50 no-color"></b-th>
+                    <b-th class="grab-handle-cell no-color" v-show="canShowRowGrabHandles"></b-th>
                     <b-th class="th"></b-th>
                     <b-th
                         v-for="(obj, index) in tableData.columns"
@@ -225,7 +233,9 @@ export default {
                             </template>
                         </b-input-group>
                     </b-th>
-                    <b-th class="no-color">
+
+                    <!-- add column button -->
+                    <b-th class="no-color empty-column-cell">
                         <b-button
                             @click="addColumn"
                             variant="outline-secondary"
@@ -236,7 +246,6 @@ export default {
                                 :height="16" /> {{ $t('column') }}
                         </b-button>
                     </b-th>
-                    <b-th class="no-color"></b-th>
                 </b-tr>
             </b-thead>
 
@@ -247,8 +256,8 @@ export default {
                 tag="b-tbody">
                 <b-tr v-for="(row, idx) in tableData.rows" :key="idx">
                     <!-- drag handle -->
-                    <b-td class="no-color">
-                        <i class="handle cursorGrab" v-show="canShowRowGrabHandles">
+                    <b-td class="no-color grab-handle-cell" v-show="canShowRowGrabHandles">
+                        <i class="handle cursorGrab">
                             <icon-drag-handle />
                         </i>
                     </b-td>
@@ -271,7 +280,7 @@ export default {
                     </b-td>
 
                     <!-- delete button -->
-                    <b-td class="no-color">
+                    <b-td class="no-color empty-column-cell">
                         <pop-confirm @onConfirm="deleteRow(idx)">
                             {{ $t('Delete this row?') }}
 
@@ -287,10 +296,10 @@ export default {
             </draggable>
 
             <b-tr>
-                <b-td class="no-color"></b-td>
+                <b-td class="no-color" v-show="canShowRowGrabHandles"></b-td>
 
                 <!-- add row button -->
-                <b-td class="no-color">
+                <b-td class="no-color empthy-row-cell">
                     <b-button
                         @click="addRow"
                         variant="outline-secondary"
@@ -302,68 +311,12 @@ export default {
                     </b-button>
                 </b-td>
 
-                <b-td class="no-color" :colspan="tableData.columns.length"></b-td>
+                <b-td class="no-color pan" :colspan="numColumns || 1"></b-td>
             </b-tr>
         </b-table-simple>
     </div>
 </template>
 
 <style lang="scss">
-.header-input-btn {
-    padding: 2px 1px !important;
-    cursor: pointer;
-}
-
-.col-icon-container {
-    text-align: center;
-    margin-bottom: 5px;
-}
-
-.table-builder-footer {
-    padding-top: 40px;
-    text-align: left;
-}
-
-$borderColor: #e0e1e2;
-
-.table.table-builder-table {
-    // border: 1px solid $borderColor;
-    border: 0;
-    width: auto !important;
-
-    th, td {
-        border: 1px solid #cdcbcb;
-    }
-
-    thead th {
-        padding: 0.4rem;
-        font-weight: 400;
-        border-bottom: 0;
-        color: #757575;
-    }
-    .th {
-        background-color: #f0f0f0;
-
-        input {
-            color: #000;
-            font-weight: 500;
-        }
-    }
-
-    tr:hover {
-        background-color: #f0f9ed;
-    }
-
-    .no-color {
-        background-color: #fff !important;
-        border: 0;
-    }
-
-    .header-button {
-        padding: 5px 0 20px 0;
-    }
-    .footer-button {
-        padding: 20px 0 5px 0;
-    }
-}
+@import "~assets/css/components/_tableBuilderComponent.scss";
 </style>

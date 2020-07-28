@@ -11,6 +11,7 @@ export default {
         CountrySelect: () => import('@/components/CountrySelect'),
         ImageManager: () => import('@/components/product/ImageManager'),
         SkuAttributeInputs: () => import('@/components/product/sku/SkuAttributeInputs'),
+        SpecTableWizard: () => import('@/components/product/SpecTableWizard'),
         NumberInput: () => import('@/components/NumberInput')
     },
 
@@ -114,7 +115,7 @@ export default {
         </div>
 
         <!-- attributes -->
-        <text-card v-if="showAttributes" class="mbl">
+        <text-card v-if="showAttributes" class="mbxl">
             <div slot="header">{{ $t('Attributes') }}</div>
 
             <div class="inputGroupContainer">
@@ -137,7 +138,7 @@ export default {
 
 
         <!-- pricing -->
-        <text-card class="mbl">
+        <text-card class="mbxl">
             <div slot="header">{{ $t('Pricing') }}</div>
 
             <div class="inputGroupContainer">
@@ -175,7 +176,7 @@ export default {
 
 
         <!-- Images -->
-        <text-card class="mbl">
+        <text-card class="mbxl">
             <div slot="header">
                 {{ $t('Images') }}
                 <span class="fs11 plm">{{ $t('You can add up to num images', {number: imageManagerMaxImages}) }}</span>
@@ -188,8 +189,20 @@ export default {
         </text-card>
 
 
+        <!-- spec table -->
+        <text-card  class="mbxl">
+            <div slot="header">{{ $t('Spec table') }}</div>
+
+            <div class="inputGroupContainer">
+                <div>sku.spec_table_id {{ sku.spec_table_id }}</div>
+                <spec-table-wizard
+                    v-model="sku.spec_table_id" />
+            </div>
+        </text-card>
+
+
         <!-- inventory -->
-        <text-card class="mbl">
+        <text-card class="mbxl">
             <div slot="header">{{ $t('Inventory') }}</div>
 
             <div class="inputGroupContainer">
@@ -198,6 +211,7 @@ export default {
                     <label>{{ $t('Quantity') }}</label>
                     <number-input
                         v-model="sku.inventory_count"
+                        :min="0"
                         class="input-number" />
                 </div>
 
@@ -231,7 +245,7 @@ export default {
 
 
         <!-- shipping -->
-        <text-card class="mbl">
+        <text-card class="mbxl">
             <div slot="header">{{ $t('Shipping') }}</div>
 
             <div class="inputGroupContainer">
@@ -241,6 +255,7 @@ export default {
                     <number-input
                         v-model="sku.weight_oz"
                         :step=".01"
+                        :min="0"
                         class="input-number" />
                 </div>
             </div>

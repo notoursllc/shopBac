@@ -2,6 +2,13 @@ import queryString from 'query-string';
 
 export default ($http) => ({
 
+    async all(params) {
+        const paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
+        const { data } = await $http.$get(`/product/spec_tables/all?${paramString}`);
+        return data;
+    },
+
+
     async list(params) {
         const paramString = queryString.stringify(params, {arrayFormat: 'bracket'});
         const { data } = await $http.$get(`/product/spec_tables?${paramString}`);

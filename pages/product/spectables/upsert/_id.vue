@@ -1,7 +1,7 @@
 <script>
 export default {
     components: {
-        TableBuilder: () => import('@/components/TableBuilder')
+        TableBuilder: () => import('@/components/tableBuilder/TableBuilder')
     },
 
     data() {
