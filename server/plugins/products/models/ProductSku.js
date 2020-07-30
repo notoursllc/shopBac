@@ -26,6 +26,10 @@ module.exports = function (baseModel, bookshelf) {
                 attributes.attributes = JSON.stringify(attributes.attributes);
             }
 
+            if (attributes.data_table) {
+                attributes.data_table = JSON.stringify(attributes.data_table);
+            }
+
             return attributes;
         },
 
@@ -61,7 +65,7 @@ module.exports = function (baseModel, bookshelf) {
             'weight_oz',
             'customs_country_of_origin',
             'customs_harmonized_system_code',
-            'spec_table_data',
+            'data_table',
             'created_at',
             'updated_at',
 

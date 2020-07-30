@@ -14,7 +14,7 @@ export default {
         IconImport: () => import('@/components/icons/IconImport'),
         IconWarningOutine: () => import('@/components/icons/IconWarningOutline'),
         PopConfirm: () => import('@/components/PopConfirm'),
-        SpecTableSelect: () => import('@/components/product/SpecTableSelect'),
+        DataTableSelect: () => import('@/components/product/dataTable/DataTableSelect'),
         AppOverlay: () => import('@/components/AppOverlay')
     },
 
@@ -38,7 +38,7 @@ export default {
                 columns: [],
                 rows: []
             },
-            importFromSpecTableId: null,
+            importFromDataTableId: null,
             loading: false
         };
     },
@@ -174,7 +174,7 @@ export default {
         },
 
         async doDataImport() {
-            await this.fetchSpecTable(this.importFromSpecTableId);
+            await this.fetchDataTable(this.importFromDataTableId);
             this.emitInput();
         },
 
@@ -184,7 +184,7 @@ export default {
             this.init();
         },
 
-        async fetchSpecTable(id) {
+        async fetchDataTable(id) {
             if(!id) {
                 return;
             }
@@ -192,7 +192,7 @@ export default {
             this.loading = true;
 
             try {
-                const data = await this.$api.productSpecTables.get(id);
+                const data = await this.$api.productDataTables.get(id);
 
                 if(!data) {
                     throw new Error(this.$t('Data Table not found'));
@@ -243,8 +243,8 @@ export default {
                                     {{ $t('Import data from an existing Data Table') }}:
 
                                     <div class="pts pbm">
-                                        <spec-table-select
-                                            v-model="importFromSpecTableId"
+                                        <data-table-select
+                                            v-model="importFromDataTableId"
                                             class="width150"
                                             size="sm" />
                                     </div>

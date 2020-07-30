@@ -1,6 +1,6 @@
 <script>
 export default {
-    name: 'SpecTableSelect',
+    name: 'DataTableSelect',
 
     inheritAttrs: false,
 
@@ -37,9 +37,9 @@ export default {
         },
 
         async createOptions() {
-            const specTables = await this.$api.productSpecTables.all();
+            const dataTables = await this.$api.productDataTables.all();
 
-            this.selectOptions = specTables.map(obj => {
+            this.selectOptions = dataTables.map(obj => {
                 return {
                     text: obj.name,
                     value: obj.id

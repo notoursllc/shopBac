@@ -57,7 +57,7 @@ class ProductSkuCtrl extends BaseController {
             product_id: Joi.string().uuid(),
 
             // SPEC TABLE
-            spec_table_data: Joi.object().allow(null),
+            data_table: Joi.alternatives().try(Joi.object(), Joi.string(), Joi.allow(null)),
 
             // TIMESTAMPS
             created_at: Joi.date(),
@@ -112,7 +112,7 @@ class ProductSkuCtrl extends BaseController {
 
                 global.logger.info(`RESPONSE: ProductSkuCtrl.upsertSku (${this.modelName})`, {
                     meta: {
-                        sku: Sku.toJSON()
+                        sku: Sku ? Sku.toJSON() : null
                     }
                 });
 

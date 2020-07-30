@@ -5,7 +5,7 @@ const BaseController = require('../../core/BaseController');
 class ProductCollectionCtrl extends BaseController {
 
     constructor(server) {
-        super(server, 'ProductSpecTable');
+        super(server, 'ProductDataTable');
     }
 
 

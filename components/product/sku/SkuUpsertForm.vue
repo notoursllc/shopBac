@@ -11,7 +11,7 @@ export default {
         CountrySelect: () => import('@/components/CountrySelect'),
         ImageManager: () => import('@/components/product/ImageManager'),
         SkuAttributeInputs: () => import('@/components/product/sku/SkuAttributeInputs'),
-        SpecTableWizard: () => import('@/components/product/SpecTableWizard'),
+        DataTableWizard: () => import('@/components/product/dataTable/DataTableWizard'),
         NumberInput: () => import('@/components/NumberInput')
     },
 
@@ -194,8 +194,8 @@ export default {
             <template v-slot:headerSub>{{ $t('data_table_subheader') }}</template>
 
             <div class="inputGroupContainer">
-                <spec-table-wizard
-                    v-model="sku.spec_table_data" />
+                <data-table-wizard
+                    v-model="sku.data_table" />
             </div>
         </text-card>
 

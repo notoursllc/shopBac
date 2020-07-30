@@ -17,7 +17,7 @@ exports.plugin = {
                 const ProductSkuImageCtrl = new (require('./controllers/ProductSkuImageCtrl'))(server);
                 const ProductSkuVariantTypeCtrl = new (require('./controllers/ProductSkuVariantTypeCtrl'))(server);
                 const ProductCollectionCtrl = new (require('./controllers/ProductCollectionCtrl'))(server);
-                const ProductSpecTableCtrl = new (require('./controllers/ProductSpecTableCtrl'))(server);
+                const ProductDataTableCtrl = new (require('./controllers/ProductDataTableCtrl'))(server);
 
                 const payloadMaxBytes = process.env.ROUTE_PAYLOAD_MAXBYTES || 10485760; // 10MB (1048576 (1 MB) is the default)
 
@@ -349,33 +349,33 @@ exports.plugin = {
 
 
                     /******************************
-                     * Product Spec Tables
+                     * Product Data Tables
                      ******************************/
                     {
                         method: 'GET',
-                        path: `${routePrefix}/product/spec_tables`,
+                        path: `${routePrefix}/product/data_tables`,
                         options: {
-                            description: 'Gets a list of product spec tables',
+                            description: 'Gets a list of product data tables',
                             handler: (request, h) => {
-                                return ProductSpecTableCtrl.getPageHandler(request, null, h);
+                                return ProductDataTableCtrl.getPageHandler(request, null, h);
                             }
                         }
                     },
                     {
                         method: 'GET',
-                        path: `${routePrefix}/product/spec_tables/all`,
+                        path: `${routePrefix}/product/data_tables/all`,
                         options: {
-                            description: 'Gets a list of product spec tables',
+                            description: 'Gets a list of product data tables',
                             handler: (request, h) => {
-                                return ProductSpecTableCtrl.getAllHandler(request, null, h);
+                                return ProductDataTableCtrl.getAllHandler(request, null, h);
                             }
                         }
                     },
                     {
                         method: 'GET',
-                        path: `${routePrefix}/product/spec_table`,
+                        path: `${routePrefix}/product/data_table`,
                         options: {
-                            description: 'Gets a product spec table by ID',
+                            description: 'Gets a product data table by ID',
                             validate: {
                                 query: Joi.object({
                                     id: Joi.string().uuid().required(),
@@ -383,44 +383,44 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductSpecTableCtrl.getByIdHandler(request, h);
+                                return ProductDataTableCtrl.getByIdHandler(request, h);
                             }
                         }
                     },
                     {
                         method: 'POST',
-                        path: `${routePrefix}/product/spec_table`,
+                        path: `${routePrefix}/product/data_table`,
                         options: {
-                            description: 'Adds a new product spec table',
+                            description: 'Adds a new product data table',
                             validate: {
-                                payload: ProductSpecTableCtrl.getSchema()
+                                payload: ProductDataTableCtrl.getSchema()
                             },
                             handler: (request, h) => {
-                                return ProductSpecTableCtrl.upsertHandler(request, h);
+                                return ProductDataTableCtrl.upsertHandler(request, h);
                             }
                         }
                     },
                     {
                         method: 'PUT',
-                        path: `${routePrefix}/product/spec_table`,
+                        path: `${routePrefix}/product/data_table`,
                         options: {
-                            description: 'Updates a product spec table',
+                            description: 'Updates a product data table',
                             validate: {
                                 payload: Joi.object({
                                     id: Joi.string().uuid().required(),
-                                    ...ProductSpecTableCtrl.getSchema()
+                                    ...ProductDataTableCtrl.getSchema()
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductSpecTableCtrl.upsertHandler(request, h);
+                                return ProductDataTableCtrl.upsertHandler(request, h);
                             }
                         }
                     },
                     {
                         method: 'DELETE',
-                        path: `${routePrefix}/product/spec_table`,
+                        path: `${routePrefix}/product/data_table`,
                         options: {
-                            description: 'Deletes a product spec table',
+                            description: 'Deletes a product data table',
                             validate: {
                                 query: Joi.object({
                                     id: Joi.string().uuid().required(),
@@ -428,7 +428,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductSpecTableCtrl.deleteHandler(request, h);
+                                return ProductDataTableCtrl.deleteHandler(request, h);
                             }
                         }
                     },
@@ -534,8 +534,8 @@ exports.plugin = {
                 );
 
                 server.app.bookshelf.model(
-                    'ProductSpecTable',
-                    require('./models/ProductSpecTable')(baseModel, server.app.bookshelf, server)
+                    'ProductDataTable',
+                    require('./models/ProductDataTable')(baseModel, server.app.bookshelf, server)
                 );
             }
         );

@@ -7,7 +7,7 @@ export default {
     data() {
         return {
             loading: false,
-            spec: {}
+            data: {}
         };
     },
 
@@ -23,13 +23,13 @@ export default {
             this.loading = true;
 
             try {
-                const data = await this.$api.productSpecTables.get(id);
+                const data = await this.$api.productDataTables.get(id);
 
                 if(!data) {
                     throw new Error(this.$t('Data Table not found'));
                 }
 
-                this.spec = data;
+                this.data = data;
             }
             catch(e) {
                 this.$errorToast(e.message);
@@ -42,7 +42,7 @@ export default {
         async onSaveClick() {
             try {
                 this.loading = true;
-                const p = await this.$api.productSpecTables.upsert(this.spec);
+                const p = await this.$api.productDataTables.upsert(this.data);
 
                 if(!p) {
                     throw new Error('Error updating Data Table');
@@ -52,7 +52,7 @@ export default {
                 this.$successToast(`${title}: ${p.title}`);
 
                 this.$router.push({
-                    name: 'product-spectables-list'
+                    name: 'product-datatables-list'
                 });
             }
             catch(e) {
@@ -70,13 +70,13 @@ export default {
     <div v-loading="loading">
 
         <table-builder
-            v-model="spec.table_data" />
+            v-model="data.table_data" />
 
         <div class="ptm">
             <div>{{ $t('Name') }}:</div>
             <div class="pts">
                 <b-form-input
-                    v-model="spec.name"
+                    v-model="data.name"
                     class="width200" />
             </div>
         </div>

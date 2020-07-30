@@ -111,7 +111,7 @@ export default {
                             @click="menuItemClick">{{ $t('Variant properties') }}</navigation-item>
 
                         <navigation-item
-                            :route="{ name: 'product-spectables-list' }"
+                            :route="{ name: 'product-datatables-list' }"
                             @click="menuItemClick">{{ $t('Data Tables') }}</navigation-item>
                     </navigation-collapse>
 

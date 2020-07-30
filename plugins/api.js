@@ -5,7 +5,7 @@ import Products from '@/api/products';
 import ProductCollections from '@/api/product_collections';
 import ProductSkus from '@/api/product_skus';
 import ProductSkuVariantTypes from '@/api/product_sku_variant_types';
-import ProductSpecTables from '@/api/product_spec_tables';
+import ProductDataTables from '@/api/product_data_tables';
 import Shipping from '@/api/shipping';
 import Storage from '@/api/storage';
 import Tenants from '@/api/tenants';
@@ -22,7 +22,7 @@ export default (context, inject) => {
         productCollections: ProductCollections(context.$http),
         productSkus: ProductSkus(context.$http),
         productSkuVariantTypes: ProductSkuVariantTypes(context.$http),
-        productSpecTables: ProductSpecTables(context.$http),
+        productDataTables: ProductDataTables(context.$http),
         shipping: Shipping(context.$http),
         storage: Storage(context.$http),
         tenants: Tenants(context.$http)

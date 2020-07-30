@@ -8,7 +8,7 @@ export default {
 
     data() {
         return {
-            specs: [],
+            dataTables: [],
             tableData: {
                 headers: [
                     { key: 'name', label: this.$t('Name'), sortable: true },
@@ -26,7 +26,7 @@ export default {
          // will need to add pagination params in the future
         async fetchData(paramsObj) {
             try {
-                this.specs = await this.$api.productSpecTables.list(paramsObj);
+                this.dataTables = await this.$api.productDataTables.list(paramsObj);
             }
             catch(err) {
                 this.$errorToast(err.message);
@@ -48,7 +48,7 @@ export default {
                     return;
                 }
 
-                const result = await this.$api.productSpecTables.delete(data.id);
+                const result = await this.$api.productDataTables.delete(data.id);
 
                 if(!result) {
                     throw new Error(this.$t('Data Table not found'));
@@ -68,7 +68,7 @@ export default {
             const params = data ? { id: data.id } : null;
 
             this.$router.push({
-                name: 'product-spectables-upsert-id',
+                name: 'product-datatables-upsert-id',
                 params
             });
         }
@@ -82,7 +82,7 @@ export default {
         <fab type="add" @click="onUpsertClick" />
 
         <app-table
-            :items="specs"
+            :items="dataTables"
             :fields="tableData.headers"
             @column-sort="sortChanged">
 

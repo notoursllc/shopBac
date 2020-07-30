@@ -2,14 +2,13 @@
 import isObject from 'lodash.isobject';
 
 export default {
-    name: 'SpecTableWizard',
+    name: 'DataTableWizard',
 
     components: {
         TableBuilder: () => import('@/components/tableBuilder/TableBuilder'),
         TableBuilderView: () => import('@/components/tableBuilder/TableBuilderView'),
-        SpecTableSelect: () => import('@/components/product/SpecTableSelect'),
+        DataTableSelect: () => import('@/components/product/dataTable/DataTableSelect'),
         IconArrowRight: () => import('@/components/icons/IconArrowRight'),
-        IconImport: () => import('@/components/icons/IconImport'),
         AppOverlay: () => import('@/components/AppOverlay')
     },
 
@@ -35,7 +34,7 @@ export default {
                 { text: this.$t('Create new'), value: 'create' }
             ],
             selectedValue: null,
-            specTableSelectValue: null,
+            dataTableSelectValue: null,
             action: null,
             readOnlyTableData: null,
             tableBuilderData: null,
@@ -54,7 +53,7 @@ export default {
     // },
 
     methods: {
-        async fetchSpecTable(id) {
+        async fetchDataTable(id) {
             if(!id) {
                 return;
             }
@@ -63,7 +62,7 @@ export default {
             let tableData;
 
             try {
-                tableData = await this.$api.productSpecTables.get(id);
+                tableData = await this.$api.productDataTables.get(id);
 
                 if(!tableData) {
                     throw new Error(this.$t('Data Table not found'));
@@ -77,12 +76,12 @@ export default {
             return tableData;
         },
 
-        async onSpecTableSelectChange() {
-            this.selectedValue = this.specTableSelectValue;
+        async onDataTableSelectChange() {
+            this.selectedValue = this.dataTableSelectValue;
             this.emitInput();
 
             // fetch the data for <table-builder-view>
-            const results = await this.fetchSpecTable(this.specTableSelectValue);
+            const results = await this.fetchDataTable(this.dataTableSelectValue);
             this.readOnlyTableData = isObject(results) ? results.table_data : null;
         },
 
@@ -96,7 +95,6 @@ export default {
         },
 
         onActionSelectChange(val) {
-            console.log("ON onActionSelectChange", val)
             this.showImportOptions = false;
 
             switch(val) {
@@ -105,7 +103,7 @@ export default {
                     break;
 
                 case 'pre':
-                    this.onSpecTableSelectChange();
+                    this.onDataTableSelectChange();
                     break;
 
                 default:
@@ -120,7 +118,7 @@ export default {
 
         async onImportSelectChange(val) {
             // fetch the data for <table-builder-view>
-            const results = await this.fetchSpecTable(val);
+            const results = await this.fetchDataTable(val);
             this.tableBuilderData = isObject(results) ? results.table_data : null;
             this.onTableBuilderChange();
             // this.showImportOptions = false;
@@ -142,12 +140,12 @@ export default {
             <icon-arrow-right
                 :stroke-width="2" />
 
-            <spec-table-select
-                v-model="specTableSelectValue"
+            <data-table-select
+                v-model="dataTableSelectValue"
                 class="width150"
-                @input="onSpecTableSelectChange" />
+                @input="onDataTableSelectChange" />
 
-            <div class="ptxl" v-if="specTableSelectValue">
+            <div class="ptxl" v-if="dataTableSelectValue">
                 <app-overlay :show="loading">
                     <table-builder-view :table-data="readOnlyTableData" />
                 </app-overlay>

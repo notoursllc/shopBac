@@ -16,11 +16,7 @@ export default {
     data: function() {
         return {
             selectedVal: null,
-            selectOptions: [],
-            specTable: {
-                loading: false,
-                data: null
-            }
+            selectOptions: []
         };
     },
 

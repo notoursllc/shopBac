@@ -10,7 +10,7 @@ module.exports.up = (knex) => {
             t.jsonb('attributes').nullable();
             t.jsonb('metadata').nullable();
             t.integer('ordinal').nullable().defaultTo(1);
-            t.jsonb('spec_table_data').nullable();
+            t.jsonb('data_table').nullable();
 
             // PRICING
             t.string('currency').defaultTo('usd');
