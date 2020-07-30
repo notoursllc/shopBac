@@ -18,10 +18,6 @@ export default {
         value: {
             type: [String, Object],
             default: null
-        },
-        init: {
-            type: [String, Object],
-            default: null
         }
     },
 
@@ -42,15 +38,24 @@ export default {
         };
     },
 
-    // watch: {
-    //     init: {
-    //         handler(newVal) {
-    //             this.action = isObject(newVal) ? 'create' : 'pre';
-    //             this[this.action].data = newVal;
-    //         },
-    //         immediate: true
-    //     }
-    // },
+    watch: {
+        value: {
+            handler(newVal) {
+                if(newVal) {
+                    if(isObject(newVal)) {
+                        this.action = this.actionSelectOptions[2].value;
+                        this.tableBuilderData = newVal;
+                    }
+                    else {
+                        this.action = this.actionSelectOptions[1].value;
+                        this.dataTableSelectValue = newVal;
+                        this.fetchDataForReadOnlyTable(newVal);
+                    }
+                }
+            },
+            immediate: true
+        }
+    },
 
     methods: {
         async fetchDataTable(id) {
@@ -76,12 +81,16 @@ export default {
             return tableData;
         },
 
-        async onDataTableSelectChange() {
-            this.selectedValue = this.dataTableSelectValue;
+        onDataTableSelectChange(val) {
+            this.selectedValue = val;
             this.emitInput();
 
             // fetch the data for <table-builder-view>
-            const results = await this.fetchDataTable(this.dataTableSelectValue);
+            this.fetchDataForReadOnlyTable(val);
+        },
+
+        async fetchDataForReadOnlyTable(dataTableId) {
+            const results = await this.fetchDataTable(dataTableId);
             this.readOnlyTableData = isObject(results) ? results.table_data : null;
         },
 
@@ -103,7 +112,7 @@ export default {
                     break;
 
                 case 'pre':
-                    this.onDataTableSelectChange();
+                    this.onDataTableSelectChange(this.dataTableSelectValue);
                     break;
 
                 default:
