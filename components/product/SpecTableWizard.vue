@@ -9,6 +9,7 @@ export default {
         TableBuilderView: () => import('@/components/tableBuilder/TableBuilderView'),
         SpecTableSelect: () => import('@/components/product/SpecTableSelect'),
         IconArrowRight: () => import('@/components/icons/IconArrowRight'),
+        IconImport: () => import('@/components/icons/IconImport'),
         AppOverlay: () => import('@/components/AppOverlay')
     },
 
@@ -28,37 +29,29 @@ export default {
     data: function() {
         return {
             loading: false,
-            action: null,
-            wizardSelectOptions: [
+            actionSelectOptions: [
                 { text: this.$t('None'), value: null },
                 { text: this.$t('Use pre-defined'), value: 'pre' },
-                { text: this.$t('Create new'), value: 'create' },
-                { text: this.$t('Create from pre-defined'), value: 'copy' }
+                { text: this.$t('Create new'), value: 'create' }
             ],
-            selectedSpecTable: null,
-            pre: {
-                selectedSpecTable: null,
-                data: null
-            },
-            create: {
-                data: null
-            },
-            copy: {
-                selectedSpecTable: null,
-                data: null
-            }
+            selectedValue: null,
+            specTableSelectValue: null,
+            action: null,
+            readOnlyTableData: null,
+            tableBuilderData: null,
+            showImportOptions: false
         };
     },
 
-    watch: {
-        init: {
-            handler(newVal) {
-                this.action = isObject(newVal) ? 'create' : 'pre';
-                this[this.action].data = newVal;
-            },
-            immediate: true
-        }
-    },
+    // watch: {
+    //     init: {
+    //         handler(newVal) {
+    //             this.action = isObject(newVal) ? 'create' : 'pre';
+    //             this[this.action].data = newVal;
+    //         },
+    //         immediate: true
+    //     }
+    // },
 
     methods: {
         async fetchSpecTable(id) {
@@ -73,7 +66,7 @@ export default {
                 tableData = await this.$api.productSpecTables.get(id);
 
                 if(!tableData) {
-                    throw new Error(this.$t('Spec Table not found'));
+                    throw new Error(this.$t('Data Table not found'));
                 }
             }
             catch(e) {
@@ -84,36 +77,53 @@ export default {
             return tableData;
         },
 
-        async onSpecTableSelectChange(val) {
-            if(this.action === 'pre' || this.action === 'copy') {
-                const results = await this.fetchSpecTable(val);
-                this[this.action].data = isObject(results) ? results.table_data : null;
-                this.emitInput();
-            }
+        async onSpecTableSelectChange() {
+            this.selectedValue = this.specTableSelectValue;
+            this.emitInput();
+
+            // fetch the data for <table-builder-view>
+            const results = await this.fetchSpecTable(this.specTableSelectValue);
+            this.readOnlyTableData = isObject(results) ? results.table_data : null;
         },
 
         emitInput() {
-            switch(this.action) {
-                case 'pre':
-                    this.$emit('input', this.pre.selectedSpecTable);
+            this.$emit('input', this.selectedValue);
+        },
+
+        onTableBuilderChange() {
+            this.selectedValue = Object.assign({}, this.tableBuilderData);
+            this.emitInput();
+        },
+
+        onActionSelectChange(val) {
+            console.log("ON onActionSelectChange", val)
+            this.showImportOptions = false;
+
+            switch(val) {
+                case 'create':
+                    this.onTableBuilderChange();
                     break;
 
-                case 'create':
-                case 'copy':
-                    this.$emit('input', this[this.action].data);
+                case 'pre':
+                    this.onSpecTableSelectChange();
                     break;
 
                 default:
-                    this.$emit('input', null);
+                    this.selectedValue = null;
+                    this.emitInput();
             }
         },
 
-        onWizardSelectOptionsChange(val) {
-            this.emitInput();
+        onClickImportData() {
+            this.showImportOptions = true;
         },
 
-        onTableBuilderChange(val) {
-            this.emitInput();
+        async onImportSelectChange(val) {
+            // fetch the data for <table-builder-view>
+            const results = await this.fetchSpecTable(val);
+            this.tableBuilderData = isObject(results) ? results.table_data : null;
+            this.onTableBuilderChange();
+            // this.showImportOptions = false;
         }
     }
 };
@@ -122,59 +132,35 @@ export default {
 
 <template>
     <div>
-        <div>
-            <b-form-select
-                v-model="action"
-                :options="wizardSelectOptions"
-                class="widthAuto"
-                @input="onWizardSelectOptionsChange"></b-form-select>
+        <b-form-select
+            v-model="action"
+            :options="actionSelectOptions"
+            class="widthAuto"
+            @input="onActionSelectChange"></b-form-select>
 
-            <template v-if="action === 'pre' || action === 'copy'">
-                <icon-arrow-right
-                    :stroke-width="2" />
-            </template>
+        <template v-if="action === 'pre'">
+            <icon-arrow-right
+                :stroke-width="2" />
 
             <spec-table-select
-                v-if="action === 'pre'"
-                v-model="pre.selectedSpecTable"
+                v-model="specTableSelectValue"
                 class="width150"
                 @input="onSpecTableSelectChange" />
 
-            <spec-table-select
-                v-if="action === 'copy'"
-                v-model="copy.selectedSpecTable"
-                class="width150"
-                @input="onSpecTableSelectChange" />
-        </div>
+            <div class="ptxl" v-if="specTableSelectValue">
+                <app-overlay :show="loading">
+                    <table-builder-view :table-data="readOnlyTableData" />
+                </app-overlay>
+            </div>
+        </template>
 
-        <div class="ptl">
+        <div class="ptxl" v-if="action === 'create'">
             <app-overlay :show="loading">
-                <template v-if="action === 'pre'">
-                    in pre {{ pre.data }}
-                    <template v-if="pre.data">
-                        <table-builder-view :table-data="pre.data" />
-                    </template>
-                </template>
-
-                <template v-if="action === 'create'">
-                    <table-builder
-                        v-model="create.data"
-                        @input="onTableBuilderChange" />
-                </template>
-
-                <template v-if="action === 'copy'">
-                    in copy
-                    <!-- <template v-if="copy.data"> -->
-                        <div class="pbs">
-                            <b-button
-                                variant="light"
-                                size="sm">Import data</b-button>
-                        </div>
-                        <table-builder
-                            v-model="copy.data"
-                            @input="onTableBuilderChange" />
-                    <!-- </template> -->
-                </template>
+                <table-builder
+                    v-model="tableBuilderData"
+                    @input="onTableBuilderChange"
+                    :show-import="true">
+                </table-builder>
             </app-overlay>
         </div>
     </div>

@@ -177,10 +177,9 @@ export default {
 
         <!-- Images -->
         <text-card class="mbxl">
-            <div slot="header">
-                {{ $t('Images') }}
-                <span class="fs11 plm">{{ $t('You can add up to num images', {number: imageManagerMaxImages}) }}</span>
-            </div>
+            <template v-slot:header>{{ $t('Images') }}</template>
+            <template v-slot:headerSub>{{ $t('You can add up to num images', {number: imageManagerMaxImages}) }}</template>
+
             <image-manager
                 v-loading="loadingImages"
                 v-model="sku.images"
@@ -189,14 +188,14 @@ export default {
         </text-card>
 
 
-        <!-- spec table -->
+        <!-- data table -->
         <text-card  class="mbxl">
-            <div slot="header">{{ $t('Spec table') }}</div>
+            <template v-slot:header>{{ $t('Data table') }}</template>
+            <template v-slot:headerSub>{{ $t('data_table_subheader') }}</template>
 
             <div class="inputGroupContainer">
-                <div>sku.spec_table_id {{ sku.spec_table_id }}</div>
                 <spec-table-wizard
-                    v-model="sku.spec_table_id" />
+                    v-model="sku.spec_table_data" />
             </div>
         </text-card>
 

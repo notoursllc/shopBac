@@ -280,10 +280,9 @@ export default {
 
         <!-- Images -->
         <text-card class="mbl">
-            <div slot="header">
-                {{ $t('Featured images') }}
-                <span class="fs11 plm">{{ $t('You can add up to num images', {number: imageManagerMaxFeaturedImages}) }}</span>
-            </div>
+            <template v-slot:header>{{ $t('Featured images') }}</template>
+            <template v-slot:headerSub>{{ $t('You can add up to num images', {number: imageManagerMaxFeaturedImages}) }}</template>
+
             <image-manager
                 v-loading="loadingProductImages"
                 v-model="product.images"

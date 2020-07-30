@@ -51,7 +51,7 @@ export default {
                 const result = await this.$api.productSpecTables.delete(data.id);
 
                 if(!result) {
-                    throw new Error(this.$t('Spec Table not found'));
+                    throw new Error(this.$t('Data Table not found'));
                 }
 
                 this.fetchData();

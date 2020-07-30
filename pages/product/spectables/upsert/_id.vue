@@ -26,7 +26,7 @@ export default {
                 const data = await this.$api.productSpecTables.get(id);
 
                 if(!data) {
-                    throw new Error(this.$t('Spec Table not found'));
+                    throw new Error(this.$t('Data Table not found'));
                 }
 
                 this.spec = data;
@@ -45,10 +45,10 @@ export default {
                 const p = await this.$api.productSpecTables.upsert(this.spec);
 
                 if(!p) {
-                    throw new Error('Error updating spec table');
+                    throw new Error('Error updating Data Table');
                 }
 
-                const title = p.id ? this.$t('Spec Table updated successfully') : this.$t('Spec Table added successfully');
+                const title = p.id ? this.$t('Data Table updated successfully') : this.$t('Data Table added successfully');
                 this.$successToast(`${title}: ${p.title}`);
 
                 this.$router.push({

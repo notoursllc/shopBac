@@ -9,8 +9,7 @@ export default {
             type: Object,
             default: () => {
                 return {};
-            },
-            required: true
+            }
         }
     },
 

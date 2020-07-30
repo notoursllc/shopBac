@@ -1,6 +1,7 @@
 <script>
 import isObject from 'lodash.isobject';
 
+
 export default {
     components: {
         draggable: () => import('vuedraggable'),
@@ -10,7 +11,11 @@ export default {
         IconArrowLeft: () => import('@/components/icons/IconArrowLeft'),
         IconArrowDown: () => import('@/components/icons/IconArrowDown'),
         IconPlus: () => import('@/components/icons/IconPlus'),
-        PopConfirm: () => import('@/components/PopConfirm')
+        IconImport: () => import('@/components/icons/IconImport'),
+        IconWarningOutine: () => import('@/components/icons/IconWarningOutline'),
+        PopConfirm: () => import('@/components/PopConfirm'),
+        SpecTableSelect: () => import('@/components/product/SpecTableSelect'),
+        AppOverlay: () => import('@/components/AppOverlay')
     },
 
     props: {
@@ -19,6 +24,11 @@ export default {
             default: function() {
                 return {};
             }
+        },
+
+        showImport: {
+            type: Boolean,
+            default: false
         }
     },
 
@@ -27,7 +37,9 @@ export default {
             tableData: {
                 columns: [],
                 rows: []
-            }
+            },
+            importFromSpecTableId: null,
+            loading: false
         };
     },
 
@@ -161,6 +173,40 @@ export default {
             this.emitInput();
         },
 
+        async doDataImport() {
+            await this.fetchSpecTable(this.importFromSpecTableId);
+            this.emitInput();
+        },
+
+        clearTable() {
+            this.tableData.columns = [];
+            this.tableData.rows = [];
+            this.init();
+        },
+
+        async fetchSpecTable(id) {
+            if(!id) {
+                return;
+            }
+
+            this.loading = true;
+
+            try {
+                const data = await this.$api.productSpecTables.get(id);
+
+                if(!data) {
+                    throw new Error(this.$t('Data Table not found'));
+                }
+
+                this.tableData = data.table_data;
+            }
+            catch(e) {
+                this.$errorToast(e.message);
+            }
+
+            this.loading = false;
+        },
+
         init() {
             if(!this.numColumns) {
                 this.addColumn();
@@ -179,141 +225,190 @@ export default {
 
 <template>
     <div>
-        <b-table-simple
-            hover
-            responsive
-            table-class="table-builder-table">
-            <b-thead>
-                <b-tr>
-                    <b-th class="grab-handle-cell no-color" v-show="canShowRowGrabHandles"></b-th>
-                    <b-th class="th"></b-th>
-                    <b-th
-                        v-for="(obj, index) in tableData.columns"
-                        :key="index"
-                        class="th">
-                        <div class="col-icon-container">
-                            <pop-confirm @onConfirm="deleteColumn(index);">
-                                {{ $t('Delete this column?') }}
+        <app-overlay :show="loading">
+            <b-table-simple
+                hover
+                responsive
+                table-class="table-builder-table">
+                <b-thead>
+                    <b-tr>
+                        <b-th class="grab-handle-cell no-color" v-show="canShowRowGrabHandles"></b-th>
+                        <b-th class="th vat">
+                            <!-- import button -->
+                            <pop-confirm
+                                v-if="showImport"
+                                :confirm-button-label="$t('Import')"
+                                @onConfirm="doDataImport();">
+                                <div class="tac">
+                                    {{ $t('Import data from an existing Data Table') }}:
+
+                                    <div class="pts pbm">
+                                        <spec-table-select
+                                            v-model="importFromSpecTableId"
+                                            class="width150"
+                                            size="sm" />
+                                    </div>
+
+                                    <icon-warning-outine class-name="fillYellow" />
+                                    {{ $t('This action will override existing table data.') }}
+                                </div>
 
                                 <b-button
                                     slot="reference"
                                     variant="outline-secondary"
-                                    size="sm">
-                                    <icon-trash-can /><icon-arrow-down :stroke-width="2" />
+                                    size="sm"
+                                    v-b-tooltip.hover.top="$t('Import data from an existing Data Table')"
+                                    class="border-dashed-2">
+                                    <icon-import :width="20" :height="20" />
                                 </b-button>
                             </pop-confirm>
-                        </div>
+                        </b-th>
 
-                        <b-input-group size="sm">
-                            <template
-                                v-if="canShowLeftIcon(index)"
-                                v-slot:prepend>
-                                <b-input-group-text
-                                    class="header-input-btn"
-                                    @click="onColumnMove(index, true)">
-                                    <icon-arrow-left
-                                        :stroke-width="2" />
-                                </b-input-group-text>
-                            </template>
+                        <b-th
+                            v-for="(obj, index) in tableData.columns"
+                            :key="index"
+                            class="th">
+                            <div class="col-icon-container">
+                                <pop-confirm @onConfirm="deleteColumn(index);">
+                                    {{ $t('Delete this column?') }}
 
+                                    <b-button
+                                        slot="reference"
+                                        variant="outline-secondary"
+                                        size="sm"
+                                        class="border-dashed-2">
+                                        <icon-trash-can /><icon-arrow-down :stroke-width="2" />
+                                    </b-button>
+                                </pop-confirm>
+                            </div>
+
+                            <b-input-group size="sm">
+                                <template
+                                    v-if="canShowLeftIcon(index)"
+                                    v-slot:prepend>
+                                    <b-input-group-text
+                                        class="header-input-btn"
+                                        @click="onColumnMove(index, true)">
+                                        <icon-arrow-left
+                                            :stroke-width="2" />
+                                    </b-input-group-text>
+                                </template>
+
+                                <b-form-input
+                                    v-model="tableData.columns[index].label"
+                                    :placeholder="$t('Column label')"
+                                    size="sm"
+                                    @input="onInputChange"></b-form-input>
+
+                                <template
+                                    v-if="canShowRightIcon(index)"
+                                    v-slot:append>
+                                    <b-input-group-text
+                                        class="header-input-btn"
+                                        @click="onColumnMove(index, false)">
+                                        <icon-arrow-right :stroke-width="2" />
+                                    </b-input-group-text>
+                                </template>
+                            </b-input-group>
+                        </b-th>
+
+                        <!-- add column button -->
+                        <b-th class="no-color empty-column-cell">
+                            <b-button
+                                @click="addColumn"
+                                variant="outline-secondary"
+                                size="sm">
+                                <icon-plus
+                                    :stroke-width="2"
+                                    :width="16"
+                                    :height="16" /> {{ $t('column') }}
+                            </b-button>
+                        </b-th>
+                    </b-tr>
+                </b-thead>
+
+                <draggable
+                    v-model="tableData.rows"
+                    handle=".handle"
+                    ghost-class="ghost"
+                    tag="b-tbody">
+                    <b-tr v-for="(row, idx) in tableData.rows" :key="idx">
+                        <!-- drag handle -->
+                        <b-td class="no-color grab-handle-cell" v-show="canShowRowGrabHandles">
+                            <i class="handle cursorGrab">
+                                <icon-drag-handle />
+                            </i>
+                        </b-td>
+
+                        <!-- row label -->
+                        <b-td class="th">
                             <b-form-input
-                                v-model="tableData.columns[index].label"
-                                :placeholder="$t('Column label')"
+                                v-model="row.label"
+                                size="sm"
+                                :placeholder="$t('Row label')"
+                                @input="onInputChange"></b-form-input>
+                        </b-td>
+
+                        <!-- row inputs -->
+                        <b-td v-for="obj in row.cells" :key="obj.columnId">
+                            <b-form-input
+                                v-model="obj.value"
                                 size="sm"
                                 @input="onInputChange"></b-form-input>
+                        </b-td>
 
-                            <template
-                                v-if="canShowRightIcon(index)"
-                                v-slot:append>
-                                <b-input-group-text
-                                    class="header-input-btn"
-                                    @click="onColumnMove(index, false)">
-                                    <icon-arrow-right :stroke-width="2" />
-                                </b-input-group-text>
-                            </template>
-                        </b-input-group>
-                    </b-th>
+                        <!-- delete button -->
+                        <b-td class="no-color empty-column-cell">
+                            <pop-confirm @onConfirm="deleteRow(idx)">
+                                {{ $t('Delete this row?') }}
 
-                    <!-- add column button -->
-                    <b-th class="no-color empty-column-cell">
+                                <b-button
+                                    slot="reference"
+                                    variant="outline-secondary"
+                                    size="sm"
+                                    class="border-dashed-2">
+                                    <icon-arrow-left :stroke-width="2" /><icon-trash-can />
+                                </b-button>
+                            </pop-confirm>
+                        </b-td>
+                    </b-tr>
+                </draggable>
+
+                <b-tr>
+                    <b-td class="no-color" v-show="canShowRowGrabHandles"></b-td>
+
+                    <!-- add row button -->
+                    <b-td class="no-color empthy-row-cell" :colspan="numColumns + 1">
                         <b-button
-                            @click="addColumn"
+                            @click="addRow"
                             variant="outline-secondary"
                             size="sm">
                             <icon-plus
                                 :stroke-width="2"
                                 :width="16"
-                                :height="16" /> {{ $t('column') }}
+                                :height="16" /> {{ $t('row') }}
                         </b-button>
-                    </b-th>
-                </b-tr>
-            </b-thead>
 
-            <draggable
-                v-model="tableData.rows"
-                handle=".handle"
-                ghost-class="ghost"
-                tag="b-tbody">
-                <b-tr v-for="(row, idx) in tableData.rows" :key="idx">
-                    <!-- drag handle -->
-                    <b-td class="no-color grab-handle-cell" v-show="canShowRowGrabHandles">
-                        <i class="handle cursorGrab">
-                            <icon-drag-handle />
-                        </i>
-                    </b-td>
-
-                    <!-- row label -->
-                    <b-td class="th">
-                        <b-form-input
-                            v-model="row.label"
-                            size="sm"
-                            :placeholder="$t('Row label')"
-                            @input="onInputChange"></b-form-input>
-                    </b-td>
-
-                    <!-- row inputs -->
-                    <b-td v-for="obj in row.cells" :key="obj.columnId">
-                        <b-form-input
-                            v-model="obj.value"
-                            size="sm"
-                            @input="onInputChange"></b-form-input>
-                    </b-td>
-
-                    <!-- delete button -->
-                    <b-td class="no-color empty-column-cell">
-                        <pop-confirm @onConfirm="deleteRow(idx)">
-                            {{ $t('Delete this row?') }}
+                        <pop-confirm @onConfirm="clearTable()">
+                            <b-container class="d-flex align-items-stretch pr-0 pl-0">
+                                <div><icon-warning-outine class-name="fillYellow" /></div>
+                                <div class="flex-grow-1 pl-1">{{ $t('Are you sure you want to remove all data from this table?') }}</div>
+                            </b-container>
 
                             <b-button
                                 slot="reference"
                                 variant="outline-secondary"
-                                size="sm">
-                                <icon-arrow-left :stroke-width="2" /><icon-trash-can />
+                                size="sm"
+                                class="ml-3 border-dashed-2">
+                                <icon-trash-can /> {{ $t('Clear table') }}
                             </b-button>
                         </pop-confirm>
                     </b-td>
+
+                    <b-td class="no-color"></b-td>
                 </b-tr>
-            </draggable>
-
-            <b-tr>
-                <b-td class="no-color" v-show="canShowRowGrabHandles"></b-td>
-
-                <!-- add row button -->
-                <b-td class="no-color empthy-row-cell">
-                    <b-button
-                        @click="addRow"
-                        variant="outline-secondary"
-                        size="sm">
-                        <icon-plus
-                            :stroke-width="2"
-                            :width="16"
-                            :height="16" /> {{ $t('row') }}
-                    </b-button>
-                </b-td>
-
-                <b-td class="no-color pan" :colspan="numColumns || 1"></b-td>
-            </b-tr>
-        </b-table-simple>
+            </b-table-simple>
+        </app-overlay>
     </div>
 </template>
 

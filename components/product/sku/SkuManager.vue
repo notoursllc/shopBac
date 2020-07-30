@@ -596,7 +596,8 @@ export default {
 
                             <b-button
                                 slot="reference"
-                                variant="outline-secondary">
+                                variant="outline-secondary"
+                                class="border-dashed-2">
                                 <icon-trash-can />
                             </b-button>
                         </pop-confirm>

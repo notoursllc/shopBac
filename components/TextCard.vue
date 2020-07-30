@@ -9,6 +9,7 @@ export default {
         <div class="text-card-header" v-if="$slots.header || $slots.headerRight">
             <div class="text-card-header-left">
                 <slot name="header"></slot>
+                <div class="text-card-header-sub text-secondary" v-if="$slots.headerSub"><slot name="headerSub"></slot></div>
             </div>
             <div v-if="$slots.headerRight">
                 <slot name="headerRight"></slot>
@@ -42,6 +43,10 @@ export default {
 
         .text-card-header-left {
             flex-grow: 1
+        }
+
+        .text-card-header-sub {
+            font-size: 12px;
         }
     }
     .text-card-content {

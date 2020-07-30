@@ -9,11 +9,22 @@ export default {
     inheritAttrs: false,
 
     props: {
-        confirmButtonText: {
+        showConfirmButton: {
+            type: Boolean,
+            default: true
+        },
+
+        showCancelButton: {
+            type: Boolean,
+            default: true
+        },
+
+        confirmButtonLabel: {
             type: String,
             default: ''
         },
-        cancelButtonText: {
+
+        cancelButtonLabel: {
             type: String,
             default: ''
         }
@@ -27,11 +38,11 @@ export default {
 
     computed: {
         confirmLabel() {
-            return this.confirmButtonText || this.$t('OK');
+            return this.confirmButtonLabel || this.$t('OK');
         },
 
         cancelLabel() {
-            return this.cancelButtonText || this.$t('cancel');
+            return this.cancelButtonLabel || this.$t('cancel');
         },
 
         confirmRef() {
@@ -78,14 +89,16 @@ export default {
         v-on="$listeners">
         <slot></slot>
 
-        <div class="ptm tar">
+        <div class="ptm tar" v-if="showConfirmButton || showCancelButton">
             <b-button
+                v-if="showCancelButton"
                 variant="link"
                 size="sm"
                 @click="onCancelClick"
                 :ref="cancelRef">{{ cancelLabel }}</b-button>
 
             <b-button
+                v-if="showConfirmButton"
                 variant="primary"
                 size="sm"
                 @click="onConfirmClick"

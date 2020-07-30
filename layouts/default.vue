@@ -112,7 +112,7 @@ export default {
 
                         <navigation-item
                             :route="{ name: 'product-spectables-list' }"
-                            @click="menuItemClick">{{ $t('Spec Tables') }}</navigation-item>
+                            @click="menuItemClick">{{ $t('Data Tables') }}</navigation-item>
                     </navigation-collapse>
 
                     <navigation-item

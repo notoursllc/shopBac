@@ -10,6 +10,7 @@ module.exports.up = (knex) => {
             t.jsonb('attributes').nullable();
             t.jsonb('metadata').nullable();
             t.integer('ordinal').nullable().defaultTo(1);
+            t.jsonb('spec_table_data').nullable();
 
             // PRICING
             t.string('currency').defaultTo('usd');
@@ -45,19 +46,10 @@ module.exports.up = (knex) => {
                 .inTable(CoreService.DB_TABLES.products);
             // .onDelete('CASCADE');
 
-            // SPEC TABLE
-            t.uuid('spec_table_id')
-                .nullable()
-                .references('id')
-                .inTable(CoreService.DB_TABLES.product_spec_tables);
-
-            t.jsonb('spec_table_data').nullable();
-
             t.index([
                 'id',
                 'tenant_id',
-                'product_id',
-                'spec_table_id'
+                'product_id'
             ]);
         }
     );
