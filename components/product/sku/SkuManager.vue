@@ -73,16 +73,6 @@ export default {
         }
     },
 
-    watch: {
-        'product.skus': {
-            handler(newVal) {
-                if(Array.isArray(newVal) && !newVal.length) {
-                    this.addEmptySku();
-                }
-            },
-            immediate: true
-        }
-    },
 
     created() {
         this.getVariantTypes();
@@ -395,7 +385,7 @@ export default {
 
 <template>
     <div style="overflow-x:auto;">
-        <table class="bv-table">
+        <table class="bv-table mb-4" v-if="product.skus.length">
             <thead>
                 <tr>
                     <th class="vabtm" :class="{'width50': canAddColumn || canShowGrabHandles}">
@@ -606,12 +596,15 @@ export default {
             </draggable>
         </table>
 
-        <div class="pvl" v-if="product.attributes.length">
+
+        <div>
             <b-button
                 variant="primary"
                 size="sm"
                 @click="addEmptySku">
-                {{ $t('Add row') }}</b-button>
+                <icon-plus :width="16" :height="16" :stroke-width="2" stroke="#fff" />
+                {{ $t('Add variant') }}
+            </b-button>
         </div>
 
 
