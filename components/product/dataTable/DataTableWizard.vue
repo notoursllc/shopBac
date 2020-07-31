@@ -1,5 +1,6 @@
 <script>
 import isObject from 'lodash.isobject';
+import cloneDeep from 'lodash.clonedeep';
 
 export default {
     name: 'DataTableWizard',
@@ -9,7 +10,9 @@ export default {
         TableBuilderView: () => import('@/components/tableBuilder/TableBuilderView'),
         DataTableSelect: () => import('@/components/product/dataTable/DataTableSelect'),
         IconArrowRight: () => import('@/components/icons/IconArrowRight'),
-        AppOverlay: () => import('@/components/AppOverlay')
+        IconWarningOutine: () => import('@/components/icons/IconWarningOutline'),
+        AppOverlay: () => import('@/components/AppOverlay'),
+        AppMessage: () => import('@/components/AppMessage')
     },
 
     inheritAttrs: false,
@@ -34,8 +37,41 @@ export default {
             action: null,
             readOnlyTableData: null,
             tableBuilderData: null,
-            showImportOptions: false
+            showImportOptions: false,
+            allDataTables: []
         };
+    },
+
+    computed: {
+        canShowPredefinedTables() {
+            return this.allDataTables.length;
+        },
+
+        visibleActionSelectOptions() {
+            const opts = cloneDeep(this.actionSelectOptions);
+
+            if(!this.canShowPredefinedTables) {
+                opts.splice(1, 1);
+            }
+
+            return opts;
+        },
+
+        showWarning() {
+            if(!this.dataTableSelectValue) {
+                return false;
+            }
+
+            let exists = false;
+
+            this.allDataTables.forEach((opt) => {
+                if(opt.id === this.dataTableSelectValue) {
+                    exists = true;
+                }
+            });
+
+            return !exists;
+        }
     },
 
     watch: {
@@ -57,6 +93,10 @@ export default {
         }
     },
 
+    created() {
+        this.fetchAllDataTables();
+    },
+
     methods: {
         async fetchDataTable(id) {
             if(!id) {
@@ -69,9 +109,9 @@ export default {
             try {
                 tableData = await this.$api.productDataTables.get(id);
 
-                if(!tableData) {
-                    throw new Error(this.$t('Data Table not found'));
-                }
+                // if(!tableData) {
+                //     throw new Error(this.$t('Data Table not found'));
+                // }
             }
             catch(e) {
                 this.$errorToast(e.message);
@@ -79,6 +119,15 @@ export default {
 
             this.loading = false;
             return tableData;
+        },
+
+        async fetchAllDataTables() {
+            try {
+                this.allDataTables = await this.$api.productDataTables.all();
+            }
+            catch(e) {
+                this.$errorToast(e.message);
+            }
         },
 
         onDataTableSelectChange(val) {
@@ -139,13 +188,24 @@ export default {
 
 <template>
     <div>
+        <div class="pb-3" v-if="showWarning">
+            <app-message>
+                <template v-slot:icon>
+                    <icon-warning-outine
+                        :width="24"
+                        :height="24" />
+                </template>
+                {{ $t('This SKU is assigned to a Data Table that no longer exists.') }}
+            </app-message>
+        </div>
+
         <b-form-select
             v-model="action"
-            :options="actionSelectOptions"
+            :options="visibleActionSelectOptions"
             class="widthAuto"
             @input="onActionSelectChange"></b-form-select>
 
-        <template v-if="action === 'pre'">
+        <template v-if="canShowPredefinedTables && action === 'pre'">
             <icon-arrow-right
                 :stroke-width="2" />
 
@@ -154,14 +214,14 @@ export default {
                 class="width150"
                 @input="onDataTableSelectChange" />
 
-            <div class="ptxl" v-if="dataTableSelectValue">
+            <div class="pt-4" v-if="dataTableSelectValue">
                 <app-overlay :show="loading">
                     <table-builder-view :table-data="readOnlyTableData" />
                 </app-overlay>
             </div>
         </template>
 
-        <div class="ptxl" v-if="action === 'create'">
+        <div class="pt-4" v-if="action === 'create'">
             <app-overlay :show="loading">
                 <table-builder
                     v-model="tableBuilderData"

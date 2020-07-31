@@ -15,7 +15,8 @@ export default {
         IconWarningOutine: () => import('@/components/icons/IconWarningOutline'),
         PopConfirm: () => import('@/components/PopConfirm'),
         DataTableSelect: () => import('@/components/product/dataTable/DataTableSelect'),
-        AppOverlay: () => import('@/components/AppOverlay')
+        AppOverlay: () => import('@/components/AppOverlay'),
+        AppMessage: () => import('@/components/AppMessage')
     },
 
     props: {
@@ -249,8 +250,12 @@ export default {
                                             size="sm" />
                                     </div>
 
-                                    <icon-warning-outine class-name="fillYellow" />
-                                    {{ $t('This action will override existing table data.') }}
+                                    <app-message>
+                                        <template v-slot:icon>
+                                            <icon-warning-outine />
+                                        </template>
+                                        {{ $t('This action will override existing table data.') }}
+                                    </app-message>
                                 </div>
 
                                 <b-button
@@ -390,10 +395,12 @@ export default {
                         </b-button>
 
                         <pop-confirm @onConfirm="clearTable()">
-                            <b-container class="d-flex align-items-stretch pr-0 pl-0">
-                                <div><icon-warning-outine class-name="fillYellow" /></div>
-                                <div class="flex-grow-1 pl-1">{{ $t('Are you sure you want to remove all data from this table?') }}</div>
-                            </b-container>
+                            <app-message>
+                                <template v-slot:icon>
+                                    <icon-warning-outine />
+                                </template>
+                                {{ $t('Are you sure you want to remove all data from this table?') }}
+                            </app-message>
 
                             <b-button
                                 slot="reference"
