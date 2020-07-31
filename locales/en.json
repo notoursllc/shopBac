@@ -326,6 +326,7 @@
     "TERMS": "TERMS",
     "Thanks!": "Thanks!",
     "The address you provided does not seem to be a valid mailing adddress.": "The address you provided does not seem to be a valid mailing adddress.",
+    "There aren't any pre-defined data tables to import from.": "There aren't any pre-defined data tables to import from.",
     "There was an error setting up the payment client!": "There was an error setting up the payment client!",
     "There was an error tokenizing PayPal!": "There was an error tokenizing PayPal!",
     "This action will override existing table data.": "This action will override existing table data.",

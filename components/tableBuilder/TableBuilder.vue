@@ -40,6 +40,7 @@ export default {
                 rows: []
             },
             importFromDataTableId: null,
+            canDoImport: false,
             loading: false
         };
     },
@@ -70,6 +71,10 @@ export default {
             },
             immediate: true
         }
+    },
+
+    created() {
+        this.setCanDoImport();
     },
 
     methods: {
@@ -208,6 +213,19 @@ export default {
             this.loading = false;
         },
 
+        async setCanDoImport() {
+            try {
+                const results = await this.$api.productDataTables.list({
+                    limit: 1
+                });
+
+                this.canDoImport = results.length;
+            }
+            catch(e) {
+                this.$errorToast(e.message);
+            }
+        },
+
         init() {
             if(!this.numColumns) {
                 this.addColumn();
@@ -239,23 +257,31 @@ export default {
                             <pop-confirm
                                 v-if="showImport"
                                 :confirm-button-label="$t('Import')"
+                                :show-confirm-button="canDoImport"
+                                :cancel-button-label="!canDoImport ? $t('OK') : ''"
                                 @onConfirm="doDataImport();">
                                 <div class="tac">
-                                    {{ $t('Import data from an existing Data Table') }}:
+                                    <template v-if="canDoImport">
+                                        {{ $t('Import data from an existing Data Table') }}:
 
-                                    <div class="pts pbm">
-                                        <data-table-select
-                                            v-model="importFromDataTableId"
-                                            class="width150"
-                                            size="sm" />
-                                    </div>
+                                        <div class="pts pbm">
+                                            <data-table-select
+                                                v-model="importFromDataTableId"
+                                                class="width150"
+                                                size="sm" />
+                                        </div>
 
-                                    <app-message>
-                                        <template v-slot:icon>
-                                            <icon-warning-outine />
-                                        </template>
-                                        {{ $t('This action will override existing table data.') }}
-                                    </app-message>
+                                        <app-message>
+                                            <template v-slot:icon>
+                                                <icon-warning-outine />
+                                            </template>
+                                            {{ $t('This action will override existing table data.') }}
+                                        </app-message>
+                                    </template>
+
+                                    <template v-else>
+                                        {{ $t("There aren't any pre-defined data tables to import from.") }}
+                                    </template>
                                 </div>
 
                                 <b-button
