@@ -1,6 +1,4 @@
 <script>
-import Vue, { VNode } from 'vue';
-
 export default {
     functional: true,
 
