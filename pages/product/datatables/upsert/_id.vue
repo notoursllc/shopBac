@@ -1,7 +1,8 @@
 <script>
 export default {
     components: {
-        TableBuilder: () => import('@/components/tableBuilder/TableBuilder')
+        TableBuilder: () => import('@/components/tableBuilder/TableBuilder'),
+        AppOverlay: () => import('@/components/AppOverlay')
     },
 
     data() {
@@ -60,6 +61,12 @@ export default {
             }
 
             this.loading = false;
+        },
+
+        onCancelClick() {
+            this.$router.push({
+                name: 'product-datatables-list'
+            });
         }
     }
 };
@@ -67,27 +74,35 @@ export default {
 
 
 <template>
-    <div v-loading="loading">
+    <app-overlay :show="loading">
 
-        <table-builder
-            v-model="data.table_data" />
+        <b-form-group
+            :label="$t('Name')+ ':'"
+            label-for="input_name">
+            <b-form-input
+                v-model="data.name"
+                class="width200"
+                id="input_name"
+                trim />
+        </b-form-group>
 
-        <div class="ptm">
-            <div>{{ $t('Name') }}:</div>
-            <div class="pts">
-                <b-form-input
-                    v-model="data.name"
-                    class="width200" />
-            </div>
-        </div>
+        <b-form-group :label="$t('Data table') + ':'">
+            <table-builder
+                v-model="data.table_data" />
+        </b-form-group>
 
         <div class="mtl">
             <b-button
                 variant="primary"
                 @click="onSaveClick">{{ $t('Save') }}</b-button>
+
+            <b-button
+                variant="light"
+                class="ml-2"
+                @click="onCancelClick">{{ $t('cancel') }}</b-button>
         </div>
 
-    </div>
+    </app-overlay>
 </template>
 
 
