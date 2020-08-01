@@ -250,15 +250,10 @@ export default {
                     <span>
                         <b-form-input v-model="form.slug" />
                         <div class="fs12" v-show="slugIdea">
-                            <span class="colorGrayLighter">Suggestion:</span>&nbsp;&nbsp;{{ slugIdea }}&nbsp;&nbsp;(<a @click="onUseSlugSuggestion">use this</a>)
+                            <span class="colorGrayLighter">{{ $t('Suggestion') }}:</span>&nbsp;&nbsp;{{ slugIdea }}&nbsp;
+                            (<a @click="onUseSlugSuggestion" class="underlineDotted">{{ $t('use this') }}</a>)
                         </div>
                     </span>
-                </div>
-
-                <!-- Value -->
-                <div class="formRow">
-                    <label>{{ $t('Value') }}:</label>
-                    <span> {{ form.value }}</span>
                 </div>
 
                 <!-- Description -->
