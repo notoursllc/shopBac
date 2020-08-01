@@ -1,7 +1,6 @@
 <script>
 import isObject from 'lodash.isobject';
 
-
 export default {
     components: {
         draggable: () => import('vuedraggable'),
@@ -249,23 +248,24 @@ export default {
                             <pop-confirm
                                 v-if="showImport"
                                 :confirm-button-label="$t('Import')"
-                                :show-confirm-button="canDoImport"
+                                :show-confirm-button="!!canDoImport"
                                 :cancel-button-label="!canDoImport ? $t('OK') : ''"
                                 @onConfirm="doDataImport();">
-                                <div class="tac">
+                                <div>
                                     <template v-if="canDoImport">
-                                        {{ $t('Import data from an existing Data Table') }}:
-
-                                        <div class="pts pbm">
+                                        <b-form-group
+                                            id="fieldset-1"
+                                            :label="$t('Import data from an existing Data Table') + ':'"
+                                            label-for="select_data_table">
                                             <data-table-select
                                                 v-model="importFromDataTableId"
-                                                class="width150"
+                                                id="select_data_table"
                                                 size="sm" />
-                                        </div>
+                                        </b-form-group>
 
                                         <app-message>
                                             <template v-slot:icon>
-                                                <svg-icon icon="alert-circle" />
+                                                <svg-icon icon="alert-circle" variant="warning" />
                                             </template>
                                             {{ $t('This action will override existing table data.') }}
                                         </app-message>

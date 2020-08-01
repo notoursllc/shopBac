@@ -134,7 +134,7 @@ export default ({ store }) => {
                         icon: 'alert-circle',
                         width: 35,
                         height: 35,
-                        stroke: '#e6a23c',
+                        variant: 'warning',
                         className: 'vabtm'
                     }
                 });

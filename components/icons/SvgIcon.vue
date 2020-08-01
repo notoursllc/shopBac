@@ -53,7 +53,17 @@ export default {
         });
 
         if(!attributes.stroke && (!attributes.fill || attributes.fill === 'none')) {
-            attributes.stroke = '#565656';
+            let strokeColor = '#565656';
+
+            switch(ctx.props.variant) {
+                case 'warning':
+                    strokeColor = '#e6a23c';
+                    break;
+
+                // more in the future...
+            }
+
+            attributes.stroke = strokeColor;
         }
         if(attributes.stroke && !attributes['stroke-width']) {
             attributes['stroke-width'] = '2px';
