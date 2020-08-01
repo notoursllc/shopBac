@@ -2,9 +2,6 @@
 export default {
     components: {
         draggable: () => import('vuedraggable'),
-        IconDragHandle: () => import('@/components/icons/IconDragHandle'),
-        IconTrashCan: () => import('@/components/icons/IconTrashCan'),
-        IconPlus: () => import('@/components/icons/IconPlus'),
         PopConfirm: () => import('@/components/PopConfirm')
     },
 
@@ -116,7 +113,7 @@ export default {
                     <div class="meta-row-fields">
                         <!-- drag handle -->
                         <div class="meta-row-handle cursorGrab" v-if="canSortRows">
-                            <icon-drag-handle />
+                            <svg-icon icon="dots-vertical-double" />
                         </div>
 
                         <div class="meta-row-property">
@@ -139,7 +136,7 @@ export default {
                                     slot="reference"
                                     class="mlm"
                                     variant="outline-secondary">
-                                    <icon-trash-can />
+                                    <svg-icon icon="trash" />
                                 </b-button>
                             </pop-confirm>
                         </div>
@@ -152,9 +149,7 @@ export default {
             <b-button
                 @click="addNewItem"
                 variant="outline-secondary">
-                <icon-plus
-                    :width="16"
-                    :height="16" />&nbsp;{{ $t('New item') }}
+                <svg-icon icon="plus" />&nbsp;{{ $t('New item') }}
             </b-button>
         </div>
     </div>

@@ -79,7 +79,7 @@ export default {
 
 <template>
     <div>
-        <fab type="add" @click="onUpsertClick" />
+        <fab icon="plus" @click="onUpsertClick" />
 
         <app-table
             :items="dataTables"

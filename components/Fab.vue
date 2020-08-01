@@ -1,17 +1,12 @@
 <script>
-export default {
-    components: {
-        IconPlus: () => import('@/components/icons/IconPlus'),
-        IconClose: () => import('@/components/icons/IconClose'),
-        IconFloppy: () => import('@/components/icons/IconFloppy'),
-        IconEditOutline: () => import('@/components/icons/IconEditOutline')
-    },
+import SvgIcon from '@/components/icons/SvgIcon';
 
+export default {
     props: {
-        type: {
+        icon: {
             type: String,
             required: false,
-            default: 'primary'
+            default: 'plus'
         },
         column: {
             type: Number,
@@ -22,15 +17,15 @@ export default {
 
     computed: {
         buttonType() {
-            switch(this.type) {
+            switch(this.icon) {
                 case 'edit':
-                case 'save':
+                // case 'save':
                     return 'primary';
 
-                case 'delete':
+                case 'trash':
                     return 'danger';
 
-                case 'cancel':
+                case 'x':
                     return null;
 
                 default:
@@ -39,7 +34,7 @@ export default {
         },
 
         buttonClass() {
-            return this.type === 'cancel' || this.column === 2 ? 'fab2' : '';
+            return this.icon === 'x' || this.column === 2 ? 'fab2' : '';
         }
     },
 
@@ -50,25 +45,6 @@ export default {
     },
 
     render: function(createElement) {
-        let icon;
-
-        switch(this.type) {
-            case 'edit':
-                icon = 'IconEditOutline';
-                break;
-
-            case 'save':
-                icon = 'IconFloppy';
-                break;
-
-            case 'cancel':
-                icon = 'IconClose';
-                break;
-
-            default:
-                icon = 'IconPlus';
-        }
-
         return createElement(
             'BButton',
             {
@@ -83,13 +59,13 @@ export default {
             },
             [
                 createElement(
-                    icon,
+                    SvgIcon,
                     {
                         attrs: {
+                            icon: this.icon,
                             height: 30,
                             width: 30,
-                            stroke: '#fff',
-                            'stroke-width': 2
+                            stroke: '#fff'
                         }
                     }
                 )

@@ -1,12 +1,4 @@
 <script>
-// import SocialSharing from 'vue-social-sharing'
-// import IconFacebook from '@/components/icons/IconFacebook'
-// import IconGooglePlus from '@/components/icons/IconGooglePlus'
-// import IconTwitter from '@/components/icons/IconTwitter'
-// import IconPinterest from '@/components/icons/IconPinterest'
-
-// Vue.use(SocialSharing)
-
 export default {
     name: 'ProductDetailsLayout'
 }
@@ -29,32 +21,6 @@ export default {
 
         <div>
             <slot name="under"></slot>
-        </div>
-
-        <div class="social">
-            <!-- <social-sharing :url="siteUrl + '/product/share?id=' + product.id" -->
-            <!-- <social-sharing :url="pageUrl"
-                            :title="product.title"
-                            :description="product.title"
-                            hashtags="breadVan"
-                            :twitter-user="twitterUser"
-                            :media="mediaPicture"
-                            inline-template>
-                <div>
-                    <network network="facebook">
-                        <icon-facebook icon-name="facebook" width="40px" height="40px" />
-                    </network>
-                    <network network="googleplus">
-                        <icon-google-plus icon-name="google-plus" width="40px" height="40px" />
-                    </network>
-                    <network network="pinterest">
-                        <icon-pinterest icon-name="google-plus" width="25px" />
-                    </network>
-                    <network network="twitter">
-                        <icon-twitter icon-name="google-plus" width="25px" />
-                    </network>
-                </div>
-            </social-sharing> -->
         </div>
     </div>
 </template>

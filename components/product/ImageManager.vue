@@ -3,8 +3,6 @@ export default {
     name: 'ImageManager',
 
     components: {
-        IconDragHandle: () => import('@/components/icons/IconDragHandle'),
-        IconTrashCan: () => import('@/components/icons/IconTrashCan'),
         PopConfirm: () => import('@/components/PopConfirm'),
         draggable: () => import('vuedraggable')
     },
@@ -151,7 +149,7 @@ export default {
                 <div class="image-row-fields">
                     <div class="image-row-handle" v-if="fileList.length > 1">
                         <i class="handle">
-                            <icon-drag-handle height="20" width="20" />
+                            <svg-icon icon="dots-vertical-double" />
                         </i>
                     </div>
 
@@ -180,9 +178,7 @@ export default {
                             <b-button
                                 slot="reference"
                                 variant="outline-secondary">
-                                <icon-trash-can
-                                    width="20"
-                                    height="20" />
+                                <svg-icon icon="trash" />
                             </b-button>
                         </pop-confirm>
                     </div>

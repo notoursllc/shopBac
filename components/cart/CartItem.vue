@@ -1,7 +1,6 @@
 <script>
 import product_mixin from '@/mixins/product_mixin';
 import shopping_cart_mixin from '@/mixins/shopping_cart_mixin';
-import IconTimesSquare from '@/components/icons/IconTimesSquare';
 
 export default {
     name: 'CartItem',
@@ -11,8 +10,7 @@ export default {
         ProductDetailsLayout: () => import('@/components/product/ProductDetailsLayout'),
         ProductImageCarousel: () => import('@/components/product/ProductImageCarousel'),
         NumberInput: () => import('@/components/NumberInput'),
-        ProductQuantityWarning: () => import('@/components/product/ProductQuantityWarning'),
-        IconTimesSquare
+        ProductQuantityWarning: () => import('@/components/product/ProductQuantityWarning')
     },
 
     mixins: [
@@ -206,10 +204,7 @@ export default {
                             effect="light"
                             :content="$t('Remove item from cart')"
                             placement="top-start">
-                            <icon-times-square
-                                icon-name="times"
-                                class-name="fillGrayLight"
-                                class="status-icon" />
+                            <svg-icon icon="trash" />
                         </el-tooltip>
                     </span>
                 </el-popover>

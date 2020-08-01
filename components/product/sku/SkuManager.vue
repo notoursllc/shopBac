@@ -12,12 +12,6 @@ export default {
         SkuUpsertForm: () => import('@/components/product/sku/SkuUpsertForm'),
         SkuAttributeInputs: () => import('@/components/product/sku/SkuAttributeInputs'),
         draggable: () => import('vuedraggable'),
-        IconDragHandle: () => import('@/components/icons/IconDragHandle'),
-        IconPlus: () => import('@/components/icons/IconPlus'),
-        IconArrowRight: () => import('@/components/icons/IconArrowRight'),
-        IconArrowLeft: () => import('@/components/icons/IconArrowLeft'),
-        IconTrashCan: () => import('@/components/icons/IconTrashCan'),
-        IconEditOutline: () => import('@/components/icons/IconEditOutline'),
         Pop: () => import('@/components/Pop'),
         PopConfirm: () => import('@/components/PopConfirm'),
         NumberInput: () => import('@/components/NumberInput')
@@ -436,10 +430,7 @@ export default {
                                 v-b-tooltip.hover.top="$t('Add column')"
                                 @click="onClickAddColumnButton"
                                 id="btn_add_variant">
-                                <icon-plus
-                                    :width="16"
-                                    :height="16"
-                                    :stroke-width="2" />
+                                <svg-icon icon="plus" />
                             </b-button>
                         </pop>
                     </th>
@@ -453,7 +444,8 @@ export default {
                                 <pop-confirm @onConfirm="onClickDeleteColumn(index);">
                                     {{ $t('Delete this column?') }}
 
-                                    <icon-trash-can
+                                    <svg-icon
+                                        icon="trash"
                                         slot="reference"
                                         class="cursorPointer" />
                                 </pop-confirm>
@@ -480,7 +472,8 @@ export default {
                                             @click="hideInputTypePopover(index, false)">{{ $t('Done') }}</b-button>
                                     </div>
 
-                                    <icon-edit-outline
+                                    <svg-icon
+                                        icon="edit"
                                         slot="reference"
                                         class="cursorPointer mll" />
                                 </pop>
@@ -493,8 +486,7 @@ export default {
                                     <b-input-group-text
                                         class="header-input"
                                         @click="onColumnMove(index, true)">
-                                        <icon-arrow-left
-                                            :stroke-width="2" />
+                                        <svg-icon icon="arrow-left" />
                                     </b-input-group-text>
                                 </template>
 
@@ -507,8 +499,7 @@ export default {
                                     <b-input-group-text
                                         class="header-input"
                                         @click="onColumnMove(index, false)">
-                                        <icon-arrow-right
-                                            :stroke-width="2" />
+                                        <svg-icon icon="arrow-right" />
                                     </b-input-group-text>
                                 </template>
                             </b-input-group>
@@ -532,9 +523,10 @@ export default {
                 <tr v-for="(obj, idx) in product.skus" :key="obj.id">
                     <!-- drag handle -->
                     <td>
-                        <i class="handle cursorGrab" v-show="canShowGrabHandles">
-                            <icon-drag-handle />
-                        </i>
+                        <svg-icon
+                            icon="dots-vertical-double"
+                            class="handle cursorGrab"
+                            v-show="canShowGrabHandles" />
                     </td>
 
                     <!-- custom attributes -->
@@ -588,7 +580,7 @@ export default {
                                 slot="reference"
                                 variant="outline-secondary"
                                 class="border-dashed-2">
-                                <icon-trash-can />
+                                <svg-icon icon="trash" />
                             </b-button>
                         </pop-confirm>
                     </td>
@@ -602,7 +594,9 @@ export default {
                 variant="primary"
                 size="sm"
                 @click="addEmptySku">
-                <icon-plus :width="16" :height="16" :stroke-width="2" stroke="#fff" />
+                <svg-icon
+                    icon="plus"
+                    stroke="#fff" />
                 {{ $t('Add variant') }}
             </b-button>
         </div>

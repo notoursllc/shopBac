@@ -6,8 +6,6 @@ import shipping_mixin from '@/mixins/shipping_mixin';
 export default {
     components: {
         MasterTypeSelect: () => import('@/components/MasterTypeSelect'),
-        IconNewWindow: () => import('@/components/icons/IconNewWindow'),
-        IconPlayVideo: () => import('@/components/icons/IconPlayVideo'),
         Fab: () => import('@/components/Fab'),
         TextCard: () => import('@/components/TextCard'),
         InputMoney: () => import('@/components/InputMoney'),
@@ -184,11 +182,26 @@ export default {
 
 <template>
     <div v-loading="loading">
+        <svg-icon icon="alert-circle" />
+        <svg-icon icon="arrow-down" />
+        <svg-icon icon="arrow-left" />
+        <svg-icon icon="arrow-right" />
+        <svg-icon icon="close" />
+        <svg-icon icon="dots-vertical-double" />
+        <svg-icon icon="download" />
+        <svg-icon icon="edit" />
+        <svg-icon icon="import" />
+        <svg-icon icon="info-circle" />
+        <svg-icon icon="minus" />
+        <svg-icon icon="new-window" />
+        <svg-icon icon="plus" />
+        <svg-icon icon="trash" />
+
         <div class="tar mbm" v-if="product.id">
             <b-button
                 variant="outline-secondary"
                 @click="goToStore(product.seo_uri)">
-                <icon-new-window />&nbsp;{{ $t('View product in store') }}</b-button>
+                <svg-icon icon="new-window" />&nbsp;{{ $t('View product in store') }}</b-button>
         </div>
 
         <!-- published-->

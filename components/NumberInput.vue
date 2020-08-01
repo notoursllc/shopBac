@@ -5,11 +5,6 @@ import { isString, isNumber } from '@/utils/common';
 export default {
     name: 'NumberInput',
 
-    components: {
-        IconPlus: () => import('@/components/icons/IconPlus'),
-        IconMinus: () => import('@/components/icons/IconMinus')
-    },
-
     props: {
         value: {
             type: [Number, String],
@@ -137,10 +132,7 @@ export default {
                 @click="down"
                 :disabled="minusDisabled"
                 tabindex="-1">
-                <icon-minus
-                    :width="16"
-                    :height="16"
-                    :stroke-width="2" />
+                <svg-icon icon="plus" />
             </b-button>
         </template>
 
@@ -162,10 +154,7 @@ export default {
                 :disabled="plusDisabled"
                 @click="up"
                 tabindex="-1">
-                <icon-plus
-                    :width="16"
-                    :height="16"
-                    :stroke-width="2" />
+                <svg-icon icon="plus" />
             </b-button>
         </template>
 

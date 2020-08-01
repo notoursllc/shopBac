@@ -1,7 +1,7 @@
 import Vue from 'vue';
 import uuid from 'uuid';
 import cloneDeep from 'lodash.clonedeep';
-import IconWarningOutine from '@/components/icons/IconWarningOutline';
+import SvgIcon from '@/components/icons/SvgIcon';
 
 
 export default ({ store }) => {
@@ -129,12 +129,13 @@ export default ({ store }) => {
 
         switch(variant) {
             case 'warning':
-                childNode = h(IconWarningOutine, {
+                childNode = h(SvgIcon, {
                     attrs: {
+                        icon: 'alert-circle',
                         width: 35,
                         height: 35,
-                        stroke: 'none',
-                        className: 'vabtm fillYellow'
+                        stroke: '#e6a23c',
+                        className: 'vabtm'
                     }
                 });
                 break;

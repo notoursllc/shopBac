@@ -44,7 +44,7 @@ export default {
 
 <template>
     <div>
-        <fab type="edit" @click="goToEdit" />
+        <fab icon="edit" @click="goToEdit" />
 
         <product-details-json-view :product="product"></product-details-json-view>
     </div>

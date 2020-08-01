@@ -3,10 +3,10 @@ import { mapState } from 'vuex';
 
 export default {
     components: {
-        IconVictory: () => import('@/components/icons/IconVictory'),
         NavigationList: () => import('@/components/navigationList/NavigationList'),
         NavigationItem: () => import('@/components/navigationList/NavigationItem'),
-        NavigationCollapse: () => import('@/components/navigationList/NavigationCollapse')
+        NavigationCollapse: () => import('@/components/navigationList/NavigationCollapse'),
+        SvgSprite: () => import('@/components/icons/SvgSprite')
     },
 
     computed: {
@@ -63,10 +63,12 @@ export default {
 
 <template>
     <div class="layoutContainer">
+        <svg-sprite />
+
         <div class="sidenav-container">
             <aside class="sidenav" :class="{'sidenav-fixed': $store.state.ui.sidebarOpened}">
                 <div class="sidenav-header ptm">
-                    <icon-victory icon-name="logo" class-name="fillWhite" :width="60" />
+                    <svg-icon icon="bv-logo" :width="60" class-name="fillWhite" />
                 </div>
 
                 <navigation-list

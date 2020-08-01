@@ -88,7 +88,8 @@ export default {
 
         <b-form-group :label="$t('Data table') + ':'">
             <table-builder
-                v-model="data.table_data" />
+                v-model="data.table_data"
+                :show-import="true" />
         </b-form-group>
 
         <div class="mtl">

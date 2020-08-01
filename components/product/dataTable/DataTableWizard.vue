@@ -9,8 +9,6 @@ export default {
         TableBuilder: () => import('@/components/tableBuilder/TableBuilder'),
         TableBuilderView: () => import('@/components/tableBuilder/TableBuilderView'),
         DataTableSelect: () => import('@/components/product/dataTable/DataTableSelect'),
-        IconArrowRight: () => import('@/components/icons/IconArrowRight'),
-        IconWarningOutine: () => import('@/components/icons/IconWarningOutline'),
         AppOverlay: () => import('@/components/AppOverlay'),
         AppMessage: () => import('@/components/AppMessage')
     },
@@ -191,7 +189,8 @@ export default {
         <div class="pb-3" v-if="showWarning">
             <app-message>
                 <template v-slot:icon>
-                    <icon-warning-outine
+                    <svg-icon
+                        icon="alert-circle"
                         :width="24"
                         :height="24" />
                 </template>
@@ -206,8 +205,7 @@ export default {
             @input="onActionSelectChange"></b-form-select>
 
         <template v-if="canShowPredefinedTables && action === 'pre'">
-            <icon-arrow-right
-                :stroke-width="2" />
+            <svg-icon icon="arrow-right" />
 
             <data-table-select
                 v-model="dataTableSelectValue"

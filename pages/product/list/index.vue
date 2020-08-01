@@ -185,7 +185,7 @@ export default {
 
 <template>
     <div>
-        <fab type="add" @click="goToProductUpsert" />
+        <fab icon="plus" @click="goToProductUpsert" />
 
         <app-table
             :items="products"

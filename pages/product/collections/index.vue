@@ -75,7 +75,7 @@ export default {
 
 <template>
     <div>
-        <fab type="add" @click="goToCollectionUpsert" />
+        <fab icon="plus" @click="goToCollectionUpsert" />
 
         <app-table
             :items="collections"

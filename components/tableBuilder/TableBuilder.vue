@@ -5,14 +5,6 @@ import isObject from 'lodash.isobject';
 export default {
     components: {
         draggable: () => import('vuedraggable'),
-        IconDragHandle: () => import('@/components/icons/IconDragHandle'),
-        IconTrashCan: () => import('@/components/icons/IconTrashCan'),
-        IconArrowRight: () => import('@/components/icons/IconArrowRight'),
-        IconArrowLeft: () => import('@/components/icons/IconArrowLeft'),
-        IconArrowDown: () => import('@/components/icons/IconArrowDown'),
-        IconPlus: () => import('@/components/icons/IconPlus'),
-        IconImport: () => import('@/components/icons/IconImport'),
-        IconWarningOutine: () => import('@/components/icons/IconWarningOutline'),
         PopConfirm: () => import('@/components/PopConfirm'),
         DataTableSelect: () => import('@/components/product/dataTable/DataTableSelect'),
         AppOverlay: () => import('@/components/AppOverlay'),
@@ -273,7 +265,7 @@ export default {
 
                                         <app-message>
                                             <template v-slot:icon>
-                                                <icon-warning-outine />
+                                                <svg-icon icon="alert-circle" />
                                             </template>
                                             {{ $t('This action will override existing table data.') }}
                                         </app-message>
@@ -290,7 +282,7 @@ export default {
                                     size="sm"
                                     v-b-tooltip.hover.top="$t('Import data from an existing Data Table')"
                                     class="border-dashed-2">
-                                    <icon-import :width="20" :height="20" />
+                                    <svg-icon icon="import" stroke-width="1px" width="18" height="18" />
                                 </b-button>
                             </pop-confirm>
                         </b-th>
@@ -308,7 +300,7 @@ export default {
                                         variant="outline-secondary"
                                         size="sm"
                                         class="border-dashed-2">
-                                        <icon-trash-can /><icon-arrow-down :stroke-width="2" />
+                                        <svg-icon icon="trash" stroke-width="1px" /><svg-icon icon="arrow-down" />
                                     </b-button>
                                 </pop-confirm>
                             </div>
@@ -320,8 +312,7 @@ export default {
                                     <b-input-group-text
                                         class="header-input-btn"
                                         @click="onColumnMove(index, true)">
-                                        <icon-arrow-left
-                                            :stroke-width="2" />
+                                        <svg-icon icon="arrow-left" />
                                     </b-input-group-text>
                                 </template>
 
@@ -337,7 +328,7 @@ export default {
                                     <b-input-group-text
                                         class="header-input-btn"
                                         @click="onColumnMove(index, false)">
-                                        <icon-arrow-right :stroke-width="2" />
+                                        <svg-icon icon="arrow-right" />
                                     </b-input-group-text>
                                 </template>
                             </b-input-group>
@@ -349,10 +340,7 @@ export default {
                                 @click="addColumn"
                                 variant="outline-secondary"
                                 size="sm">
-                                <icon-plus
-                                    :stroke-width="2"
-                                    :width="16"
-                                    :height="16" /> {{ $t('column') }}
+                                <svg-icon icon="plus" width="16" height="16" /> {{ $t('column') }}
                             </b-button>
                         </b-th>
                     </b-tr>
@@ -367,7 +355,7 @@ export default {
                         <!-- drag handle -->
                         <b-td class="no-color grab-handle-cell" v-show="canShowRowGrabHandles">
                             <i class="handle cursorGrab">
-                                <icon-drag-handle />
+                                <svg-icon icon="dots-vertical-double" />
                             </i>
                         </b-td>
 
@@ -398,7 +386,7 @@ export default {
                                     variant="outline-secondary"
                                     size="sm"
                                     class="border-dashed-2">
-                                    <icon-arrow-left :stroke-width="2" /><icon-trash-can />
+                                    <svg-icon icon="arrow-left" /><svg-icon icon="trash" stroke-width="1px" />
                                 </b-button>
                             </pop-confirm>
                         </b-td>
@@ -414,17 +402,12 @@ export default {
                             @click="addRow"
                             variant="outline-secondary"
                             size="sm">
-                            <icon-plus
-                                :stroke-width="2"
-                                :width="16"
-                                :height="16" /> {{ $t('row') }}
+                            <svg-icon icon="plus" width="16" height="16" /> {{ $t('row') }}
                         </b-button>
 
                         <pop-confirm @onConfirm="clearTable()">
                             <app-message>
-                                <template v-slot:icon>
-                                    <icon-warning-outine />
-                                </template>
+                                <svg-icon v-slot:icon icon="alert-circle" />
                                 {{ $t('Are you sure you want to remove all data from this table?') }}
                             </app-message>
 
@@ -433,7 +416,7 @@ export default {
                                 variant="outline-secondary"
                                 size="sm"
                                 class="ml-3 border-dashed-2">
-                                <icon-trash-can /> {{ $t('Clear table') }}
+                                <svg-icon icon="trash" stroke-width="1px" width="18" height="18" /> {{ $t('Clear table') }}
                             </b-button>
                         </pop-confirm>
                     </b-td>

@@ -52,6 +52,7 @@ module.exports = {
         '@/plugins/prettyJson',
         '@/plugins/vue-select',
         '@/plugins/notifications',
+        '@/plugins/svgIcon',
         { src: '@/plugins/youtube', ssr: false },
         { src: '@/plugins/bugsnag', ssr: false }
     ],
