@@ -132,7 +132,7 @@ export default {
                 @click="down"
                 :disabled="minusDisabled"
                 tabindex="-1">
-                <svg-icon icon="plus" />
+                <svg-icon icon="minus" width="16" height="16" />
             </b-button>
         </template>
 
@@ -154,7 +154,7 @@ export default {
                 :disabled="plusDisabled"
                 @click="up"
                 tabindex="-1">
-                <svg-icon icon="plus" />
+                <svg-icon icon="plus" width="16" height="16" />
             </b-button>
         </template>
 

@@ -7,10 +7,16 @@ export default {
     functional: true,
 
     render(h, ctx) {
-        const classes = ['icon', ctx.props.className];
+        const classes = ['icon', ctx.data.staticClass];
+
         if(ctx.props.spin) {
             classes.push('icon-spin');
         }
+
+        const icon = ctx.props.icon;
+
+        // delete the 'icon' prop... no need to add that prop to the attributes:
+        delete ctx.props.icon;
 
         const attributes = {
             width: 20,
@@ -20,7 +26,8 @@ export default {
             'aria-hidden': 'true',
             role: 'presentation',
             focusable: 'false',
-            fill: 'none'
+            fill: 'none',
+            'data-icon': icon // adding this allow for special case css styling, tests, etc
         };
 
         Object.keys(ctx.props).forEach((prop) => {
@@ -64,7 +71,7 @@ export default {
                     'use',
                     {
                         attrs: {
-                            'xlink:href': `#${ctx.props.icon}`
+                            'xlink:href': `#${icon}`
                         }
                     }
                 )

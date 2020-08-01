@@ -6,14 +6,12 @@ import shipping_mixin from '@/mixins/shipping_mixin';
 export default {
     components: {
         MasterTypeSelect: () => import('@/components/MasterTypeSelect'),
-        Fab: () => import('@/components/Fab'),
         TextCard: () => import('@/components/TextCard'),
-        InputMoney: () => import('@/components/InputMoney'),
-        CountrySelect: () => import('@/components/CountrySelect'),
         MetaDataBuilder: () => import('@/components/MetaDataBuilder'),
         ImageManager: () => import('@/components/product/ImageManager'),
         SeoPreview: () => import('@/components/product/SeoPreview'),
-        SkuManager: () => import('@/components/product/sku/SkuManager')
+        SkuManager: () => import('@/components/product/sku/SkuManager'),
+        AppOverlay: () => import('@/components/AppOverlay')
     },
 
     mixins: [
@@ -181,21 +179,7 @@ export default {
 
 
 <template>
-    <div v-loading="loading">
-        <svg-icon icon="alert-circle" />
-        <svg-icon icon="arrow-down" />
-        <svg-icon icon="arrow-left" />
-        <svg-icon icon="arrow-right" />
-        <svg-icon icon="close" />
-        <svg-icon icon="dots-vertical-double" />
-        <svg-icon icon="download" />
-        <svg-icon icon="edit" />
-        <svg-icon icon="import" />
-        <svg-icon icon="info-circle" />
-        <svg-icon icon="minus" />
-        <svg-icon icon="new-window" />
-        <svg-icon icon="plus" />
-        <svg-icon icon="trash" />
+    <app-overlay :show="loading">
 
         <div class="tar mbm" v-if="product.id">
             <b-button
@@ -380,5 +364,5 @@ export default {
                 variant="primary"
                 @click="onSaveClick">{{ $t('Save') }}</b-button>
         </div>
-    </div>
+    </app-overlay>
 </template>

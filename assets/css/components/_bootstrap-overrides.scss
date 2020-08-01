@@ -3,6 +3,12 @@
         margin-bottom: 2px
     }
 
+    &.btn-primary {
+        svg {
+            stroke: #fff !important;
+        }
+    }
+
     &.btn-outline-secondary {
         background-color: #fff;
         border-color: #ced4da;

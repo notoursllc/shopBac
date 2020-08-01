@@ -445,11 +445,11 @@ export default {
                                     {{ $t('Delete this column?') }}
 
                                     <svg-icon
-                                        icon="trash"
                                         slot="reference"
-                                        class="cursorPointer" />
+                                        icon="trash"
+                                        stroke-width="1px"
+                                        class="cursorPointer mrm" />
                                 </pop-confirm>
-
 
                                 <!-- input type popover -->
                                 <pop
@@ -473,9 +473,10 @@ export default {
                                     </div>
 
                                     <svg-icon
-                                        icon="edit"
                                         slot="reference"
-                                        class="cursorPointer mll" />
+                                        icon="adjustments"
+                                        stroke-width="1px"
+                                        class="cursorPointer" />
                                 </pop>
                             </div>
 
@@ -594,10 +595,7 @@ export default {
                 variant="primary"
                 size="sm"
                 @click="addEmptySku">
-                <svg-icon
-                    icon="plus"
-                    stroke="#fff" />
-                {{ $t('Add variant') }}
+                <svg-icon icon="plus" /> {{ $t('Add variant') }}
             </b-button>
         </div>
 
