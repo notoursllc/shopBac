@@ -38,7 +38,7 @@ export default {
 
     data: function() {
         return {
-            imageManagerMaxImages: process.env.SKU_IMAGE_MANAGER_MAX_IMAGES || 3,
+            imageManagerMaxImages: process.env.SKU_IMAGE_MANAGER_MAX_IMAGES || 6,
             loadingImages: false,
             skuVariantTypes: []
         };
