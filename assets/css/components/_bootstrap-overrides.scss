@@ -16,6 +16,10 @@
         &:hover {
             background-color: #bcc2c7;
             border-color: #bcc2c7;
+
+            svg {
+                stroke: #fff !important;
+            }
         }
     }
 }
