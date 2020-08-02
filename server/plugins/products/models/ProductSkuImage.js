@@ -29,6 +29,7 @@ module.exports = function (baseModel, bookshelf) {
             'id',
             'product_sku_id',
             'published',
+            'is_featured',
             'image_url',
             'alt_text',
             'width',

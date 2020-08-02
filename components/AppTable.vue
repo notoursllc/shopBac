@@ -36,31 +36,3 @@ export default {
         </template>
     </b-table>
 </template>
-
-
-<style lang="scss">
-$borderColor: #e0e1e2;
-
-.table.bread-table {
-    border: 1px solid $borderColor;
-
-    th {
-        border: 1px solid $borderColor;
-    }
-    td {
-        border-top: 1px solid $borderColor;
-    }
-
-    thead th {
-        padding: 0.4rem;
-        font-weight: 400;
-        border-bottom: 0;
-        background-color: #f1f2f3;
-        color: #757575;
-    }
-
-    tr:hover {
-        background-color: #f0f9ed;
-    }
-}
-</style>

@@ -16,6 +16,7 @@ class ProductImageCtrl extends BaseController {
             // product_id: Joi.string().uuid().required(),
             product_id: Joi.string().uuid(),
             published: Joi.boolean().default(false),
+            is_featured: Joi.boolean().default(false),
             image_url: Joi.string().allow(null),
             // image_url: Joi.string().max(200).allow(null),
             alt_text: Joi.string().max(100).allow(null),

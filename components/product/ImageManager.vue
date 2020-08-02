@@ -140,39 +140,74 @@ export default {
         :show="loading"
         class="widthAll">
 
-        <draggable
-            v-model="fileList"
-            ghost-class="ghost"
-            handle=".handle"
-            @update="setOrdinals">
+        <b-table-simple
+            hover
+            small
+            responsive
+            v-if="fileList.length"
+            table-class="bread-table mbl">
+            <b-thead>
+                <b-tr>
+                    <b-th v-if="fileList.length > 1" class="width50"></b-th>
+                    <b-th class="width100"></b-th>
+                    <b-th>
+                        Alt text
+                        <i class="cursorPointer" v-b-tooltip.hover :title="$t('Image_alt_text_description')">
+                            <svg-icon icon="info-circle" />
+                        </i>
+                    </b-th>
+                    <b-th class="text-center">
+                        Featured
+                        <i class="cursorPointer" v-b-tooltip.hover :title="$t('Featured images represent this variant on the product list page')">
+                            <svg-icon icon="info-circle" />
+                        </i>
+                    </b-th>
+                    <b-th class="width100"></b-th>
+                </b-tr>
+            </b-thead>
 
-            <div class="image-row" v-for="(obj, index) in fileList" :key="index">
-                <div class="image-row-fields">
-                    <div class="image-row-handle" v-if="fileList.length > 1">
+            <draggable
+                v-model="fileList"
+                ghost-class="ghost"
+                handle=".handle"
+                @update="setOrdinals"
+                tag="b-tbody">
+
+                <b-tr v-for="(obj, index) in fileList" :key="index">
+                    <!-- handle -->
+                    <b-td v-if="fileList.length > 1" class="vam">
                         <i class="handle">
                             <svg-icon icon="dots-vertical-double" />
                         </i>
-                    </div>
+                    </b-td>
 
-                    <div class="image-row-pic">
+                    <!-- thumbnail -->
+                    <b-td>
                         <b-img
                             :src="obj.image_url"
                             class="cursorPointer"
                             @click="onPreview(obj.image_url)"
                             alt=""></b-img>
-                    </div>
+                    </b-td>
 
-                    <div class="image-row-input">
-                        <div class="phm widthAll">
-                            <b-form-input
-                                v-model="obj.alt_text"
-                                class="widthAll"
-                                placeholder="Image alt text"
-                                @input="emitChange"
-                                multiple />
-                            <div class="input-tip">{{ $t('Image_alt_text_description') }}</div>
-                        </div>
+                    <!-- alt text -->
+                    <b-td class="vam">
+                        <b-form-input
+                            v-model="obj.alt_text"
+                            class="widthAll"
+                            placeholder="Image alt text"
+                            @input="emitChange"
+                            multiple />
+                    </b-td>
 
+                    <!-- is featured -->
+                    <b-td class="text-center vam">
+                        <b-form-checkbox
+                            v-model="obj.is_featured"></b-form-checkbox>
+                    </b-td>
+
+                    <!-- actions -->
+                    <b-td class="text-center vam">
                         <pop-confirm @onConfirm="onDeleteImage(obj, index)">
                             {{ $t('Delete this item?') }}
 
@@ -183,13 +218,12 @@ export default {
                                 <svg-icon icon="trash" stroke-width="1px" width="18" height="18" />
                             </b-button>
                         </pop-confirm>
-                    </div>
-                </div>
-            </div>
+                    </b-td>
+                </b-tr>
+            </draggable>
+        </b-table-simple>
 
-        </draggable>
-
-        <div class="mtm">
+        <div class="width300">
             <b-form-file
                 id="file-input"
                 ref="file-input"

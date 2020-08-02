@@ -7,6 +7,7 @@ module.exports.up = (knex) => {
             t.uuid('id').primary();
             t.uuid('tenant_id').nullable();
             t.boolean('published').defaultTo(true);
+            t.boolean('is_featured').defaultTo(false);
             t.string('image_url').nullable();
             t.string('alt_text').nullable();
             t.integer('width').defaultTo(0);
