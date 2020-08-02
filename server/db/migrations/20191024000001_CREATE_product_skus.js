@@ -30,6 +30,7 @@ module.exports.up = (knex) => {
             t.boolean('track_quantity').defaultTo(true);
 
             // SHIPPING
+            t.boolean('requires_shipping').defaultTo(true);
             t.decimal('weight_oz').defaultTo(0);
             t.string('customs_country_of_origin').nullable();
             t.string('customs_harmonized_system_code').nullable();

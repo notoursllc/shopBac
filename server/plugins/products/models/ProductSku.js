@@ -62,6 +62,7 @@ module.exports = function (baseModel, bookshelf) {
             'barcode',
             'visible_if_out_of_stock',
             'track_quantity',
+            'requires_shipping',
             'weight_oz',
             'customs_country_of_origin',
             'customs_harmonized_system_code',

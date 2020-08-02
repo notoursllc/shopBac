@@ -119,22 +119,29 @@ export default {
         <text-card v-if="showAttributes" class="mbxl">
             <div slot="header">{{ $t('Attributes') }}</div>
 
-            <div class="inputGroupContainer">
-                <div v-for="(label, index) in tableColumnLabels"
-                     :key="index"
-                     class="inputGroup mrl mbm">
-                    <label class="fwb tac pbs">{{ label }}</label>
-                    <div v-if="sku.attributes[index]" class="fs12">
-                        <sku-attribute-inputs
-                            :sku-variant-types="skuVariantTypes"
-                            :attribute="sku.attributes[index]"
-                            :initital-label="sku.attributes[index].label"
-                            :initital-value="sku.attributes[index].value"
-                            @labelChange="(val) => { sku.attributes[index].label = val }"
-                            @valueChange="(val) => { sku.attributes[index].value = val }" />
-                    </div>
-                </div>
-            </div>
+            <b-container>
+                <b-row>
+                    <b-col
+                        sm="6"
+                        lg="2"
+                        v-for="(label, index) in tableColumnLabels"
+                        :key="index">
+
+                        <b-form-group :label="label">
+                            <div v-if="sku.attributes[index]" class="fs12">
+                                <sku-attribute-inputs
+                                    :sku-variant-types="skuVariantTypes"
+                                    :attribute="sku.attributes[index]"
+                                    :initital-label="sku.attributes[index].label"
+                                    :initital-value="sku.attributes[index].value"
+                                    @labelChange="(val) => { sku.attributes[index].label = val }"
+                                    @valueChange="(val) => { sku.attributes[index].value = val }" />
+                            </div>
+                        </b-form-group>
+
+                    </b-col>
+                </b-row>
+            </b-container>
         </text-card>
 
 
@@ -198,12 +205,14 @@ export default {
             <template v-slot:header>{{ $t('Images') }}</template>
             <template v-slot:headerSub>{{ $t('You can add up to num images', {number: imageManagerMaxImages}) }}</template>
 
-            <app-overlay :show="loadingImages">
-                <image-manager
-                    v-model="sku.images"
-                    @delete="onDeleteSkuImage"
-                    :max-num-images="parseInt(imageManagerMaxImages, 10)" />
-            </app-overlay>
+            <b-container>
+                <app-overlay :show="loadingImages">
+                    <image-manager
+                        v-model="sku.images"
+                        @delete="onDeleteSkuImage"
+                        :max-num-images="parseInt(imageManagerMaxImages, 10)" />
+                </app-overlay>
+            </b-container>
         </text-card>
 
 
@@ -212,10 +221,12 @@ export default {
             <template v-slot:header>{{ $t('Data table') }}</template>
             <template v-slot:headerSub>{{ $t('data_table_subheader') }}</template>
 
-            <b-form-group>
-                <data-table-wizard
-                    v-model="sku.data_table" />
-            </b-form-group>
+            <b-container>
+                <b-form-group>
+                    <data-table-wizard
+                        v-model="sku.data_table" />
+                </b-form-group>
+            </b-container>
         </text-card>
 
 
@@ -290,54 +301,70 @@ export default {
             <div slot="header">{{ $t('Shipping') }}</div>
 
             <b-container>
-                <b-row>
-                    <b-col lg="12">
-                        <b-form-group
-                            :label="$t('Weight (oz)')"
-                            label-for="sku_weight_oz"
-                            :description="$t('Used to calculate shipping rates at checkout and label prices during fulfillment.')">
-                            <number-input
-                                v-model="sku.weight_oz"
-                                :step=".01"
-                                :min="0"
-                                class="input-number"
-                                id="sku_weight_oz" />
-                        </b-form-group>
-                    </b-col>
-                </b-row>
+                <!-- requires shipping -->
+                <b-form-group>
+                    <b-form-checkbox
+                        v-model="sku.requires_shipping">{{ $t('This is a physical product') }}</b-form-checkbox>
+                </b-form-group>
+
+                <template v-if="!sku.requires_shipping">
+                    {{ $t('requires_shipping_off_desc') }}
+                </template>
+
+                <template v-else>
+                    <hr />
+
+                    <b-row>
+                        <b-col lg="12">
+                            <template v-if="sku.requires_shipping">
+                                <b-form-group
+                                    :label="$t('Weight (oz)')"
+                                    label-for="sku_weight_oz"
+                                    :description="$t('Used to calculate shipping rates at checkout and label prices during fulfillment.')">
+                                    <number-input
+                                        v-model="sku.weight_oz"
+                                        :step=".01"
+                                        :min="0"
+                                        class="input-number"
+                                        id="sku_weight_oz" />
+                                </b-form-group>
+                            </template>
+
+                        </b-col>
+                    </b-row>
+
+                    <hr />
+
+                    <h4>{{ $t('CUSTOMS INFORMATION') }}</h4>
+
+                    <b-row>
+                        <b-col sm="12" lg="6">
+                            <!-- country of origin -->
+                            <b-form-group
+                                :label="$t('Country of origin')"
+                                label-for="sku_customs_country_of_origin"
+                                :description="$t('customs_country_of_origin_desc')">
+                                <country-select
+                                    v-model="sku.customs_country_of_origin"
+                                    id="sku_customs_country_of_origin" />
+                            </b-form-group>
+                        </b-col>
+
+                        <b-col sm="12" lg="6">
+                            <!-- HS code -->
+                            <b-form-group
+                                :label="$t('HS (Harmonized System) code')"
+                                label-for="sku_customs_harmonized_system_code"
+                                :description="$t('customs_hs_code_desc')">
+                                <b-form-input
+                                    v-model="sku.customs_harmonized_system_code"
+                                    id="sku_customs_harmonized_system_code" />
+                            </b-form-group>
+                        </b-col>
+                    </b-row>
+                </template>
             </b-container>
 
-            <hr />
-
-            <h4>{{ $t('CUSTOMS INFORMATION') }}</h4>
-
-            <b-container>
-                <b-row>
-                    <b-col sm="12" lg="6">
-                        <!-- country of origin -->
-                        <b-form-group
-                            :label="$t('Country of origin')"
-                            label-for="sku_customs_country_of_origin"
-                            :description="$t('customs_country_of_origin_desc')">
-                            <country-select
-                                v-model="sku.customs_country_of_origin"
-                                id="sku_customs_country_of_origin" />
-                        </b-form-group>
-                    </b-col>
-
-                    <b-col sm="12" lg="6">
-                        <!-- HS code -->
-                        <b-form-group
-                            :label="$t('HS (Harmonized System) code')"
-                            label-for="sku_customs_harmonized_system_code"
-                            :description="$t('customs_hs_code_desc')">
-                            <b-form-input
-                                v-model="sku.customs_harmonized_system_code"
-                                id="sku_customs_harmonized_system_code" />
-                        </b-form-group>
-                    </b-col>
-                </b-row>
-            </b-container>
         </text-card>
 
 
