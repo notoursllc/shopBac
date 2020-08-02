@@ -550,7 +550,8 @@ export default {
                     <!-- Qty -->
                     <td>
                         <number-input
-                            v-model="obj.inventory_count" />
+                            v-model="obj.inventory_count"
+                            :min="0" />
                     </td>
 
                     <!-- Sku -->
