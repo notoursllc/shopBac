@@ -29,9 +29,7 @@
     "Artist": "Artist",
     "Attributes": "Attributes",
 
-
     "Barcode": "Barcode",
-    "Barcode (ISBN, UPC, GTIN, etc.)": "Barcode (ISBN, UPC, GTIN, etc.)",
     "Billing address": "Billing address",
 
     "cancel": "cancel",
@@ -308,6 +306,7 @@
     "Sizing": "Sizing",
     "SKU": "SKU",
     "SKU (Stock Keeping Unit)": "SKU (Stock Keeping Unit)",
+    "sku_barcode_description": "ISBN, UPC, GTIN, etc.",
     "Sleeve": "Sleeve",
     "Sleeve measurement": "Sleeve measurement",
     "sleeve_measurement_description": "The sleeve length is measured from the shoulder seam to the end of the sleeve.",
@@ -350,6 +349,7 @@
     "Use a different billing address": "Use a different billing address",
     "Use of Cookies": "Use of Cookies",
     "use this": "use this",
+    "Used to calculate shipping rates at checkout and label prices during fulfillment.": "Used to calculate shipping rates at checkout and label prices during fulfillment.",
 
     "Value": "Value",
     "Values": "Values",

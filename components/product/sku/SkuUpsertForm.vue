@@ -142,37 +142,54 @@ export default {
         <text-card class="mbxl">
             <div slot="header">{{ $t('Pricing') }}</div>
 
-            <div class="inputGroupContainer">
-                <!-- price -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('Price') }}</label>
-                    <input-money
-                        v-model="sku.base_price" />
-                </div>
+            <b-container>
+                <b-row>
+                    <!-- price -->
+                    <b-col sm="12" lg="4">
+                        <b-form-group
+                            :label="$t('Price') "
+                            label-for="sku_base_price">
+                            <input-money
+                                v-model="sku.base_price"
+                                id="sku_base_price" />
+                        </b-form-group>
+                    </b-col>
 
-                <!-- compare at price -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('Compare at price') }}</label>
-                    <input-money
-                        v-model="sku.compare_at_price" />
-                </div>
+                    <!-- compare at price -->
+                    <b-col sm="12" lg="4">
+                        <b-form-group
+                            :label="$t('Compare at price') "
+                            label-for="sku_compare_at_price">
+                            <input-money
+                                v-model="sku.compare_at_price"
+                                id="sku_compare_at_price" />
+                        </b-form-group>
+                    </b-col>
 
-                <!-- cost pre item -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('Cost per item') }}</label>
-                    <span>
-                        <input-money
-                            v-model="sku.cost_price" />
-                        <div class="fs12 colorGrayLighter">{{ $t('Customers won’t see this') }}</div>
-                    </span>
-                </div>
-            </div>
+                    <!-- cost pre item -->
+                    <b-col sm="12" lg="4">
+                        <b-form-group
+                            :label="$t('Cost per item') "
+                            label-for="sku_cost_price"
+                            :description="$t('Customers won’t see this')">
+                            <input-money
+                                v-model="sku.cost_price"
+                                id="sku_cost_price" />
+                        </b-form-group>
+                    </b-col>
+                </b-row>
 
-            <!-- Charge tax on this product -->
-            <div class="mtm">
-                <b-form-checkbox
-                    v-model="sku.is_taxable">{{ $t('Charge tax on this product') }}</b-form-checkbox>
-            </div>
+                <b-row>
+                    <!-- Charge tax on this product -->
+                    <b-col lg="12">
+                        <b-form-group>
+                            <b-form-checkbox
+                                v-model="sku.is_taxable">{{ $t('Charge tax on this product') }}</b-form-checkbox>
+                        </b-form-group>
+                    </b-col>
+                </b-row>
+            </b-container>
+
         </text-card>
 
 
@@ -195,10 +212,10 @@ export default {
             <template v-slot:header>{{ $t('Data table') }}</template>
             <template v-slot:headerSub>{{ $t('data_table_subheader') }}</template>
 
-            <div class="inputGroupContainer">
+            <b-form-group>
                 <data-table-wizard
                     v-model="sku.data_table" />
-            </div>
+            </b-form-group>
         </text-card>
 
 
@@ -206,42 +223,65 @@ export default {
         <text-card class="mbxl">
             <div slot="header">{{ $t('Inventory') }}</div>
 
-            <div class="inputGroupContainer">
-                <!-- qty -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('Quantity') }}</label>
-                    <number-input
-                        v-model="sku.inventory_count"
-                        :min="0"
-                        class="input-number" />
-                </div>
+            <b-container>
+                <b-row>
+                    <!-- qty -->
+                    <b-col sm="12" lg="4">
+                        <b-form-group
+                            :label="$t('Quantity') "
+                            label-for="sku_inventory_count">
+                            <number-input
+                                v-model="sku.inventory_count"
+                                :min="0"
+                                id="sku_inventory_count" />
+                        </b-form-group>
+                    </b-col>
 
-                <!-- sku -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('SKU (Stock Keeping Unit)') }}</label>
-                    <b-form-input
-                        v-model="sku.sku" />
-                </div>
+                    <!-- sku -->
+                    <b-col sm="12" lg="4">
+                        <b-form-group
+                            :label="$t('SKU (Stock Keeping Unit)')"
+                            label-for="sku_sku">
+                            <b-form-input
+                                v-model="sku.sku"
+                                id="sku_sku" />
+                        </b-form-group>
+                    </b-col>
 
-                <!-- barcode -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('Barcode (ISBN, UPC, GTIN, etc.)') }}</label>
-                    <b-form-input
-                        v-model="sku.barcode" />
-                </div>
-            </div>
+                    <!-- barcode -->
+                    <b-col sm="12" lg="4">
+                        <b-form-group
+                            :label="$t('Barcode')"
+                            label-for="sku_barcode"
+                            :description="$t('sku_barcode_description')">
+                            <b-form-input
+                                v-model="sku.barcode"
+                                id="sku_barcode" />
+                        </b-form-group>
+                    </b-col>
+                </b-row>
 
-            <!-- track quantity -->
-            <div class="mtm">
-                <b-form-checkbox
-                    v-model="sku.track_quantity">{{ $t('Track quantity') }}</b-form-checkbox>
-            </div>
+                <b-row>
+                    <!-- track quantity -->
+                    <b-col lg="12">
+                        <b-form-group>
+                            <b-form-checkbox
+                                v-model="sku.track_quantity">{{ $t('Track quantity') }}</b-form-checkbox>
+                        </b-form-group>
+                    </b-col>
+                </b-row>
 
-            <!-- Continue selling when out of stock -->
-            <div class="mtm">
-                <b-form-checkbox
-                    v-model="sku.visible_if_out_of_stock">{{ $t('Continue selling when out of stock') }}</b-form-checkbox>
-            </div>
+                <b-row>
+                    <!-- Continue selling when out of stock -->
+                    <b-col lg="12">
+                        <b-form-group>
+                            <b-form-checkbox
+                                v-model="sku.visible_if_out_of_stock">{{ $t('Continue selling when out of stock') }}</b-form-checkbox>
+                        </b-form-group>
+                    </b-col>
+                </b-row>
+            </b-container>
+
         </text-card>
 
 
@@ -249,39 +289,55 @@ export default {
         <text-card class="mbxl">
             <div slot="header">{{ $t('Shipping') }}</div>
 
-            <div class="inputGroupContainer">
-                <!-- weight -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('Weight (oz)') }}</label>
-                    <number-input
-                        v-model="sku.weight_oz"
-                        :step=".01"
-                        :min="0"
-                        class="input-number" />
-                </div>
-            </div>
+            <b-container>
+                <b-row>
+                    <b-col lg="12">
+                        <b-form-group
+                            :label="$t('Weight (oz)')"
+                            label-for="sku_weight_oz"
+                            :description="$t('Used to calculate shipping rates at checkout and label prices during fulfillment.')">
+                            <number-input
+                                v-model="sku.weight_oz"
+                                :step=".01"
+                                :min="0"
+                                class="input-number"
+                                id="sku_weight_oz" />
+                        </b-form-group>
+                    </b-col>
+                </b-row>
+            </b-container>
 
             <hr />
 
             <h4>{{ $t('CUSTOMS INFORMATION') }}</h4>
 
-            <div class="inputGroupContainer">
-                <!-- country of origin -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('Country of origin') }}</label>
-                    <country-select
-                        v-model="sku.customs_country_of_origin" />
-                    <div class="colorGrayLighter">{{ $t('customs_country_of_origin_desc') }}</div>
-                </div>
+            <b-container>
+                <b-row>
+                    <b-col sm="12" lg="6">
+                        <!-- country of origin -->
+                        <b-form-group
+                            :label="$t('Country of origin')"
+                            label-for="sku_customs_country_of_origin"
+                            :description="$t('customs_country_of_origin_desc')">
+                            <country-select
+                                v-model="sku.customs_country_of_origin"
+                                id="sku_customs_country_of_origin" />
+                        </b-form-group>
+                    </b-col>
 
-                <!-- hs code -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('HS (Harmonized System) code') }}</label>
-                    <b-form-input
-                        v-model="sku.customs_harmonized_system_code" />
-                    <div class="colorGrayLighter">{{ $t('customs_hs_code_desc') }}</div>
-                </div>
-            </div>
+                    <b-col sm="12" lg="6">
+                        <!-- HS code -->
+                        <b-form-group
+                            :label="$t('HS (Harmonized System) code')"
+                            label-for="sku_customs_harmonized_system_code"
+                            :description="$t('customs_hs_code_desc')">
+                            <b-form-input
+                                v-model="sku.customs_harmonized_system_code"
+                                id="sku_customs_harmonized_system_code" />
+                        </b-form-group>
+                    </b-col>
+                </b-row>
+            </b-container>
         </text-card>
 
 

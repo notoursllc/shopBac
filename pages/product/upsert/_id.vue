@@ -199,48 +199,70 @@ export default {
         <text-card class="mbl">
             <div slot="header">{{ $t('Organization') }}</div>
 
-            <div class="inputGroupContainer">
-                <!-- type -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('Product type') }}</label>
-                    <master-type-select
-                        v-model="product.type"
-                        object="product_type" />
-                </div>
+            <b-container>
+                <b-row>
+                    <!-- type -->
+                    <b-col sm="12" md="4" lg="3">
+                        <b-form-group
+                            :label="$t('Product type')"
+                            label-for="product_type">
+                            <master-type-select
+                                v-model="product.type"
+                                object="product_type"
+                                id="product_type" />
+                        </b-form-group>
+                    </b-col>
 
-                <!-- sub_type -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('Product sub-type') }}</label>
-                    <master-type-select
-                        v-model="product.sub_type"
-                        object="product_sub_type" />
-                </div>
+                    <!-- sub-type -->
+                    <b-col sm="12" md="4" lg="3">
+                        <b-form-group
+                            :label="$t('Product sub-type')"
+                            label-for="product_sub_type">
+                            <master-type-select
+                                v-model="product.sub_type"
+                                object="product_sub_type"
+                                id="product_sub_type" />
+                        </b-form-group>
+                    </b-col>
 
-                <!-- fit type -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('Fit type') }}</label>
-                    <master-type-select
-                        v-model="product.fit_type"
-                        object="product_fit_type" />
-                </div>
+                    <!-- fit type -->
+                    <b-col sm="12" md="4" lg="3">
+                        <b-form-group
+                            :label="$t('Fit type')"
+                            label-for="product_fit_type">
+                            <master-type-select
+                                v-model="product.fit_type"
+                                object="product_fit_type"
+                                id="product_fit_type" />
+                        </b-form-group>
+                    </b-col>
 
-                <!-- sales channel -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('Sales channel') }}</label>
-                    <master-type-select
-                        v-model="product.sales_channel_type"
-                        object="product_sales_channel_type" />
-                </div>
+                    <!-- sales channel -->
+                    <b-col sm="12" md="4" lg="3">
+                        <b-form-group
+                            :label="$t('Sales channel')"
+                            label-for="product_sales_channel_type">
+                            <master-type-select
+                                v-model="product.sales_channel_type"
+                                object="product_sales_channel_type"
+                                id="product_sales_channel_type" />
+                        </b-form-group>
+                    </b-col>
 
-                <!-- vendor -->
-                <div class="inputGroup mrl mbm">
-                    <label>{{ $t('Vendor') }}</label>
-                    <master-type-select
-                        v-model="product.vendor_type"
-                        object="product_vendor_type"
-                        :multiple="false" />
-                </div>
-            </div>
+                    <!-- vendor -->
+                    <b-col sm="12" md="4" lg="3">
+                        <b-form-group
+                            :label="$t('Vendor')"
+                            label-for="product_vendor_type">
+                            <master-type-select
+                                v-model="product.vendor_type"
+                                object="product_vendor_type"
+                                :multiple="false"
+                                id="product_vendor_type" />
+                        </b-form-group>
+                    </b-col>
+                </b-row>
+            </b-container>
         </text-card>
 
 
@@ -248,30 +270,50 @@ export default {
         <text-card class="mbl">
             <div slot="header">{{ $t('Details') }}</div>
 
-            <!-- page title -->
-            <div class="inputGroup mrl mbm">
-                <label>{{ $t('Title') }}</label>
-                <b-form-input
-                    v-model="product.title"
-                    maxlength="70" />
-            </div>
+            <b-container>
+                <b-row>
+                    <!-- page title -->
+                    <b-col lg="12">
+                        <b-form-group
+                            :label="$t('Title')"
+                            label-for="product_title">
+                            <b-form-input
+                                v-model="product.title"
+                                maxlength="70"
+                                id="product_title" />
+                        </b-form-group>
+                    </b-col>
+                </b-row>
 
-            <!-- caption -->
-            <div class="inputGroup mrl mbm">
-                <label>{{ $t('Caption') }}</label>
-                <b-form-input
-                    v-model="product.caption"
-                    maxlength="70" />
-            </div>
+                <b-row>
+                    <!-- caption -->
+                    <b-col lg="12">
+                        <b-form-group
+                            :label="$t('Caption')"
+                            label-for="product_caption">
+                            <b-form-input
+                                v-model="product.caption"
+                                maxlength="70"
+                                id="product_caption" />
+                        </b-form-group>
+                    </b-col>
+                </b-row>
 
-            <!-- description -->
-            <div class="inputGroup mrl mbm">
-                <label>{{ $t('Description') }}</label>
-                <b-form-textarea
-                    v-model="product.description"
-                    :rows="2"
-                    maxlength="320" />
-            </div>
+                <b-row>
+                    <!-- description -->
+                    <b-col lg="12">
+                        <b-form-group
+                            :label="$t('Description')"
+                            label-for="product_description">
+                            <b-form-textarea
+                                v-model="product.description"
+                                :rows="2"
+                                maxlength="320"
+                                id="product_description" />
+                        </b-form-group>
+                    </b-col>
+                </b-row>
+            </b-container>
         </text-card>
 
 
@@ -308,32 +350,52 @@ export default {
         <text-card class="mbl">
             <div slot="header">{{ $t('Search engine listing') }}</div>
 
-            <!-- page title -->
-            <div class="inputGroup mrl mbm">
-                <label>{{ $t('Page title') }}</label>
-                <b-form-input
-                    v-model="product.seo_page_title"
-                    maxlength="70" />
-            </div>
+            <b-container>
+                <b-row>
+                    <!-- page title -->
+                    <b-col lg="12">
+                        <b-form-group
+                            :label="$t('Page title')"
+                            label-for="product_seo_page_title">
+                            <b-form-input
+                                v-model="product.seo_page_title"
+                                maxlength="70"
+                                id="product_seo_page_title" />
+                        </b-form-group>
+                    </b-col>
+                </b-row>
 
-            <!-- description -->
-            <div class="inputGroup mrl mbm">
-                <label>{{ $t('Description') }}</label>
-                <b-form-textarea
-                    v-model="product.seo_page_desc"
-                    :rows="2"
-                    maxlength="320" />
-            </div>
+                <b-row>
+                    <!-- description -->
+                    <b-col lg="12">
+                        <b-form-group
+                            :label="$t('Description')"
+                            label-for="product_seo_page_desc">
+                            <b-form-textarea
+                                v-model="product.seo_page_desc"
+                                :rows="2"
+                                maxlength="320"
+                                id="product_seo_page_desc" />
+                        </b-form-group>
+                    </b-col>
+                </b-row>
 
-            <!-- URI -->
-            <div class="inputGroup mrl mbm">
-                <label>{{ $t('URL and handle') }}</label>
-                <b-input-group :prepend="`https://${domainName}/p/`">
-                    <b-form-input
-                        v-model="product.seo_uri"
-                        maxlength="50" />
-                </b-input-group>
-            </div>
+                <b-row>
+                    <!-- URI -->
+                    <b-col lg="12">
+                        <b-form-group
+                            :label="$t('URL and handle')"
+                            label-for="product_seo_uri">
+                            <b-input-group :prepend="`https://${domainName}/p/`">
+                                <b-form-input
+                                    v-model="product.seo_uri"
+                                    maxlength="50"
+                                    id="product_seo_uri" />
+                            </b-input-group>
+                        </b-form-group>
+                    </b-col>
+                </b-row>
+            </b-container>
 
             <div class="pvl" v-show="product.seo_page_title">
                 <div class="fs11 colorGray mbs">Preview:</div>
