@@ -317,7 +317,7 @@ export default {
         </text-card>
 
 
-        <!-- Images -->
+        <!-- Images
         <text-card class="mbl">
             <template v-slot:header>{{ $t('Featured images') }}</template>
             <template v-slot:headerSub>{{ $t('You can add up to num images', {number: imageManagerMaxFeaturedImages}) }}</template>
@@ -331,6 +331,7 @@ export default {
                 </app-overlay>
             </b-container>
         </text-card>
+        -->
 
 
         <!-- Variants / Options -->

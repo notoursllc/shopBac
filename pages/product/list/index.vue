@@ -20,7 +20,7 @@ export default {
             productSubTypes: [],
             tableData: {
                 headers: [
-                    { key: 'featuredImage', label: null },
+                    { key: 'featuredImage', label: '', thClass: ['width125'] },
                     { key: 'title', label: this.$t('Title'), sortable: true, sortDirection: 'desc' },
                     { key: 'inventory', label: this.$t('Inventory') },
                     { key: 'published', label: this.$t('Published'), sortable: true },
@@ -129,37 +129,38 @@ export default {
         },
 
 
-        /*
-        * The first published image in the images array is intended to be the 'featured' image
-        */
-        getSmallestFeaturedImage(product) {
+        getFirstVariantImage(product) {
             let url = null;
             let altText = null;
             let smallestWidth = 0;
 
-            if(Array.isArray(product.images)) {
-                // To make sure we only get the first published image
-                let publishedImage = null;
+            // To make sure we only get the first published image
+            let publishedImage = null;
 
-                product.images.forEach((obj) => {
-                    if(!publishedImage && obj.published) {
-                        publishedImage = obj;
+            if(Array.isArray(product.skus)) {
+                product.skus.forEach((sku) => {
+                    if(Array.isArray(sku.images)) {
+                        sku.images.forEach((img) => {
+                            if(!publishedImage && img.published) {
+                                publishedImage = img;
 
-                        // the first published image is the baseline.
-                        smallestWidth = publishedImage.width;
-                        url = publishedImage.image_url;
-                        altText = publishedImage.alt_text;
+                                // the first published image is the baseline.
+                                smallestWidth = publishedImage.width;
+                                url = publishedImage.image_url;
+                                altText = publishedImage.alt_text;
 
-                        // now check to see if any of it's variants are smaller
-                        if(Array.isArray(publishedImage.variants)) {
-                            publishedImage.variants.forEach((variant) => {
-                                if(variant.width < smallestWidth) {
-                                    smallestWidth = variant.width;
-                                    url = variant.image_url;
-                                    // NOTE: variants do not have a separate alt_text property
+                                // now check to see if any of it's variants are smaller
+                                if(Array.isArray(publishedImage.variants)) {
+                                    publishedImage.variants.forEach((variant) => {
+                                        if(variant.width < smallestWidth) {
+                                            smallestWidth = variant.width;
+                                            url = variant.image_url;
+                                            // NOTE: variants do not have a separate alt_text property
+                                        }
+                                    });
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
                 });
             }
@@ -177,6 +178,11 @@ export default {
                     }
                 );
             }
+        },
+
+        numPicsLabel(product) {
+            const numPublishedPics = this.getNumPublishedPics(product);
+            return this.$tc('n_pictures', numPublishedPics, { num: numPublishedPics });
         }
     }
 };
@@ -193,9 +199,9 @@ export default {
             @column-sort="sortChanged">
 
             <!-- featured image -->
-            <template v-slot:cell(featuredImage)="row">
-                <vnodes :vnodes="getSmallestFeaturedImage(row.item)" />
-                <div class="fs12">{{ $t('n_pictures', { num: getNumPublishedPics(row.item)}) }}</div>
+            <template v-slot:cell()="row">
+                <vnodes :vnodes="getFirstVariantImage(row.item)" />
+                <div class="fs12">{{ numPicsLabel(row.item) }}</div>
             </template>
 
             <!-- title -->

@@ -95,7 +95,6 @@
     "Data Table updated successfully": "Data Table updated successfully",
     "Data Table not found": "Data Table not found",
     "Data Tables": "Data Tables",
-    "day_days": "day | days",
     "Delete": "Delete",
     "Delete this column?": "Delete this column?",
     "Delete this row?": "Delete this row?",
@@ -169,7 +168,7 @@
 
     "n_in_stock": "{numInventory} in stock",
     "n_in_stock_for_n_variants": "{numInventory} in stock for {numVariants} variant | {numInventory} in stock for {numVariants} variants",
-    "n_pictures": "# pictures: {num}",
+    "n_pictures": "{num} picture | {num} pictures",
     "Name": "Name",
     "New item": "New item",
     "New option": "New option",
