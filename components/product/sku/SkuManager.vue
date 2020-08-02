@@ -524,10 +524,11 @@ export default {
                 <tr v-for="(obj, idx) in product.skus" :key="obj.id">
                     <!-- drag handle -->
                     <td>
-                        <svg-icon
-                            icon="dots-vertical-double"
-                            class="handle cursorGrab"
-                            v-show="canShowGrabHandles" />
+                        <i v-show="canShowGrabHandles">
+                            <svg-icon
+                                icon="dots-vertical-double"
+                                class="handle cursorGrab" />
+                        </i>
                     </td>
 
                     <!-- custom attributes -->
@@ -581,7 +582,7 @@ export default {
                                 slot="reference"
                                 variant="outline-secondary"
                                 class="border-dashed-2">
-                                <svg-icon icon="trash" />
+                                <svg-icon icon="trash" stroke-width="1px" />
                             </b-button>
                         </pop-confirm>
                     </td>

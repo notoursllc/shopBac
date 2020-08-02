@@ -185,7 +185,7 @@ export default {
             <b-button
                 variant="outline-secondary"
                 @click="goToStore(product.seo_uri)">
-                <svg-icon icon="new-window" />&nbsp;{{ $t('View product in store') }}</b-button>
+                <svg-icon icon="new-window" stroke-width="1px" />&nbsp;{{ $t('View product in store') }}</b-button>
         </div>
 
         <!-- published-->
@@ -280,11 +280,12 @@ export default {
             <template v-slot:header>{{ $t('Featured images') }}</template>
             <template v-slot:headerSub>{{ $t('You can add up to num images', {number: imageManagerMaxFeaturedImages}) }}</template>
 
-            <image-manager
-                v-loading="loadingProductImages"
-                v-model="product.images"
-                :max-num-images="parseInt(imageManagerMaxFeaturedImages, 10)"
-                @delete="onDeleteProductImage" />
+            <app-overlay :show="loadingProductImages">
+                <image-manager
+                    v-model="product.images"
+                    :max-num-images="parseInt(imageManagerMaxFeaturedImages, 10)"
+                    @delete="onDeleteProductImage" />
+            </app-overlay>
         </text-card>
 
 

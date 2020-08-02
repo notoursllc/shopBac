@@ -4,6 +4,7 @@ export default {
 
     components: {
         PopConfirm: () => import('@/components/PopConfirm'),
+        AppOverlay: () => import('@/components/AppOverlay'),
         draggable: () => import('vuedraggable')
     },
 
@@ -135,9 +136,9 @@ export default {
 
 
 <template>
-    <div v-cloak
-         v-loading="loading"
-         class="widthAll">
+    <app-overlay
+        :show="loading"
+        class="widthAll">
 
         <draggable
             v-model="fileList"
@@ -207,7 +208,7 @@ export default {
                 :src="dialogImageUrl"
                 alt=""></b-img>
         </b-modal>
-    </div>
+    </app-overlay>
 </template>
 
 <style lang="scss">

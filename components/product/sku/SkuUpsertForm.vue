@@ -12,7 +12,8 @@ export default {
         ImageManager: () => import('@/components/product/ImageManager'),
         SkuAttributeInputs: () => import('@/components/product/sku/SkuAttributeInputs'),
         DataTableWizard: () => import('@/components/product/dataTable/DataTableWizard'),
-        NumberInput: () => import('@/components/NumberInput')
+        NumberInput: () => import('@/components/NumberInput'),
+        AppOverlay: () => import('@/components/AppOverlay')
     },
 
     mixins: [
@@ -180,11 +181,12 @@ export default {
             <template v-slot:header>{{ $t('Images') }}</template>
             <template v-slot:headerSub>{{ $t('You can add up to num images', {number: imageManagerMaxImages}) }}</template>
 
-            <image-manager
-                v-loading="loadingImages"
-                v-model="sku.images"
-                @delete="onDeleteSkuImage"
-                :max-num-images="parseInt(imageManagerMaxImages, 10)" />
+            <app-overlay :show="loadingImages">
+                <image-manager
+                    v-model="sku.images"
+                    @delete="onDeleteSkuImage"
+                    :max-num-images="parseInt(imageManagerMaxImages, 10)" />
+            </app-overlay>
         </text-card>
 
 

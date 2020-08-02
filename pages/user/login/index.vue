@@ -2,6 +2,10 @@
 export default {
     name: 'LoginPage',
 
+    components: {
+        AppOverlay: () => import('@/components/AppOverlay')
+    },
+
     data() {
         return {
             loading: false,
@@ -33,7 +37,7 @@ export default {
     <div>
         <h1>Login</h1>
 
-        <div v-loading="loading">
+        <app-overlay :show="loading">
             <form @submit.prevent>
                 <!-- email -->
                 <div class="inputGroup mrl mbm">
@@ -55,7 +59,7 @@ export default {
                     variant="primary"
                     @click="onSubmit">{{ $t('Submit') }}</b-button>
             </form>
-        </div>
+        </app-overlay>
     </div>
 </template>
 
