@@ -178,8 +178,9 @@ export default {
 
                             <b-button
                                 slot="reference"
-                                variant="outline-secondary">
-                                <svg-icon icon="trash" />
+                                variant="outline-secondary"
+                                class="mls border-dashed-2">
+                                <svg-icon icon="trash" stroke-width="1px" width="18" height="18" />
                             </b-button>
                         </pop-confirm>
                     </div>

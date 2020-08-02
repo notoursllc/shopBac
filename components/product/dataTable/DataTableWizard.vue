@@ -191,6 +191,7 @@ export default {
                 <template v-slot:icon>
                     <svg-icon
                         icon="alert-circle"
+                        variant="danger"
                         :width="24"
                         :height="24" />
                 </template>

@@ -60,7 +60,13 @@ export default {
                     strokeColor = '#e6a23c';
                     break;
 
-                // more in the future...
+                case 'danger':
+                    strokeColor = '#e55353';
+                    break;
+
+                case 'success':
+                    strokeColor = '#2eb85c';
+                    break;
             }
 
             attributes.stroke = strokeColor;
