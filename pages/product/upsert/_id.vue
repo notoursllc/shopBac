@@ -322,12 +322,14 @@ export default {
             <template v-slot:header>{{ $t('Featured images') }}</template>
             <template v-slot:headerSub>{{ $t('You can add up to num images', {number: imageManagerMaxFeaturedImages}) }}</template>
 
-            <app-overlay :show="loadingProductImages">
-                <image-manager
-                    v-model="product.images"
-                    :max-num-images="parseInt(imageManagerMaxFeaturedImages, 10)"
-                    @delete="onDeleteProductImage" />
-            </app-overlay>
+            <b-container>
+                <app-overlay :show="loadingProductImages">
+                    <image-manager
+                        v-model="product.images"
+                        :max-num-images="parseInt(imageManagerMaxFeaturedImages, 10)"
+                        @delete="onDeleteProductImage" />
+                </app-overlay>
+            </b-container>
         </text-card>
 
 
@@ -411,14 +413,16 @@ export default {
         <text-card class="mbl">
             <div slot="header">{{ $t('Metadata') }}</div>
 
-            <div class="inputGroup mrl mbm">
-                <b-form-checkbox
-                    v-model="productHasMetaData">{{ $t('Metadata_description') }}</b-form-checkbox>
-            </div>
+            <b-container>
+                <b-form-group>
+                    <b-form-checkbox
+                        v-model="productHasMetaData">{{ $t('Metadata_description') }}</b-form-checkbox>
+                </b-form-group>
 
-            <div v-if="productHasMetaData">
-                <meta-data-builder v-model="product.metadata" />
-            </div>
+                <div v-if="productHasMetaData">
+                    <meta-data-builder v-model="product.metadata" />
+                </div>
+            </b-container>
         </text-card>
 
 
