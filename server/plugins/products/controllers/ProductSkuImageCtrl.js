@@ -1,4 +1,4 @@
-const Joi = require('@hapi/joi');
+    const Joi = require('@hapi/joi');
 const isObject = require('lodash.isobject');
 const ProductImageCtrl = require('./ProductImageCtrl');
 const StorageService = require('../../core/services/StorageService');
@@ -37,6 +37,7 @@ class ProductSkuImageCtrl extends ProductImageCtrl {
     }
 
 
+    /*
     async resizeAndUpsertImage(image, productSkuId, tenantId) {
         global.logger.info(`REQUEST: ProductSkuImageCtrl.resizeAndUpsertImage (${this.modelName})`, {
             meta: {
@@ -79,6 +80,7 @@ class ProductSkuImageCtrl extends ProductImageCtrl {
 
         return this.upsertModel(upsertData);
     }
+    */
 
 
     upsertImages(images, productSkuId, tenantId) {
@@ -96,7 +98,11 @@ class ProductSkuImageCtrl extends ProductImageCtrl {
             if(Array.isArray(images)) {
                 images.forEach((img) => {
                     promises.push(
-                        this.resizeAndUpsertImage(img, productSkuId, tenantId)
+                        this.upsertModel({
+                            tenant_id: tenantId,
+                            product_sku_id: productSkuId,
+                            ...img
+                        })
                     );
                 });
             }
@@ -109,41 +115,6 @@ class ProductSkuImageCtrl extends ProductImageCtrl {
             global.logger.error(err);
             global.bugsnag(err);
         }
-    }
-
-
-    async upsertImageFromRequest(request, index) {
-        // request.payload.images and request.payload.alt_test are not arrays if only one image is
-        // uploaded, so converting to arrays
-        const id = makeArray(request.payload.id)[index];
-        const image = makeArray(request.payload.image)[index];
-
-        const upsertData = {
-            tenant_id: request.payload.tenant_id,
-            product_sku_id: request.payload.product_sku_id,
-            published: true,
-            alt_text: makeArray(request.payload.alt_text)[index],
-            ordinal: makeArray(request.payload.ordinal)[index]
-        };
-
-        if(id) {
-            upsertData.id = id;
-        }
-
-        if(isObject(image)) {
-            const storedImages = await Promise.all([
-                StorageService.resizeAndWrite(image, 600),
-                StorageService.resizeAndWrite(image, 1000)
-            ]);
-
-            if(Array.isArray(storedImages) && storedImages.length) {
-                upsertData.image_url = storedImages[0].url;
-                upsertData.width = storedImages[0].width;
-                upsertData.variants = [storedImages[1]];
-            }
-        }
-
-        return this.upsertModel(upsertData);
     }
 
 }

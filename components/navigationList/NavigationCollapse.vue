@@ -54,7 +54,6 @@ export default {
         },
 
         onChildMenuItemActive() {
-            console.log("ON CHILD MENU ACTIVE")
             this.toggleIsOpen = true;
         }
     }

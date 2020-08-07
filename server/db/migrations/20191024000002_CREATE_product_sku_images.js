@@ -8,10 +8,7 @@ module.exports.up = (knex) => {
             t.uuid('tenant_id').nullable();
             t.boolean('published').defaultTo(true);
             t.boolean('is_featured').defaultTo(false);
-            t.string('image_url').nullable();
             t.string('alt_text').nullable();
-            t.integer('width').defaultTo(0);
-            t.jsonb('variants').nullable();
             t.integer('ordinal').nullable().defaultTo(1);
 
             // TIMESTAMPS
@@ -26,10 +23,15 @@ module.exports.up = (knex) => {
                 .inTable(CoreService.DB_TABLES.product_skus)
                 .onDelete('CASCADE');
 
+            t.uuid('media_id')
+                .references('id')
+                .inTable(CoreService.DB_TABLES.media);
+
             t.index([
                 'id',
                 'tenant_id',
-                'product_sku_id'
+                'product_sku_id',
+                'media_id'
             ]);
         }
     );

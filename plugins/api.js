@@ -1,5 +1,6 @@
 import Cart from '@/api/cart';
 import MasterTypes from '@/api/master_types';
+import Media from '@/api/media';
 import Payments from '@/api/payments';
 import Products from '@/api/products';
 import ProductCollections from '@/api/product_collections';
@@ -17,6 +18,7 @@ export default (context, inject) => {
     const repositories = {
         cart: Cart(context.$http),
         masterTypes: MasterTypes(context.$http),
+        media: Media(context.$http),
         payments: Payments(context.$http),
         products: Products(context.$http),
         productCollections: ProductCollections(context.$http),

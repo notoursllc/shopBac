@@ -59,9 +59,7 @@ export default {
 
             this.productSubTypes.forEach((obj) => {
                 if(value & obj.value) {
-                    values.push(
-                        this.$t(obj.name)
-                    );
+                    values.push(obj.name);
                 }
             });
 

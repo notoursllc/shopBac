@@ -20,6 +20,7 @@
     "All other cards": "All other cards",
     "All products": "All products",
     "All Rights Reserved": "All Rights Reserved",
+    "Alt text": "Alt text",
     "American Express": "American Express",
     "An apparel company": "An apparel company",
     "An email confirmation was sent to:": "An email confirmation was sent to:",
@@ -31,6 +32,7 @@
 
     "Barcode": "Barcode",
     "Billing address": "Billing address",
+    "Buttons": "Buttons",
 
     "cancel": "cancel",
     "Cancel": "Cancel",
@@ -80,6 +82,7 @@
     "Country": "Country",
     "Country of origin": "Country of origin",
     "Create": "Create",
+    "Create new": "Create new",
     "CREDIT CARD": "CREDIT CARD",
     "Custom SKU attributes": "Custom SKU attributes",
     "Customers won’t see this": "Customers won’t see this",
@@ -106,6 +109,7 @@
     "digits_text": "digit | digits",
     "Done": "Done",
 
+    "Edit": "Edit",
     "Email address": "Email address",
     "Error": "Error",
     "Error placing order": "Error placing order",
@@ -114,8 +118,10 @@
     "Expiration date": "Expiration date",
 
     "Featured images": "Featured images",
+    "Featured images represent this variant on the product list page": "Featured images represent this variant on the product list page",
     "Fit type": "Fit type",
     "footer_cart_secure": "Our cart is protected by 256-bit encrypted connection and we never store your card details.",
+    "File type not allowed": "File type not allowed",
     "fill_out_form_warning": "Please fill out the form completely before continuing. Thanks!",
     "Finding your security code": "Finding your security code",
     "FIRST NAME": "FIRST NAME",
@@ -138,8 +144,10 @@
     "Image_alt_text_description": "A brief description of the image to improve search engine optimization (SEO) and accessibility for visually impaired customers.",
     "Images": "Images",
     "In inches": "In inches",
+    "Input type": "Input type",
     "Introducing Breadvan": "Introducing Breadvan",
     "Inventory": "Inventory",
+    "Is featured image": "Is featured image",
     "Item added successfully": "Item added successfully",
     "Item not found": "Item not found",
     "Item updated successfully": "Item updated successfully",
@@ -172,9 +180,11 @@
     "Name": "Name",
     "New item": "New item",
     "New option": "New option",
+    "No data": "No data",
     "No file chosen": "No file chosen",
     "No matching values": "No matching values",
     "No results": "No results",
+    "_num_ images selected": "{number} image selected|{number} images selected",
 
     "OK": "OK",
     "only_num_left": "Only {qty} left!",
@@ -220,6 +230,7 @@
     "PLACE YOUR ORDER": "PLACE YOUR ORDER",
     "Place your order": "Place your order",
     "Please allow a few minutes for email delivery.": "Please allow a few minutes for email delivery.",
+
     "Please confirm": "Please confirm",
     "Please select a quantity": "Please select a quantity",
     "Please select a size": "Please select a size",
@@ -276,6 +287,7 @@
     "Secure Checkout": "Secure Checkout",
     "Secure Payment": "Secure Payment",
     "Select file": "Select file",
+    "Select menu": "Select menu",
     "Ship to": "Ship to",
     "SHIPPING": "SHIPPING",
     "Shipping": "Shipping",
@@ -317,9 +329,11 @@
     "State/Province/Region": "State/Province/Region",
     "Stay in checkout": "Stay in checkout",
     "STREET ADDRESS": "STREET ADDRESS",
+    "Sub Type": "Sub Type",
     "Sub-Types": "Sub-Types",
     "Submit": "Submit",
     "Subtotal": "Subtotal",
+    "Success": "Success",
     "Suggestion": "Suggestion",
 
     "Tax": "Tax",
@@ -347,7 +361,9 @@
     "Updated": "Updated",
     "updated_name": "Updated: {name}",
     "URL and handle": "URL and handle",
+    "Use a blank attribute": "Use a blank attribute",
     "Use a different billing address": "Use a different billing address",
+    "Use a pre-defined attribute": "Use a pre-defined attribute",
     "Use of Cookies": "Use of Cookies",
     "use this": "use this",
     "Used to calculate shipping rates at checkout and label prices during fulfillment.": "Used to calculate shipping rates at checkout and label prices during fulfillment.",
@@ -363,6 +379,7 @@
     "Victory!": "Victory!",
     "View": "View",
     "View My Order": "View My Order",
+    "View product in store": "View product in store",
     "Vintage. Racing.": "Vintage. Racing.",
 
     "warning_message_remove_product_option_tag": "Removing option values will also remove the Variants associated with the values.<br/>Continue?",
@@ -373,11 +390,15 @@
     "We'll get back to you within 1 business day.": "We'll get back to you within 1 business day.",
     "Weight (oz)": "Weight (oz)",
 
+    "Yes": "Yes",
     "Your billing info": "Your billing info",
     "Your order": "Your order",
     "Your PayPal transaction will be completed on the next page": "Your PayPal transaction will be completed on the next page",
     "Your shopping cart does not contain any items.": "Your shopping cart does not contain any items.",
     "You can add up to num images": "You can add up to {number} images",
+    "You can choose only one more image": "You can choose only one more image",
+    "You can choose only _num_ more images": "You can choose only {number} more images",
+    "You can upload num more images": "You can upload {number} more images",
 
     "shipping": {
         "fedex_express_saver": {

@@ -122,6 +122,7 @@ export default {
         async onSaveClick() {
             try {
                 this.loading = true;
+
                 const p = await this.$api.products.upsert(this.product);
 
                 if(!p) {

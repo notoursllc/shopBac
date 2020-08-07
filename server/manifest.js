@@ -78,6 +78,12 @@ const webManifest = {
             },
             { plugin: './plugins/products' },
             {
+                plugin: './plugins/media',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+            {
                 plugin: './plugins/shipping',
                 routes: {
                     prefix: routePrefix

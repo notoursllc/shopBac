@@ -26,18 +26,17 @@ export default {
         accept: {
             type: String,
             default: ''
-        },
+        }
     },
 
     computed: {
         buttonClass() {
             let classes = [
-                `el-button--${this.type}`,
-                `el-button--${this.size}`
+                `btn-${this.type}`
             ];
 
             if(this.disabled) {
-                classes.push('is-disabled')
+                classes.push('is-disabled');
             }
 
             return classes.join(' ');
@@ -59,8 +58,8 @@ export default {
 
 <template>
     <label class="file-select">
-        <div class="el-button" :class="buttonClass">
-            <slot>Select File</slot>
+        <div class="btn" :class="buttonClass">
+            <slot></slot>
         </div>
         <input
             ref="myFiles"

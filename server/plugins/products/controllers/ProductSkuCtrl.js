@@ -80,7 +80,8 @@ class ProductSkuCtrl extends BaseController {
                     query.where('published', '=', true);
                     query.orderBy('ordinal', 'ASC');
                 }
-            }
+            },
+            ['images.media']
         ];
 
         return related;

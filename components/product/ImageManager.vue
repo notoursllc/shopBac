@@ -1,4 +1,6 @@
 <script>
+import isObject from 'lodash.isobject';
+
 export default {
     name: 'ImageManager',
 
@@ -27,7 +29,8 @@ export default {
             loading: false,
             dialogImageUrl: '',
             fileList: [],
-            accept: 'image/png, image/jpeg, image/gif'
+            accept: 'image/png, image/jpeg, image/gif',
+            fileInputErrorMessage: ''
         };
     },
 
@@ -41,7 +44,13 @@ export default {
         value: {
             handler(newVal) {
                 if(Array.isArray(newVal)) {
-                    this.fileList = newVal;
+                    // change the media url of each image to the smallest variant
+                    this.fileList = newVal.map((obj) => {
+                        obj.media = {
+                            url: this.getSmallestMediaUrl(obj.media)
+                        };
+                        return obj;
+                    });
                 }
             },
             immediate: true
@@ -51,6 +60,31 @@ export default {
     methods: {
         emitChange() {
             this.$emit('input', this.fileList);
+        },
+
+        emitDelete(id) {
+            this.$emit('delete', id);
+        },
+
+        getSmallestMediaUrl(mediaObj) {
+            let smallestWidth;
+            let smallestUrl;
+
+            if(isObject(mediaObj)) {
+                smallestWidth = mediaObj.width || 9999;
+                smallestUrl = mediaObj.url;
+
+                if(Array.isArray(mediaObj.variants)) {
+                    mediaObj.variants.forEach((variant) => {
+                        if(variant.width < smallestWidth) {
+                            smallestWidth = variant.width;
+                            smallestUrl = variant.url;
+                        }
+                    });
+                }
+            }
+
+            return smallestUrl;
         },
 
         onPreview(file) {
@@ -71,51 +105,72 @@ export default {
             return isAcceptedType;
         },
 
-        onFileChange(files) {
+        async onFileChange(files) {
             if (!files.length) {
                 return;
             }
 
             if(!this.filesAreAcceptedTypes(files)) {
-                throw new Error('File type not allowed');
+                throw new Error(this.$t('File type not allowed'));
             }
 
-            this.createTempImages(files);
+            const imageOverage = (this.fileList.length + files.length) - this.maxNumImages;
+
+            if(imageOverage > 0) {
+                const numRemaining = this.maxNumImages - this.fileList.length;
+                this.fileInputErrorMessage = numRemaining === 1
+                    ? this.$t('You can choose only one more image')
+                    : this.$t('You can choose only _num_ more images', {number: numRemaining});
+                return;
+            }
+
+            this.fileInputErrorMessage = '';
+
+            if(Array.isArray(files)) {
+                const resizePromises = [];
+                const newFileListIndexes = [];
+
+                files.forEach((file) => {
+                    resizePromises.push(
+                        this.$api.media.postImage(file)
+                    );
+
+                    newFileListIndexes.push(this.fileList.length);
+                    const newOrdinal = this.fileList.length;
+
+                    this.fileList.push({
+                        id: null,
+                        media_id: null,
+                        alt_text: null,
+                        is_featured: false,
+                        ordinal: newOrdinal,
+                        loading: true,
+                        media: {
+                            url: null
+                        }
+                    });
+                });
+
+                const responses = await Promise.all(resizePromises);
+                // console.log("RESPONSES", responses);
+
+                responses.forEach((res, index) => {
+                    const fileListIndex = newFileListIndexes[index];
+
+                    this.fileList[fileListIndex].media_id = res.id;
+                    this.fileList[fileListIndex].media.url = this.getSmallestMediaUrl(res);
+                    this.fileList[fileListIndex].loading = false;
+                });
+            }
+
+            // this.createTempImages(files);
             this.emitChange();
             this.$refs['file-input'].reset();
         },
 
-        createTempImages(files) {
-            this.loading = true;
-
-            if(files) {
-                // https://stackoverflow.com/a/40902462
-                Array.prototype.forEach.call(files, (file) => {
-                    const reader = new FileReader();
-
-                    reader.onload = (e) => {
-                        this.fileList.push({
-                            id: null,
-                            image_url: e.target.result,
-                            alt_text: null,
-                            // raw: file,
-                            ordinal: this.fileList.length
-                        });
-                        // console.log("ADDING TO FILELIST", file.name)
-                    };
-
-                    reader.readAsDataURL(file);
-                });
-
-                this.setOrdinals();
-            }
-
-            this.loading = false;
-        },
-
         onDeleteImage(obj, index) {
             if(obj.id) {
-                this.$emit('delete', obj.id);
+                this.emitDelete(obj.id);
             }
 
             // If this is a newly uploaded image then all we need to do
@@ -129,6 +184,11 @@ export default {
             this.fileList.forEach((obj, index) => {
                 obj.ordinal = index;
             });
+        },
+
+        fileInputValueFormatter(files) {
+            const numFiles = files.length;
+            return this.$tc('_num_ images selected', numFiles, {number: numFiles});
         }
     }
 };
@@ -151,13 +211,13 @@ export default {
                     <b-th v-if="fileList.length > 1" class="width50"></b-th>
                     <b-th class="width100"></b-th>
                     <b-th>
-                        Alt text
+                        {{ $t('Alt text') }}
                         <i class="cursorPointer" v-b-tooltip.hover :title="$t('Image_alt_text_description')">
                             <svg-icon icon="info-circle" />
                         </i>
                     </b-th>
                     <b-th class="text-center">
-                        Featured
+                        {{ $t('Is featured image') }}
                         <i class="cursorPointer" v-b-tooltip.hover :title="$t('Featured images represent this variant on the product list page')">
                             <svg-icon icon="info-circle" />
                         </i>
@@ -183,11 +243,20 @@ export default {
 
                     <!-- thumbnail -->
                     <b-td>
-                        <b-img
-                            :src="obj.image_url"
-                            class="cursorPointer"
-                            @click="onPreview(obj.image_url)"
-                            alt=""></b-img>
+                        <template v-if="obj.loading">
+                            <app-overlay :show="obj.loading">
+                                <b-img
+                                    v-bind="{ blank: true, width: 100, height: 75, class: 'm1' }"
+                                    alt="uploading"></b-img>
+                            </app-overlay>
+                        </template>
+                        <template v-else>
+                            <b-img
+                                :src="obj.media.url"
+                                class="cursorPointer"
+                                @click="onPreview(obj.url)"
+                                :alt="obj.alt_text"></b-img>
+                        </template>
                     </b-td>
 
                     <!-- alt text -->
@@ -208,7 +277,9 @@ export default {
 
                     <!-- actions -->
                     <b-td class="text-center vam">
-                        <pop-confirm @onConfirm="onDeleteImage(obj, index)">
+                        <pop-confirm
+                            @onConfirm="onDeleteImage(obj, index)"
+                            v-if="!obj.loading">
                             {{ $t('Delete this item?') }}
 
                             <b-button
@@ -223,16 +294,22 @@ export default {
             </draggable>
         </b-table-simple>
 
-        <div class="width300">
-            <b-form-file
-                id="file-input"
-                ref="file-input"
-                :accept="accept"
-                :multiple="true"
-                v-show="numRemainingUploads > 0"
-                @input="onFileChange"
-                :placeholder="$t('No file chosen')"
-                :browse-text="$t('Choose images')"></b-form-file>
+        <div>
+            <b-form-group
+                :description="$t('You can upload num more images', {number: numRemainingUploads} )"
+                :invalid-feedback="fileInputErrorMessage"
+                :state="false">
+                <b-form-file
+                    id="file-input"
+                    ref="file-input"
+                    :accept="accept"
+                    :multiple="true"
+                    v-show="numRemainingUploads > 0"
+                    @input="onFileChange"
+                    :placeholder="$t('No file chosen')"
+                    :browse-text="$t('Choose images')"
+                    :file-name-formatter="fileInputValueFormatter"></b-form-file>
+            </b-form-group>
         </div>
 
         <b-modal

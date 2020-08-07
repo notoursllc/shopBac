@@ -16,24 +16,28 @@ module.exports = function (baseModel, bookshelf) {
             return this.belongsTo('ProductSku', 'product_sku_id');
         },
 
-        format(attributes) {
-            if (attributes.variants) {
-                attributes.variants = JSON.stringify(attributes.variants);
-            }
-
-            return attributes;
+        // One-to-One relation with Media
+        // media_id is the foreign key in this model
+        // media: function() {
+        //     return this.hasOne('Media', 'id', 'media_id');
+        //     // return this.hasOne('Media');
+        //     // return this.belongsTo('Media', 'media_id');
+        // },
+        media: function() {
+            return this.hasOne('Media', 'id', 'media_id');
+            // return this.hasOne('Media');
+            // return this.belongsTo('Media', 'media_id');
         },
 
         // tenant_id is not visible
         visible: [
             'id',
             'product_sku_id',
+            'media_id',
+            'media',
             'published',
             'is_featured',
-            'image_url',
             'alt_text',
-            'width',
-            'variants',
             'ordinal',
             'created_at',
             'updated_at'

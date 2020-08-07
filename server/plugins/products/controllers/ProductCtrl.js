@@ -105,12 +105,20 @@ class ProductCtrl extends BaseController {
 
 
     getByIdHandler(request, h) {
+        const relatedQuery = this.getWithRelated();
+        relatedQuery.push({
+            'skus.images.media': (query) => {
+                query.where('tenant_id', '=', request.query.tenant_id);
+                // query.orderBy('ordinal', 'ASC');
+            }
+        });
+
         return this.modelForgeFetchHandler(
             {
                 id: request.query.id,
                 tenant_id: request.query.tenant_id
             },
-            { withRelated: this.getWithRelated() },
+            { withRelated: relatedQuery },
             h
         );
     }

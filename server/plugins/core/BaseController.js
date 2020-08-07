@@ -29,8 +29,16 @@ class BaseController {
                 meta: data
             });
 
-            const ModelInstance = data.id
-                ? await this.getModel().update(data, {id: data.id})
+            // this fixes an edge case where sending an id attribute with a null value
+            // would cause the create method to throw an error because it expects the payload
+            // not to have an id attribute
+            const modelId = data.id;
+            if(!modelId) {
+                delete data.id;
+            }
+
+            const ModelInstance = modelId
+                ? await this.getModel().update(data, {id: modelId})
                 : await this.getModel().create(data);
 
             global.logger.info(`RESPONSE: BaseController.upsertModel (${this.modelName})`, {

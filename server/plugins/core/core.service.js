@@ -29,6 +29,7 @@ const DB_TABLES = {
 
     // new new
     master_types: 'master_types',
+    media: 'media',
     product_collections: 'product_collections',
     product_skus: 'product_skus',
     product_sku_images: 'product_sku_images',

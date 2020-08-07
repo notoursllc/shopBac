@@ -187,6 +187,8 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
+                                // Note this does not delete the Media object that
+                                // may be associated with the ProductSkuImage
                                 return ProductSkuImageCtrl.deleteHandler(request, h);
                             }
                         }
