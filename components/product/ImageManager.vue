@@ -189,6 +189,12 @@ export default {
         fileInputValueFormatter(files) {
             const numFiles = files.length;
             return this.$tc('_num_ images selected', numFiles, {number: numFiles});
+        },
+
+        onFeaturedImageChanged(index) {
+            this.fileList.forEach((obj, idx) => {
+                obj.is_featured = (idx === index);
+            });
         }
     }
 };
@@ -271,8 +277,10 @@ export default {
 
                     <!-- is featured -->
                     <b-td class="text-center vam">
+                        <!-- using a checkbox so its possible for no featured images to be selected -->
                         <b-form-checkbox
-                            v-model="obj.is_featured"></b-form-checkbox>
+                            v-model="obj.is_featured"
+                            @change="onFeaturedImageChanged(index)"></b-form-checkbox>
                     </b-td>
 
                     <!-- actions -->
