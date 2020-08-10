@@ -79,46 +79,33 @@ class ProductCtrl extends BaseController {
 
 
     getWithRelated() {
-        const related = [
+        return [
             {
                 images: (query) => {
                     // query.where('published', '=', true);
                     query.orderBy('ordinal', 'ASC');
-                }
-            },
-            {
+                },
                 skus: (query) => {
                     // query.where('published', '=', true);
                     query.orderBy('ordinal', 'ASC');
-                }
-            },
-            {
+                },
                 'skus.images': (query) => {
                     // query.where('published', '=', true);
                     query.orderBy('ordinal', 'ASC');
                 }
-            }
+            },
+            'skus.images.media'
         ];
-
-        return related;
     }
 
 
     getByIdHandler(request, h) {
-        const relatedQuery = this.getWithRelated();
-        relatedQuery.push({
-            'skus.images.media': (query) => {
-                query.where('tenant_id', '=', request.query.tenant_id);
-                // query.orderBy('ordinal', 'ASC');
-            }
-        });
-
         return this.modelForgeFetchHandler(
             {
                 id: request.query.id,
                 tenant_id: request.query.tenant_id
             },
-            { withRelated: relatedQuery },
+            { withRelated: this.getWithRelated() },
             h
         );
     }
@@ -127,7 +114,6 @@ class ProductCtrl extends BaseController {
     getPageHandler(request, h) {
         return super.getPageHandler(
             request,
-            // ['images'],
             this.getWithRelated(),
             h
         );

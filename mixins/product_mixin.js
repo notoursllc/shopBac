@@ -1,4 +1,5 @@
 import _forEach from 'lodash.foreach';
+import isObject from 'lodash.isobject';
 
 export default {
     methods: {
@@ -104,6 +105,27 @@ export default {
             }
 
             return inventoryCount;
+        },
+
+        prodmix_getSmallestSkuImageMediaUrl(mediaObj) {
+            let smallestWidth;
+            let smallestUrl;
+
+            if(isObject(mediaObj)) {
+                smallestWidth = mediaObj.width || 9999;
+                smallestUrl = mediaObj.url;
+
+                if(Array.isArray(mediaObj.variants)) {
+                    mediaObj.variants.forEach((variant) => {
+                        if(variant.width < smallestWidth) {
+                            smallestWidth = variant.width;
+                            smallestUrl = variant.url;
+                        }
+                    });
+                }
+            }
+
+            return smallestUrl;
         }
     }
 };

@@ -1,5 +1,5 @@
 <script>
-import isObject from 'lodash.isobject';
+import product_mixin from '@/mixins/product_mixin';
 
 export default {
     name: 'ImageManager',
@@ -9,6 +9,10 @@ export default {
         AppOverlay: () => import('@/components/AppOverlay'),
         draggable: () => import('vuedraggable')
     },
+
+    mixins: [
+        product_mixin
+    ],
 
     props: {
         value: {
@@ -47,7 +51,7 @@ export default {
                     // change the media url of each image to the smallest variant
                     this.fileList = newVal.map((obj) => {
                         obj.media = {
-                            url: this.getSmallestMediaUrl(obj.media)
+                            url: this.prodmix_getSmallestSkuImageMediaUrl(obj.media)
                         };
                         return obj;
                     });
@@ -64,27 +68,6 @@ export default {
 
         emitDelete(id) {
             this.$emit('delete', id);
-        },
-
-        getSmallestMediaUrl(mediaObj) {
-            let smallestWidth;
-            let smallestUrl;
-
-            if(isObject(mediaObj)) {
-                smallestWidth = mediaObj.width || 9999;
-                smallestUrl = mediaObj.url;
-
-                if(Array.isArray(mediaObj.variants)) {
-                    mediaObj.variants.forEach((variant) => {
-                        if(variant.width < smallestWidth) {
-                            smallestWidth = variant.width;
-                            smallestUrl = variant.url;
-                        }
-                    });
-                }
-            }
-
-            return smallestUrl;
         },
 
         onPreview(file) {
@@ -158,7 +141,7 @@ export default {
                     const fileListIndex = newFileListIndexes[index];
 
                     this.fileList[fileListIndex].media_id = res.id;
-                    this.fileList[fileListIndex].media.url = this.getSmallestMediaUrl(res);
+                    this.fileList[fileListIndex].media.url = this.prodmix_getSmallestSkuImageMediaUrl(res);
                     this.fileList[fileListIndex].loading = false;
                 });
             }
@@ -223,7 +206,7 @@ export default {
                         </i>
                     </b-th>
                     <b-th class="text-center">
-                        {{ $t('Is featured image') }}
+                        {{ $t('Featured variant image') }}
                         <i class="cursorPointer" v-b-tooltip.hover :title="$t('Featured images represent this variant on the product list page')">
                             <svg-icon icon="info-circle" />
                         </i>

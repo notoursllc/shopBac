@@ -159,8 +159,6 @@ module.exports = {
             'BVModalPlugin'
         ],
         directives: ['VBModal', 'VBPopover', 'VBToggle', 'VBTooltip', 'VBScrollspy'],
-
-
     },
 
     /*

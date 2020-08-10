@@ -437,6 +437,11 @@ class BaseController {
         return response;
     }
 
+
+    getTenantId(request) {
+        return request.auth.credentials.id;
+    }
+
 }
 
 module.exports = BaseController;

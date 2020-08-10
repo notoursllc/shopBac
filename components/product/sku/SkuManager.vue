@@ -3,6 +3,7 @@ import isObject from 'lodash.isobject';
 import cloneDeep from 'lodash.clonedeep';
 import uuid from 'uuid/v4';
 import storage_mixin from '@/mixins/storage_mixin';
+import product_mixin from '@/mixins/product_mixin';
 
 export default {
     name: 'SkuManager',
@@ -18,7 +19,8 @@ export default {
     },
 
     mixins: [
-        storage_mixin
+        storage_mixin,
+        product_mixin
     ],
 
     props: {
@@ -301,38 +303,22 @@ export default {
         },
 
 
-        getVariantThumbs(variant) {
+        getVariantThumbs(sku) {
             const imageUrls = [];
 
-            if(Array.isArray(variant.images)) {
-                variant.images.forEach((img) => {
-
-                    // setting the main image as the smallest
-                    // until we can find a smaller one
-                    let smallest = {
-                        url: img.image_url,
-                        width: img.width || 9999
-                    };
-
-                    if(Array.isArray(img.variants)) {
-                        img.variants.forEach((variant) => {
-                            if(variant.width && variant.image_url && variant.width < smallest.width) {
-                                smallest = {
-                                    url: variant.image_url,
-                                    width: variant.width
-                                };
-                            }
+            if(Array.isArray(sku.images)) {
+                sku.images.forEach((img) => {
+                    const smallest = this.prodmix_getSmallestSkuImageMediaUrl(img.media);
+                    if(smallest) {
+                        imageUrls.push({
+                            url: smallest,
+                            is_featured: img.is_featured
                         });
                     }
-
-                    // done going through all of the images for this variant
-                    if(smallest.url) {
-                        imageUrls.push(smallest.url);
-                    }
                 });
-
-                return imageUrls;
             }
+
+            return imageUrls;
         },
 
         hideInputTypePopover(index, show) {
@@ -563,10 +549,13 @@ export default {
                     <!-- Images -->
                     <td>
                         <span
-                            v-for="(url, index) in getVariantThumbs(obj)"
+                            v-for="(result, index) in getVariantThumbs(obj)"
                             :key="index"
                             class="variant-thumb">
-                            <img :src="url">
+                            <figure
+                                :style="`background-image:url(${result.url});`"
+                                class="shadow"
+                                :class="{'featured-thumb': result.is_featured}"></figure>
                         </span>
                     </td>
 
@@ -664,12 +653,20 @@ export default {
 }
 
 .variant-thumb {
-    width: 40px;
     margin-right: 5px;
     display: inline-block;
 
-    img {
-        width: 100%;
+    figure {
+        width: 40px;
+        height: 40px;
+        border-radius: 50px;
+        margin: 0;
+        background-size: cover;
+        background-position: center;
+
+        &.featured-thumb {
+            border: 2px solid #44d408;
+        }
     }
 }
 
