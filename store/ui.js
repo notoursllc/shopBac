@@ -6,6 +6,7 @@ const domainName = 'goBreadVan.com';
 const messageInstances = [];
 
 export const state = () => ({
+    isAuthenticated: false,
     sidebarOpened: true,
     isMobile: false,
     locales: ['en', 'fr'],
@@ -70,6 +71,14 @@ export const mutations = {
 
     DELETE_TOAST: (state, id) => {
         state.visibleToasts.splice(state.visibleToasts.indexOf(id), 1);
+    },
+
+    LOGIN: (state) => {
+        state.isAuthenticated = true;
+    },
+
+    LOGOUT: (state) => {
+        state.isAuthenticated = false;
     }
 };
 
@@ -108,6 +117,14 @@ export const actions = {
 
     deleteToast: ({ commit }, id) => {
         commit('DELETE_TOAST', id);
+    },
+
+    login({ commit }) {
+        commit('LOGIN');
+    },
+
+    logout({ commit }) {
+        commit('LOGOUT');
     }
 };
 

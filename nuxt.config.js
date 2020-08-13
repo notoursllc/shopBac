@@ -45,6 +45,7 @@ module.exports = {
     plugins: [
         // { src: '@/plugins/tenantLogin.js', mode: 'server' },
         '@/plugins/api.js',
+        '@/plugins/http',
         '@/plugins/i18n.js',
         '@/plugins/element-ui',
         '@/plugins/vuelidate',

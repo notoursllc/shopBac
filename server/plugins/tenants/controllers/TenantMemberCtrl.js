@@ -8,8 +8,6 @@ const isObject = require('lodash.isobject');
 const BaseController = require('../../core/BaseController');
 const { cryptPassword, testPasswordStrength } = require('../../../helpers.service');
 
-const SESSION_TOKEN_COOKIE = 'bv_session_token';
-
 class TenantMemberCtrl extends BaseController {
 
     constructor(server) {
@@ -75,25 +73,10 @@ class TenantMemberCtrl extends BaseController {
                 throw Boom.unauthorized();
             }
 
-            // This is a non httpOnly cookie that can be accessed
-            // by the client simply to tell if he is authenticated
-            // TODO: this cookie should be SameSite
-            h.state(
-                SESSION_TOKEN_COOKIE,
-                TenantMember.get('id'),
-                // this.createToken(TenantMember),
-                {
-                    ttl: null,
-                    isSecure: process.env.NODE_ENV === 'production',
-                    isHttpOnly: false,
-                    clearInvalid: true,
-                    strictHeader: false,
-                    path: '/'
-                }
-            );
-
-            // This is the httpOnly cookie that is used by the server
-            // that is required for access
+            // This is the httpOnly cookie that is used by the server that is required for access.
+            // cookieAuth is a decoration added by the Hapi "cookie" module to set a session cookie:
+            // https://hapi.dev/module/cookie/api/?v=11.0.1
+            // The cookie content (the object sent to cookieAuth.set) will be encrypted.
             request.cookieAuth.set({ id: TenantMember.get('id') });
             return h.apiSuccess();
         }
@@ -108,11 +91,6 @@ class TenantMemberCtrl extends BaseController {
     logoutHandler(request, h) {
         try {
             request.cookieAuth.clear();
-            h.unstate(SESSION_TOKEN_COOKIE, {
-                isSecure: process.env.NODE_ENV === 'production',
-                isHttpOnly: false,
-                path: '/'
-            });
             return h.apiSuccess();
         }
         catch(err) {
@@ -129,7 +107,7 @@ class TenantMemberCtrl extends BaseController {
                 { email: request.payload.email }
             ),
             this.TenantCtrl.modelForgeFetch(
-                { id: request.payload.tenant_id }
+                { id: this.getTenantId(request) }
             )
         ]);
 

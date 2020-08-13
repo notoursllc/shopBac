@@ -21,11 +21,14 @@ export default {
             try {
                 await this.$api.tenants.login(this.userInfo);
 
+                this.$store.dispatch('ui/login');
+
                 this.$router.push({
                     name: 'product-list'
                 });
             }
             catch(e) {
+                this.$store.dispatch('ui/logout');
                 this.$errorToast(e.message);
             }
         }

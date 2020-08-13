@@ -14,7 +14,11 @@ export default {
             sidebarOpened: (state) => {
                 return state.ui.sidebarOpened;
             }
-        })
+        }),
+
+        isLoggedIn() {
+            return this.$store.state.ui.isAuthenticated;
+        }
     },
 
     watch: {
@@ -49,6 +53,9 @@ export default {
         async logout() {
             try {
                 await this.$api.tenants.logout();
+
+                this.$store.dispatch('ui/logout');
+
                 this.$router.push({
                     name: 'user-login'
                 });
@@ -141,7 +148,7 @@ export default {
 
                 <nav class="navigation">
                     <ul class="navigation-list">
-                        <li>
+                        <li v-if="!isLoggedIn">
                             <!-- <template v-if="$auth.loggedIn">
                                 {{ $auth.user.email }}
                                 <el-button
@@ -155,7 +162,7 @@ export default {
                                     tag="a">{{ $t('Login') }}</nuxt-link>
                             <!-- </template> -->
                         </li>
-                        <li>
+                        <li v-else>
                             <a @click="logout">Logout</a>
                         </li>
                     </ul>
