@@ -103,25 +103,6 @@ exports.plugin = {
                         }
                     },
                     {
-                        method: 'GET',
-                        path: `${routePrefix}/product/seo`,
-                        options: {
-                            description: 'Finds a product by it\'s seo uri',
-                            auth: {
-                                strategies: ['jwt', 'session']
-                            },
-                            validate: {
-                                query: {
-                                    id: Joi.string().max(100),
-                                    tenant_id: Joi.string().uuid()
-                                }
-                            },
-                            handler: (request, h) => {
-                                return ProductCtrl.productSeoHandler(request, h);
-                            }
-                        }
-                    },
-                    {
                         method: 'DELETE',
                         path: `${routePrefix}/product`,
                         options: {

@@ -39,7 +39,7 @@ class ShippingCtrl extends BaseController {
         return this.modelForgeFetchHandler(
             {
                 id: request.query.id,
-                tenant_id: request.query.tenant_id
+                tenant_id: this.getTenantId(request)
             },
             null,
             h

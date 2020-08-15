@@ -32,7 +32,7 @@ class MediaCtrl extends BaseController {
         return this.modelForgeFetchHandler(
             {
                 id: request.query.id,
-                tenant_id: request.query.tenant_id
+                tenant_id: this.getTenantId(request)
             },
             null,
             h
@@ -44,14 +44,14 @@ class MediaCtrl extends BaseController {
         try {
             global.logger.info('REQUEST: MediaCtrl.upsertHandler', {
                 meta: {
-                    tenant_id: request.payload.tenant_id,
+                    tenant_id: this.getTenantId(request),
                     file: request.payload.file ? true : false
                 }
             });
 
             const Media = await this.resizeAndUpsertImage(
                 request.payload.file,
-                request.payload.tenant_id
+                this.getTenantId(request)
             );
 
             return h.apiSuccess(Media);

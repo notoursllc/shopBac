@@ -105,7 +105,7 @@ class BaseController {
         try {
             const ModelInstance = await this.deleteModel(
                 request.query.id,
-                request.query.tenant_id
+                this.getTenantId(request)
             );
 
             if(!ModelInstance) {
@@ -204,8 +204,9 @@ class BaseController {
                     }
 
                     // tenant id
-                    if(request.query && request.query.tenant_id) {
-                        qb.andWhere('tenant_id', '=', request.query.tenant_id);
+                    const tid = this.getTenantId(request);
+                    if(tid) {
+                        qb.andWhere('tenant_id', '=', tid);
                     }
                 })
                 .orderBy(queryData.orderBy, queryData.orderDir)
@@ -320,8 +321,9 @@ class BaseController {
                 }
 
                 // tenant id
-                if(request.query && request.query.tenant_id) {
-                    qb.andWhere('tenant_id', '=', request.query.tenant_id);
+                const tid = this.getTenantId(request);
+                if(tid) {
+                    qb.andWhere('tenant_id', '=', tid);
                 }
             })
             .orderBy(queryData.orderBy, queryData.orderDir)
@@ -439,7 +441,8 @@ class BaseController {
 
 
     getTenantId(request) {
-        return request.auth.credentials.id;
+        console.log("GET TENANT ID", request.auth)
+        return request.auth.credentials.tenant_id;
     }
 
 }
