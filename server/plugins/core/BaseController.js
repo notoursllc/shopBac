@@ -105,7 +105,7 @@ class BaseController {
         try {
             const ModelInstance = await this.deleteModel(
                 request.query.id,
-                this.getTenantId(request)
+                this.getTenantIdFromAuthFromAuth(request)
             );
 
             if(!ModelInstance) {
@@ -204,7 +204,7 @@ class BaseController {
                     }
 
                     // tenant id
-                    const tid = this.getTenantId(request);
+                    const tid = this.getTenantIdFromAuth(request);
                     if(tid) {
                         qb.andWhere('tenant_id', '=', tid);
                     }
@@ -321,7 +321,7 @@ class BaseController {
                 }
 
                 // tenant id
-                const tid = this.getTenantId(request);
+                const tid = this.getTenantIdFromAuth(request);
                 if(tid) {
                     qb.andWhere('tenant_id', '=', tid);
                 }
@@ -440,8 +440,7 @@ class BaseController {
     }
 
 
-    getTenantId(request) {
-        console.log("GET TENANT ID", request.auth)
+    getTenantIdFromAuth(request) {
         return request.auth.credentials.tenant_id;
     }
 

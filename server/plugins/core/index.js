@@ -149,32 +149,43 @@ exports.plugin = {
         });
 
 
-        // server.ext('onPostAuth', (request, h) => {
-        //     // https://github.com/BoseCorp/hapi-auth-jwt2#want-to-access-the-jwt-token-after-validation
-        //     if(isObject(request.auth.credentials) && request.auth.credentials.tenant_id) {
-        //         const tenantId = request.auth.credentials.tenant_id;
 
-        //         // query
-        //         // I don't think query can be an array, right?
-        //         if(isObject(request.query)) {
-        //             request.query.tenant_id = tenantId;
-        //         }
+        server.ext('onPostAuth', (request, h) => {
+            global.logger.info('onPostAuth: Adding tenant_id to request', {
+                meta: {
+                    'request.auth.credentials': request.auth.credentials
+                }
+            });
 
-        //         // payload
-        //         if(Array.isArray(request.payload)) {
-        //             request.payload.forEach((item) => {
-        //                 if(isObject(item)) {
-        //                     item.tenant_id = tenantId;
-        //                 }
-        //             });
-        //         }
-        //         else if(isObject(request.payload)) {
-        //             request.payload.tenant_id = tenantId;
-        //         }
-        //     }
+            // https://github.com/BoseCorp/hapi-auth-jwt2#want-to-access-the-jwt-token-after-validation
+            if(isObject(request.auth.credentials) && request.auth.credentials.tenant_id) {
+                const tenantId = request.auth.credentials.tenant_id;
 
-        //     return h.continue;
-        // });
+                // query
+                // I don't think query can be an array, right?
+                if(isObject(request.query)) {
+                    request.query.tenant_id = tenantId;
+                }
+
+                // payload
+                // if(isObject(request.payload)) {
+                //     request.payload.tenant_id = tenantId;
+                // }
+
+                if(Array.isArray(request.payload)) {
+                    request.payload.forEach((item) => {
+                        if(isObject(item)) {
+                            item.tenant_id = tenantId;
+                        }
+                    });
+                }
+                else if(isObject(request.payload)) {
+                    request.payload.tenant_id = tenantId;
+                }
+            }
+
+            return h.continue;
+        });
 
 
         // Updates the response output with a 'data' property if a data

@@ -6,12 +6,12 @@ export default ($http) => ({
     },
 
     async login(userData) {
-        const { data } = await $http.$post('/tenant/user/login', userData);
+        const { data } = await $http.$post('/tenant/member/login', userData);
         return data;
     },
 
-    async logout(userData) {
-        const { data } = await $http.$post('/tenant/user/logout');
+    async logout() {
+        const { data } = await $http.$post('/tenant/member/logout');
         return data;
     }
 

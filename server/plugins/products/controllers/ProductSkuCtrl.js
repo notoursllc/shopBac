@@ -219,7 +219,7 @@ class ProductSkuCtrl extends BaseController {
         try {
             await this.deleteSku(
                 request.query.id,
-                this.getTenantId(request)
+                this.getTenantIdFromAuth(request)
             );
 
             return h.apiSuccess();

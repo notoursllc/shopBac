@@ -101,7 +101,7 @@ const after = function (server) {
                     payload: TenantCtrl.getAuthSchema()
                 },
                 handler: (request, h) => {
-                    return TenantCtrl.authHandler(request, h);
+                    return TenantCtrl.loginHandler(request, h);
                 }
             }
         },
@@ -118,7 +118,7 @@ const after = function (server) {
                     payload: TenantCtrl.getRefreshSchema()
                 },
                 handler: (request, h) => {
-                    return TenantCtrl.authHandler(request, h);
+                    return TenantCtrl.loginHandler(request, h);
                 }
             }
         },
@@ -182,11 +182,11 @@ const after = function (server) {
 
 
         /*
-         *  TENANT USERS
+         *  TENANT MEMBERS
          */
         {
             method: 'POST',
-            path: '/tenant/user',
+            path: '/tenant/member',
             options: {
                 auth: false,
                 description: 'Creates a new tenant user',
@@ -200,7 +200,7 @@ const after = function (server) {
         },
         {
             method: 'POST',
-            path: '/tenant/user/login',
+            path: '/tenant/member/login',
             options: {
                 auth: false,
                 description: 'Authenticates a tenant user and returns a cookie containing JWT',
@@ -214,7 +214,7 @@ const after = function (server) {
         },
         {
             method: 'POST',
-            path: '/tenant/user/logout',
+            path: '/tenant/member/logout',
             options: {
                 auth: false,
                 description: 'Logs out a tenant user',

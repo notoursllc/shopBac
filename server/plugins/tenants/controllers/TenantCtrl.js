@@ -1,12 +1,12 @@
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
-const crypto = require('crypto');
+// const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const uuid = require('uuid/v4');
 const owasp = require('owasp-password-strength-test');
 const isObject = require('lodash.isobject');
-const BaseController = require('../../core/BaseController');
+const TenantBaseCtrl = require('./TenantBaseCtrl');
 const { cryptPassword } = require('../../../helpers.service');
 
 
@@ -19,7 +19,7 @@ owasp.config({
 });
 
 
-class TenantCtrl extends BaseController {
+class TenantCtrl extends TenantBaseCtrl {
 
     constructor(server) {
         super(server, 'Tenant');
@@ -61,15 +61,6 @@ class TenantCtrl extends BaseController {
     }
 
 
-    getByIdHandler(request, h) {
-        return this.modelForgeFetchHandler(
-            { id: request.query.id },
-            null,
-            h
-        );
-    }
-
-
     getByEmail(email) {
         return this.modelForgeFetch(
             { email },
@@ -84,9 +75,15 @@ class TenantCtrl extends BaseController {
      * @param {*} request
      * @param {*} h
      */
-    async authHandler(request, h) {
+    async loginHandler(request, h) {
         let Tenant;
-        const refreshTokenFromCookie = Array.isArray(request.state.bvrt) ? request.state.bvrt[request.state.bvrt.length - 1] : request.state.bvrt;
+
+        global.logger.info('REQUEST: TenantCtrl.loginHandler', {
+            meta: {
+                state: request.state,
+                payload: request.payload
+            }
+        });
 
         try {
             Tenant = await this.modelForgeFetch(
@@ -108,6 +105,7 @@ class TenantCtrl extends BaseController {
             }
             else {
                 // get the refresh token from cookie (request.state)
+                const refreshTokenFromCookie = Array.isArray(request.state.bvrt) ? request.state.bvrt[request.state.bvrt.length - 1] : request.state.bvrt;
                 isMatch = bcrypt.compareSync(refreshTokenFromCookie, Tenant.get('refresh_token'));
             }
         }
@@ -117,7 +115,7 @@ class TenantCtrl extends BaseController {
         }
 
         try {
-            const authToken = this.createToken(Tenant);
+            const authToken = this.createJwtToken(Tenant);
             const refreshToken = uuid();
 
             // return the refresh token in a httpOnly cookie
@@ -151,6 +149,62 @@ class TenantCtrl extends BaseController {
         }
     }
 
+
+    async validateJwtKey(decoded, request) {
+        // if (request.plugins['hapi-auth-jwt2']) {
+        //     decoded.extraInfo = request.plugins['hapi-auth-jwt2'].extraInfo;
+        // }
+
+        // console.log(" - - - - - - - decoded token:");
+        // console.log(decoded);
+        // console.log(" - - - - - - - request info:");
+        // console.log(request.info);
+        // console.log(" - - - - - - - user agent:");
+        // console.log(request.headers['user-agent']);
+
+        let isValid = false;
+
+        if(!isObject(decoded) || !decoded.tenant_id) {
+            return {
+                isValid: false
+            };
+        }
+
+        // try getting from cache first, so we don't have to call the DB every time
+        if(this.validTenantCache[decoded.tenant_id] && this.validTenantCache[decoded.tenant_id] > new Date().getTime()) {
+            isValid = true;
+            global.logger.info('validateJwtKey - IS VALID FROM CACHE', this.validTenantCache);
+        }
+        // else look up the tenant from the DB, and if active,
+        // set as valid and update the cache
+        else {
+            try {
+                const Tenant = await this.modelForgeFetch(
+                    { id: decoded.tenant_id },
+                    null
+                );
+
+                if(Tenant
+                    && Tenant.get('id') === decoded.tenant_id
+                    && Tenant.get('active')) {
+                    isValid = true;
+                    // this.validTenantCache[decoded.id] = new Date().getTime() + (60 * 10 * 1000); // now + 10 minutes
+                    this.validTenantCache[decoded.tenant_id] = new Date().getTime() + (30 * 1000); // now + 30 seconds
+                    global.logger.info('validateJwtKey - IS VALID FROM DB - UPDATING CACHE', this.validTenantCache);
+                }
+            }
+            catch(err) {
+                global.logger.error(err);
+            }
+        }
+
+        // isValid is the only required field needed in the resposne obejct
+        // you can add other stuff too which will be available to the route handler for its own use (tenant ID?)
+        return {
+            isValid,
+            decoded
+        };
+    };
 
     async createHandler(request, h) {
         const Tenant = await this.getByEmail(request.payload.email);
@@ -187,11 +241,12 @@ class TenantCtrl extends BaseController {
     /**
      * Sign the JWT
      */
-    createToken(Tenant) {
+    createJwtToken(Tenant) {
         // For now I think all I need is the tenant id in the token
         return jwt.sign(
             {
-                id: Tenant.get('id')
+                // id: Tenant.get('id')
+                tenant_id: Tenant.get('id')
             },
             process.env.JWT_TOKEN_SECRET,
             {
@@ -200,63 +255,6 @@ class TenantCtrl extends BaseController {
             }
         );
     }
-
-
-    async validateJwtKey(decoded, request) {
-        // if (request.plugins['hapi-auth-jwt2']) {
-        //     decoded.extraInfo = request.plugins['hapi-auth-jwt2'].extraInfo;
-        // }
-
-        console.log(" - - - - - - - decoded token:");
-        console.log(decoded);
-        console.log(" - - - - - - - request info:");
-        console.log(request.info);
-        console.log(" - - - - - - - user agent:");
-        console.log(request.headers['user-agent']);
-
-        let isValid = false;
-
-        if(!isObject(decoded) || !decoded.id) {
-            return {
-                isValid: false
-            };
-        }
-
-        // try getting from cache first, so we don't have to call the DB every time
-        if(this.validTenantCache[decoded.id] && this.validTenantCache[decoded.id] > new Date().getTime()) {
-            isValid = true;
-            console.log("validateJwtKey - IS VALID FROM CACHE", this.validTenantCache);
-        }
-        // else look up the tenant from the DB, and if active,
-        // set as valid and update the cache
-        else {
-            try {
-                const Tenant = await this.modelForgeFetch(
-                    { id: decoded.id },
-                    null
-                );
-
-                if(Tenant
-                    && Tenant.get('id') === decoded.id
-                    && Tenant.get('active')) {
-                    isValid = true;
-                    // this.validTenantCache[decoded.id] = new Date().getTime() + (60 * 10 * 1000); // now + 10 minutes
-                    this.validTenantCache[decoded.id] = new Date().getTime() + (30 * 1000); // now + 30 seconds
-                    console.log("validateJwtKey - IS VALID FROM DB - UPDATING CACHE", this.validTenantCache)
-                }
-            }
-            catch(err) {
-                global.logger.error(err);
-            }
-        }
-
-        // isValid is the only required field needed in the resposne obejct
-        // you can add other stuff too which will be available to the route handler for its own use (tenant ID?)
-        return {
-            isValid,
-            decoded
-        };
-    };
 }
 
 

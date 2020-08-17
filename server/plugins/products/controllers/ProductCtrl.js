@@ -103,7 +103,7 @@ class ProductCtrl extends BaseController {
         return this.modelForgeFetchHandler(
             {
                 id: request.query.id,
-                tenant_id: this.getTenantId(request)
+                tenant_id: this.getTenantIdFromAuth(request)
             },
             { withRelated: this.getWithRelated() },
             h
@@ -176,11 +176,13 @@ class ProductCtrl extends BaseController {
 
             if(Product) {
                 const promises = [];
+                const tenant_id = this.getTenantIdFromAuth(request);
+
                 promises.push(
                     this.ProductImageCtrl.upsertImages(
                         images,
                         Product.get('id'),
-                        this.getTenantId(request)
+                        tenant_id
                     )
                 );
 
@@ -188,7 +190,7 @@ class ProductCtrl extends BaseController {
                     this.ProductSkuCtrl.upsertSkus(
                         skus,
                         Product.get('id'),
-                        this.getTenantId(request)
+                        tenant_id
                     )
                 );
 
@@ -218,7 +220,7 @@ class ProductCtrl extends BaseController {
             });
 
             const productId = request.query.id;
-            const tenantId = this.getTenantId(request);
+            const tenantId = this.getTenantIdFromAuth(request);
 
             const Product = await this.modelForgeFetch(
                 { id: productId, tenant_id: tenantId },

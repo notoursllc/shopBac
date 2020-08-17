@@ -24,7 +24,7 @@ class ProductCollectionCtrl extends BaseController {
         return this.modelForgeFetchHandler(
             {
                 id: request.query.id,
-                tenant_id: this.getTenantId(request)
+                tenant_id: this.getTenantIdFromAuth(request)
             },
             null,
             h
