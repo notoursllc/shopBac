@@ -62,7 +62,7 @@ module.exports = {
     */
     buildModules: [
         // '@nuxtjs/eslint-module' // https://github.com/nuxt-community/eslint-module
-        ['@nuxtjs/dotenv', { path: (process.env.NODE_ENV !== 'production' ? './' : '/etc/secrets/') }] // https://github.com/nuxt-community/dotenv-module
+        ['@nuxtjs/dotenv', { path: (process.env.NODE_ENV === 'development' ? './' : '/etc/secrets/') }] // https://github.com/nuxt-community/dotenv-module
     ],
 
     /*
