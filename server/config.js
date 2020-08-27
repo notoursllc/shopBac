@@ -33,8 +33,8 @@ const config = {
         api: {
             $filter: 'env',
             test: 8080,
-            production: normalizePort(process.env.API_PORT || 3000),
-            $default: normalizePort(process.env.API_PORT || 3000)
+            production: normalizePort(process.env.API_PORT || 4000),
+            $default: normalizePort(process.env.API_PORT || 4000)
         }
     },
     db: {

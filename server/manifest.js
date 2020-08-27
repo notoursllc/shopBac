@@ -1,6 +1,6 @@
 const Boom = require('@hapi/boom');
 const path = require('path');
-const Config = require('./OLD-plugins/config');
+const Config = require('./config');
 
 const routePrefix = '/api/v1';
 
@@ -10,7 +10,8 @@ const webManifest = {
         port: Config.get('/port/api'),
         routes: {
             cors: {
-                origin: process.env.NODE_ENV === 'production' ? process.env.CORS_ORIGINS.split(',').map(url => url.trim()) : ['*']
+                // origin: process.env.NODE_ENV === 'production' ? process.env.CORS_ORIGINS.split(',').map(url => url.trim()) : ['*']
+                origin: ['*']
             },
             validate: {
                 failAction: (request, h, err) => {
