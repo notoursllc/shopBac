@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "after-deploy": "npm install && npm run build && npm run knex:migrate",
+    "prod-deploy": "npm install && npm run build && npm run knex:migrate",
     "dev": "cross-env NODE_ENV=development nodemon server/start.js --watch server",
     "build": "nuxt build",
     "gensecret": "node ./utils/gensecret.js",
