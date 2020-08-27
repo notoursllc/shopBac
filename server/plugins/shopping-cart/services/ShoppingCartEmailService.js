@@ -5,11 +5,6 @@ const isObject = require('lodash.isobject');
 const helpers = require('../../../helpers.service');
 
 // https://www.npmjs.com/package/mailgun-js
-// const mailgun = require('mailgun-js')({
-//     apiKey: Config.get('/mailgun/apiKey'),
-//     domain: Config.get('/mailgun/domain'),
-//     testMode: process.env.NODE_ENV === 'test'
-// });
 const mailgun = require('mailgun-js')({
     apiKey: process.env.MAILGUN_API_KEY,
     domain: process.env.MAILGUN_DOMAIN,

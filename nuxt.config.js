@@ -1,4 +1,3 @@
-
 module.exports = {
     mode: 'spa',
 
@@ -62,9 +61,8 @@ module.exports = {
     ** Nuxt.js dev-modules
     */
     buildModules: [
-        // Doc: https://github.com/nuxt-community/eslint-module
-        // '@nuxtjs/eslint-module'
-        ['@nuxtjs/dotenv', { systemvars: process.env.NODE_ENV === 'production' }] // Doc: https://github.com/nuxt-community/dotenv-module
+        // '@nuxtjs/eslint-module' // https://github.com/nuxt-community/eslint-module
+        ['@nuxtjs/dotenv', { path: (process.env.NODE_ENV !== 'production' ? './' : '/etc/secrets/') }] // https://github.com/nuxt-community/dotenv-module
     ],
 
     /*
