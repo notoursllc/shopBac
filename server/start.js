@@ -1,8 +1,6 @@
-const envs = require('dotenv').config(
+require('dotenv').config(
     process.env.NODE_ENV === 'production' ? { path: '/etc/secrets/.env' } : null
 );
-
-console.log("ENVS FROM SERVER.js", envs);
 
 const server = require('./index');
 const manifest = require('./manifest');

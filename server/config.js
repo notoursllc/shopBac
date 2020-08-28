@@ -45,17 +45,6 @@ const config = {
         $default: {
             debug: true
         }
-    },
-    mailgun: {
-        $filter: 'env',
-        production: {
-            apiKey: process.env.MAILGUN_API_KEY,
-            domain: process.env.MAILGUN_DOMAIN_PROD
-        },
-        $default: {
-            apiKey: process.env.MAILGUN_API_KEY,
-            domain: process.env.MAILGUN_DOMAIN
-        }
     }
 };
 
