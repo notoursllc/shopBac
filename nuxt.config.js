@@ -1,3 +1,11 @@
+const path = require('path');
+require('dotenv').config();
+
+let dotEnvConfig = null;
+if(process.env.NODE_ENV !== 'development') {
+    dotEnvConfig = { path: path.resolve(__dirname, '../../../../etc/secrets') };
+}
+
 module.exports = {
     mode: 'spa',
 
@@ -62,7 +70,8 @@ module.exports = {
     */
     buildModules: [
         // '@nuxtjs/eslint-module' // https://github.com/nuxt-community/eslint-module
-        ['@nuxtjs/dotenv', { path: (process.env.NODE_ENV === 'development' ? './' : '/etc/secrets/') }] // https://github.com/nuxt-community/dotenv-module
+        // ['@nuxtjs/dotenv', { path: (process.env.NODE_ENV === 'development' ? './' : '/etc/secrets/') }] // https://github.com/nuxt-community/dotenv-module
+        ['@nuxtjs/dotenv', dotEnvConfig]
     ],
 
     /*

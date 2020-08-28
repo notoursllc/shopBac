@@ -2,11 +2,15 @@ import Vue from 'vue';
 import bugsnag from '@bugsnag/js';
 import bugsnagVue from '@bugsnag/plugin-vue';
 
-const bugsnagClient = bugsnag({
-    apiKey: process.env.BUG_SNAG_API_KEY,
-    notifyReleaseStages: [ 'production' ]
-});
+export default (context) => {
 
-bugsnagClient.use(bugsnagVue, Vue);
+    const bugsnagClient = bugsnag({
+        apiKey: context.env.BUG_SNAG_API_KEY,
+        notifyReleaseStages: [ 'production' ]
+    });
 
-Vue.prototype.$bugsnag = bugsnagClient;
+    bugsnagClient.use(bugsnagVue, Vue);
+
+    Vue.prototype.$bugsnag = bugsnagClient;
+
+};

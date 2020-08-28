@@ -1,7 +1,10 @@
+require('dotenv').config(
+    process.env.NODE_ENV === 'production' ? { path: '/etc/secrets' } : null
+);
+
 const server = require('./index');
 const manifest = require('./manifest');
 const Config = require('./config');
-
 
 const startServer = async function() {
     try {
