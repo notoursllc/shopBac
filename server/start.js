@@ -2,9 +2,11 @@ const path = require('path');
 
 console.log("PATH TO SECRETS", path.resolve(__dirname, '../../../../../etc/secrets'));
 
-require('dotenv').config(
-    process.env.NODE_ENV === 'production' ? { path: path.resolve(__dirname, '../../../../etc/secrets') } : null
+const envs = require('dotenv').config(
+    process.env.NODE_ENV === 'production' ? { path: '/etc/secrets' } : null
 );
+
+console.log("ENVS FROM SERVER.js", envs);
 
 const server = require('./index');
 const manifest = require('./manifest');
