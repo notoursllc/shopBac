@@ -9,7 +9,7 @@
     "gensecret": "node ./utils/gensecret.js",
     "knex:migrate": "node ./node_modules/knex/bin/cli.js migrate:latest --knexfile ./knexfile.js",
     "knex:seed": "node --require dotenv/config ./node_modules/knex/bin/cli.js seed:run --knexfile ./knexfile.js",
-    "start": "cross-env NODE_ENV=production node server/start.js",
+    "start": "cross-env NODE_ENV=production node --require dotenv/config server/start.js dotenv_config_path=/etc/secrets",
     "test:server": "NODE_ENV=test lab -a @hapi/code -v --leaks test/server",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore ."
   },
