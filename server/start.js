@@ -1,9 +1,5 @@
-const path = require('path');
-
-console.log("PATH TO SECRETS", path.resolve(__dirname, '../../../../../etc/secrets'));
-
 const envs = require('dotenv').config(
-    process.env.NODE_ENV === 'production' ? { path: '/etc/secrets' } : null
+    process.env.NODE_ENV === 'production' ? { path: '/etc/secrets/' } : null
 );
 
 console.log("ENVS FROM SERVER.js", envs);
