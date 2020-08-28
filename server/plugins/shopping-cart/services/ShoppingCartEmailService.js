@@ -4,6 +4,8 @@ const pug = require('pug');
 const isObject = require('lodash.isobject');
 const helpers = require('../../../helpers.service');
 
+console.log("SHOPPINGCARTEMAILSERVICE", process.env.MAILGUN_API_KEY, process.env);
+
 // https://www.npmjs.com/package/mailgun-js
 const mailgun = require('mailgun-js')({
     apiKey: process.env.MAILGUN_API_KEY,
