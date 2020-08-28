@@ -15,8 +15,8 @@ export const state = () => ({
     infoEmailAddress: `info@${domainName}`,
     brandName: 'BreadVan',
     siteName: domainName,
-    siteUrlLong: process.env.NODE_ENV === 'development' ? `http://localhost:${process.env.API_PORT}` : `https://www.${domainName}`,
-    siteUrlShort: process.env.NODE_ENV === 'development' ? `localhost:${process.env.API_PORT}` : `www.${domainName}`,
+    siteUrlLong: process.env.NODE_ENV === 'development' ? `http://localhost:${process.env.SERVER_PORT}` : `https://www.${domainName}`,
+    siteUrlShort: process.env.NODE_ENV === 'development' ? `localhost:${process.env.SERVER_PORT}` : `www.${domainName}`,
     twitterUser: 'gmnstLife',
     visibleToasts: []
 });

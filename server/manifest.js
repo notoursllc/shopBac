@@ -7,7 +7,7 @@ const routePrefix = '/api/v1';
 const webManifest = {
     server: {
         // cache: 'redis',
-        port: Config.get('/port/api'),
+        port: Config.get('/port/server'),
         routes: {
             cors: {
                 // origin: process.env.NODE_ENV === 'production' ? process.env.CORS_ORIGINS.split(',').map(url => url.trim()) : ['*']

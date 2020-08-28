@@ -13,7 +13,7 @@ const startServer = async function() {
         };
 
         await server.init(manifest, options);
-        console.log('API server started, port:', Config.get('/port/api'));
+        console.log('API server started, port:', Config.get('/port/server'));
     }
     catch(err) {
         console.log('ERROR STARTING SERVER:', err);
