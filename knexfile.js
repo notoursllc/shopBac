@@ -1,12 +1,10 @@
-const envs = require('dotenv').config(
-    process.env.NODE_ENV === 'production' ? { path: '/etc/secrets/' } : null
+require('dotenv').config(
+    process.env.NODE_ENV === 'production' ? { path: '/etc/secrets/.env' } : null
 );
-
-console.log("ENVS", envs)
 
 const cloneDeep = require('lodash.clonedeep');
 
-let common = {
+const common = {
     client: 'postgres',
     pool: {
         min: 2,
@@ -56,10 +54,10 @@ let common = {
 //     common.connection.database = 'gonano';
 // }
 
-let config = {
+const config = {
     development: cloneDeep(common),
     production: cloneDeep(common)
 };
 
-let env = process.env.NODE_ENV === 'production' ? 'production' : 'development';
+const env = process.env.NODE_ENV === 'production' ? 'production' : 'development';
 module.exports = config[env];
