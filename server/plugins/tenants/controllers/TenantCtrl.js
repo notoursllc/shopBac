@@ -138,8 +138,7 @@ class TenantCtrl extends TenantBaseCtrl {
             });
 
             return h.apiSuccess({
-                authToken,
-                refreshToken
+                authToken
             });
         }
         catch(err) {
