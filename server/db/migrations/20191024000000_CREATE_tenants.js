@@ -5,7 +5,6 @@ module.exports.up = (knex) => {
         CoreService.DB_TABLES.tenants,
         (t) => {
             t.uuid('id').primary();
-            t.string('email').nullable();
             t.string('password').nullable();
             t.string('refresh_token').nullable();
             t.string('application_name').nullable();

@@ -43,7 +43,6 @@ class TenantCtrl extends TenantBaseCtrl {
 
     getCreateSchema() {
         return {
-            email: Joi.string().max(100).required(),
             password: Joi.string().max(100).required(),
             application_name: Joi.string().max(100),
             application_url: Joi.string().max(100)
@@ -59,15 +58,6 @@ class TenantCtrl extends TenantBaseCtrl {
             updated_at: Joi.date()
         };
     }
-
-
-    getByEmail(email) {
-        return this.modelForgeFetch(
-            { email },
-            null
-        );
-    }
-
 
     /**
      * This method is called by the client when he wants to receive a new JWT
@@ -205,36 +195,36 @@ class TenantCtrl extends TenantBaseCtrl {
         };
     };
 
-    async createHandler(request, h) {
-        const Tenant = await this.getByEmail(request.payload.email);
+    // async createHandler(request, h) {
+    //     const Tenant = await this.getByEmail(request.payload.email);
 
-        // console.log("TENANT", Tenant);
-        if(Tenant) {
-            throw Boom.badData('A user with this email address already exists');
-        }
+    //     // console.log("TENANT", Tenant);
+    //     if(Tenant) {
+    //         throw Boom.badData('A user with this email address already exists');
+    //     }
 
-        const passwordValidation = owasp.test(request.payload.password);
-        console.log('PWD VALIDATION', request.payload.password, passwordValidation);
+    //     const passwordValidation = owasp.test(request.payload.password);
+    //     console.log('PWD VALIDATION', request.payload.password, passwordValidation);
 
-        // TODO: throw error if errors
+    //     // TODO: throw error if errors
 
-        // request.payload.api_key = crypto.randomBytes(32).toString('hex');
-        request.payload.password = cryptPassword(request.payload.password);
-        return super.upsertHandler(request, h);
-    }
+    //     // request.payload.api_key = crypto.randomBytes(32).toString('hex');
+    //     request.payload.password = cryptPassword(request.payload.password);
+    //     return super.upsertHandler(request, h);
+    // }
 
 
-    upsertHandler(request, h) {
-        // todo: check if email already exists if creating new tenant
+    // upsertHandler(request, h) {
+    //     // todo: check if email already exists if creating new tenant
 
-        const passwordValidation = owasp.test(request.payload.password);
+    //     const passwordValidation = owasp.test(request.payload.password);
 
-        // console.log('PWD VALIDATION', request.payload.password, passwordValidation);
+    //     // console.log('PWD VALIDATION', request.payload.password, passwordValidation);
 
-        // request.payload.api_key = crypto.randomBytes(32).toString('hex');
-        request.payload.password = cryptPassword(request.payload.password);
-        return super.upsertHandler(request, h);
-    }
+    //     // request.payload.api_key = crypto.randomBytes(32).toString('hex');
+    //     request.payload.password = cryptPassword(request.payload.password);
+    //     return super.upsertHandler(request, h);
+    // }
 
 
     /**
@@ -244,7 +234,6 @@ class TenantCtrl extends TenantBaseCtrl {
         // For now I think all I need is the tenant id in the token
         return jwt.sign(
             {
-                // id: Tenant.get('id')
                 tenant_id: Tenant.get('id')
             },
             process.env.JWT_TOKEN_SECRET,

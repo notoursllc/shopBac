@@ -9,7 +9,7 @@ import ProductSkuVariantTypes from '@/api/product_sku_variant_types';
 import ProductDataTables from '@/api/product_data_tables';
 import Shipping from '@/api/shipping';
 import Storage from '@/api/storage';
-import Tenants from '@/api/tenants';
+import TenantMembers from '@/api/tenant_members';
 
 
 export default (context, inject) => {
@@ -27,7 +27,7 @@ export default (context, inject) => {
         productDataTables: ProductDataTables(context.$http),
         shipping: Shipping(context.$http),
         storage: Storage(context.$http),
-        tenants: Tenants(context.$http)
+        tenantMembers: TenantMembers(context.$http)
     };
 
     inject('api', repositories);

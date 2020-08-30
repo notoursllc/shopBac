@@ -38,7 +38,7 @@ export default {
 
     methods: {
         async onSubmit() {
-            const response = await this.$api.tenants.register(this.userData);
+            const response = await this.$api.tenantMembers.add(this.userData);
             console.log('TENANT RESPONSE', response);
         },
 

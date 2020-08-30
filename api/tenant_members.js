@@ -1,7 +1,7 @@
 export default ($http) => ({
 
-    async register(userData) {
-        const { data } = await $http.$post('/tenant', userData);
+    async add(userData) {
+        const { data } = await $http.$post('/tenant/member', userData);
         return data;
     },
 

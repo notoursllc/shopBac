@@ -56,6 +56,8 @@ const after = function (server) {
 
 
     server.route([
+
+        /*
         {
             method: 'GET',
             path: '/tenants',
@@ -80,7 +82,7 @@ const after = function (server) {
             method: 'GET',
             path: '/tenant',
             options: {
-                description: 'Gets an master type by ID',
+                description: 'Gets a Tenant by ID',
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required()
@@ -91,12 +93,14 @@ const after = function (server) {
                 }
             }
         },
+        */
+
         {
             method: 'POST',
             path: '/tenant/login',
             options: {
                 auth: false,
-                description: 'Authenticates a tenant and returns a JWT',
+                description: 'Authenticates a Tenant and returns a JWT',
                 validate: {
                     payload: TenantCtrl.getAuthSchema()
                 },
@@ -122,18 +126,8 @@ const after = function (server) {
                 }
             }
         },
-        // temp test route
-        {
-            method: 'GET',
-            path: '/tenant/test',
-            options: {
-                auth: 'jwt',
-                description: 'Authenticates a tenant and returns a JWT',
-                handler: (request, h) => {
-                    return h.apiSuccess({ test: 'success' });
-                }
-            }
-        },
+
+        /*
         {
             method: 'POST',
             path: '/tenant',
@@ -179,6 +173,7 @@ const after = function (server) {
                 }
             }
         },
+        */
 
 
         /*
@@ -189,7 +184,7 @@ const after = function (server) {
             path: '/tenant/member',
             options: {
                 auth: false,
-                description: 'Creates a new tenant user',
+                description: 'Creates a new tenant member',
                 validate: {
                     payload: TenantMemberCtrl.getCreateSchema()
                 },
@@ -203,7 +198,7 @@ const after = function (server) {
             path: '/tenant/member/login',
             options: {
                 auth: false,
-                description: 'Authenticates a tenant user and returns a cookie containing JWT',
+                description: 'Authenticates a tenant member and returns a cookie containing JWT',
                 validate: {
                     payload: TenantMemberCtrl.getLoginSchema()
                 },
@@ -217,7 +212,7 @@ const after = function (server) {
             path: '/tenant/member/logout',
             options: {
                 auth: false,
-                description: 'Logs out a tenant user',
+                description: 'Logs out a tenant member',
                 handler: (request, h) => {
                     return TenantMemberCtrl.logoutHandler(request, h);
                 }

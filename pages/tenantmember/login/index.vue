@@ -19,7 +19,7 @@ export default {
     methods: {
         async onSubmit() {
             try {
-                await this.$api.tenants.login(this.userInfo);
+                await this.$api.tenantMembers.login(this.userInfo);
 
                 this.$store.dispatch('ui/login');
 
