@@ -57,7 +57,7 @@ export default {
                 this.$store.dispatch('ui/logout');
 
                 this.$router.push({
-                    name: 'user-login'
+                    name: 'tenantmember-login'
                 });
             }
             catch(e) {
@@ -158,7 +158,7 @@ export default {
                             </template> -->
                             <!-- <template v-else> -->
                                 <nuxt-link
-                                    :to="{ name: 'user-login' }"
+                                    :to="{ name: 'tenantmember-login' }"
                                     tag="a">{{ $t('Login') }}</nuxt-link>
                             <!-- </template> -->
                         </li>

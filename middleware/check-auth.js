@@ -7,8 +7,8 @@ export default function (context) {
     // }
 
     const routeWhitelist = [
-        'user-login',
-        'user-register'
+        'tenantmember-login',
+        'tenantmember-register'
     ];
 
     const isAuthenticated = context.store.state.ui.isAuthenticated;
@@ -27,7 +27,7 @@ export default function (context) {
         }
     }
     else if(!isAuthenticated) {
-        context.redirect('/user/login');
+        context.redirect('/tenantmember/login');
     }
 
 }
