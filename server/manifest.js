@@ -37,6 +37,7 @@ const webManifest = {
             { plugin: '@hapi/inert' },
             { plugin: '@hapi/vision' },
             { plugin: '@hapi/cookie' },
+            { plugin: '@hapi/basic' },
             {
                 plugin: 'hapi-rate-limit', // https://www.npmjs.com/package/hapi-rate-limit
                 options: {
@@ -55,8 +56,6 @@ const webManifest = {
                 }
             },
             // { plugin: './plugins/auth-scheme-jwt-cookie' },
-            // { plugin: './plugins/hapi-basic-auth' },
-            { plugin: 'hapi-auth-jwt2' },
             {
                 plugin: './plugins/tenants',
                 routes: {

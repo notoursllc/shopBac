@@ -1,25 +1,12 @@
 const Joi = require('@hapi/joi');
+const isObject = require('lodash.isobject');
 
 
 const after = function (server) {
     const TenantCtrl = new (require('./controllers/TenantCtrl'))(server);
     const TenantMemberCtrl = new (require('./controllers/TenantMemberCtrl'))(server);
 
-    server.auth.strategy('jwt', 'jwt', {
-        // this key is only for testing.  In a multi tenant scenario I will need to look up the secret key in the db,
-        // which hapi-auth-jwt2 supports:
-        // https://www.npmjs.com/package/hapi-auth-jwt2#additional-notes-on-keys-and-key-lookup-functions
-        key: process.env.JWT_TOKEN_SECRET,
-        validate: (decoded, request) => {
-            return TenantCtrl.validateJwtKey(decoded, request);
-        },
-        // verify: TenantCtrl.validateJwtKey,
-        verifyOptions: {
-            // ignoreExpiration: true,
-            algorithms: [ 'HS256' ]
-        }
-    });
-
+    // Session auth
     server.auth.strategy('session', 'cookie', {
         // https://hapi.dev/module/cookie/api/?v=11.0.1
         cookie: {
@@ -43,14 +30,34 @@ const after = function (server) {
         }
     });
 
+
+    // Basic auth for store API usage
+    server.auth.strategy('storeauth', 'basic', {
+        validate: async (request, tenant_id, api_key) => {
+            const tenantData = await TenantCtrl.storeAuthIsValid(tenant_id, api_key);
+            let credentials = null;
+
+            if(isObject(tenantData) && tenantData.id) {
+                credentials = {
+                    tenant_id: tenantData.id
+                };
+            }
+
+            return {
+                isValid: !!tenantData,
+                credentials: credentials
+            };
+        }
+    });
+
+
     // By default the admin can access all routes
     // Routes accessable by the tenant (client app) will need to be
     // specified intentionally by setting route options:
     //
     // auth: {
-    //     strategies: ['jwt', 'session']
+    //     strategies: ['storeauth', 'session']
     // }
-
 
     server.auth.default('session');
 
@@ -93,41 +100,6 @@ const after = function (server) {
                 }
             }
         },
-        */
-
-        {
-            method: 'POST',
-            path: '/tenant/login',
-            options: {
-                auth: false,
-                description: 'Authenticates a Tenant and returns a JWT',
-                validate: {
-                    payload: TenantCtrl.getAuthSchema()
-                },
-                handler: (request, h) => {
-                    return TenantCtrl.loginHandler(request, h);
-                }
-            }
-        },
-        {
-            method: 'POST',
-            path: '/tenant/refresh',
-            options: {
-                auth: false,
-                cors: {
-                    credentials: true // so cookies can be accepted
-                },
-                description: 'Returns a new refresh token',
-                validate: {
-                    payload: TenantCtrl.getRefreshSchema()
-                },
-                handler: (request, h) => {
-                    return TenantCtrl.loginHandler(request, h);
-                }
-            }
-        },
-
-        /*
         {
             method: 'POST',
             path: '/tenant',

@@ -6,15 +6,6 @@ const coreController = require('./coreController');
 
 const after = function(server) {
     const routes = [
-        // {
-        //     method: 'GET',
-        //     path: '/api/v1/jwt',
-        //     options: {
-        //         auth: false,
-        //         description: 'Returns the client token',
-        //         handler: coreController.getClientJwtHandler
-        //     }
-        // },
         {
             method: 'POST',
             path: '/api/v1/logger',

@@ -1,4 +1,6 @@
 const CoreService = require('../../plugins/core/core.service');
+const { cryptPassword } = require('../../helpers.service');
+
 exports.seed = (knex) => {
     return knex(CoreService.DB_TABLES.tenants)
         .del()
@@ -11,7 +13,7 @@ exports.seed = (knex) => {
 
                 return knex(CoreService.DB_TABLES.tenants).insert({
                     id: '11111111-1111-1111-1111-111111111111',
-                    password: '$2b$10$hyvqFDIVH03o6vA4trlJP.sKtUP/NDjQQaCF1oBKSa7OwLFsKpnD.',
+                    api_key: cryptPassword('68d774a2cb623ff256caf5249b7f6b72fc24ce9c190d56763a5701e7dc6d4030'),
                     application_name: 'BreadVan',
                     application_url: 'goBreadVan.com',
                     active: true,

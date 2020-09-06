@@ -12,7 +12,7 @@ const after = function (server) {
             options: {
                 description: 'Returns payment data for a given id',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 validate: {
                     query: {
@@ -36,7 +36,7 @@ const after = function (server) {
             options: {
                 description: 'Creates a packing slip for a given payment ID',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 validate: {
                     payload: Joi.object({
@@ -74,7 +74,7 @@ const after = function (server) {
             options: {
                 description: 'Gets a shipping label for a given payment ID',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 validate: {
                     query: Joi.object({

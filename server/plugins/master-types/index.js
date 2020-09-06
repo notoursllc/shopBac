@@ -10,7 +10,7 @@ const after = function (server) {
             options: {
                 description: 'Gets a list of master types',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 handler: (request, h) => {
                     return MasterTypeCtrl.getPageHandler(request, null, h);
@@ -23,7 +23,7 @@ const after = function (server) {
             options: {
                 description: 'Gets a list of master types',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 handler: (request, h) => {
                     return MasterTypeCtrl.getAllHandler(request, null, h);

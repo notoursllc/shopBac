@@ -42,7 +42,7 @@ exports.plugin = {
                         options: {
                             description: 'Gets a list of products',
                             auth: {
-                                strategies: ['jwt', 'session']
+                                strategies: ['storeauth', 'session']
                             },
                             handler: (request, h) => {
                                 return ProductCtrl.getPageHandler(request, h);
@@ -55,7 +55,7 @@ exports.plugin = {
                         options: {
                             description: 'Finds a product by ID',
                             auth: {
-                                strategies: ['jwt', 'session']
+                                strategies: ['storeauth', 'session']
                             },
                             validate: {
                                 query: {
@@ -425,7 +425,7 @@ exports.plugin = {
                         path: '/product/share', // NOTE: no routePrefix on this one
                         options: {
                             auth: {
-                                strategies: ['jwt', 'session']
+                                strategies: ['storeauth', 'session']
                             },
                             validate: {
                                 query: {
@@ -443,7 +443,7 @@ exports.plugin = {
                         options: {
                             description: 'Returns general info about products',
                             auth: {
-                                strategies: ['jwt', 'session']
+                                strategies: ['storeauth', 'session']
                             },
                             handler: (request, h) => {
                                 return ProductCtrl.productInfoHandler(request, h);
@@ -473,7 +473,7 @@ exports.plugin = {
                         path: '/sitemap.xml', // NOTE: no routePrefix on this one
                         options: {
                             auth: {
-                                strategies: ['jwt', 'session']
+                                strategies: ['storeauth', 'session']
                             }
                         },
                         handler: (request, h) => {

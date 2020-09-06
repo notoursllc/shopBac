@@ -19,7 +19,7 @@ exports.plugin = {
                         options: {
                             description: 'Finds a media object by ID',
                             auth: {
-                                strategies: ['jwt', 'session']
+                                strategies: ['storeauth', 'session']
                             },
                             validate: {
                                 query: {

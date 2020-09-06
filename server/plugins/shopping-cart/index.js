@@ -13,7 +13,7 @@ const after = function (server) {
             options: {
                 description: 'Finds the cart for the given jwt user',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 pre: [
                     { method: ShoppingCartController.pre_cart, assign: 'm1' }
@@ -27,7 +27,7 @@ const after = function (server) {
             options: {
                 description: 'Adds a new item to the cart',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 validate: {
                     payload: Joi.object({
@@ -47,7 +47,7 @@ const after = function (server) {
             options: {
                 description: 'Removes an item from the cart',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 validate: {
                     query: Joi.object({
@@ -66,7 +66,7 @@ const after = function (server) {
             options: {
                 description: 'Updates the quantity of a shopping cart item (ShoppingCartItem model)',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 validate: {
                     payload: Joi.object({
@@ -86,7 +86,7 @@ const after = function (server) {
             options: {
                 description: 'Sets the shipping address for the cart, calculates the sales tax, and gets shipping rate',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 validate: {
                     payload: Joi.reach(ShoppingCartController.getShoppingCartModelSchema(), 'shipping')
@@ -103,7 +103,7 @@ const after = function (server) {
             options: {
                 description: 'Gets a list of shipping rates for the cart',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 pre: [
                     { method: ShoppingCartController.pre_cart, assign: 'm1' }
@@ -117,7 +117,7 @@ const after = function (server) {
             options: {
                 description: 'Sets the selected shipping rate for the cart',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 validate: {
                     payload: Joi.reach(ShoppingCartController.getShoppingCartModelSchema(), 'shipping_rate')
@@ -134,7 +134,7 @@ const after = function (server) {
             options: {
                 description: 'Complete the transaction',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 validate: {
                     // NOTE: shipping is not required here because the 'cart/shipping/address' route
@@ -210,7 +210,7 @@ const after = function (server) {
             options: {
                 description: 'Returns 404 response',
                 auth: {
-                    strategies: ['jwt', 'session']
+                    strategies: ['storeauth', 'session']
                 },
                 handler: (request, h) => {
                     throw Boom.notFound();

@@ -1,13 +1,8 @@
 const Joi = require('@hapi/joi');
-const Boom = require('@hapi/boom');
 // const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const uuid = require('uuid/v4');
 const owasp = require('owasp-password-strength-test');
-const isObject = require('lodash.isobject');
 const TenantBaseCtrl = require('./TenantBaseCtrl');
-const { cryptPassword } = require('../../../helpers.service');
 
 
 owasp.config({
@@ -27,28 +22,6 @@ class TenantCtrl extends TenantBaseCtrl {
     }
 
 
-    getAuthSchema() {
-        return {
-            id: Joi.string().max(100).required(),
-            password: Joi.string().max(100).required()
-        };
-    }
-
-    getRefreshSchema() {
-        return {
-            id: Joi.string().max(100).required(),
-            // refresh_token: Joi.string().required()
-        };
-    }
-
-    getCreateSchema() {
-        return {
-            password: Joi.string().max(100).required(),
-            application_name: Joi.string().max(100),
-            application_url: Joi.string().max(100)
-        };
-    }
-
     getSchema() {
         return {
             id: Joi.string().max(100).required(),
@@ -59,141 +32,15 @@ class TenantCtrl extends TenantBaseCtrl {
         };
     }
 
-    /**
-     * This method is called by the client when he wants to receive a new JWT
-     *
-     * @param {*} request
-     * @param {*} h
-     */
-    async loginHandler(request, h) {
-        let Tenant;
 
-        global.logger.info('REQUEST: TenantCtrl.loginHandler', {
-            meta: {
-                state: request.state,
-                payload: request.payload
-            }
-        });
-
-        try {
-            Tenant = await this.modelForgeFetch(
-                { id: request.payload.id },
-                null
-            );
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-            throw Boom.badRequest(err);
-        }
-
-        let isMatch = false;
-
-        if(Tenant) {
-            if(request.payload.hasOwnProperty('password')) {
-                isMatch = bcrypt.compareSync(request.payload.password, Tenant.get('password'));
-            }
-            else {
-                // get the refresh token from cookie (request.state)
-                const refreshTokenFromCookie = Array.isArray(request.state.bvrt) ? request.state.bvrt[request.state.bvrt.length - 1] : request.state.bvrt;
-                isMatch = bcrypt.compareSync(refreshTokenFromCookie, Tenant.get('refresh_token'));
-            }
-        }
-
-        if(!Tenant || !isMatch) {
-            throw Boom.unauthorized();
-        }
-
-        try {
-            const authToken = this.createJwtToken(Tenant);
-            const refreshToken = uuid();
-
-            // return the refresh token in a httpOnly cookie
-            h.state(
-                'bvrt',
-                refreshToken,
-                {
-                    ttl: null,
-                    isSecure: process.env.NODE_ENV === 'production',
-                    isHttpOnly: true,
-                    clearInvalid: true,
-                    strictHeader: false,
-                    path: '/'
-                }
-            );
-
-            await this.upsertModel({
-                id: Tenant.get('id'),
-                refresh_token: cryptPassword(refreshToken) // hashing the refresh token for better security
-            });
-
-            return h.apiSuccess({
-                authToken
-            });
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-            throw Boom.badRequest(err);
-        }
+    getCreateSchema() {
+        return {
+            password: Joi.string().max(100).required(),
+            application_name: Joi.string().max(100),
+            application_url: Joi.string().max(100)
+        };
     }
 
-
-    async validateJwtKey(decoded, request) {
-        // if (request.plugins['hapi-auth-jwt2']) {
-        //     decoded.extraInfo = request.plugins['hapi-auth-jwt2'].extraInfo;
-        // }
-
-        // console.log(" - - - - - - - decoded token:");
-        // console.log(decoded);
-        // console.log(" - - - - - - - request info:");
-        // console.log(request.info);
-        // console.log(" - - - - - - - user agent:");
-        // console.log(request.headers['user-agent']);
-
-        let isValid = false;
-
-        if(!isObject(decoded) || !decoded.tenant_id) {
-            return {
-                isValid: false
-            };
-        }
-
-        // try getting from cache first, so we don't have to call the DB every time
-        if(this.validTenantCache[decoded.tenant_id] && this.validTenantCache[decoded.tenant_id] > new Date().getTime()) {
-            isValid = true;
-            global.logger.info('validateJwtKey - IS VALID FROM CACHE', this.validTenantCache);
-        }
-        // else look up the tenant from the DB, and if active,
-        // set as valid and update the cache
-        else {
-            try {
-                const Tenant = await this.modelForgeFetch(
-                    { id: decoded.tenant_id },
-                    null
-                );
-
-                if(Tenant
-                    && Tenant.get('id') === decoded.tenant_id
-                    && Tenant.get('active')) {
-                    isValid = true;
-                    // this.validTenantCache[decoded.id] = new Date().getTime() + (60 * 10 * 1000); // now + 10 minutes
-                    this.validTenantCache[decoded.tenant_id] = new Date().getTime() + (30 * 1000); // now + 30 seconds
-                    global.logger.info('validateJwtKey - IS VALID FROM DB - UPDATING CACHE', this.validTenantCache);
-                }
-            }
-            catch(err) {
-                global.logger.error(err);
-            }
-        }
-
-        // isValid is the only required field needed in the resposne obejct
-        // you can add other stuff too which will be available to the route handler for its own use (tenant ID?)
-        return {
-            isValid,
-            decoded
-        };
-    };
 
     // async createHandler(request, h) {
     //     const Tenant = await this.getByEmail(request.payload.email);
@@ -227,22 +74,54 @@ class TenantCtrl extends TenantBaseCtrl {
     // }
 
 
-    /**
-     * Sign the JWT
-     */
-    createJwtToken(Tenant) {
-        // For now I think all I need is the tenant id in the token
-        return jwt.sign(
-            {
-                tenant_id: Tenant.get('id')
-            },
-            process.env.JWT_TOKEN_SECRET,
-            {
-                algorithm: 'HS256',
-                expiresIn: process.env.JWT_TOKEN_EXPIRES_IN_SECONDS ? parseInt(process.env.JWT_TOKEN_EXPIRES_IN_SECONDS, 10) : 120 // expressed in seconds or a string describing a time span (https://www.npmjs.com/package/jsonwebtoken)
+    async storeAuthIsValid(tenant_id, api_key) {
+        global.logger.info('REQUEST: TenantCtrl:storeAuthIsValid', {
+            meta: {
+                tenant_id,
+                api_key
             }
-        );
+        });
+
+        if (!tenant_id || !api_key) {
+            global.logger.info('TenantCtrl:storeAuthIsValid - FAILED');
+            return false;
+        }
+
+        const Tenant = await this.modelForgeFetch({
+            id: tenant_id,
+            active: true
+        });
+
+        if(!Tenant) {
+            global.logger.info('TenantCtrl:storeAuthIsValid - FAILED - no Tenant found');
+            return false;
+        }
+
+        const tenantApiKey = Tenant.get('api_key');
+
+        if(!tenantApiKey) {
+            global.logger.info('TenantCtrl:storeAuthIsValid - FAILED - Tenant does not have an API key');
+            return false;
+        }
+
+        const isValid = await bcrypt.compare(api_key, tenantApiKey);
+
+        if(!isValid) {
+            global.logger.info('TenantCtrl:storeAuthIsValid - FAILED - api key does not match hash');
+            return false;
+        }
+
+        const tenantJson = Tenant.toJSON();
+
+        global.logger.info('TenantCtrl:storeAuthIsValid - SUCCESS', {
+            meta: {
+                tenant: tenantJson
+            }
+        });
+
+        return tenantJson;
     }
+
 }
 
 

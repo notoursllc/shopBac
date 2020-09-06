@@ -10,8 +10,7 @@ module.exports = function (baseModel, bookshelf) {
 
         visible: [
             'id',
-            'email',
-            'refresh_token',
+            'api_key',
             'application_name',
             'application_url',
             'active',
