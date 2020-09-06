@@ -142,7 +142,7 @@ exports.plugin = {
 
 
         server.ext('onPostAuth', (request, h) => {
-            global.logger.info('onPostAuth: Adding tenant_id to request', {
+            global.logger.debug('onPostAuth: Adding tenant_id to request', {
                 meta: {
                     'request.auth.credentials': request.auth.credentials
                 }
