@@ -4,6 +4,13 @@ const isDev = process.env.NODE_ENV === 'development';
 module.exports = {
     mode: 'spa',
 
+    vue: {
+        config: {
+            productionTip: true,
+            devtools: isDev
+        }
+    },
+
     /*
     ** Headers of the page
     */
