@@ -3,6 +3,7 @@ const path = require('path');
 const Config = require('./config');
 
 const routePrefix = '/api/v1';
+const corsOrigins = process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',').map(url => url.trim()) : ['*'];
 
 const webManifest = {
     server: {
@@ -10,8 +11,8 @@ const webManifest = {
         port: Config.get('/port/server'),
         routes: {
             cors: {
-                // origin: process.env.NODE_ENV === 'production' ? process.env.CORS_ORIGINS.split(',').map(url => url.trim()) : ['*']
-                origin: ['*']
+                origin: corsOrigins,
+                credentials: true
             },
             validate: {
                 failAction: (request, h, err) => {
