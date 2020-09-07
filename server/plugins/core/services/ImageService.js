@@ -1,6 +1,5 @@
 const FileType = require('file-type');
 const isObject = require('lodash.isobject');
-const Jimp = require('jimp');
 const Hoek = require('@hapi/hoek');
 const uuidV4 = require('uuid/v4');
 const sharp = require('sharp');
@@ -147,48 +146,6 @@ async function resizeImageBuffer(buffer, options, saveResult) {
 
     return response;
 }
-
-
-
-// async function resizeImageBuffer(buffer, options, saveResult) {
-//     const imageType = await bufferIsImage(buffer);
-
-//     console.log("RESIZE IMAGE TYPE", imageType)
-
-//     if(!imageType) {
-//         throw new Error('File type must be one of: ' + imageMimeTypeWhiteList.join(','));
-//     }
-
-//     const settings = Hoek.applyToDefaults(
-//         {
-//             width: 600,
-//             height: Jimp.AUTO,
-//             quality: 60,
-//             returnBase64: false,
-//             returnBuffer: false
-//         },
-//         options || {}
-//     );
-
-//     const img = await Jimp.read(buffer);
-//     const mimeType = img.getMIME();
-//     const j = img.resize(settings.width, settings.height).quality(settings.quality);
-
-//     const imageResultBuffer = await j.getBufferAsync(mimeType);
-
-//     imageType.width = settings.width;
-//     imageType.height = settings.height;
-//     imageType.image_url = saveResult ? await StorageService.writeBuffer(imageResultBuffer, `${uuidV4()}.${imageType.ext}`) : null;
-
-//     if(settings.returnBase64) {
-//         imageType.result = await j.getBase64Async(mimeType);
-//     }
-//     else if(settings.returnBuffer) {
-//         imageType.result = imageResultBuffer;
-//     }
-
-//     return imageType;
-// }
 
 
 module.exports.resizeBase64ToMultipleImages = resizeBase64ToMultipleImages;
