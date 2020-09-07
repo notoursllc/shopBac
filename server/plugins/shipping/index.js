@@ -10,7 +10,7 @@ const after = function (server) {
             options: {
                 description: 'Validates an address',
                 validate: {
-                    payload: {
+                    payload: Joi.object({
                         name: Joi.string(),
                         company: Joi.string().allow(null),
                         street1: Joi.string().required(),
@@ -20,7 +20,7 @@ const after = function (server) {
                         state: Joi.string().required(),
                         zip: Joi.string().required(),
                         country: Joi.string().max(3).regex(/^[A-z]+$/).required()
-                    }
+                    })
                 },
                 handler: ShippingCtrl.validateAddress
             }
@@ -42,9 +42,9 @@ const after = function (server) {
             options: {
                 description: 'Finds a package type by ID',
                 validate: {
-                    query: {
+                    query: Joi.object({
                         id: Joi.string().uuid()
-                    }
+                    })
                 },
                 handler: (request, h) => {
                     return ShippingCtrl.getByIdHandler(request, h);

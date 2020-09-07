@@ -31,7 +31,6 @@ const webManifest = {
     register: {
         plugins: [
             { plugin: '@hapi/inert' },
-            { plugin: '@hapi/vision' },
             { plugin: '@hapi/cookie' },
             { plugin: '@hapi/basic' },
             {

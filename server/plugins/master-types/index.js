@@ -52,7 +52,9 @@ const after = function (server) {
             options: {
                 description: 'Adds a new master type',
                 validate: {
-                    payload: MasterTypeCtrl.getSchema()
+                    payload: Joi.object({
+                        ...MasterTypeCtrl.getSchema()
+                    })
                 },
                 handler: (request, h) => {
                     return MasterTypeCtrl.upsertHandler(request, h);

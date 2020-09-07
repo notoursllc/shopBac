@@ -186,7 +186,6 @@ function getBasicManifest() {
         register: {
             plugins: [
                 { plugin: '@hapi/inert' },
-                { plugin: '@hapi/vision' },
                 { plugin: './plugins/logger' },
                 {
                     plugin: './plugins/bookshelf-orm',

@@ -29,13 +29,13 @@ class TenantMemberCtrl extends TenantBaseCtrl {
     }
 
     // getSchema() {
-    //     return {
+    //     return Joi.object({
     //         id: Joi.string().max(100).required(),
     //         password: Joi.string().max(100).required(),
     //         active: Joi.boolean().default(true),
     //         created_at: Joi.date(),
     //         updated_at: Joi.date()
-    //     };
+    //     });
     // }
 
     /**

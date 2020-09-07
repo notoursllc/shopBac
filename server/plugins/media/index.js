@@ -22,10 +22,10 @@ exports.plugin = {
                                 strategies: ['storeauth', 'session']
                             },
                             validate: {
-                                query: {
+                                query: Joi.object({
                                     id: Joi.string().uuid(),
                                     tenant_id: Joi.string().uuid()
-                                }
+                                })
                             },
                             handler: (request, h) => {
                                 return MediaCtrl.getByIdHandler(request, h);
@@ -44,11 +44,11 @@ exports.plugin = {
                                 maxBytes: payloadMaxBytes
                             },
                             validate: {
-                                payload: {
+                                payload: Joi.object({
                                     file: Joi.object(),
                                     tenant_id: Joi.string().uuid()
                                     // ...MediaCtrl.getSchema()
-                                }
+                                })
                             },
                             handler: (request, h) => {
                                 return MediaCtrl.upsertHandler(request, h);
@@ -61,7 +61,9 @@ exports.plugin = {
                     //     options: {
                     //         description: 'Creates/uploads a media resource',
                     //         validate: {
-                    //             payload: MediaCtrl.getSchema()
+                    //             payload: Joi.object({
+                    //                 ...MediaCtrl.getSchema()
+                    //             })
                     //         },
                     //         handler: (request, h) => {
                     //             return MediaCtrl.upsertHandler(request, h);

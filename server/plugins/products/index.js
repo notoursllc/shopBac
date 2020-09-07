@@ -21,20 +21,6 @@ exports.plugin = {
 
                 const payloadMaxBytes = process.env.ROUTE_PAYLOAD_MAXBYTES || 10485760; // 10MB (1048576 (1 MB) is the default)
 
-                // Yes this was aleady set in the Core plugin, but apparently
-                // it must be set in every plugin that needs a view engine:
-                // https://github.com/hapijs/vision/issues/94
-                server.views({
-                    engines: {
-                        html: require('handlebars')
-                    },
-                    // path: path.resolve(__dirname, '../../..')
-                    path: path.resolve(__dirname, '../../../dist')
-                    // path: '../../../dist/views',
-                    // partialsPath: '../../views/partials',
-                    // relativeTo: __dirname // process.cwd() // prefer this over __dirname when compiling to dist/cjs and using rollup
-                });
-
                 server.route([
                     {
                         method: 'GET',
@@ -58,11 +44,11 @@ exports.plugin = {
                                 strategies: ['storeauth', 'session']
                             },
                             validate: {
-                                query: {
+                                query: Joi.object({
                                     id: Joi.string().uuid(),
                                     tenant_id: Joi.string().uuid(),
                                     viewAllRelated: Joi.boolean().optional()
-                                }
+                                })
                             },
                             handler: (request, h) => {
                                 return ProductCtrl.getByIdHandler(request, h);
@@ -75,7 +61,9 @@ exports.plugin = {
                         options: {
                             description: 'Creates a product',
                             validate: {
-                                payload: ProductCtrl.getSchema()
+                                payload: Joi.object({
+                                    ...ProductCtrl.getSchema()
+                                })
                             },
                             handler: (request, h) => {
                                 return ProductCtrl.upsertHandler(request, h);
@@ -91,13 +79,14 @@ exports.plugin = {
                         options: {
                             description: 'Updates a product',
                             validate: {
-                                payload: ProductCtrl.getSchema(true)
+                                payload: Joi.object({
+                                    ...ProductCtrl.getSchema(true)
+                                })
                             },
                             handler: (request, h) => {
                                 return ProductCtrl.upsertHandler(request, h);
                             },
                             payload: {
-
                                 maxBytes: payloadMaxBytes
                             }
                         }
@@ -199,10 +188,10 @@ exports.plugin = {
                         options: {
                             description: 'Finds a SKU variant by ID',
                             validate: {
-                                query: {
+                                query: Joi.object({
                                     id: Joi.string().uuid(),
                                     tenant_id: Joi.string().uuid()
-                                }
+                                })
                             },
                             handler: (request, h) => {
                                 return ProductSkuVariantTypeCtrl.getByIdHandler(request, h);
@@ -215,7 +204,9 @@ exports.plugin = {
                         options: {
                             description: 'Add a SKU variant',
                             validate: {
-                                payload: ProductSkuVariantTypeCtrl.getSchema()
+                                payload: Joi.object({
+                                    ...ProductSkuVariantTypeCtrl.getSchema()
+                                })
                             },
                             handler: (request, h) => {
                                 return ProductSkuVariantTypeCtrl.upsertHandler(request, h);
@@ -290,7 +281,9 @@ exports.plugin = {
                         options: {
                             description: 'Adds a new product collection',
                             validate: {
-                                payload: ProductCollectionCtrl.getSchema()
+                                payload: Joi.object({
+                                    ...ProductCollectionCtrl.getSchema()
+                                })
                             },
                             handler: (request, h) => {
                                 return ProductCollectionCtrl.upsertHandler(request, h);
@@ -376,7 +369,9 @@ exports.plugin = {
                         options: {
                             description: 'Adds a new product data table',
                             validate: {
-                                payload: ProductDataTableCtrl.getSchema()
+                                payload: Joi.object({
+                                    ...ProductDataTableCtrl.getSchema()
+                                })
                             },
                             handler: (request, h) => {
                                 return ProductDataTableCtrl.upsertHandler(request, h);
@@ -428,9 +423,9 @@ exports.plugin = {
                                 strategies: ['storeauth', 'session']
                             },
                             validate: {
-                                query: {
+                                query: Joi.object({
                                     uri: Joi.string()
-                                }
+                                })
                             }
                         },
                         handler: (request, h) => {

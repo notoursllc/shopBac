@@ -89,7 +89,9 @@ const after = function (server) {
                     strategies: ['storeauth', 'session']
                 },
                 validate: {
-                    payload: Joi.reach(ShoppingCartController.getShoppingCartModelSchema(), 'shipping')
+                    payload: Joi.object({
+                        ...ShoppingCartController.getShippingAttributesSchema()
+                    })
                 },
                 pre: [
                     { method: ShoppingCartController.pre_cart, assign: 'm1' }
@@ -120,7 +122,9 @@ const after = function (server) {
                     strategies: ['storeauth', 'session']
                 },
                 validate: {
-                    payload: Joi.reach(ShoppingCartController.getShoppingCartModelSchema(), 'shipping_rate')
+                    payload: Joi.object({
+                        shipping_rate: Joi.object().unknown()
+                    })
                 },
                 pre: [
                     { method: ShoppingCartController.pre_cart, assign: 'm1' }
@@ -139,11 +143,10 @@ const after = function (server) {
                 validate: {
                     // NOTE: shipping is not required here because the 'cart/shipping/address' route
                     // should have been called before this route, which persists the shipping info.
-                    payload: Object.assign(
-                        {},
-                        { nonce: Joi.string().trim().required() },
-                        ShoppingCartController.getBillingAttributesSchema()
-                    )
+                    payload: Joi.object({
+                        nonce: Joi.string().trim().required(),
+                        ...ShoppingCartController.getBillingAttributesSchema()
+                    })
                 },
                 pre: [
                     { method: ShoppingCartController.pre_cart, assign: 'm1' }

@@ -15,9 +15,9 @@ const after = function (server) {
                     strategies: ['storeauth', 'session']
                 },
                 validate: {
-                    query: {
+                    query: Joi.object({
                         id: Joi.string().max(50),
-                    }
+                    })
                 },
                 handler: PaymentController.getPaymentHandler
             }

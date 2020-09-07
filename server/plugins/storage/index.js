@@ -16,9 +16,9 @@ const after = function (server) {
                     maxBytes: 7 * 1000 * 1000  // 7MB
                 },
                 validate: {
-                    payload: {
+                    payload: Joi.object({
                         file: Joi.object()
-                    }
+                    })
                 },
                 handler: (request, h) => {
                     return StorageCtrl.uploadImageHandler(request, h);
