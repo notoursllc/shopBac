@@ -1,5 +1,4 @@
 const Boom = require('@hapi/boom');
-const path = require('path');
 const Config = require('./config');
 
 const routePrefix = '/api/v1';
@@ -31,10 +30,6 @@ const webManifest = {
     },
     register: {
         plugins: [
-            {
-                plugin: '@nuxtjs/hapi',
-                options: path.resolve(__dirname, '../../nuxt.config.js')
-            },
             { plugin: '@hapi/inert' },
             { plugin: '@hapi/vision' },
             { plugin: '@hapi/cookie' },

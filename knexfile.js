@@ -1,6 +1,7 @@
-require('dotenv').config(
-    process.env.NODE_ENV === 'production' ? { path: '/etc/secrets/.env' } : null
-);
+if(process.env.NODE_ENV === 'development') {
+    require('dotenv').config();
+}
+
 
 const cloneDeep = require('lodash.clonedeep');
 

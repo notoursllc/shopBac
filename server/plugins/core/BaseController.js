@@ -105,7 +105,7 @@ class BaseController {
         try {
             const ModelInstance = await this.deleteModel(
                 request.query.id,
-                this.getTenantIdFromAuthFromAuth(request)
+                this.getTenantIdFromAuth(request)
             );
 
             if(!ModelInstance) {

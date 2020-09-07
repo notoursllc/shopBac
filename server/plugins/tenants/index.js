@@ -11,10 +11,14 @@ const after = function (server) {
         // https://hapi.dev/module/cookie/api/?v=11.0.1
         cookie: {
             name: 'bv_session',
-            password: process.env.ADMIN_JWT_TOKEN_SECRET,
+            password: process.env.SESSION_COOKIE_PASSWORD,
             isSecure: process.env.NODE_ENV === 'production',
+            isHttpOnly: true,
+            isSameSite: false,
+            // domain: 'localhost',
             path: '/',
-            clearInvalid: true
+            // clearInvalid: true
+            clearInvalid: false
         },
         // redirectTo: '/login',
         validateFunc: async (request, session) => {

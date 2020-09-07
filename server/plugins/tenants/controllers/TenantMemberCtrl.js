@@ -67,7 +67,9 @@ class TenantMemberCtrl extends TenantBaseCtrl {
             // cookieAuth is a decoration added by the Hapi "cookie" module to set a session cookie:
             // https://hapi.dev/module/cookie/api/?v=11.0.1
             // The cookie content (the object sent to cookieAuth.set) will be encrypted.
-            request.cookieAuth.set({ id: TenantMember.get('id') });
+            request.cookieAuth.set({
+                id: TenantMember.get('id')
+            });
 
             global.logger.info('RESPONSE: TenantMemberCtrl.loginHandler - set cookie', {
                 meta: {
