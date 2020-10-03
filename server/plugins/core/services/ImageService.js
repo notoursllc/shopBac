@@ -121,10 +121,10 @@ async function resizeImageBuffer(buffer, options, saveResult) {
         options || {}
     );
 
-    let sharpResult = await sharp(buffer)
-        .resize(
-            { width: settings.width }
-        );
+    let sharpResult = await sharp(buffer).resize({
+        width: settings.width,
+        withoutEnlargement: true
+    });
 
     if(imageType.mime === 'image/jpeg') {
         sharpResult = await sharpResult.jpeg({
@@ -132,19 +132,27 @@ async function resizeImageBuffer(buffer, options, saveResult) {
         });
     }
 
-    sharpResult = await sharpResult.toBuffer();
+    // sharpResult = await sharpResult.toBuffer();
+    // console.log("SHARP RESULT", sharpResult)
 
-    const url = saveResult
-        ? await StorageService.writeBuffer(sharpResult, `${uuidV4()}.${imageType.ext}`)
-        : null;
+    // NOTE: in order to access the 'info' property from the .toBuffer respose
+    // you need a .then function
+    // https://sharp.pixelplumbing.com/api-output#tobuffer
+    const toBufferResult = await sharpResult
+        .toBuffer({ resolveWithObject: true })
+        .then(async ({ data, info }) => {
+            return {
+                width: info.width,
+                height: info.height,
+                url: saveResult ? await StorageService.writeBuffer(data, `${uuidV4()}.${imageType.ext}`) : null,
+                ...imageType
+            };
+        })
+        .catch(err => {
+            throw err;
+        });
 
-    const response = {
-        width: settings.width,
-        url: url,
-        ...imageType
-    };
-
-    return response;
+    return toBufferResult;
 }
 
 

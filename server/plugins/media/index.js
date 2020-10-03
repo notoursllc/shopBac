@@ -41,7 +41,8 @@ exports.plugin = {
                                 output: 'stream',
                                 parse: true,
                                 allow: 'multipart/form-data',
-                                maxBytes: payloadMaxBytes
+                                maxBytes: payloadMaxBytes,
+                                multipart: true
                             },
                             validate: {
                                 payload: Joi.object({

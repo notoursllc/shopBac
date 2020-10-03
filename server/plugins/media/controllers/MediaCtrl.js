@@ -81,8 +81,9 @@ class MediaCtrl extends BaseController {
             resizeBufferToMultipleImages(
                 File._data,
                 [
-                    { width: 600 },
-                    { width: 1000 },
+                    // { width: 600 },
+                    // { width: 1000 },
+                    { width: 1800 },
                     { width: 75 }
                 ],
                 true
