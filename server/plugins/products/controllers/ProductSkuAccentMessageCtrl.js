@@ -2,18 +2,17 @@ const Joi = require('@hapi/joi');
 const BaseController = require('../../core/BaseController');
 
 
-class ProductDataTableCtrl extends BaseController {
+class ProductSkuAccentMessageCtrl extends BaseController {
 
     constructor(server) {
-        super(server, 'ProductDataTable');
+        super(server, 'ProductSkuAccentMessage');
     }
 
 
     getSchema() {
         return {
             tenant_id: Joi.string().uuid(),
-            name: Joi.string().max(100).required(),
-            table_data: Joi.object().allow(null),
+            message: Joi.string().max(100).required(),
             created_at: Joi.date(),
             updated_at: Joi.date()
         };
@@ -21,4 +20,4 @@ class ProductDataTableCtrl extends BaseController {
 
 }
 
-module.exports = ProductDataTableCtrl;
+module.exports = ProductSkuAccentMessageCtrl;

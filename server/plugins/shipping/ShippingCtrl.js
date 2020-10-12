@@ -29,24 +29,6 @@ class ShippingCtrl extends BaseController {
     }
 
 
-    /**
-     * Route handler for getting a ProductVariation by ID
-     *
-     * @param {*} request
-     * @param {*} h
-     */
-    getByIdHandler(request, h) {
-        return this.modelForgeFetchHandler(
-            {
-                id: request.query.id,
-                tenant_id: this.getTenantIdFromAuth(request)
-            },
-            null,
-            h
-        );
-    }
-
-
     async validateAddress(request, h) {
         try {
             global.logger.info(`REQUEST: ShippingCtrl.validateAddress`, {

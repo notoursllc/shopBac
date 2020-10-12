@@ -47,7 +47,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return ShippingCtrl.getByIdHandler(request, h);
+                    return ShippingCtrl.getByIdHandler(request, null, h);
                 }
             }
         },

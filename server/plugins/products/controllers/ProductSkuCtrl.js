@@ -60,6 +60,11 @@ class ProductSkuCtrl extends BaseController {
             // SPEC TABLE
             data_table: Joi.alternatives().try(Joi.object(), Joi.string(), Joi.allow(null)),
 
+            // ACCENT MESSAGE
+            accent_message_id: Joi.alternatives().try(Joi.string().uuid(), Joi.allow(null)),
+            accent_message_begin: Joi.alternatives().try(Joi.date(), Joi.allow(null)),
+            accent_message_end: Joi.alternatives().try(Joi.date(), Joi.allow(null)),
+
             // TIMESTAMPS
             created_at: Joi.date(),
             updated_at: Joi.date()

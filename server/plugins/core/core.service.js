@@ -34,6 +34,7 @@ const DB_TABLES = {
     product_skus: 'product_skus',
     product_sku_images: 'product_sku_images',
     product_sku_variant_types: 'product_sku_variant_types',
+    product_sku_accent_messages: 'product_sku_accent_messages',
     product_data_tables: 'product_data_tables',
     products: 'products',
     product_images: 'product_images',

@@ -28,18 +28,6 @@ class MediaCtrl extends BaseController {
     }
 
 
-    getByIdHandler(request, h) {
-        return this.modelForgeFetchHandler(
-            {
-                id: request.query.id,
-                tenant_id: this.getTenantIdFromAuth(request)
-            },
-            null,
-            h
-        );
-    }
-
-
     async upsertHandler(request, h) {
         try {
             const tenant_id = this.getTenantIdFromAuth(request);

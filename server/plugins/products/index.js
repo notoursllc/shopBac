@@ -1,6 +1,4 @@
 const Joi = require('@hapi/joi');
-const path = require('path');
-
 
 
 exports.plugin = {
@@ -16,6 +14,7 @@ exports.plugin = {
                 const ProductSkuCtrl = new (require('./controllers/ProductSkuCtrl'))(server);
                 const ProductSkuImageCtrl = new (require('./controllers/ProductSkuImageCtrl'))(server);
                 const ProductSkuVariantTypeCtrl = new (require('./controllers/ProductSkuVariantTypeCtrl'))(server);
+                const ProductSkuAccentMessageCtrl = new (require('./controllers/ProductSkuAccentMessageCtrl'))(server);
                 const ProductCollectionCtrl = new (require('./controllers/ProductCollectionCtrl'))(server);
                 const ProductDataTableCtrl = new (require('./controllers/ProductDataTableCtrl'))(server);
 
@@ -51,7 +50,11 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductCtrl.getByIdHandler(request, h);
+                                return ProductCtrl.getByIdHandler(
+                                    request,
+                                    { withRelated: ProductCtrl.getWithRelated() },
+                                    h
+                                );
                             }
                         }
                     },
@@ -194,7 +197,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductSkuVariantTypeCtrl.getByIdHandler(request, h);
+                                return ProductSkuVariantTypeCtrl.getByIdHandler(request, null, h);
                             }
                         }
                     },
@@ -246,6 +249,98 @@ exports.plugin = {
                         }
                     },
 
+
+                    /******************************
+                     * Product SKU Accent Messages
+                     ******************************/
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/sku/accent_messages`,
+                        options: {
+                            description: 'Gets a list of product SKU accent messages',
+                            handler: (request, h) => {
+                                return ProductSkuAccentMessageCtrl.getPageHandler(request, null, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/sku/accent_messages/all`,
+                        options: {
+                            description: 'Gets a list of product SKU accent messages',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            handler: (request, h) => {
+                                return ProductSkuAccentMessageCtrl.getAllHandler(request, null, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/sku/accent_message`,
+                        options: {
+                            description: 'Gets a product SKU accent message by ID',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductSkuAccentMessageCtrl.getByIdHandler(request, null, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'POST',
+                        path: `${routePrefix}/product/sku/accent_message`,
+                        options: {
+                            description: 'Adds a new product SKU accent message',
+                            validate: {
+                                payload: Joi.object({
+                                    ...ProductSkuAccentMessageCtrl.getSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductSkuAccentMessageCtrl.upsertHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'PUT',
+                        path: `${routePrefix}/product/sku/accent_message`,
+                        options: {
+                            description: 'Updates a product SKU accent message',
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    ...ProductSkuAccentMessageCtrl.getSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductSkuAccentMessageCtrl.upsertHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'DELETE',
+                        path: `${routePrefix}/product/sku/accent_message`,
+                        options: {
+                            description: 'Deletes a product SKU accent message',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductSkuAccentMessageCtrl.deleteHandler(request, h);
+                            }
+                        }
+                    },
+
+
                     /******************************
                      * Product Collections
                      ******************************/
@@ -271,7 +366,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductCollectionCtrl.getByIdHandler(request, h);
+                                return ProductCollectionCtrl.getByIdHandler(request, null, h);
                             }
                         }
                     },
@@ -359,7 +454,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductDataTableCtrl.getByIdHandler(request, h);
+                                return ProductDataTableCtrl.getByIdHandler(request, null, h);
                             }
                         }
                     },
@@ -499,6 +594,11 @@ exports.plugin = {
                 server.app.bookshelf.model(
                     'ProductSkuImage',
                     require('./models/ProductSkuImage')(baseModel, server.app.bookshelf, server)
+                );
+
+                server.app.bookshelf.model(
+                    'ProductSkuAccentMessage',
+                    require('./models/ProductSkuAccentMessage')(baseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(

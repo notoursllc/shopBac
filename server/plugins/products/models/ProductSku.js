@@ -69,6 +69,9 @@ module.exports = function (baseModel, bookshelf) {
             'data_table',
             'created_at',
             'updated_at',
+            'accent_message_id',
+            'accent_message_begin',
+            'accent_message_end',
 
             // relations
             'images'

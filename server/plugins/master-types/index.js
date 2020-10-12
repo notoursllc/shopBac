@@ -42,7 +42,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return MasterTypeCtrl.getByIdHandler(request, h);
+                    return MasterTypeCtrl.getByIdHandler(request, null, h);
                 }
             }
         },

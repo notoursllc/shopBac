@@ -161,7 +161,10 @@ class BaseController {
 
     getByIdHandler(request, fetchOptions, h) {
         return this.modelForgeFetchHandler(
-            { id: request.query.id },
+            {
+                id: request.query.id,
+                tenant_id: this.getTenantIdFromAuth(request)
+            },
             fetchOptions,
             h
         );
