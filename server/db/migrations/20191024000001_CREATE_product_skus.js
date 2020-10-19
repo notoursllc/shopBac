@@ -11,6 +11,7 @@ module.exports.up = (knex) => {
             t.jsonb('metadata').nullable();
             t.integer('ordinal').nullable().defaultTo(1);
             t.jsonb('data_table').nullable();
+            t.string('data_table_name').nullable();
 
             // PRICING
             t.string('currency').defaultTo('usd');

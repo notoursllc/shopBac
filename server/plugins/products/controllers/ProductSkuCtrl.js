@@ -59,6 +59,7 @@ class ProductSkuCtrl extends BaseController {
 
             // SPEC TABLE
             data_table: Joi.alternatives().try(Joi.object(), Joi.string(), Joi.allow(null)),
+            data_table_name: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
 
             // ACCENT MESSAGE
             accent_message_id: Joi.alternatives().try(Joi.string().uuid(), Joi.allow(null)),

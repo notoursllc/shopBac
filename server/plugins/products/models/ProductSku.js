@@ -67,6 +67,7 @@ module.exports = function (baseModel, bookshelf) {
             'customs_country_of_origin',
             'customs_harmonized_system_code',
             'data_table',
+            'data_table_name',
             'created_at',
             'updated_at',
             'accent_message_id',
