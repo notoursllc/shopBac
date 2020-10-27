@@ -91,7 +91,7 @@ const webManifest = {
                 }
             },
             {
-                plugin: './plugins/shopping-cart',
+                plugin: './plugins/cart',
                 routes: {
                     prefix: routePrefix
                 }

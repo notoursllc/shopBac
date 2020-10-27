@@ -5,7 +5,7 @@ const Code = require('@hapi/code');
 const util = require('util');
 const _ = require('lodash');
 
-// const ShoppingCartService = require('../../../server/plugins/shopping-cart/shopping-cart.service');
+// const ShoppingCartService = require('../../../server/plugins/cart/cart.service');
 
 const lab = exports.lab = Lab.script();
 const describe = lab.describe;

@@ -7,7 +7,7 @@ const testHelpers = require('../../../testHelpers');
 const serverSetup = require('../_serverSetup');
 
 const { getServer, getController, getShipmentData } = require('./_shippingControllerHelper');
-const ShoppingCartMock = require('../../shopping-cart/ShoppingCartMock');
+const ShoppingCartMock = require('../../cart/ShoppingCartMock');
 const { createShipment } = require('../../../../../server/plugins/shipping/shippoAPI/shipments.js')
 const shippingController = getController();
 
