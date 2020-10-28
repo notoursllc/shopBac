@@ -77,7 +77,7 @@ describe('Testing controller method: createShippoOrderFromShoppingCart', () => {
     });
 
 
-    it('should return an error when a ShoppingCart does not contain shipping address data', async () => {
+    it('should return an error when a Cart does not contain shipping address data', async () => {
         const { controller } = await initController();
         let ShippoOrder = null;
         let error = null;
@@ -105,7 +105,7 @@ describe('Testing controller method: createShippoOrderFromShoppingCart', () => {
     });
 
 
-    it('should return an error when a ShoppingCart is not passed', async () => {
+    it('should return an error when a Cart is not passed', async () => {
         const { controller } = await initController();
         let ShippoOrder = null;
         let error = null;

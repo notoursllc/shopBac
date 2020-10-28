@@ -32,8 +32,8 @@ module.exports = function (baseModel, bookshelf) {
             },
 
             // cart_items: function() {
-            //     // product_id is the foreign key in ShoppingCartItem
-            //     return this.hasMany('ShoppingCartItem', 'product_id');
+            //     // product_id is the foreign key in CartItem
+            //     return this.hasMany('CartItem', 'product_id');
             // },
 
 

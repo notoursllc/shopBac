@@ -1,6 +1,6 @@
 'use strict';
 
-module.exports = class ShoppingCart {
+module.exports = class Cart {
     constructor(data) {
         this.data = data || {};
     }

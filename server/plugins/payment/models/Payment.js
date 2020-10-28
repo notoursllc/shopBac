@@ -14,7 +14,7 @@ module.exports = function (baseModel, bookshelf) {
             // One payment per shopping cart
             // http://bookshelfjs.org/#Model-instance-belongsTo
             shoppingCart: function() {
-                return this.belongsTo('ShoppingCart', 'cart_id');
+                return this.belongsTo('Cart', 'cart_id');
             }
         },
 

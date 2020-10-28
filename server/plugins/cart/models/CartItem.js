@@ -6,18 +6,18 @@ module.exports = function (baseModel, bookshelf) {
     return baseModel.extend(
         {
             tableName: CoreService.DB_TABLES.cart_items,
-            
+
             uuid: true,
-    
+
             hasTimestamps: true,
-    
-            // One-to-One relation with ShoppingCart
+
+            // One-to-One relation with Cart
             // cart_id is the foreign key in this model
             cart: function() {
-                return this.belongsTo('ShoppingCart', 'cart_id');
+                return this.belongsTo('Cart', 'cart_id');
             },
-    
-            // One-to-One relation with ShoppingCart
+
+            // One-to-One relation with Cart
             // product_id is the foreign key in this model
             product: function() {
                 return this.belongsTo('Product', 'product_id');
@@ -30,7 +30,7 @@ module.exports = function (baseModel, bookshelf) {
                 }
             }
         },
-    
+
         // Custom methods:
         {
             /**

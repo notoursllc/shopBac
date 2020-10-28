@@ -34,28 +34,28 @@ function generateIdempotencyKey() {
  * https://developer.squareup.com/reference/square/customers-api/create-customer
  * @param {*} data
  */
-async function createCustomerFromShoppingCart(ShoppingCart) {
+async function createCustomerFromShoppingCart(Cart) {
     try {
         const apiInstance = getPaymentsApi();
 
         // https://github.com/square/connect-nodejs-sdk/blob/master/docs/CreateCustomerRequest.md
         let data = await apiInstance.createCustomer({
             idempotency_key: generateIdempotencyKey(),
-            given_name: ShoppingCart.get('shipping_firstName'),
-            family_name: ShoppingCart.get('shipping_lastName'),
-            company_name: ShoppingCart.get('shipping_company'),
-            email_address: ShoppingCart.get('shipping_email'),
+            given_name: Cart.get('shipping_firstName'),
+            family_name: Cart.get('shipping_lastName'),
+            company_name: Cart.get('shipping_company'),
+            email_address: Cart.get('shipping_email'),
 
             // https://github.com/square/connect-nodejs-sdk/blob/master/docs/Address.md
             address: {
-                first_name: ShoppingCart.get('shipping_firstName'),
-                last_name: ShoppingCart.get('shipping_lastName'),
-                address_line_1: ShoppingCart.get('shipping_streetAddress'),
-                address_line_2: ShoppingCart.get('shipping_extendedAddress') || null,
-                locality: ShoppingCart.get('shipping_city'),
-                administrative_district_level_1: ShoppingCart.get('shipping_state'),
-                postal_code: ShoppingCart.get('shipping_postalCode'),
-                country: ShoppingCart.get('shipping_countryCodeAlpha2')
+                first_name: Cart.get('shipping_firstName'),
+                last_name: Cart.get('shipping_lastName'),
+                address_line_1: Cart.get('shipping_streetAddress'),
+                address_line_2: Cart.get('shipping_extendedAddress') || null,
+                locality: Cart.get('shipping_city'),
+                administrative_district_level_1: Cart.get('shipping_state'),
+                postal_code: Cart.get('shipping_postalCode'),
+                country: Cart.get('shipping_countryCodeAlpha2')
             }
         });
 

@@ -164,17 +164,17 @@ async function shippingPackingSlipHandler(request, h) {
         }
         else {
             // We dont have an shippo_order_id yet:
-            const ShoppingCart = await cartController.getCartByAttribute(
+            const Cart = await cartController.getCartByAttribute(
                 'id',
                 Payment.get('cart_id'),
                 cartController.getDefaultWithRelated()
             );
 
-            if(!ShoppingCart) {
+            if(!Cart) {
                 throw new Error('Shopping cart does not exist.')
             }
 
-            const shippoOrder = await cartController.createShippoOrderFromShoppingCart(ShoppingCart);
+            const shippoOrder = await cartController.createShippoOrderFromShoppingCart(Cart);
 
             // no need to await here:
             Payment.save(

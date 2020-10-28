@@ -30,12 +30,12 @@ let server = null;
 
 
 function getShoppingCartModel() {
-    return server.app.bookshelf.model('ShoppingCart');
+    return server.app.bookshelf.model('Cart');
 }
 
 
 function getShoppingCartItemModel() {
-    return server.app.bookshelf.model('ShoppingCartItem');
+    return server.app.bookshelf.model('CartItem');
 }
 
 
@@ -111,7 +111,7 @@ function getDefaultWithRelated() {
 
 
 /**
- * Joi definitions for the ShoppingCart model
+ * Joi definitions for the Cart model
  */
 function getShoppingCartModelSchema() {
     return Joi.object().keys({
@@ -162,7 +162,7 @@ function getOrCreateCartToken(request) {
 
 
 /**
- * Gets a ShoppingCart by a given attribute
+ * Gets a Cart by a given attribute
  *
  * @param attrName
  * @param attrValue
@@ -177,25 +177,25 @@ async function getCartByAttribute(attrName, attrValue, withRelatedArr) {
         }
     }
 
-    const ShoppingCart = await getShoppingCartModel().query((qb) => {
+    const Cart = await getShoppingCartModel().query((qb) => {
         qb.where(attrName, '=', attrValue);  // TODO: Is there a SQL injection risk here?
     })
     .fetch(fetchObj);
 
-    return ShoppingCart;
+    return Cart;
 }
 
 
 async function getCart(cartToken, withRelatedArr) {
     let withRelated = Array.isArray(withRelatedArr) ? withRelatedArr : getDefaultWithRelated();
 
-    const ShoppingCart = await getCartByAttribute(
+    const Cart = await getCartByAttribute(
         'token',
         cartToken,
         withRelated
     );
 
-    return ShoppingCart;
+    return Cart;
 }
 
 
@@ -213,16 +213,16 @@ async function getActiveCart(cartToken) {
         return false
     }
 
-    const ShoppingCart = await getCartByAttribute(
+    const Cart = await getCartByAttribute(
         'token',
         cartToken
     )
 
-    if(!ShoppingCart || ShoppingCart.get('closed_at')) {
+    if(!Cart || Cart.get('closed_at')) {
         return false;
     }
 
-    return ShoppingCart;
+    return Cart;
 }
 
 
@@ -235,25 +235,25 @@ async function createCart(token) {
 
 async function pre_cart(request, h) {
     let cartToken = getValidCartTokenFromRequest(request);
-    let ShoppingCart = await getActiveCart(cartToken);
+    let Cart = await getActiveCart(cartToken);
 
     // Quit right here if no shopping cart.
     // Returning a new shopping cart allong with it's access token
     // in the response header
     try {
-        if(!ShoppingCart) {
+        if(!Cart) {
             cartToken = uuidV4();
-            ShoppingCart = await createCart(cartToken);
+            Cart = await createCart(cartToken);
 
             return h.apiSuccess(
-                ShoppingCart ? ShoppingCart.toJSON() : null
+                Cart ? Cart.toJSON() : null
             )
             .header('X-Cart-Token', cartToken)
             .takeover();
         }
 
         return {
-            ShoppingCart,
+            Cart,
             cartToken
         };
     }
@@ -270,12 +270,12 @@ async function cartGetHandler(request, h) {
         const cartToken = request.pre.m1.cartToken;
 
         // Get a fresh cart for the response with all of the relations
-        const ShoppingCart = await getCart(cartToken);
+        const Cart = await getCart(cartToken);
 
         // Response contains the cart token in the header
         // plus the shopping cart payload
         return h.apiSuccess(
-            ShoppingCart ? ShoppingCart.toJSON() : null
+            Cart ? Cart.toJSON() : null
         ).header('X-Cart-Token', cartToken);
     }
     catch(err) {
@@ -302,12 +302,12 @@ async function cartItemAddHandler(request, h) {
 
     try {
         let cartToken = getValidCartTokenFromRequest(request);
-        let ShoppingCart = await getActiveCart(cartToken);
+        let Cart = await getActiveCart(cartToken);
 
         // If the current cart is closed then get a fresh one
-        if(!ShoppingCart) {
+        if(!Cart) {
             cartToken = uuidV4();
-            ShoppingCart = await createCart(cartToken);
+            Cart = await createCart(cartToken);
         }
 
         const Product = await ProductController.modelForgeFetch(
@@ -322,8 +322,8 @@ async function cartItemAddHandler(request, h) {
 
         // Determine if we simply need to update the qty of an existing item
         // or add a new one
-        let ShoppingCartItem = await getShoppingCartItemModel().findByVariant(
-            ShoppingCart.get('id'),
+        let CartItem = await getShoppingCartItemModel().findByVariant(
+            Cart.get('id'),
             Product.get('id'),
             'size',
             request.payload.options.size
@@ -331,9 +331,9 @@ async function cartItemAddHandler(request, h) {
 
         // Item with matching variants is already in the cart,
         // so we just need to update the qty.
-        if(ShoppingCartItem) {
-            await ShoppingCartItem.save(
-                { qty: parseInt(ShoppingCartItem.get('qty') + qty, 10) },
+        if(CartItem) {
+            await CartItem.save(
+                { qty: parseInt(CartItem.get('qty') + qty, 10) },
                 { method: 'update', patch: true }
             );
         }
@@ -347,19 +347,19 @@ async function cartItemAddHandler(request, h) {
                 variants: JSON.stringify({
                     size: request.payload.options.size
                 }),
-                cart_id: ShoppingCart.get('id'),
+                cart_id: Cart.get('id'),
                 product_id: Product.get('id')
             });
         }
 
         // Get a fresh cart for the response with all of the relations
-        ShoppingCart = await getCart(cartToken);
+        Cart = await getCart(cartToken);
 
-        if(!ShoppingCart) {
+        if(!Cart) {
             throw new Error("Error getting the shopping cart");
         }
 
-        let cartJson = ShoppingCart.toJSON();
+        let cartJson = Cart.toJSON();
 
         global.logger.info('RESPONSE: cartItemAddHandler', {
             meta: cartJson
@@ -387,15 +387,15 @@ async function cartItemRemoveHandler(request, h) {
 
     try {
         const cartToken = request.pre.m1.cartToken;
-        const ShoppingCartItem = await getShoppingCartItemModel().findById(request.payload.id);
+        const CartItem = await getShoppingCartItemModel().findById(request.payload.id);
 
-        if(ShoppingCartItem) {
-            await ShoppingCartItem.destroy();
+        if(CartItem) {
+            await CartItem.destroy();
         }
 
         // Get a fresh cart for the response with all of the relations
-        const ShoppingCart = await getCart(cartToken);
-        const cartJson = ShoppingCart ? ShoppingCart.toJSON() : null;
+        const Cart = await getCart(cartToken);
+        const cartJson = Cart ? Cart.toJSON() : null;
 
         global.logger.info('RESPONSE: cartItemRemoveHandler', {
             meta: cartJson
@@ -424,20 +424,20 @@ async function cartItemQtyHandler(request, h) {
 
     try {
         const cartToken = request.pre.m1.cartToken;
-        const ShoppingCartItem = await getShoppingCartItemModel().findById(request.payload.id);
+        const CartItem = await getShoppingCartItemModel().findById(request.payload.id);
 
-        if(!ShoppingCartItem) {
+        if(!CartItem) {
             throw new Error('Unable to find a shopping cart item.');
         }
 
-        await ShoppingCartItem.save(
+        await CartItem.save(
             { qty: parseInt((request.payload.qty || 1), 10) },
             { method: 'update', patch: true }
         );
 
         // Get a fresh cart for the response with all of the relations
-        const ShoppingCart = await getCart(cartToken);
-        const cartJson = ShoppingCart ? ShoppingCart.toJSON() : null;
+        const Cart = await getCart(cartToken);
+        const cartJson = Cart ? Cart.toJSON() : null;
 
         global.logger.info('RESPONSE: cartItemQtyHandler', {
             meta: cartJson
@@ -465,10 +465,10 @@ async function cartShippingSetAddressHandler(request, h) {
         const cartToken = request.pre.m1.cartToken;
 
         // Get a fresh cart for the response with all of the relations
-        let ShoppingCart = await getCart(cartToken);
+        let Cart = await getCart(cartToken);
 
         let updateData = cloneDeep(request.payload);
-        updateData.sub_total = ShoppingCart.get('sub_total');
+        updateData.sub_total = Cart.get('sub_total');
         updateData.sales_tax = salesTaxService.getSalesTaxAmount(updateData);
 
         // global.logger.debug('cartShippingSetAddressHandler - CART UPDATE PARAMS', {
@@ -478,10 +478,10 @@ async function cartShippingSetAddressHandler(request, h) {
         // });
 
         // Save the shipping params and the sales tax value in the model:
-        // Kind of awkward, but need to update the ShoppingCart twice in this
+        // Kind of awkward, but need to update the Cart twice in this
         // method because the getLowestShippingRate() method needs the shipping
-        // address data from the ShoppingCart object
-        let UpdatedShoppingCart = await ShoppingCart.save(
+        // address data from the Cart object
+        let UpdatedShoppingCart = await Cart.save(
             updateData,
             { method: 'update', patch: true }
         );
@@ -493,8 +493,8 @@ async function cartShippingSetAddressHandler(request, h) {
             shipping_rate: await getLowestShippingRate(UpdatedShoppingCart)
         }
 
-        // Save the shipping rate in the ShoppingCart:
-        let UpdatedShoppingCart2 = await ShoppingCart.save(
+        // Save the shipping rate in the Cart:
+        let UpdatedShoppingCart2 = await Cart.save(
             updateData2,
             { method: 'update', patch: true }
         );
@@ -528,8 +528,8 @@ async function getCartShippingRatesHandler(request, h) {
 
     try {
         const cartToken = request.pre.m1.cartToken;
-        const ShoppingCart = await getCart(cartToken);
-        const shipment = await ShippingCtrl.createShipmentFromShoppingCart(ShoppingCart);
+        const Cart = await getCart(cartToken);
+        const shipment = await ShippingCtrl.createShipmentFromShoppingCart(Cart);
         const rates = shipment ? shipment.rates : null;
 
         global.logger.info('RESPONSE: getCartShippingRatesHandler', {
@@ -551,14 +551,14 @@ async function getCartShippingRatesHandler(request, h) {
 /**
  * Gets the lowest shipping rate via the Shippo API
  *
- * @param {*} ShoppingCart  This needs to be a ShoppingCart
+ * @param {*} Cart  This needs to be a Cart
  *                          object with the cart_items relations
  */
-async function getLowestShippingRate(ShoppingCart) {
+async function getLowestShippingRate(Cart) {
     let lowestRate = null;
 
     // Get a fresh cart with all of the relations
-    const shipment = await ShippingCtrl.createShipmentFromShoppingCart(ShoppingCart);
+    const shipment = await ShippingCtrl.createShipmentFromShoppingCart(Cart);
 
     global.logger.debug('shoppingCartController -> getLowestShippingRate: shipment', {
         meta: {
@@ -612,14 +612,14 @@ async function cartShippingRateHandler(request, h) {
 
     try {
         const cartToken = request.pre.m1.cartToken;
-        await request.pre.m1.ShoppingCart.save(
+        await request.pre.m1.Cart.save(
             request.payload,
             { method: 'update', patch: true }
         );
 
         // Get a fresh cart for the response with all of the relations
-        const ShoppingCart = await getCart(cartToken);
-        const cartJson = ShoppingCart ? ShoppingCart.toJSON() : null;
+        const Cart = await getCart(cartToken);
+        const cartJson = Cart ? Cart.toJSON() : null;
 
         global.logger.info('RESPONSE: cartShippingRateHandler', {
             meta: cartJson
@@ -640,21 +640,21 @@ async function cartShippingRateHandler(request, h) {
 
 
 /**
- * Creates an "Order" on Shippo using the ShoppingCart
- * NOTE: The ShoppingCart with all relations is needed here!
+ * Creates an "Order" on Shippo using the Cart
+ * NOTE: The Cart with all relations is needed here!
  *
- * @param {*} ShoppingCart
+ * @param {*} Cart
  */
-async function createShippoOrderFromShoppingCart(ShoppingCart) {
-    if(!ShoppingCart) {
-        let err = new Error('createShippoOrderFromShoppingCart: ShoppingCart obejct was not passed as an argument');
+async function createShippoOrderFromShoppingCart(Cart) {
+    if(!Cart) {
+        let err = new Error('createShippoOrderFromShoppingCart: Cart obejct was not passed as an argument');
         global.logger.error(err);
         global.bugsnag(err);
 
         throw err;
     }
 
-    let cart = ShoppingCart.toJSON();
+    let cart = Cart.toJSON();
     let totalWeight = 0;
 
     let data = {
@@ -709,20 +709,20 @@ async function createShippoOrderFromShoppingCart(ShoppingCart) {
 function sendPurchaseConfirmationEmails(cartToken, payment_id) {
     return new Promise(async (resolve, reject) => {
         // Get a fresh cart with all of the relations for the email message
-        let ShoppingCart = await getCart(cartToken);
+        let Cart = await getCart(cartToken);
 
         try {
-            await shoppingCartEmailService.sendPurchaseEmails(ShoppingCart, payment_id);
+            await shoppingCartEmailService.sendPurchaseEmails(Cart, payment_id);
 
             let emailSentAt = new Date().toISOString();
-            await ShoppingCart.save(
+            await Cart.save(
                 { purchase_confirmation_email_sent_at: emailSentAt },
                 { method: 'update', patch: true }
             );
             resolve(emailSentAt)
         }
         catch(err) {
-            let msg = `Unable to send email confirmation to user after successful purchase: (ShoppingCart ID: ${ShoppingCart.get('id')})`;
+            let msg = `Unable to send email confirmation to user after successful purchase: (Cart ID: ${Cart.get('id')})`;
             global.logger.error(msg, err);
             global.bugsnag(msg, err);
             reject(err);
@@ -743,7 +743,7 @@ async function processPayment(request, paymentType, paymentData) {
     const { savePayment } = require('../payment/paymentController');
 
     const cartToken = request.pre.m1.cartToken;
-    const ShoppingCart = await getCart(cartToken);
+    const Cart = await getCart(cartToken);
 
     // Saving the payment transaction whether it was successful (transactionObj.success === true)
     // or not (transactionObj.success === false)
@@ -754,7 +754,7 @@ async function processPayment(request, paymentType, paymentData) {
     // Therefore any errors that happen here (promise is rejected) will be caught below
 
     const Payment = await savePayment(
-        ShoppingCart.get('id'),
+        Cart.get('id'),
         paymentType,
         paymentData
     );
@@ -778,18 +778,18 @@ async function processPayment(request, paymentType, paymentData) {
         }
     });
 
-    // This will cause the cart not to be re-used (See ShoppingCart -> getCart())
+    // This will cause the cart not to be re-used (See Cart -> getCart())
     updateParams.closed_at = new Date();
 
     // global.logger.debug('ShoppingCartController.processPayment updateParams', updateParams);
 
     // Create the Order in Shippo so a shipping label can be created in the future.
-    // let shippoOrder = await createShippoOrderFromShoppingCart(ShoppingCart);
+    // let shippoOrder = await createShippoOrderFromShoppingCart(Cart);
     // updateParams.shippo_order_id = shippoOrder.object_id;
 
     // The products controller catches this and descrments the product size inventory count
     // Errors do not need to be caught here because any failures should not affect the transaction
-    server.events.emit('SHOPPING_CART_CHECKOUT_SUCCESS', ShoppingCart);
+    server.events.emit('SHOPPING_CART_CHECKOUT_SUCCESS', Cart);
 
     global.logger.info('processPayment - Updating Shopping Cart', {
         meta: {
@@ -798,7 +798,7 @@ async function processPayment(request, paymentType, paymentData) {
     });
 
     try {
-        await ShoppingCart.save(
+        await Cart.save(
             updateParams,
             { method: 'update', patch: true }
         );
@@ -826,12 +826,12 @@ async function cartCheckoutHandler(request, h) {
     });
 
     let cartToken;
-    let ShoppingCart;
+    let Cart;
     let paymentData;
 
     try {
         cartToken = request.pre.m1.cartToken;
-        ShoppingCart = await getCart(cartToken);
+        Cart = await getCart(cartToken);
     }
     catch(err) {
         let msg = err instanceof Error ? err.message : err;
@@ -866,7 +866,7 @@ async function cartCheckoutHandler(request, h) {
         const chargeRequest = {
             idempotency_key: uuidV4(),
             amount_money: {
-                amount: ShoppingCart.get('grand_total') * 100,  // square needs this converted to cents
+                amount: Cart.get('grand_total') * 100,  // square needs this converted to cents
                 currency: 'USD'
             },
             source_id: request.payload.nonce,
@@ -883,17 +883,17 @@ async function cartCheckoutHandler(request, h) {
                 last_name: request.payload.billing_lastName,
                 organization: request.payload.billing_company || null
             },
-            buyer_email_address: ShoppingCart.get('shipping_email'),
+            buyer_email_address: Cart.get('shipping_email'),
             shipping_address: {
-                address_line_1: ShoppingCart.get('shipping_streetAddress'),
-                address_line_2: ShoppingCart.get('shipping_extendedAddress') || null,
-                locality: ShoppingCart.get('shipping_city'),
-                administrative_district_level_1: ShoppingCart.get('shipping_state'),
-                postal_code: ShoppingCart.get('shipping_postalCode'),
-                country: ShoppingCart.get('shipping_countryCodeAlpha2'),
-                first_name: ShoppingCart.get('shipping_firstName'),
-                last_name: ShoppingCart.get('shipping_lastName'),
-                organization: ShoppingCart.get('shipping_company')
+                address_line_1: Cart.get('shipping_streetAddress'),
+                address_line_2: Cart.get('shipping_extendedAddress') || null,
+                locality: Cart.get('shipping_city'),
+                administrative_district_level_1: Cart.get('shipping_state'),
+                postal_code: Cart.get('shipping_postalCode'),
+                country: Cart.get('shipping_countryCodeAlpha2'),
+                first_name: Cart.get('shipping_firstName'),
+                last_name: Cart.get('shipping_lastName'),
+                organization: Cart.get('shipping_company')
             }
         };
 
@@ -944,13 +944,13 @@ async function paypalCreatePayment(request, h) {
     });
 
     try {
-        const ShoppingCart = await getCart(cartToken);
+        const Cart = await getCart(cartToken);
 
         const req = new paypal.orders.OrdersCreateRequest();
         req.prefer("return=representation");
 
         // Building the items array for the requestConfig object
-        let cart = ShoppingCart.toJSON();
+        let cart = Cart.toJSON();
         let items = [];
 
         cart.cart_items.forEach((obj) => {

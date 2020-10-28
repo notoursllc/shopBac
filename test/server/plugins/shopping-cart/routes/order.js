@@ -98,7 +98,7 @@
 //     });
 
 
-//     it('should return the whole ShoppingCart object if passing "verbose=true"', (done) => {
+//     it('should return the whole Cart object if passing "verbose=true"', (done) => {
 //         testHelpers
 //             .startServerAndGetHeaders(serverSetup.manifest, serverSetup.composeOptions)
 //             .then(({err, server, headers}) => {

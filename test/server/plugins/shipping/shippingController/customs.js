@@ -109,14 +109,14 @@ describe('ShippoAPI: createCustomsItem()', () => {
     }
 
     function getShoppingCartMock() {
-        const ShoppingCart = new ShoppingCartMock({
+        const Cart = new ShoppingCartMock({
             id: 123,
             cart_items: [ {}, {} ],
             product_weight_total: '10.6',
             shipping_countryCodeAlpha2: 'AU'
         });
 
-        return ShoppingCart;
+        return Cart;
     }
 
 
@@ -137,7 +137,7 @@ describe('ShippoAPI: createCustomsItem()', () => {
         expect( error ).not.to.be.an.object();
     });
 
-    it('should create a Customs Item from a ShoppingCart object if shipping address is international', async () => {
+    it('should create a Customs Item from a Cart object if shipping address is international', async () => {
         let customsItem = null;
         let error = null;
 
@@ -156,15 +156,15 @@ describe('ShippoAPI: createCustomsItem()', () => {
     });
 
 
-    it('should NOT create a Customs Item from a ShoppingCart object if shipping address is US', async () => {
+    it('should NOT create a Customs Item from a Cart object if shipping address is US', async () => {
         let customsItem = null;
         let error = null;
 
-        const ShoppingCart = getShoppingCartMock();
-        ShoppingCart.set('shipping_countryCodeAlpha2', 'US');
+        const Cart = getShoppingCartMock();
+        Cart.set('shipping_countryCodeAlpha2', 'US');
 
         try {
-            customsItem = await shippingController.createCustomsItemFromShoppingCart(ShoppingCart)
+            customsItem = await shippingController.createCustomsItemFromShoppingCart(Cart)
         }
         catch(err) {
             error = err;
@@ -179,19 +179,19 @@ describe('ShippoAPI: createCustomsItem()', () => {
 
 
     // it('TEST SHOPPING CART', async () => {
-    //     const ShoppingCart = new ShoppingCartMock({
+    //     const Cart = new ShoppingCartMock({
     //         id: 123,
     //         cart_items: [ {}, {} ],
     //         product_weight_total: '10.6',
     //         shipping_countryCodeAlpha2: 'US'
     //     });
 
-    //     console.log("CART MOCK", ShoppingCart)
+    //     console.log("CART MOCK", Cart)
 
-    //     expect( ShoppingCart.get('id') ).to.equal(123);
-    //     expect( ShoppingCart.get('cart_items').length ).to.equal(2);
-    //     expect( ShoppingCart.get('product_weight_total') ).to.equal('10.6');
-    //     expect( ShoppingCart.get('shipping_countryCodeAlpha2') ).to.equal('US');
+    //     expect( Cart.get('id') ).to.equal(123);
+    //     expect( Cart.get('cart_items').length ).to.equal(2);
+    //     expect( Cart.get('product_weight_total') ).to.equal('10.6');
+    //     expect( Cart.get('shipping_countryCodeAlpha2') ).to.equal('US');
     // });
 
 });

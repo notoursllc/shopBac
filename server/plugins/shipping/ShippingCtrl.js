@@ -52,9 +52,9 @@ class ShippingCtrl extends BaseController {
     }
 
 
-    async createCustomsItemFromShoppingCart(ShoppingCart) {
+    async createCustomsItemFromShoppingCart(Cart) {
         try {
-            const cartJson = ShoppingCart.toJSON();
+            const cartJson = Cart.toJSON();
             const numCartItems = Array.isArray(cartJson.cart_items) ? cartJson.cart_items.length : 0;
 
             if(!numCartItems) {
@@ -89,13 +89,13 @@ class ShippingCtrl extends BaseController {
 
 
     /**
-     * Creates a Shippo "Shipment" object based on the contents of the ShoppingCart.
+     * Creates a Shippo "Shipment" object based on the contents of the Cart.
      *
-     * @param {*} ShoppingCart
+     * @param {*} Cart
      */
-    async createShipmentFromShoppingCart(ShoppingCart) {
+    async createShipmentFromShoppingCart(Cart) {
         global.logger.info(`REQUEST: ShippingCtrl.createShipmentFromShoppingCart`, {
-            meta: ShoppingCart ? ShoppingCart.toJSON() : null
+            meta: Cart ? Cart.toJSON() : null
         });
 
         let data = {
@@ -103,18 +103,18 @@ class ShippingCtrl extends BaseController {
         };
 
         data.address_to = {
-            name: ShoppingCart.get('shipping_fullName'),
-            company: ShoppingCart.get('shipping_company'),
-            street1: ShoppingCart.get('shipping_streetAddress'),
+            name: Cart.get('shipping_fullName'),
+            company: Cart.get('shipping_company'),
+            street1: Cart.get('shipping_streetAddress'),
             // street_no:,
-            street2: ShoppingCart.get('shipping_extendedAddress'),
+            street2: Cart.get('shipping_extendedAddress'),
             // street3:
-            city: ShoppingCart.get('shipping_city'),
-            state: ShoppingCart.get('shipping_state'),
-            zip: ShoppingCart.get('shipping_postalCode'),
-            country: ShoppingCart.get('shipping_countryCodeAlpha2'),
+            city: Cart.get('shipping_city'),
+            state: Cart.get('shipping_state'),
+            zip: Cart.get('shipping_postalCode'),
+            country: Cart.get('shipping_countryCodeAlpha2'),
             // phone: ,
-            email: ShoppingCart.get('shipping_email'),
+            email: Cart.get('shipping_email'),
             // is_residential: ,
             validate: false,
             metadata: null
@@ -138,8 +138,8 @@ class ShippingCtrl extends BaseController {
             metadata: null
         }
 
-        data.parcels = await this.createParcelsFromShoppingCart(ShoppingCart);
-        data.customs_declaration = await this.createCustomsItemFromShoppingCart(ShoppingCart);
+        data.parcels = await this.createParcelsFromShoppingCart(Cart);
+        data.customs_declaration = await this.createCustomsItemFromShoppingCart(Cart);
 
         const createShipmentResponse = await createShipment(data);
 
@@ -197,10 +197,10 @@ class ShippingCtrl extends BaseController {
      * I'm guessing that tweaking this method over time will allow us to save postage
      * fees if we can calculate more accurately
      *
-     * @param {*} ShoppingCart
+     * @param {*} Cart
      */
-    async createParcelsFromShoppingCart(ShoppingCart) {
-        const cartItems = ShoppingCart.related('cart_items');
+    async createParcelsFromShoppingCart(Cart) {
+        const cartItems = Cart.related('cart_items');
         const PackageTypeCollection = await getPackageTypesModel().fetchAll();
         const shippingPackageTypes = {};
 

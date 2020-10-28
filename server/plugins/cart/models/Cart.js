@@ -71,7 +71,7 @@ module.exports = function (baseModel, bookshelf, server) {
                 //     return accounting.toFixed(weight, 1);
                 // },
                 sub_total: function() {
-                    // return server.plugins.ShoppingCart.getCartSubTotal( this.related('cart_data') );
+                    // return server.plugins.Cart.getCartSubTotal( this.related('cart_data') );
                     let subtotal = 0;
 
                     this.related('cart_items').forEach((model) => {
@@ -105,17 +105,17 @@ module.exports = function (baseModel, bookshelf, server) {
             // Relationships:
 
             // A payment could fail first, then another attempt
-            // could succeed, all related to the same ShoppingCart,
-            // so a ShoppingCart can have many Payments
+            // could succeed, all related to the same Cart,
+            // so a Cart can have many Payments
             //
             // http://bookshelfjs.org/#Model-instance-hasMany
             payments: function() {
                 return this.hasMany('Payment', 'cart_id');
             },
 
-            // cart_id is the foreign key in ShoppingCartItem
+            // cart_id is the foreign key in CartItem
             cart_items: function() {
-                return this.hasMany('ShoppingCartItem', 'cart_id');
+                return this.hasMany('CartItem', 'cart_id');
             }
         }
     );

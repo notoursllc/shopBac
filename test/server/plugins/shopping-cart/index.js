@@ -12,7 +12,7 @@ const expect = Code.expect;
 const it = lab.test;
 
 
-describe('Testing ShoppingCart plugin', () => {
+describe('Testing Cart plugin', () => {
 
     it('errors on missing BookshelfOrm plugin', async () => {
         const manifest = Hoek.clone(getManifest());
@@ -50,9 +50,9 @@ describe('Testing ShoppingCart plugin', () => {
     });
 
 
-    it('should have a ShoppingCart model', async () => {
+    it('should have a Cart model', async () => {
         const server = await getServer();
-        expect(server.app.bookshelf.model('ShoppingCart')).to.be.a.function();
+        expect(server.app.bookshelf.model('Cart')).to.be.a.function();
     });
 
 });

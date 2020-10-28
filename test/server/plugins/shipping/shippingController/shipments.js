@@ -180,7 +180,7 @@ describe('ShippoAPI: createShipment()', () => {
     }
 
 
-    it('should create a Parcel object from a ShoppingCart', async () => {
+    it('should create a Parcel object from a Cart', async () => {
         const server = await getServer();
 
         let parcels = null;
@@ -208,7 +208,7 @@ describe('ShippoAPI: createShipment()', () => {
     });
 
 
-    it('should create 2 Parcel objects from a ShoppingCart with cart items with different package types defined', async () => {
+    it('should create 2 Parcel objects from a Cart with cart items with different package types defined', async () => {
         const server = await getServer();
 
         let parcels = null;
@@ -237,7 +237,7 @@ describe('ShippoAPI: createShipment()', () => {
     });
 
 
-    it('should create 1 Parcel object from a ShoppingCart with cart items with the same package types defined', async () => {
+    it('should create 1 Parcel object from a Cart with cart items with the same package types defined', async () => {
         const server = await getServer();
 
         let parcels = null;

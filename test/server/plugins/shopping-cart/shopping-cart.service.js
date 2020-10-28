@@ -152,13 +152,13 @@ const expect = Code.expect;
 //         //     });
 //         // });
 //
-//         it("Should resolve with a ShoppingCart object", function (done) {
+//         it("Should resolve with a Cart object", function (done) {
 //             server.inject(options, (response) => {
 //                 ShoppingCartService
 //                     .findOrCreateSessionCart(response.request)
 //                     .then(
-//                         function(ShoppingCart) {
-//                             expect( testHelpers.isShoppingCartModel(ShoppingCart) ).to.be.true();
+//                         function(Cart) {
+//                             expect( testHelpers.isShoppingCartModel(Cart) ).to.be.true();
 //                             done();
 //                         },
 //                         function(err) {
