@@ -11,7 +11,6 @@ module.exports.up = (knex) => {
             t.string('caption').nullable();
             t.text('description').nullable();
             t.boolean('shippable').defaultTo(true);
-            t.jsonb('attributes').nullable();
             t.jsonb('metadata').nullable();
             t.boolean('is_good').defaultTo(false); // good / service
 

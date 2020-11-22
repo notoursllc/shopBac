@@ -31,9 +31,15 @@ const DB_TABLES = {
     master_types: 'master_types',
     media: 'media',
     product_collections: 'product_collections',
+
+    // 11/21
+    product_variants: 'product_variants',
+    product_variant_skus: 'product_variant_skus',
+
+
+
     product_skus: 'product_skus',
     product_sku_images: 'product_sku_images',
-    product_sku_variant_types: 'product_sku_variant_types',
     product_sku_accent_messages: 'product_sku_accent_messages',
     product_data_tables: 'product_data_tables',
     products: 'products',

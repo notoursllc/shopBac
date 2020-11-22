@@ -21,14 +21,9 @@ module.exports = function (baseModel, bookshelf) {
             //     return this.belongsTo('PackageType', 'shipping_package_type_id');
             // },
 
-            images: function() {
-                // product_id is the foreign key in ProductImage
-                return this.hasMany('ProductImage', 'product_id');
-            },
-
-            skus: function() {
-                // product_id is the foreign key in ProductSku
-                return this.hasMany('ProductSku', 'product_id');
+            variants: function() {
+                // product_id is the foreign key in ProductVariant
+                return this.hasMany('ProductVariant', 'product_id');
             },
 
             // cart_items: function() {
@@ -36,14 +31,9 @@ module.exports = function (baseModel, bookshelf) {
             //     return this.hasMany('CartItem', 'product_id');
             // },
 
-
             format(attributes) {
                 if (attributes.metadata) {
                     attributes.metadata = JSON.stringify(attributes.metadata)
-                }
-
-                if (attributes.attributes) {
-                    attributes.attributes = JSON.stringify(attributes.attributes)
                 }
 
                 return attributes;
@@ -65,32 +55,30 @@ module.exports = function (baseModel, bookshelf) {
                 //     return price;
                 // },
 
-                total_inventory_count: function() {
-                    let totalCount = 0;
+                // total_inventory_count: function() {
+                //     let totalCount = 0;
 
-                    // https://bookshelfjs.org/api.html#Collection-instance-toArray
-                    const skus = this.related('skus').toArray();
-                    if(skus.length) {
-                        skus.forEach(function (model) {
-                            totalCount += model.get('inventory_count')
-                        })
-                    }
+                //     // https://bookshelfjs.org/api.html#Collection-instance-toArray
+                //     const skus = this.related('colors').toArray();
+                //     if(skus.length) {
+                //         skus.forEach(function (model) {
+                //             totalCount += model.get('inventory_count')
+                //         })
+                //     }
 
-                    return totalCount;
-                }
+                //     return totalCount;
+                // }
 
             },
 
-
-            // tenant_id is not visible
             visible: [
                 'id',
+                // 'tenant_id', not visible
                 'published',
                 'title',
                 'caption',
                 'description',
                 'shippable',
-                'attributes',
                 'metadata',
                 'is_good',
                 'type',
@@ -106,14 +94,13 @@ module.exports = function (baseModel, bookshelf) {
                 'video_url',
                 'created_at',
                 'updated_at',
-                // 'deleted_at',
+                // 'deleted_at',  // not visible
 
                 // relations
-                'skus',
-                'images',
+                'variants',
 
                 // virtuals
-                'total_inventory_count'
+                // 'total_inventory_count'
             ]
         }
     );

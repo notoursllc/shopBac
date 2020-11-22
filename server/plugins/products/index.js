@@ -13,7 +13,6 @@ exports.plugin = {
                 const ProductImageCtrl = new (require('./controllers/ProductImageCtrl'))(server);
                 const ProductSkuCtrl = new (require('./controllers/ProductSkuCtrl'))(server);
                 const ProductSkuImageCtrl = new (require('./controllers/ProductSkuImageCtrl'))(server);
-                const ProductSkuVariantTypeCtrl = new (require('./controllers/ProductSkuVariantTypeCtrl'))(server);
                 const ProductSkuAccentMessageCtrl = new (require('./controllers/ProductSkuAccentMessageCtrl'))(server);
                 const ProductCollectionCtrl = new (require('./controllers/ProductCollectionCtrl'))(server);
                 const ProductDataTableCtrl = new (require('./controllers/ProductDataTableCtrl'))(server);
@@ -163,88 +162,6 @@ exports.plugin = {
                                 // Note this does not delete the Media object that
                                 // may be associated with the ProductSkuImage
                                 return ProductSkuImageCtrl.deleteHandler(request, h);
-                            }
-                        }
-                    },
-
-
-                    /******************************
-                     * Product Sku options
-                     ******************************/
-                    {
-                        method: 'GET',
-                        path: `${routePrefix}/product/sku/variant_types`,
-                        options: {
-                            description: 'Finds SKU options',
-                            handler: (request, h) => {
-                                return ProductSkuVariantTypeCtrl.getPageHandler(
-                                    request,
-                                    null,
-                                    h
-                                );
-                            }
-                        }
-                    },
-                    {
-                        method: 'GET',
-                        path: `${routePrefix}/product/sku/variant_type`,
-                        options: {
-                            description: 'Finds a SKU variant by ID',
-                            validate: {
-                                query: Joi.object({
-                                    id: Joi.string().uuid(),
-                                    tenant_id: Joi.string().uuid()
-                                })
-                            },
-                            handler: (request, h) => {
-                                return ProductSkuVariantTypeCtrl.getByIdHandler(request, null, h);
-                            }
-                        }
-                    },
-                    {
-                        method: 'POST',
-                        path: `${routePrefix}/product/sku/variant_type`,
-                        options: {
-                            description: 'Add a SKU variant',
-                            validate: {
-                                payload: Joi.object({
-                                    ...ProductSkuVariantTypeCtrl.getSchema()
-                                })
-                            },
-                            handler: (request, h) => {
-                                return ProductSkuVariantTypeCtrl.upsertHandler(request, h);
-                            }
-                        }
-                    },
-                    {
-                        method: 'PUT',
-                        path: `${routePrefix}/product/sku/variant_type`,
-                        options: {
-                            description: 'Updates a SKU variant',
-                            validate: {
-                                payload: Joi.object({
-                                    id: Joi.string().uuid().required(),
-                                    ...ProductSkuVariantTypeCtrl.getSchema()
-                                })
-                            },
-                            handler: (request, h) => {
-                                return ProductSkuVariantTypeCtrl.upsertHandler(request, h);
-                            }
-                        }
-                    },
-                    {
-                        method: 'DELETE',
-                        path: `${routePrefix}/product/sku/variant_type`,
-                        options: {
-                            description: 'Deletes a SKU variant',
-                            validate: {
-                                query: Joi.object({
-                                    id: Joi.string().uuid().required(),
-                                    tenant_id: Joi.string().uuid()
-                                })
-                            },
-                            handler: (request, h) => {
-                                return ProductSkuVariantTypeCtrl.deleteHandler(request, h);
                             }
                         }
                     },
@@ -582,28 +499,33 @@ exports.plugin = {
                 );
 
                 server.app.bookshelf.model(
-                    'ProductImage',
-                    require('./models/ProductImage')(baseModel, server.app.bookshelf, server)
+                    'ProductVariant',
+                    require('./models/ProductVariant')(baseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(
-                    'ProductSku',
-                    require('./models/ProductSku')(baseModel, server.app.bookshelf, server)
+                    'ProductVariantSku',
+                    require('./models/ProductVariantSku')(baseModel, server.app.bookshelf, server)
                 );
 
-                server.app.bookshelf.model(
-                    'ProductSkuImage',
-                    require('./models/ProductSkuImage')(baseModel, server.app.bookshelf, server)
-                );
+                // server.app.bookshelf.model(
+                //     'ProductImage',
+                //     require('./models/ProductImage')(baseModel, server.app.bookshelf, server)
+                // );
+
+                // server.app.bookshelf.model(
+                //     'ProductSku',
+                //     require('./models/ProductSku')(baseModel, server.app.bookshelf, server)
+                // );
+
+                // server.app.bookshelf.model(
+                //     'ProductSkuImage',
+                //     require('./models/ProductSkuImage')(baseModel, server.app.bookshelf, server)
+                // );
 
                 server.app.bookshelf.model(
                     'ProductSkuAccentMessage',
                     require('./models/ProductSkuAccentMessage')(baseModel, server.app.bookshelf, server)
-                );
-
-                server.app.bookshelf.model(
-                    'ProductSkuVariant',
-                    require('./models/ProductSkuVariant')(baseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(

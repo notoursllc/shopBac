@@ -343,6 +343,8 @@ class BaseController {
                 }
             });
 
+            console.log("WITH RELATED", withRelatedConfig)
+
             const Models = await this.getPage(request, withRelatedConfig);
             const pagination = Models ? Models.pagination : null;
 

@@ -6,16 +6,18 @@ const { createSitemap } = require('sitemap');
 const BaseController = require('../../core/BaseController');
 const helperService = require('../../../helpers.service');
 const globalTypes = require('../../../global_types.js');
-const ProductImageCtrl = require('./ProductImageCtrl');
-const ProductSkuCtrl = require('./ProductSkuCtrl');
+// const ProductImageCtrl = require('./ProductImageCtrl');
+// const ProductSkuCtrl = require('./ProductSkuCtrl');
+const ProductVariantCtrl = require('./ProductVariantCtrl');
 
 
 class ProductCtrl extends BaseController {
 
     constructor(server) {
         super(server, 'Product');
-        this.ProductImageCtrl = new ProductImageCtrl(server);
-        this.ProductSkuCtrl = new ProductSkuCtrl(server);
+        // this.ProductImageCtrl = new ProductImageCtrl(server);
+        // this.ProductSkuCtrl = new ProductSkuCtrl(server);
+        this.ProductVariantCtrl = new ProductVariantCtrl(server);
     }
 
 
@@ -30,7 +32,6 @@ class ProductCtrl extends BaseController {
             is_good: Joi.boolean().default(true),
 
             // these should be stringified values in the payload:
-            attributes: Joi.alternatives().try(Joi.string().trim().empty(''), Joi.allow(null)),
             metadata: Joi.alternatives().try(Joi.array(), Joi.allow(null)),
 
             // TYPES
@@ -52,18 +53,26 @@ class ProductCtrl extends BaseController {
             // images: Joi.array().allow(null),
             video_url: Joi.string().trim().max(500).empty('').allow(null).default(null),
 
-            // test
-            images: Joi.array().items(
-                Joi.object(this.ProductImageCtrl.getSchema())
+            variants: Joi.array().items(
+                // Note: should not pass the 'isUpdate' flag to getSchema() in this case.
+                // When creating a product, the user doesn't necessarily have to also create variants,
+                // therefore updating a product may be the first time that a variants is added, in
+                // which case the variant will not have an id
+                Joi.object(this.ProductVariantCtrl.getSchema())
             ),
 
-            skus: Joi.array().items(
-                // Note: should not pass the 'isUpdate' flag to getSchema() in this case.
-                // When creating a product, the user doesn't necessarily have to also cretae skus,
-                // therefore updating a product may be the first time that a sku is added, in
-                // which case the sku will not have an id
-                Joi.object(this.ProductSkuCtrl.getSchema())
-            ),
+            // test
+            // images: Joi.array().items(
+            //     Joi.object(this.ProductImageCtrl.getSchema())
+            // ),
+
+            // skus: Joi.array().items(
+            //     // Note: should not pass the 'isUpdate' flag to getSchema() in this case.
+            //     // When creating a product, the user doesn't necessarily have to also cretae skus,
+            //     // therefore updating a product may be the first time that a sku is added, in
+            //     // which case the sku will not have an id
+            //     Joi.object(this.ProductSkuCtrl.getSchema())
+            // ),
 
             // TIMESTAMPS
             // created_at: Joi.date().optional(),
@@ -81,20 +90,16 @@ class ProductCtrl extends BaseController {
     getWithRelated() {
         return [
             {
-                images: (query) => {
+                'variants': (query) => {
                     // query.where('published', '=', true);
                     query.orderBy('ordinal', 'ASC');
                 },
-                skus: (query) => {
-                    // query.where('published', '=', true);
-                    query.orderBy('ordinal', 'ASC');
-                },
-                'skus.images': (query) => {
+                'variants.skus': (query) => {
                     // query.where('published', '=', true);
                     query.orderBy('ordinal', 'ASC');
                 }
             },
-            'skus.images.media'
+            // 'skus.images.media'
         ];
     }
 
@@ -108,20 +113,20 @@ class ProductCtrl extends BaseController {
     }
 
 
-    deleteSkus(Product, tenantId) {
-        const skus = Product.related('skus').toArray();
+    deleteVariants(Product, tenantId) {
+        const variants = Product.related('variants').toArray();
         const promises = [];
 
-        if(Array.isArray(skus)) {
+        if(Array.isArray(variants)) {
             try {
-                skus.forEach((obj) => {
+                variants.forEach((obj) => {
                     promises.push(
                         this.ProductSkuCtrl.deleteSku(obj.id, tenantId)
                     );
                 });
             }
             catch(err) {
-                global.logger.error('ProductCtrl.deleteSkus - ERROR DELETING PRODUCT SKUs: ', err);
+                global.logger.error('ProductCtrl.deleteVariants - ERROR DELETING PRODUCT SKUs: ', err);
                 throw err;
             }
         }
@@ -154,11 +159,8 @@ class ProductCtrl extends BaseController {
 
     async upsertHandler(request, h) {
         try {
-            const images = cloneDeep(request.payload.images);
-            delete request.payload.images;
-
-            const skus = cloneDeep(request.payload.skus);
-            delete request.payload.skus;
+            const variants = cloneDeep(request.payload.variants);
+            delete request.payload.variants;
 
             const Product = await this.upsertModel(request.payload);
 
@@ -167,16 +169,8 @@ class ProductCtrl extends BaseController {
                 const tenant_id = this.getTenantIdFromAuth(request);
 
                 promises.push(
-                    this.ProductImageCtrl.upsertImages(
-                        images,
-                        Product.get('id'),
-                        tenant_id
-                    )
-                );
-
-                promises.push(
-                    this.ProductSkuCtrl.upsertSkus(
-                        skus,
+                    this.ProductVariantCtrl.upsertVariants(
+                        variants,
                         Product.get('id'),
                         tenant_id
                     )
@@ -222,7 +216,7 @@ class ProductCtrl extends BaseController {
             // Delete product images, skus, and the product model:
             await Promise.all([
                 this.deleteImages(Product, tenantId),
-                this.deleteSkus(Product, tenantId),
+                this.deleteVariants(Product, tenantId),
                 this.deleteModel(productId, tenantId)
             ]);
 
