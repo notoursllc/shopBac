@@ -2,10 +2,10 @@ const Joi = require('@hapi/joi');
 const BaseController = require('../../core/BaseController');
 
 
-class ProductSkuAccentMessageCtrl extends BaseController {
+class ProductAccentMessageCtrl extends BaseController {
 
     constructor(server) {
-        super(server, 'ProductSkuAccentMessage');
+        super(server, 'ProductAccentMessage');
     }
 
 
@@ -20,4 +20,4 @@ class ProductSkuAccentMessageCtrl extends BaseController {
 
 }
 
-module.exports = ProductSkuAccentMessageCtrl;
+module.exports = ProductAccentMessageCtrl;

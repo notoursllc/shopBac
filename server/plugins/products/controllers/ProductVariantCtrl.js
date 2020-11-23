@@ -3,7 +3,6 @@ const Boom = require('@hapi/boom');
 const cloneDeep = require('lodash.clonedeep');
 const BaseController = require('../../core/BaseController');
 const ProductVariantSkuCtrl = require('./ProductVariantSkuCtrl');
-// const ProductSkuImageCtrl = require('./ProductSkuImageCtrl');
 
 
 class ProductVariantCtrl extends BaseController {
@@ -11,7 +10,6 @@ class ProductVariantCtrl extends BaseController {
     constructor(server) {
         super(server, 'ProductVariant');
         this.ProductVariantSkuCtrl = new ProductVariantSkuCtrl(server);
-        // this.ProductSkuImageCtrl = new ProductSkuImageCtrl(server);  // TODO
     }
 
 

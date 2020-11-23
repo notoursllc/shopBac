@@ -2,6 +2,7 @@ const tenants = require('../initial-data/tenants');
 const tenant_members = require('../initial-data/tenant_members');
 const master_types = require('../initial-data/master_types');
 const product_collections = require('../initial-data/product_collections');
+const product_accent_messages = require('../initial-data/product_accent_messages');
 
 
 /**
@@ -23,8 +24,13 @@ exports.seed = (knex, Promise) => {
         })
         .then(() => {
             return product_collections.seed(knex, Promise);
+        })
+        .then(() => {
+            return product_accent_messages.seed(knex, Promise)
         });
         // .then(() => {
+               // NOTE: Promise.all required Bluebird, as the node Promise doesn't support all
+               // which is why Im commenting this out for now
         //     return Promise.all([
         //         master_types.seed(knex, Promise),
         //         product_collections.seed(knex, Promise)

@@ -1,6 +1,5 @@
-const faker = require('faker');
 const CoreService = require('../../plugins/core/core.service');
-
+const { tenantId, randomUuid } = require('../utils');
 
 exports.seed = (knex) => {
     return knex(CoreService.DB_TABLES.tenant_members)
@@ -13,8 +12,8 @@ exports.seed = (knex) => {
                 const d = new Date();
 
                 return knex(CoreService.DB_TABLES.tenant_members).insert({
-                    id: faker.random.uuid(),
-                    tenant_id: '11111111-1111-1111-1111-111111111111',
+                    id: randomUuid(),
+                    tenant_id: tenantId,
                     email: 'greg@greg.com',
                     password: '$2b$10$hyvqFDIVH03o6vA4trlJP.sKtUP/NDjQQaCF1oBKSa7OwLFsKpnD.',
                     active: true,

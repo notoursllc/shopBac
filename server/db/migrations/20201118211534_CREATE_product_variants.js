@@ -58,5 +58,5 @@ module.exports.up = (knex) => {
 
 
 module.exports.down = (knex) => {
-    return knex.schema.dropTableIfExists(CoreService.DB_TABLES.product_skus);
+    return knex.schema.dropTableIfExists(CoreService.DB_TABLES.product_variants);
 };

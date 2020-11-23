@@ -6,8 +6,6 @@ const { createSitemap } = require('sitemap');
 const BaseController = require('../../core/BaseController');
 const helperService = require('../../../helpers.service');
 const globalTypes = require('../../../global_types.js');
-// const ProductImageCtrl = require('./ProductImageCtrl');
-// const ProductSkuCtrl = require('./ProductSkuCtrl');
 const ProductVariantCtrl = require('./ProductVariantCtrl');
 
 
@@ -15,8 +13,6 @@ class ProductCtrl extends BaseController {
 
     constructor(server) {
         super(server, 'Product');
-        // this.ProductImageCtrl = new ProductImageCtrl(server);
-        // this.ProductSkuCtrl = new ProductSkuCtrl(server);
         this.ProductVariantCtrl = new ProductVariantCtrl(server);
     }
 
@@ -61,19 +57,6 @@ class ProductCtrl extends BaseController {
                 Joi.object(this.ProductVariantCtrl.getSchema())
             ),
 
-            // test
-            // images: Joi.array().items(
-            //     Joi.object(this.ProductImageCtrl.getSchema())
-            // ),
-
-            // skus: Joi.array().items(
-            //     // Note: should not pass the 'isUpdate' flag to getSchema() in this case.
-            //     // When creating a product, the user doesn't necessarily have to also cretae skus,
-            //     // therefore updating a product may be the first time that a sku is added, in
-            //     // which case the sku will not have an id
-            //     Joi.object(this.ProductSkuCtrl.getSchema())
-            // ),
-
             // TIMESTAMPS
             // created_at: Joi.date().optional(),
             // updated_at: Joi.date().optional()
@@ -113,6 +96,7 @@ class ProductCtrl extends BaseController {
     }
 
 
+    // TODO: needs refactoring to use ProductVariantCtrl
     deleteVariants(Product, tenantId) {
         const variants = Product.related('variants').toArray();
         const promises = [];
@@ -121,7 +105,7 @@ class ProductCtrl extends BaseController {
             try {
                 variants.forEach((obj) => {
                     promises.push(
-                        this.ProductSkuCtrl.deleteSku(obj.id, tenantId)
+                        // this.ProductSkuCtrl.deleteSku(obj.id, tenantId)  //TODO
                     );
                 });
             }
@@ -135,26 +119,26 @@ class ProductCtrl extends BaseController {
     }
 
 
-    deleteImages(Product, tenantId) {
-        const images = Product.related('images').toArray();
-        const promises = [];
+    // deleteImages(Product, tenantId) {
+    //     const images = Product.related('images').toArray();
+    //     const promises = [];
 
-        if(Array.isArray(images)) {
-            try {
-                images.forEach((obj) => {
-                    promises.push(
-                        this.ProductImageCtrl.deleteModel(obj.id, tenantId)
-                    );
-                });
-            }
-            catch(err) {
-                global.logger.error('ProductCtrl.deleteImages - ERROR DELETING PRODUCT IMAGES: ', err);
-                throw err;
-            }
-        }
+    //     if(Array.isArray(images)) {
+    //         try {
+    //             images.forEach((obj) => {
+    //                 promises.push(
+    //                     this.ProductImageCtrl.deleteModel(obj.id, tenantId)
+    //                 );
+    //             });
+    //         }
+    //         catch(err) {
+    //             global.logger.error('ProductCtrl.deleteImages - ERROR DELETING PRODUCT IMAGES: ', err);
+    //             throw err;
+    //         }
+    //     }
 
-        return Promise.all(promises);
-    }
+    //     return Promise.all(promises);
+    // }
 
 
     async upsertHandler(request, h) {

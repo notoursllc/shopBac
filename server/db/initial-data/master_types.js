@@ -1,6 +1,5 @@
-const faker = require('faker');
 const CoreService = require('../../plugins/core/core.service');
-
+const { tenantId, randomUuid } = require('../utils');
 
 exports.seed = (knex) => {
     return knex(CoreService.DB_TABLES.master_types)
@@ -14,8 +13,8 @@ exports.seed = (knex) => {
 
                 return Promise.all([
                     knex(CoreService.DB_TABLES.master_types).insert({
-                        id: faker.random.uuid(),
-                        tenant_id: '11111111-1111-1111-1111-111111111111',
+                        id: randomUuid(),
+                        tenant_id: tenantId,
                         published: true,
                         object: 'product_type',
                         name: 'Apparel',
@@ -29,8 +28,8 @@ exports.seed = (knex) => {
 
                     // product_sub_type
                     knex(CoreService.DB_TABLES.master_types).insert({
-                        id: faker.random.uuid(),
-                        tenant_id: '11111111-1111-1111-1111-111111111111',
+                        id: randomUuid(),
+                        tenant_id: tenantId,
                         published: true,
                         object: 'product_sub_type',
                         name: 'Hats',
@@ -42,8 +41,8 @@ exports.seed = (knex) => {
                         updated_at: d
                     }),
                     knex(CoreService.DB_TABLES.master_types).insert({
-                        id: faker.random.uuid(),
-                        tenant_id: '11111111-1111-1111-1111-111111111111',
+                        id: randomUuid(),
+                        tenant_id: tenantId,
                         published: true,
                         object: 'product_sub_type',
                         name: 'Tops',
@@ -57,8 +56,8 @@ exports.seed = (knex) => {
 
                     // product_fit_type
                     knex(CoreService.DB_TABLES.master_types).insert({
-                        id: faker.random.uuid(),
-                        tenant_id: '11111111-1111-1111-1111-111111111111',
+                        id: randomUuid(),
+                        tenant_id: tenantId,
                         published: true,
                         object: 'product_fit_type',
                         name: 'Mens',
@@ -70,8 +69,8 @@ exports.seed = (knex) => {
                         updated_at: d
                     }),
                     knex(CoreService.DB_TABLES.master_types).insert({
-                        id: faker.random.uuid(),
-                        tenant_id: '11111111-1111-1111-1111-111111111111',
+                        id: randomUuid(),
+                        tenant_id: tenantId,
                         published: true,
                         object: 'product_fit_type',
                         name: 'Womens',
@@ -83,8 +82,8 @@ exports.seed = (knex) => {
                         updated_at: d
                     }),
                     knex(CoreService.DB_TABLES.master_types).insert({
-                        id: faker.random.uuid(),
-                        tenant_id: '11111111-1111-1111-1111-111111111111',
+                        id: randomUuid(),
+                        tenant_id: tenantId,
                         published: true,
                         object: 'product_fit_type',
                         name: 'Boys',
@@ -96,8 +95,8 @@ exports.seed = (knex) => {
                         updated_at: d
                     }),
                     knex(CoreService.DB_TABLES.master_types).insert({
-                        id: faker.random.uuid(),
-                        tenant_id: '11111111-1111-1111-1111-111111111111',
+                        id: randomUuid(),
+                        tenant_id: tenantId,
                         published: true,
                         object: 'product_fit_type',
                         name: 'Girls',
@@ -111,8 +110,8 @@ exports.seed = (knex) => {
 
                     // product_sales_channel_type
                     knex(CoreService.DB_TABLES.master_types).insert({
-                        id: faker.random.uuid(),
-                        tenant_id: '11111111-1111-1111-1111-111111111111',
+                        id: randomUuid(),
+                        tenant_id: tenantId,
                         published: true,
                         object: 'product_sales_channel_type',
                         name: 'goBreadVan.com',
@@ -126,8 +125,8 @@ exports.seed = (knex) => {
 
                     // product_vendor_type
                     knex(CoreService.DB_TABLES.master_types).insert({
-                        id: faker.random.uuid(),
-                        tenant_id: '11111111-1111-1111-1111-111111111111',
+                        id: randomUuid(),
+                        tenant_id: tenantId,
                         published: true,
                         object: 'product_vendor_type',
                         name: 'BreadVan',

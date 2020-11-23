@@ -10,10 +10,6 @@ module.exports = function (baseModel, bookshelf) {
 
         softDelete: true,
 
-        // allProductSkuImages() {
-        //     return this.belongsToMany('ProductSkuImage')
-        // },
-
         format(attributes) {
             if (attributes.variants) {
                 attributes.variants = JSON.stringify(attributes.variants);
