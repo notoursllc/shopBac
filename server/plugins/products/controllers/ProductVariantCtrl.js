@@ -174,31 +174,30 @@ class ProductVariantCtrl extends BaseController {
 
         const ProductVariant = await this.modelForgeFetch(
             { id, tenant_id },
-            // { withRelated: ['images'] }
+            { withRelated: ['skus'] }
         );
 
         if(!ProductVariant) {
-            throw new Error('Unable to find ProductVariant.');
+            throw new Error('Unable to find ProductVariant');
         }
 
-        // TODO: images or swatches
-        // const images = ProductVariant.related('images').toArray();
+        const skus = ProductVariant.related('skus').toArray();
         const promises = [];
 
-        // Delete images
-        // if(Array.isArray(images)) {
-        //     try {
-        //         images.forEach((obj) => {
-        //             promises.push(
-        //                 this.ProductSkuImageCtrl.deleteModel(obj.id, tenant_id)
-        //             );
-        //         });
-        //     }
-        //     catch(err) {
-        //         global.logger.error('ProductSkuCtrl.deleteSku - ERROR DELETING IMAGES: ', err);
-        //         throw err;
-        //     }
-        // }
+        // Delete skus
+        if(Array.isArray(skus)) {
+            try {
+                skus.forEach((obj) => {
+                    promises.push(
+                        this.ProductVariantSkuCtrl.deleteModel(obj.id, tenant_id)
+                    );
+                });
+            }
+            catch(err) {
+                global.logger.error('ProductVariantSkuCtrl.deleteModel - ERROR DELETING SKUS: ', err);
+                throw err;
+            }
+        }
 
         promises.push(
             this.deleteModel(id, tenant_id)

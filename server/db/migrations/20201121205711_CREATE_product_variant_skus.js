@@ -13,27 +13,15 @@ module.exports.up = (knex) => {
             t.string('barcode').nullable();
 
             // PRICING
-            t.integer('base_price').defaultTo(0);
-            t.boolean('base_price_inherit').defaultTo(false);
-
-            t.integer('compare_at_price').defaultTo(0);
-            t.boolean('compare_at_price_inherit').defaultTo(false);
-
-            t.integer('cost_price').defaultTo(0);
-            t.boolean('cost_price_inherit').defaultTo(0);
-
-            t.integer('sale_price').defaultTo(0);
-            t.boolean('sale_price_inherit').defaultTo(0);
-
+            t.integer('base_price').nullable().defaultTo(null);
+            t.integer('compare_at_price').nullable().defaultTo(null);
+            t.integer('cost_price').nullable().defaultTo(null);
+            t.integer('sale_price').nullable().defaultTo(null);
             t.boolean('is_on_sale').defaultTo(false);
-            t.boolean('is_on_sale_inherit').defaultTo(0);
 
             // SHIPPING
-            t.decimal('weight_oz').defaultTo(0);
-            t.boolean('weight_oz_inherit').defaultTo(false);
-
-            t.string('customs_country_of_origin').nullable();
-            t.boolean('customs_country_of_origin_inherit').defaultTo(false);
+            t.decimal('weight_oz').nullable().defaultTo(null);
+            t.string('customs_country_of_origin').nullable().defaultTo(null);
 
             // INVENTORY
             t.integer('inventory_count').defaultTo(0);

@@ -10,6 +10,7 @@ exports.plugin = {
             function (server) {
                 const routePrefix = '/api/v1';
                 const ProductCtrl = new (require('./controllers/ProductCtrl'))(server);
+                const ProductVariantCtrl = new (require('./controllers/ProductVariantCtrl'))(server);
                 const ProductAccentMessageCtrl = new (require('./controllers/ProductAccentMessageCtrl'))(server);
                 const ProductCollectionCtrl = new (require('./controllers/ProductCollectionCtrl'))(server);
                 const ProductDataTableCtrl = new (require('./controllers/ProductDataTableCtrl'))(server);
@@ -124,6 +125,26 @@ exports.plugin = {
                     //     }
                     // },
 
+
+                    /******************************
+                     * Product variants
+                     ******************************/
+                    {
+                        method: 'DELETE',
+                        path: `${routePrefix}/product/variant`,
+                        options: {
+                            description: 'Deletes a product variant',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductVariantCtrl.deleteHandler(request, h);
+                            }
+                        }
+                    },
 
                     /******************************
                      * Product Accent Messages
