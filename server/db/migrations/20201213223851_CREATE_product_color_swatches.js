@@ -3,17 +3,14 @@ const CoreService = require('../../plugins/core/core.service');
 
 module.exports.up = (knex) => {
     return knex.schema.createTable(
-        CoreService.DB_TABLES.master_types,
+        CoreService.DB_TABLES.product_color_swatches,
         (t) => {
             t.uuid('id').primary();
             t.uuid('tenant_id').nullable();
-            t.boolean('published').defaultTo(true);
-            t.string('object').nullable();
-            t.string('name').notNullable();
-            t.integer('value').nullable();
-            t.string('slug').nullable();
+            t.string('hex').nullable();
+            t.string('label').nullable();
             t.string('description').nullable();
-            t.json('metadata').nullable();
+            t.jsonb('metadata').nullable();
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();
 
@@ -27,5 +24,5 @@ module.exports.up = (knex) => {
 
 
 module.exports.down = (knex) => {
-    return knex.schema.dropTableIfExists(CoreService.DB_TABLES.master_types);
+    return knex.schema.dropTableIfExists(CoreService.DB_TABLES.product_color_swatches);
 };

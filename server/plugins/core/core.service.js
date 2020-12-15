@@ -39,6 +39,7 @@ const DB_TABLES = {
 
 
     product_accent_messages: 'product_accent_messages',
+    product_color_swatches: 'product_color_swatches',
     product_data_tables: 'product_data_tables',
     products: 'products',
     tenants: 'tenants',

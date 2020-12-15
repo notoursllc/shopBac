@@ -12,6 +12,7 @@ exports.plugin = {
                 const ProductCtrl = new (require('./controllers/ProductCtrl'))(server);
                 const ProductVariantCtrl = new (require('./controllers/ProductVariantCtrl'))(server);
                 const ProductAccentMessageCtrl = new (require('./controllers/ProductAccentMessageCtrl'))(server);
+                const ProductColorSwatchCtrl = new (require('./controllers/ProductColorSwatchCtrl'))(server);
                 const ProductCollectionCtrl = new (require('./controllers/ProductCollectionCtrl'))(server);
                 const ProductDataTableCtrl = new (require('./controllers/ProductDataTableCtrl'))(server);
 
@@ -232,6 +233,97 @@ exports.plugin = {
                             },
                             handler: (request, h) => {
                                 return ProductAccentMessageCtrl.deleteHandler(request, h);
+                            }
+                        }
+                    },
+
+
+                    /******************************
+                     * Product Color Swatches
+                     ******************************/
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/color_swatches`,
+                        options: {
+                            description: 'Gets a list of product color swatches',
+                            handler: (request, h) => {
+                                return ProductColorSwatchCtrl.getPageHandler(request, null, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/color_swatches/all`,
+                        options: {
+                            description: 'Gets a list of product color swatches',
+                            auth: {
+                                strategies: ['session']
+                            },
+                            handler: (request, h) => {
+                                return ProductColorSwatchCtrl.getAllHandler(request, null, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/color_swatch`,
+                        options: {
+                            description: 'Gets a product color swatch by ID',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductColorSwatchCtrl.getByIdHandler(request, null, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'POST',
+                        path: `${routePrefix}/product/color_swatches`,
+                        options: {
+                            description: 'Adds a new product color swatch',
+                            validate: {
+                                payload: Joi.object({
+                                    ...ProductColorSwatchCtrl.getSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductColorSwatchCtrl.upsertHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'PUT',
+                        path: `${routePrefix}/product/color_swatches`,
+                        options: {
+                            description: 'Updates a product color swatch',
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    ...ProductColorSwatchCtrl.getSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductColorSwatchCtrl.upsertHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'DELETE',
+                        path: `${routePrefix}/product/color_swatch`,
+                        options: {
+                            description: 'Deletes a product color swatch',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductColorSwatchCtrl.deleteHandler(request, h);
                             }
                         }
                     },
@@ -490,6 +582,11 @@ exports.plugin = {
                 server.app.bookshelf.model(
                     'ProductAccentMessage',
                     require('./models/ProductAccentMessage')(baseModel, server.app.bookshelf, server)
+                );
+
+                server.app.bookshelf.model(
+                    'ProductColorSwatch',
+                    require('./models/ProductColorSwatch')(baseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(

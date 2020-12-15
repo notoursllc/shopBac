@@ -96,7 +96,6 @@ class ProductCtrl extends BaseController {
     }
 
 
-    // TODO: needs refactoring to use ProductVariantCtrl
     deleteVariants(Product, tenantId) {
         const variants = Product.related('variants').toArray();
         const promises = [];
@@ -105,40 +104,18 @@ class ProductCtrl extends BaseController {
             try {
                 variants.forEach((obj) => {
                     promises.push(
-                        // this.ProductSkuCtrl.deleteSku(obj.id, tenantId)  //TODO
+                        this.ProductVariantCtrl.deleteVariant(obj.id, tenantId)
                     );
                 });
             }
             catch(err) {
-                global.logger.error('ProductCtrl.deleteVariants - ERROR DELETING PRODUCT SKUs: ', err);
+                global.logger.error('ProductCtrl.deleteVariants - ERROR DELETING PRODUCT VARIANTS: ', err);
                 throw err;
             }
         }
 
         return Promise.all(promises);
     }
-
-
-    // deleteImages(Product, tenantId) {
-    //     const images = Product.related('images').toArray();
-    //     const promises = [];
-
-    //     if(Array.isArray(images)) {
-    //         try {
-    //             images.forEach((obj) => {
-    //                 promises.push(
-    //                     this.ProductImageCtrl.deleteModel(obj.id, tenantId)
-    //                 );
-    //             });
-    //         }
-    //         catch(err) {
-    //             global.logger.error('ProductCtrl.deleteImages - ERROR DELETING PRODUCT IMAGES: ', err);
-    //             throw err;
-    //         }
-    //     }
-
-    //     return Promise.all(promises);
-    // }
 
 
     async upsertHandler(request, h) {
@@ -190,7 +167,7 @@ class ProductCtrl extends BaseController {
 
             const Product = await this.modelForgeFetch(
                 { id: productId, tenant_id: tenantId },
-                { withRelated: ['images', 'skus'] }
+                { withRelated: ['variants'] }
             );
 
             if(!Product) {
@@ -199,7 +176,6 @@ class ProductCtrl extends BaseController {
 
             // Delete product images, skus, and the product model:
             await Promise.all([
-                this.deleteImages(Product, tenantId),
                 this.deleteVariants(Product, tenantId),
                 this.deleteModel(productId, tenantId)
             ]);

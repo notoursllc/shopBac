@@ -3,6 +3,7 @@ const tenant_members = require('../initial-data/tenant_members');
 const master_types = require('../initial-data/master_types');
 const product_collections = require('../initial-data/product_collections');
 const product_accent_messages = require('../initial-data/product_accent_messages');
+const product_color_swatches = require('../initial-data/product_color_swatches');
 
 
 /**
@@ -27,9 +28,12 @@ exports.seed = (knex, Promise) => {
         })
         .then(() => {
             return product_accent_messages.seed(knex, Promise)
+        })
+        .then(() => {
+            return product_color_swatches.seed(knex, Promise)
         });
         // .then(() => {
-               // NOTE: Promise.all required Bluebird, as the node Promise doesn't support all
+               // NOTE: Promise.all requires Bluebird, as the node Promise doesn't support all
                // which is why Im commenting this out for now
         //     return Promise.all([
         //         master_types.seed(knex, Promise),
