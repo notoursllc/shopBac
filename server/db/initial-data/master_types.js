@@ -1,18 +1,18 @@
-const CoreService = require('../../plugins/core/core.service');
+const { DB_TABLES } = require('../../plugins/core/services/CoreService');
 const { tenantId, randomUuid } = require('../utils');
 
 exports.seed = (knex) => {
-    return knex(CoreService.DB_TABLES.master_types)
+    return knex(DB_TABLES.master_types)
         .del()
         // .then(() => {
-        //     return knex.raw(`ALTER SEQUENCE ${CoreService.DB_TABLES.product_artists}_id_seq RESTART WITH 1`);
+        //     return knex.raw(`ALTER SEQUENCE ${DB_TABLES.product_artists}_id_seq RESTART WITH 1`);
         // })
         .then(
             () => {
                 const d = new Date();
 
                 return Promise.all([
-                    knex(CoreService.DB_TABLES.master_types).insert({
+                    knex(DB_TABLES.master_types).insert({
                         id: randomUuid(),
                         tenant_id: tenantId,
                         published: true,
@@ -27,7 +27,7 @@ exports.seed = (knex) => {
                     }),
 
                     // product_sub_type
-                    knex(CoreService.DB_TABLES.master_types).insert({
+                    knex(DB_TABLES.master_types).insert({
                         id: randomUuid(),
                         tenant_id: tenantId,
                         published: true,
@@ -40,7 +40,7 @@ exports.seed = (knex) => {
                         created_at: d,
                         updated_at: d
                     }),
-                    knex(CoreService.DB_TABLES.master_types).insert({
+                    knex(DB_TABLES.master_types).insert({
                         id: randomUuid(),
                         tenant_id: tenantId,
                         published: true,
@@ -55,7 +55,7 @@ exports.seed = (knex) => {
                     }),
 
                     // product_fit_type
-                    knex(CoreService.DB_TABLES.master_types).insert({
+                    knex(DB_TABLES.master_types).insert({
                         id: randomUuid(),
                         tenant_id: tenantId,
                         published: true,
@@ -68,7 +68,7 @@ exports.seed = (knex) => {
                         created_at: d,
                         updated_at: d
                     }),
-                    knex(CoreService.DB_TABLES.master_types).insert({
+                    knex(DB_TABLES.master_types).insert({
                         id: randomUuid(),
                         tenant_id: tenantId,
                         published: true,
@@ -81,7 +81,7 @@ exports.seed = (knex) => {
                         created_at: d,
                         updated_at: d
                     }),
-                    knex(CoreService.DB_TABLES.master_types).insert({
+                    knex(DB_TABLES.master_types).insert({
                         id: randomUuid(),
                         tenant_id: tenantId,
                         published: true,
@@ -94,7 +94,7 @@ exports.seed = (knex) => {
                         created_at: d,
                         updated_at: d
                     }),
-                    knex(CoreService.DB_TABLES.master_types).insert({
+                    knex(DB_TABLES.master_types).insert({
                         id: randomUuid(),
                         tenant_id: tenantId,
                         published: true,
@@ -109,7 +109,7 @@ exports.seed = (knex) => {
                     }),
 
                     // product_sales_channel_type
-                    knex(CoreService.DB_TABLES.master_types).insert({
+                    knex(DB_TABLES.master_types).insert({
                         id: randomUuid(),
                         tenant_id: tenantId,
                         published: true,
@@ -124,7 +124,7 @@ exports.seed = (knex) => {
                     }),
 
                     // product_vendor_type
-                    knex(CoreService.DB_TABLES.master_types).insert({
+                    knex(DB_TABLES.master_types).insert({
                         id: randomUuid(),
                         tenant_id: tenantId,
                         published: true,

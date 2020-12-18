@@ -2,14 +2,14 @@
 
 const accounting = require('accounting');
 const isObject = require('lodash.isobject');
-const CoreService = require('../../core/core.service');
+const { DB_TABLES } = require('../../core/services/CoreService');
 
 
 module.exports = function (baseModel, bookshelf, server) {
 
     return baseModel.extend(
         {
-            tableName: CoreService.DB_TABLES.carts,
+            tableName: DB_TABLES.carts,
 
             uuid: true,
 

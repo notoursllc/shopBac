@@ -1,4 +1,4 @@
-const BaseController = require('../../core/BaseController');
+const BaseController = require('../../core/controllers/BaseController');
 
 
 class TenantBaseCtrl extends BaseController {

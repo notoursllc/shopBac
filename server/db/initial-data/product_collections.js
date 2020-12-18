@@ -1,18 +1,18 @@
-const CoreService = require('../../plugins/core/core.service');
+const { DB_TABLES } = require('../../plugins/core/services/CoreService');
 const { tenantId, randomUuid } = require('../utils');
 
 exports.seed = (knex) => {
-    return knex(CoreService.DB_TABLES.product_collections)
+    return knex(DB_TABLES.product_collections)
         .del()
         // .then(() => {
-        //     return knex.raw(`ALTER SEQUENCE ${CoreService.DB_TABLES.product_artists}_id_seq RESTART WITH 1`);
+        //     return knex.raw(`ALTER SEQUENCE ${DB_TABLES.product_artists}_id_seq RESTART WITH 1`);
         // })
         .then(
             () => {
                 const d = new Date();
 
                 return Promise.all([
-                    knex(CoreService.DB_TABLES.product_collections).insert({
+                    knex(DB_TABLES.product_collections).insert({
                         id: randomUuid(),
                         published: true,
                         tenant_id: tenantId,

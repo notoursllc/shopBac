@@ -1,5 +1,5 @@
 const Joi = require('@hapi/joi');
-const BaseController = require('../core/BaseController');
+const BaseController = require('../core/controllers/BaseController');
 
 const { createCustomsItem } = require('./shippoAPI/customs_items.js');
 const { createShipment } = require('./shippoAPI/shipments.js');

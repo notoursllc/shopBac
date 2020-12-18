@@ -1,7 +1,7 @@
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const cloneDeep = require('lodash.clonedeep');
-const BaseController = require('../../core/BaseController');
+const BaseController = require('../../core/controllers/BaseController');
 const ProductVariantSkuCtrl = require('./ProductVariantSkuCtrl');
 
 

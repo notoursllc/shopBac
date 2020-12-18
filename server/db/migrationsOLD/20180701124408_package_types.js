@@ -1,9 +1,9 @@
-const CoreService = require('../../plugins/core/core.service');
+const { DB_TABLES } = require('../../plugins/core/services/CoreService');
 
 
 module.exports.up = (knex) => {
     return knex.schema.createTable(
-        CoreService.DB_TABLES.package_types,
+        DB_TABLES.package_types,
         (t) => {
             t.uuid('id').primary();
             t.integer('type').nullable();
@@ -26,5 +26,5 @@ module.exports.up = (knex) => {
 
 
 module.exports.down = (knex) => {
-    return knex.schema.dropTableIfExists(CoreService.DB_TABLES.package_types);
+    return knex.schema.dropTableIfExists(DB_TABLES.package_types);
 };

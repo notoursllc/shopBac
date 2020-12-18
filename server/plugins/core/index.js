@@ -1,12 +1,12 @@
 const Joi = require('@hapi/joi');
 const isObject = require('lodash.isobject');
-const coreController = require('./coreController');
+const CoreController = require('./controllers/CoreController');
 
 exports.plugin = {
     once: true,
     pkg: require('./package.json'),
     register: function (server, options) {
-        coreController.setServer(server);
+        CoreController.setServer(server);
 
         /*
         server.auth.strategy('xCartToken', 'jwt-cookie', {
@@ -102,7 +102,7 @@ exports.plugin = {
                             message: Joi.string()
                         })
                     },
-                    handler: coreController.loggerHandler
+                    handler: CoreController.loggerHandler
                 }
             },
             {
@@ -111,7 +111,7 @@ exports.plugin = {
                 options: {
                     auth: false,
                     description: 'Simple health check',
-                    handler: coreController.healthzHandler
+                    handler: CoreController.healthzHandler
                 }
             },
             {
@@ -121,7 +121,7 @@ exports.plugin = {
                     auth: false,
                     description: 'For generating robots.txt',
                 },
-                handler: coreController.robotsHandler
+                handler: CoreController.robotsHandler
             }
         ]);
     }

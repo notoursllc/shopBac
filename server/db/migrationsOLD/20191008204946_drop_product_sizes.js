@@ -1,4 +1,4 @@
-const CoreService = require('../../plugins/core/core.service');
+const { DB_TABLES } = require('../../plugins/core/services/CoreService');
 
 
 module.exports.up = function(knex) {
@@ -25,7 +25,7 @@ module.exports.down = function(knex) {
             t.uuid('product_id')
                 .notNullable()
                 .references('id')
-                .inTable(CoreService.DB_TABLES.products)
+                .inTable(DB_TABLES.products)
                 .onDelete('CASCADE');
 
             t.index([

@@ -1,7 +1,7 @@
-const CoreService = require('../../plugins/core/core.service');
+const { DB_TABLES } = require('../../plugins/core/services/CoreService');
 
 module.exports.up = (knex) => {
-    return knex.schema.table(CoreService.DB_TABLES.products, (t) => {
+    return knex.schema.table(DB_TABLES.products, (t) => {
         t.dropColumn('sku');
         t.dropColumn('cost');
         t.dropColumn('weight_oz');
@@ -10,7 +10,7 @@ module.exports.up = (knex) => {
 };
 
 module.exports.down = (knex) => {
-    return knex.schema.table(CoreService.DB_TABLES.products, function(t) {
+    return knex.schema.table(DB_TABLES.products, function(t) {
         t.integer('inventory_count').defaultTo(0);
     })
 };

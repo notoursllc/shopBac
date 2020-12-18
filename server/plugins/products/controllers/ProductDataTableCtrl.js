@@ -1,5 +1,5 @@
 const Joi = require('@hapi/joi');
-const BaseController = require('../../core/BaseController');
+const BaseController = require('../../core/controllers/BaseController');
 
 
 class ProductDataTableCtrl extends BaseController {

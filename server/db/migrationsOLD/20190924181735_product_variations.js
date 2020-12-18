@@ -1,9 +1,9 @@
-const CoreService = require('../../plugins/core/core.service');
+const { DB_TABLES } = require('../../plugins/core/services/CoreService');
 
 
 module.exports.up = (knex) => {
     return knex.schema.createTable(
-        CoreService.DB_TABLES.product_variations,
+        DB_TABLES.product_variations,
         (t) => {
             t.uuid('id').primary();
             t.string('name').notNullable();
@@ -27,12 +27,12 @@ module.exports.up = (knex) => {
             t.uuid('product_id')
                 .notNullable()
                 .references('id')
-                .inTable(CoreService.DB_TABLES.products);
+                .inTable(DB_TABLES.products);
         }
     );
 };
 
 
 module.exports.down = (knex) => {
-    return knex.schema.dropTableIfExists(CoreService.DB_TABLES.product_types);
+    return knex.schema.dropTableIfExists(DB_TABLES.product_types);
 };

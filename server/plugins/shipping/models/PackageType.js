@@ -1,11 +1,9 @@
-'use strict';
-
-const CoreService = require('../../core/core.service');
+const { DB_TABLES } = require('../../core/services/CoreService');
 
 module.exports = function (baseModel, bookshelf) {
     return baseModel.extend(
         {
-            tableName: CoreService.DB_TABLES.package_types,
+            tableName: DB_TABLES.package_types,
 
             uuid: true,
 

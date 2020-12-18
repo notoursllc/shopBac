@@ -1,8 +1,8 @@
-const CoreService = require('../../core/core.service');
+const { DB_TABLES } = require('../../core/services/CoreService');
 
 module.exports = function (baseModel, bookshelf) {
     return baseModel.extend({
-        tableName: CoreService.DB_TABLES.product_variant_skus,
+        tableName: DB_TABLES.product_variant_skus,
 
         uuid: true,
 

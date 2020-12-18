@@ -1,11 +1,11 @@
-const CoreService = require('../../core/core.service');
+const { DB_TABLES } = require('../../core/services/CoreService');
 const accounting = require('accounting');
 
 
 module.exports = function (baseModel, bookshelf) {
     return baseModel.extend(
         {
-            tableName: CoreService.DB_TABLES.cart_items,
+            tableName: DB_TABLES.cart_items,
 
             uuid: true,
 

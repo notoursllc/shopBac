@@ -1,8 +1,8 @@
-const CoreService = require('../../plugins/core/core.service');
+const { DB_TABLES } = require('../../plugins/core/services/CoreService');
 
 exports.up = function(knex, Promise) {
     return knex.schema.createTable(
-        CoreService.DB_TABLES.product_pic_variants,
+        DB_TABLES.product_pic_variants,
         (t) => {
             t.uuid('id').primary();
             t.string('url').nullable();
@@ -16,7 +16,7 @@ exports.up = function(knex, Promise) {
             t.uuid('product_pic_id')
                 .notNullable()
                 .references('id')
-                .inTable(CoreService.DB_TABLES.product_pics)
+                .inTable(DB_TABLES.product_pics)
                 .onDelete('CASCADE');
 
             t.index([
@@ -28,5 +28,5 @@ exports.up = function(knex, Promise) {
 };
 
 exports.down = function(knex, Promise) {
-    return knex.schema.dropTableIfExists(CoreService.DB_TABLES.product_pic_variants);
+    return knex.schema.dropTableIfExists(DB_TABLES.product_pic_variants);
 };
