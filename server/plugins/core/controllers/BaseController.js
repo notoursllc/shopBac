@@ -175,7 +175,11 @@ class BaseController {
         try {
             global.logger.info(`REQUEST: BaseController.getAll (${this.modelName})`);
 
-            const queryData = this.queryHelperParseWhere(request);
+            const queryData = {
+                ...this.queryHelperParseWhere(request),
+                ...this.queryHelperParseSort(request)
+            };
+
             const config = {};
 
             if(Array.isArray(withRelated) && withRelated.length) {
@@ -413,14 +417,32 @@ class BaseController {
     }
 
 
+    queryHelperParseSort(request) {
+        const response = {
+            orderBy: null,
+            orderDir: 'DESC',
+        };
+
+        const parsed = queryString.parse(request.url.search, {arrayFormat: 'bracket'});
+
+        if(parsed.sortDesc) {
+            response.orderDir = parsed.sortDesc === 'true' ? 'DESC' : 'ASC';
+        }
+        if(parsed.sortBy) {
+            response.orderBy = parsed.sortBy;
+        }
+
+        return response;
+    }
+
+
     queryHelper(request) {
         const response = {
             pageSize: null,
             page: null,
-            orderBy: null,
-            orderDir: 'DESC',
             limit: null,
-            ...this.queryHelperParseWhere(request)
+            ...this.queryHelperParseWhere(request),
+            ...this.queryHelperParseSort(request),
         };
 
         const parsed = queryString.parse(request.url.search, {arrayFormat: 'bracket'});
@@ -433,12 +455,6 @@ class BaseController {
         }
         if(parsed.limit) {
             response.limit = parseInt(parsed.limit, 10) || null;
-        }
-        if(parsed.sortDesc) {
-            response.orderDir = parsed.sortDesc === 'true' ? 'DESC' : 'ASC';
-        }
-        if(parsed.sortBy) {
-            response.orderBy = parsed.sortBy;
         }
 
         return response;
