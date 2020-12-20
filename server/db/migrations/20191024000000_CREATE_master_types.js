@@ -14,6 +14,7 @@ module.exports.up = (knex) => {
             t.string('slug').nullable();
             t.string('description').nullable();
             t.json('metadata').nullable();
+            t.integer('ordinal').nullable().defaultTo(1);
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();
 

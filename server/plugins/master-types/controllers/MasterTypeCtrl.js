@@ -19,6 +19,7 @@ class MasterTypeCtrl extends BaseController {
             slug: Joi.string().allow('').allow(null),
             description: Joi.string().max(500).allow('').allow(null),
             metadata: Joi.array().allow(null),
+            ordinal: Joi.number().integer().min(0).allow(null),
             created_at: Joi.date(),
             updated_at: Joi.date()
         };

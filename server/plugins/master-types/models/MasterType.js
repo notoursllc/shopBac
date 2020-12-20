@@ -26,6 +26,7 @@ module.exports = function (baseModel, bookshelf) {
             'slug',
             'description',
             'metadata',
+            'ordinal',
             'created_at',
             'updated_at'
         ]
