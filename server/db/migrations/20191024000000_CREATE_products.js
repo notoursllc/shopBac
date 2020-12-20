@@ -17,11 +17,14 @@ module.exports.up = (knex) => {
             // TYPES
             t.integer('type').nullable();
             t.integer('sub_type').nullable();
-            t.integer('fit_type').nullable();
             t.integer('sales_channel_type').nullable();
             t.integer('package_type').nullable();
             t.integer('vendor_type').nullable();
             t.integer('collections').nullable();
+            t.integer('gender_type').nullable();
+            t.integer('fit_type').nullable();
+            t.integer('sleeve_length_type').nullable();
+            t.integer('feature_type').nullable();
 
             // SEO
             t.text('seo_page_title').nullable();

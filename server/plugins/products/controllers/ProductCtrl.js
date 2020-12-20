@@ -33,11 +33,14 @@ class ProductCtrl extends BaseController {
             // TYPES
             type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
             sub_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
-            fit_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
             sales_channel_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
             package_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
             vendor_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
             collections: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
+            gender_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
+            fit_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
+            sleeve_length_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
+            feature_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
             // vendor_id: Joi.string().uuid().optional().empty('').allow(null).default(null),
 
             // SEO
