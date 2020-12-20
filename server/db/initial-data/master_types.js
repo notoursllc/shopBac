@@ -65,6 +65,7 @@ exports.seed = (knex) => {
                         slug: 'black',
                         description: '',
                         metadata: JSON.stringify([{"property":"hex","value":"#000"}]),
+                        ordinal: 1,
                         created_at: d,
                         updated_at: d
                     }),
@@ -78,6 +79,7 @@ exports.seed = (knex) => {
                         slug: 'white',
                         description: '',
                         metadata: JSON.stringify([{"property":"hex","value":"#fff"}]),
+                        ordinal: 2,
                         created_at: d,
                         updated_at: d
                     }),
@@ -91,6 +93,7 @@ exports.seed = (knex) => {
                         slug: 'red',
                         description: '',
                         metadata: JSON.stringify([{"property":"hex","value":"#e7352b"}]),
+                        ordinal: 3,
                         created_at: d,
                         updated_at: d
                     }),
@@ -104,6 +107,7 @@ exports.seed = (knex) => {
                         slug: 'blue',
                         description: '',
                         metadata: JSON.stringify([{"property":"hex","value":"#2290c8"}]),
+                        ordinal: 4,
                         created_at: d,
                         updated_at: d
                     }),
@@ -117,6 +121,7 @@ exports.seed = (knex) => {
                         slug: 'green',
                         description: '',
                         metadata: JSON.stringify([{"property":"hex","value":"#7bba3c"}]),
+                        ordinal: 5,
                         created_at: d,
                         updated_at: d
                     }),
@@ -130,6 +135,7 @@ exports.seed = (knex) => {
                         slug: 'grey',
                         description: '',
                         metadata: JSON.stringify([{"property":"hex","value":"#808080"}]),
+                        ordinal: 6,
                         created_at: d,
                         updated_at: d
                     }),
@@ -143,6 +149,7 @@ exports.seed = (knex) => {
                         slug: 'orange',
                         description: '',
                         metadata: JSON.stringify([{"property":"hex","value":"#f36b26"}]),
+                        ordinal: 7,
                         created_at: d,
                         updated_at: d
                     }),
@@ -156,6 +163,7 @@ exports.seed = (knex) => {
                         slug: 'yellow',
                         description: '',
                         metadata: JSON.stringify([{"property":"hex","value":"#fdd532"}]),
+                        ordinal: 8,
                         created_at: d,
                         updated_at: d
                     }),
@@ -169,6 +177,7 @@ exports.seed = (knex) => {
                         slug: 'brown',
                         description: '',
                         metadata: JSON.stringify([{"property":"hex","value":"#825d41"}]),
+                        ordinal: 9,
                         created_at: d,
                         updated_at: d
                     }),
@@ -182,6 +191,7 @@ exports.seed = (knex) => {
                         slug: 'pink',
                         description: '',
                         metadata: JSON.stringify([{"property":"hex","value":"#f0728f"}]),
+                        ordinal: 10,
                         created_at: d,
                         updated_at: d
                     }),
@@ -195,6 +205,7 @@ exports.seed = (knex) => {
                         slug: 'purple',
                         description: '',
                         metadata: JSON.stringify([{"property":"hex","value":"8d429f"}]),
+                        ordinal: 11,
                         created_at: d,
                         updated_at: d
                     }),
@@ -208,6 +219,7 @@ exports.seed = (knex) => {
                         slug: 'multi_color',
                         description: '',
                         metadata: JSON.stringify([{"property":"hex","value":""}]),
+                        ordinal: 12,
                         created_at: d,
                         updated_at: d
                     }),

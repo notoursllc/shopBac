@@ -25,6 +25,36 @@ class MasterTypeCtrl extends BaseController {
         };
     }
 
+
+    async bulkUpdateOrdinals(request, h) {
+        try {
+            global.logger.info(`REQUEST: MasterTypeCtrl.bulkUpdateOrdinals`);
+
+            const promises = [];
+            const tenant_id = this.getTenantIdFromAuth(request);
+
+            request.payload.ordinals.forEach((obj) => {
+                promises.push(
+                    this.upsertModel({
+                        ...obj,
+                        tenant_id
+                    })
+                );
+            });
+
+            await Promise.all(promises);
+
+            global.logger.info('RESPONSE: MasterTypeCtrl.bulkUpdateOrdinals');
+
+            return h.apiSuccess();
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
 }
 
 module.exports = MasterTypeCtrl;
