@@ -26,8 +26,8 @@ module.exports.up = (knex) => {
             t.timestamp('accent_message_end', true).nullable();
 
             //  MEDIA
-            t.string('exhibitType').nullable();
-            t.jsonb('exhibits').nullable();
+            t.jsonb('images').nullable();
+            t.jsonb('swatches').nullable();
 
             // SHIPPING
             t.boolean('requires_shipping').defaultTo(true);

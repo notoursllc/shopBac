@@ -37,8 +37,8 @@ class ProductVariantCtrl extends BaseController {
             accent_message_end: Joi.alternatives().try(Joi.date(), Joi.allow(null)),
 
             // MEDIA
-            exhibitType: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
-            exhibits: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
+            images: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
+            swatches: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
 
             // SHIPPING
             requires_shipping: Joi.boolean().empty('').default(true),

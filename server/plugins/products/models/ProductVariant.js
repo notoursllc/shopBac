@@ -21,14 +21,13 @@ module.exports = function (baseModel, bookshelf) {
             return this.hasMany('ProductVariantSku', 'product_variant_id');
         },
 
-        // images: function() {
-        //     // product_variant_id is the foreign key in ProductVariantImage
-        //     return this.hasMany('ProductVariantImage', 'product_variant_id');
-        // },
-
         format(attributes) {
-            if (attributes.exhibits) {
-                attributes.exhibits = JSON.stringify(attributes.exhibits)
+            if (attributes.images) {
+                attributes.images = JSON.stringify(attributes.images)
+            }
+
+            if (attributes.swatches) {
+                attributes.swatches = JSON.stringify(attributes.swatches)
             }
 
             return attributes;
@@ -65,9 +64,9 @@ module.exports = function (baseModel, bookshelf) {
             // }
         },
 
-        // not visible: tenant_id, deleted_at
         visible: [
             'id',
+            // 'tenant_id'
             'product_id',
             'published',
             'ordinal',
@@ -83,18 +82,18 @@ module.exports = function (baseModel, bookshelf) {
             'accent_message_id',
             'accent_message_begin',
             'accent_message_end',
-            'exhibitType',
-            'exhibits',
+            'images',
+            'swatches',
             'requires_shipping',
             'weight_oz',
             'customs_country_of_origin',
             'customs_harmonized_system_code',
             'created_at',
             'updated_at',
+            // 'deleted_at'
 
             // relations
             'skus',
-            // 'images',
 
             // virtuals
             // 'total_inventory_count'
