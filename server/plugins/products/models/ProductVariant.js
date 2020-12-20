@@ -71,6 +71,7 @@ module.exports = function (baseModel, bookshelf) {
             'published',
             'ordinal',
             'label',
+            'basic_color_type',
             'currency',
             'base_price',
             'cost_price',

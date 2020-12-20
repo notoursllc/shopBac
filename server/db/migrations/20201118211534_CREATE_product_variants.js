@@ -9,6 +9,7 @@ module.exports.up = (knex) => {
             t.boolean('published').defaultTo(true);
             t.integer('ordinal').nullable().defaultTo(1);
             t.string('label').nullable();
+            t.integer('basic_color_type').nullable();
 
             // PRICING
             t.string('currency').defaultTo('usd');

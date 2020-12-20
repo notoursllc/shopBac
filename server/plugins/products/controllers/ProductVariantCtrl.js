@@ -20,6 +20,7 @@ class ProductVariantCtrl extends BaseController {
             published: Joi.boolean().empty('').default(false),
             ordinal: Joi.number().integer().min(0).allow(null),
             label: Joi.alternatives().try(Joi.string().max(100), Joi.allow(null)),
+            basic_color_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
 
             // PRICING
             currency: Joi.alternatives().try(Joi.string().max(3), Joi.allow(null)),
