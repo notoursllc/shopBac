@@ -55,19 +55,19 @@ module.exports = function (baseModel, bookshelf) {
                 //     return price;
                 // },
 
-                // total_inventory_count: function() {
-                //     let totalCount = 0;
+                total_inventory_count: function() {
+                    let totalCount = 0;
 
-                //     // https://bookshelfjs.org/api.html#Collection-instance-toArray
-                //     const skus = this.related('colors').toArray();
-                //     if(skus.length) {
-                //         skus.forEach(function (model) {
-                //             totalCount += model.get('inventory_count')
-                //         })
-                //     }
+                    // https://bookshelfjs.org/api.html#Collection-instance-toArray
+                    const variants = this.related('variants').toArray();
+                    if(variants.length) {
+                        variants.forEach((model) => {
+                            totalCount += model.get('total_inventory_count')
+                        })
+                    }
 
-                //     return totalCount;
-                // }
+                    return totalCount;
+                }
 
             },
 
@@ -105,7 +105,7 @@ module.exports = function (baseModel, bookshelf) {
                 'variants',
 
                 // virtuals
-                // 'total_inventory_count'
+                'total_inventory_count'
             ]
         }
     );

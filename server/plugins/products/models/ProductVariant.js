@@ -49,19 +49,19 @@ module.exports = function (baseModel, bookshelf) {
             //     return price;
             // },
 
-            // total_inventory_count: function() {
-            //     let totalCount = 0;
+            total_inventory_count: function() {
+                let totalCount = 0;
 
-            //     // https://bookshelfjs.org/api.html#Collection-instance-toArray
-            //     const sizes = this.related('sizes').toArray();
-            //     if(sizes.length) {
-            //         sizes.forEach(function (model) {
-            //             totalCount += model.get('inventory_count')
-            //         })
-            //     }
+                // https://bookshelfjs.org/api.html#Collection-instance-toArray
+                const skus = this.related('skus').toArray();
+                if(skus.length) {
+                    skus.forEach((model) => {
+                        totalCount += model.get('inventory_count')
+                    })
+                }
 
-            //     return totalCount;
-            // }
+                return totalCount;
+            }
         },
 
         visible: [
@@ -97,7 +97,7 @@ module.exports = function (baseModel, bookshelf) {
             'skus',
 
             // virtuals
-            // 'total_inventory_count'
+            'total_inventory_count'
         ]
     });
 };
