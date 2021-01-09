@@ -18,15 +18,16 @@ module.exports = function (baseModel, bookshelf) {
             return attributes;
         },
 
-        // tenant_id is not visible
         visible: [
             'id',
+            // 'tenant_id',
             'resource_type',
-            'url',
-            'width',
+            'alt_text',
+            'ordinal',
             'variants',
             'created_at',
-            'updated_at'
+            'updated_at',
+            // 'deleted_at'
         ]
     });
 };

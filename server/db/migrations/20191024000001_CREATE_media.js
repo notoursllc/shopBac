@@ -7,8 +7,8 @@ module.exports.up = (knex) => {
             t.uuid('id').primary();
             t.uuid('tenant_id').nullable();
             t.string('resource_type').nullable();
-            t.string('url').nullable();
-            t.integer('width').defaultTo(0);
+            t.string('alt_text').nullable();
+            t.integer('ordinal').nullable().defaultTo(1);
             t.jsonb('variants').nullable();
 
             // TIMESTAMPS

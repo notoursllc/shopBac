@@ -142,6 +142,9 @@ async function resizeImageBuffer(buffer, options, saveResult) {
         .toBuffer({ resolveWithObject: true })
         .then(async ({ data, info }) => {
             return {
+                // target_width is helpful for the UI to find the image that is supposed to be (for example) 600px,
+                // but might not be exactly that
+                target_width: options.width,
                 width: info.width,
                 height: info.height,
                 url: saveResult ? await StorageService.writeBuffer(data, `${uuidV4()}.${imageType.ext}`) : null,
