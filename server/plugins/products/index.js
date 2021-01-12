@@ -11,6 +11,7 @@ exports.plugin = {
                 const routePrefix = '/api/v1';
                 const ProductCtrl = new (require('./controllers/ProductCtrl'))(server);
                 const ProductVariantCtrl = new (require('./controllers/ProductVariantCtrl'))(server);
+                const ProductVariantSkuCtrl = new (require('./controllers/ProductVariantSkuCtrl'))(server);
                 const ProductAccentMessageCtrl = new (require('./controllers/ProductAccentMessageCtrl'))(server);
                 const ProductColorSwatchCtrl = new (require('./controllers/ProductColorSwatchCtrl'))(server);
                 const ProductCollectionCtrl = new (require('./controllers/ProductCollectionCtrl'))(server);
@@ -143,6 +144,25 @@ exports.plugin = {
                             },
                             handler: (request, h) => {
                                 return ProductVariantCtrl.deleteHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/variant/sku`,
+                        options: {
+                            description: 'Gets a variant SKU',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductVariantSkuCtrl.getByIdHandler(request, null, h);
                             }
                         }
                     },
