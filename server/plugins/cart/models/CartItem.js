@@ -11,28 +11,54 @@ module.exports = function (baseModel, bookshelf) {
 
             hasTimestamps: true,
 
+            softDelete: true,
+
             // One-to-One relation with Cart
             // cart_id is the foreign key in this model
             cart: function() {
                 return this.belongsTo('Cart', 'cart_id');
             },
 
-            // One-to-One relation with Cart
-            // product_id is the foreign key in this model
             product: function() {
                 return this.belongsTo('Product', 'product_id');
             },
 
-            virtuals: {
-                total_item_price: function() {
-                    let val = this.get('qty') * this.related('product').get('display_price');
-                    return accounting.toFixed(val, 2);
-                }
-            }
-        },
+            product_variant: function() {
+                return this.belongsTo('ProductVariant', 'product_variant_id');
+            },
 
-        // Custom methods:
+            sku: function() {
+                return this.belongsTo('ProductVariantSku', 'sku_id');
+            },
+
+            // virtuals: {
+            //     total_item_price: function() {
+            //         let val = this.get('qty') * this.related('sku').get('display_price');
+            //         return accounting.toFixed(val, 2);
+            //     }
+            // },
+
+            visible: [
+                'id',
+                // 'tenant_id',
+                'qty',
+
+                'created_at',
+                'updated_at',
+                // 'deleted_at'
+
+                // relations
+                'cart',
+                'product',
+                'product_variant',
+                'sku'
+            ]
+        },
         {
+            masks: {
+                shopping_cart: 'id,product'
+            }
+
             /**
              * A simple helper function to find by json property in the 'variant' column
              * Only searches the top level attributes of the variant json, so you'll need
@@ -44,12 +70,13 @@ module.exports = function (baseModel, bookshelf) {
              * @param request
              * @returns {Promise}
              */
-            findByVariant: function(cart_id, product_id, variantName, variantValue) {
-                return this.query((qb) => {
-                    qb.where('cart_id', '=', cart_id);
-                    qb.andWhere('product_id', '=', product_id);
-                    qb.andWhere('variants', '@>', `{"${variantName}": "${variantValue}"}`);  //https://stackoverflow.com/questions/27780117/bookshelf-js-where-with-json-column-postgresql#36876753
-                }).fetch();
-            }
+            // findByVariant: function(cart_id, product_id, variantName, variantValue) {
+            //     return this.query((qb) => {
+            //         qb.where('cart_id', '=', cart_id);
+            //         qb.andWhere('product_id', '=', product_id);
+            //         qb.andWhere('variants', '@>', `{"${variantName}": "${variantValue}"}`);  //https://stackoverflow.com/questions/27780117/bookshelf-js-where-with-json-column-postgresql#36876753
+            //     }).fetch();
+            // }
         });
+
 };

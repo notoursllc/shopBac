@@ -158,7 +158,6 @@ class BaseController {
         }
     }
 
-
     getByIdHandler(request, fetchOptions, h) {
         return this.modelForgeFetchHandler(
             {

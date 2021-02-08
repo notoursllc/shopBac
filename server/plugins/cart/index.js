@@ -11,21 +11,85 @@ exports.plugin = {
             ['BookshelfOrm', 'Core', 'Products', 'Shipping', 'Payment'],
             function (server) {
                 const CartCtrl = new (require('./controllers/CartCtrl'))(server);
+                const CartItemCtrl = new (require('./controllers/CartItemCtrl'))(server);
 
                 server.route([
+                    // {
+                    //     method: 'POST',
+                    //     path: '/cart/create',
+                    //     options: {
+                    //         description: 'Creates a new Cart',
+                    //         auth: {
+                    //             strategies: ['storeauth']
+                    //         },
+                    //         validate: {
+                    //             payload: Joi.object({
+                    //                 tenant_id: Joi.string().uuid()
+                    //             })
+                    //         },
+                    //         handler: (request, h) => {
+                    //             return CartCtrl.createHandler(request, h);
+                    //         }
+                    //     }
+                    // },
                     {
                         method: 'GET',
-                        path: '/cart/upsert',
+                        path: '/cart',
                         options: {
-                            description: 'Finds the cart for the given jwt user',
+                            description: 'Gets a shopping cart for the given ID',
                             auth: {
                                 strategies: ['storeauth']
                             },
-                            // pre: [
-                            //     { method: CartCtrl.pre_cart, assign: 'm1' }
-                            // ],
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid(),
+                                    tenant_id: Joi.string().uuid(),
+                                })
+                            },
+                            handler: (request, h) => {
+                                console.log("GET CART", request.query)
+                                return CartCtrl.getByIdHandler(
+                                    request,
+                                    null,
+                                    h
+                                );
+                            }
+                        }
+                    },
+                    {
+                        method: 'POST',
+                        path: '/cart/upsert',
+                        options: {
+                            description: 'Creates or updates a Cart',
+                            auth: {
+                                strategies: ['storeauth']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    ...CartCtrl.getSchema()
+                                })
+                            },
                             handler: (request, h) => {
                                 return CartCtrl.upsertHandler(request, h);
+                            }
+                        }
+                    },
+
+                    {
+                        method: 'POST',
+                        path: '/cart/item',
+                        options: {
+                            description: 'Adds an item to Cart',
+                            auth: {
+                                strategies: ['storeauth']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    ...CartCtrl.getAddItemSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.addItemHandler(request, h);
                             }
                         }
                     },

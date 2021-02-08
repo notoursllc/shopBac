@@ -1,12 +1,9 @@
-'use strict';
-
 const accounting = require('accounting');
 const isObject = require('lodash.isobject');
 const { DB_TABLES } = require('../../core/services/CoreService');
 
 
 module.exports = function (baseModel, bookshelf, server) {
-
     return baseModel.extend(
         {
             tableName: DB_TABLES.carts,
@@ -14,6 +11,8 @@ module.exports = function (baseModel, bookshelf, server) {
             uuid: true,
 
             hasTimestamps: true,
+
+            softDelete: true,
 
             hidden: ['token', 'closed_at'],
 
@@ -27,10 +26,12 @@ module.exports = function (baseModel, bookshelf, server) {
 
                     return numItems;
                 },
+
                 product_weight_total: function() {
                     // TODO: use product options instead
                     return 1;
                 },
+
                 // product_weight_total: function() {
                 //     let weight = 0;
 
@@ -70,11 +71,16 @@ module.exports = function (baseModel, bookshelf, server) {
 
                 //     return accounting.toFixed(weight, 1);
                 // },
+
                 sub_total: function() {
                     // return server.plugins.Cart.getCartSubTotal( this.related('cart_data') );
                     let subtotal = 0;
 
                     this.related('cart_items').forEach((model) => {
+                        const sku = model.related('sku');
+                        if(sku) {
+
+                        }
                         subtotal += parseFloat(model.get('total_item_price') || 0);
                     });
 
@@ -82,6 +88,7 @@ module.exports = function (baseModel, bookshelf, server) {
                     // http://openexchangerates.github.io/accounting.js/
                     return accounting.toFixed(subtotal, 2);
                 },
+
                 shipping_total: function() {
                     let obj = this.get('shipping_rate');
                     if(isObject(obj) && obj.amount) {
@@ -89,6 +96,7 @@ module.exports = function (baseModel, bookshelf, server) {
                     }
                     return null;
                 },
+
                 grand_total: function() {
                     let subtotal = parseFloat(this.get('sub_total'));
                     let salesTax = parseFloat(this.get('sales_tax') || 0);
@@ -96,6 +104,7 @@ module.exports = function (baseModel, bookshelf, server) {
 
                     return accounting.toFixed((subtotal + salesTax + shipping), 2);
                 },
+
                 shipping_fullName: function() {
                     let name = `${this.get('shipping_firstName')} ${this.get('shipping_lastName')}`;
                     return name.trim();
@@ -109,13 +118,58 @@ module.exports = function (baseModel, bookshelf, server) {
             // so a Cart can have many Payments
             //
             // http://bookshelfjs.org/#Model-instance-hasMany
-            payments: function() {
-                return this.hasMany('Payment', 'cart_id');
-            },
+            // payments: function() {
+            //     return this.hasMany('Payment', 'cart_id');
+            // },
 
             // cart_id is the foreign key in CartItem
             cart_items: function() {
                 return this.hasMany('CartItem', 'cart_id');
+            },
+
+            visible: [
+                'id',
+                // 'tenant_id',
+
+                'billing_firstName',
+                'billing_lastName',
+                'billing_company',
+                'billing_streetAddress',
+                'billing_extendedAddress',
+                'billing_city',
+                'billing_state',
+                'billing_postalCode',
+                'billing_countryCodeAlpha2',
+                'billing_phone',
+
+                'shipping_firstName',
+                'shipping_lastName',
+                'shipping_streetAddress',
+                'shipping_extendedAddress',
+                'shipping_company',
+                'shipping_city',
+                'shipping_state',
+                'shipping_postalCode',
+                'shipping_countryCodeAlpha2',
+                'shipping_email',
+
+                'sales_tax',
+
+                'created_at',
+                'updated_at',
+                // 'deleted_at'
+                'closed_at',
+
+                // virtuals
+                'num_items',
+
+                // relations
+                'cart_items'
+            ]
+        },
+        {
+            masks: {
+                shopping_cart: 'id,cart_items'
             }
         }
     );

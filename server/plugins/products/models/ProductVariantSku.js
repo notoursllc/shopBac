@@ -16,6 +16,24 @@ module.exports = function (baseModel, bookshelf) {
             return this.belongsTo('ProductVariant', 'product_variant_id');
         },
 
+        virtuals: {
+            display_price: function() {
+                let base_price = this.get('base_price');
+
+                if(base_price !== null) {
+                    const sale_price = this.get('sale_price');
+
+                    if(this.get('is_on_sale') && sale_price !== null) {
+                        return sale_price;
+                    }
+
+                    return base_price;
+                }
+
+                return null;
+            },
+        },
+
         visible: [
             'id',
             // 'tenant_id'  not visible
@@ -27,7 +45,7 @@ module.exports = function (baseModel, bookshelf) {
             'barcode',
             'base_price',
             'compare_at_price',
-            'cost_price',
+            // 'cost_price',
             'sale_price',
             'is_on_sale',
             'weight_oz',
@@ -39,6 +57,9 @@ module.exports = function (baseModel, bookshelf) {
             'created_at',
             'updated_at',
             // 'deleted_at',  // not visible
+
+            // virtuals
+            'display_price'
         ]
     });
 };

@@ -8,7 +8,6 @@ exports.plugin = {
     register: function (server, options) {
         let knex;
         let bookshelf = null;
-        let bookshelfPlugins = ['registry', 'virtuals', 'visibility', 'pagination', 'bookshelf-uuid', 'bookshelf-paranoia'];
 
         const schema = Joi.object().keys({
             knex: Joi.object().keys({
@@ -46,7 +45,8 @@ exports.plugin = {
             throw new Error('Bookshelf setup error: ' + ex.toString());
         }
 
-        bookshelfPlugins.map(function (plugin) {
+        // loading bookshelf plugins:
+        ['registry', 'virtuals', 'visibility', 'pagination', 'bookshelf-uuid', 'bookshelf-paranoia', 'bookshelf-mask'].map((plugin) => {
             bookshelf.plugin(plugin);
         });
 
