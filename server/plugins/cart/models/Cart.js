@@ -77,8 +77,8 @@ module.exports = function (baseModel, bookshelf, server) {
                     let subtotal = 0;
 
                     this.related('cart_items').forEach((model) => {
-                        const sku = model.related('sku');
-                        if(sku) {
+                        const product_variant_sku = model.related('product_variant_sku');
+                        if(product_variant_sku) {
 
                         }
                         subtotal += parseFloat(model.get('total_item_price') || 0);

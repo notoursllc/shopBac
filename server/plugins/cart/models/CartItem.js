@@ -27,13 +27,13 @@ module.exports = function (baseModel, bookshelf) {
                 return this.belongsTo('ProductVariant', 'product_variant_id');
             },
 
-            sku: function() {
-                return this.belongsTo('ProductVariantSku', 'sku_id');
+            product_variant_sku: function() {
+                return this.belongsTo('ProductVariantSku', 'product_variant_sku_id');
             },
 
             // virtuals: {
             //     total_item_price: function() {
-            //         let val = this.get('qty') * this.related('sku').get('display_price');
+            //         let val = this.get('qty') * this.related('product_variant_sku').get('display_price');
             //         return accounting.toFixed(val, 2);
             //     }
             // },
@@ -51,14 +51,10 @@ module.exports = function (baseModel, bookshelf) {
                 'cart',
                 'product',
                 'product_variant',
-                'sku'
+                'product_variant_sku'
             ]
         },
         {
-            masks: {
-                shopping_cart: 'id,product'
-            }
-
             /**
              * A simple helper function to find by json property in the 'variant' column
              * Only searches the top level attributes of the variant json, so you'll need
@@ -77,6 +73,7 @@ module.exports = function (baseModel, bookshelf) {
             //         qb.andWhere('variants', '@>', `{"${variantName}": "${variantValue}"}`);  //https://stackoverflow.com/questions/27780117/bookshelf-js-where-with-json-column-postgresql#36876753
             //     }).fetch();
             // }
-        });
+        }
+    );
 
 };

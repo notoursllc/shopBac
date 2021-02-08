@@ -19,7 +19,7 @@ class CartItemCtrl extends BaseController {
             ),
 
             cart_id: Joi.string().uuid(),
-            sku_id: Joi.string().uuid(),
+            product_variant_sku_id: Joi.string().uuid(),
 
             // TIMESTAMPS
             created_at: Joi.date(),
@@ -34,13 +34,12 @@ class CartItemCtrl extends BaseController {
     }
 
 
-    // async createOrUpdate(request, cart_id, sku_id, qty, otherProps) {
     async createOrUpdate(data) {
 
         // First, try to fetch a CartItem for this cart & SKU
         const CartItem = await this.modelForgeFetch({
             cart_id: data.cart_id,
-            sku_id: data.sku_id,
+            product_variant_sku_id: data.product_variant_sku_id,
             tenant_id: data.tenant_id
         });
 

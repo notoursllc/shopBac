@@ -25,7 +25,7 @@ module.exports.up = (knex) => {
                 .references('id')
                 .inTable(DB_TABLES.product_variants);
 
-            t.uuid('sku_id')
+            t.uuid('product_variant_sku_id')
                 .notNullable()
                 .references('id')
                 .inTable(DB_TABLES.product_variant_skus);
@@ -37,7 +37,7 @@ module.exports.up = (knex) => {
             t.index([
                 'id',
                 'cart_id',
-                'sku_id'
+                'product_variant_sku_id'
             ]);
         }
     );

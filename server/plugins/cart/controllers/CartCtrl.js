@@ -59,7 +59,7 @@ class CartCtrl extends BaseController {
         return {
             tenant_id: Joi.string().uuid(),
             cart: Joi.alternatives().try(Joi.string().uuid(), Joi.allow(null)),
-            sku: Joi.string().uuid().required(),
+            product_variant_sku: Joi.string().uuid().required(),
             qty: Joi.number().integer().min(0)
         };
     }
@@ -158,7 +158,7 @@ class CartCtrl extends BaseController {
             // and also fetch the Cart
             const [ ProductVariantSku, Cart ] = await Promise.all([
                 this.ProductVariantSkuCtrl.modelForgeFetch({
-                    id: request.payload.sku,
+                    id: request.payload.product_variant_sku,
                     tenant_id: tenantId
                 }),
                 this.getOrCreateCart(
@@ -195,31 +195,13 @@ class CartCtrl extends BaseController {
             }
 
             const cartId = Cart.get('id');
-            const skuId = ProductVariantSku.get('id');
-
-            /*
-            const cart_items = Cart.related('cart_items');
-            const cartItemIdWithSku = null;
-
-            if(Array.isArray(cart_items)) {
-                cart_items.forEach((obj) => {
-                    if(obj.sku_id === skuId) {
-                        cartItemIdWithSku = obj.id;
-                    }
-                })
-            }
-
-            // A CartItem with this SKU already exists
-            if(cartItemIdWithSku) {
-
-            }
-            */
+            const productVariantSkuId = ProductVariantSku.get('id');
 
             await this.CartItemCtrl.createOrUpdate({
                 tenant_id: tenantId,
                 qty: request.payload.qty,
                 cart_id: cartId,
-                sku_id: skuId,
+                product_variant_sku_id: productVariantSkuId,
                 product_id: Product.get('id'),
                 product_variant_id: ProductVariant.get('id'),
             });
@@ -227,46 +209,20 @@ class CartCtrl extends BaseController {
             // get an updated Cart to return
             const UpdatedCart = await this.modelForgeFetch(
                 { id: cartId, tenant_id: tenantId },
-                { withRelated: ['cart_items', 'cart_items.product', 'cart_items.product_variant', 'cart_items.sku'] }
+                { withRelated: ['cart_items', 'cart_items.product', 'cart_items.product_variant', 'cart_items.product_variant_sku'] }
             );
 
             // TODO: use the mask plugin here to hide the unneeded product and product_variant props
             // before returning
             // https://github.com/seegno/bookshelf-mask
 
-            const cartMask = [
-                'id',
-                'billing_firstName',
-                'billing_lastName',
-                'billing_company',
-                'billing_streetAddress',
-                'billing_extendedAddress',
-                'billing_city',
-                'billing_state',
-                'billing_postalCode',
-                'billing_countryCodeAlpha2',
-                'billing_phone',
-                'shipping_firstName',
-                'shipping_lastName',
-                'shipping_streetAddress',
-                'shipping_extendedAddress',
-                'shipping_company',
-                'shipping_city',
-                'shipping_state',
-                'shipping_postalCode',
-                'shipping_countryCodeAlpha2',
-                'shipping_email',
-                'sales_tax',
-                'created_at',
-                'updated_at',
-                'closed_at',
-                'num_items',
-                'cart_items'
-            ];
+
 
 
             return h.apiSuccess(
-                UpdatedCart.mask(`*,cart_items(id,qty,product(id,title,description),product_variant(currency,display_price,is_on_sale,images,swatches),sku(id,label,display_price,sku))`)
+                // mask plugin:
+                // https://github.com/seegno/bookshelf-mask
+                UpdatedCart.mask(`*,cart_items(id,qty,product(id,title,description),product_variant(currency,display_price,is_on_sale,images,swatches),product_variant_sku(id,label,display_price,sku))`)
                 // UpdatedCart.mask(`
                 //     id,
                 //     billing_firstName,
