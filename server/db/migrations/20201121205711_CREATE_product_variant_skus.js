@@ -11,6 +11,7 @@ module.exports.up = (knex) => {
             t.string('label').nullable();
             t.string('sku').nullable();
             t.string('barcode').nullable();
+            t.integer('max_cart_qty').nullable().defaultTo(10);
 
             // PRICING
             t.integer('base_price').nullable().defaultTo(null);

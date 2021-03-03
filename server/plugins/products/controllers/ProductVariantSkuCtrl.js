@@ -35,6 +35,11 @@ class ProductVariantSkuCtrl extends BaseController {
                 Joi.allow(null)
             ),
 
+            max_cart_qty: Joi.alternatives().try(
+                Joi.number().integer().min(0),
+                Joi.allow(null)
+            ),
+
             // PRICING
             base_price: Joi.alternatives().try(
                 Joi.number().integer().min(0),

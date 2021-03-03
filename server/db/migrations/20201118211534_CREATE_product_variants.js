@@ -10,6 +10,7 @@ module.exports.up = (knex) => {
             t.integer('ordinal').nullable().defaultTo(1);
             t.string('label').nullable();
             t.integer('basic_color_type').nullable();
+            t.integer('max_cart_qty').nullable().defaultTo(10);
 
             // PRICING
             t.string('currency').defaultTo('usd');
@@ -32,7 +33,7 @@ module.exports.up = (knex) => {
 
             // SHIPPING
             t.boolean('requires_shipping').defaultTo(true);
-            t.decimal('weight_oz').defaultTo(0);
+            t.decimal('weight_oz').nullable().defaultTo(null);
             t.string('customs_country_of_origin').nullable();
             t.string('customs_harmonized_system_code').nullable();
 

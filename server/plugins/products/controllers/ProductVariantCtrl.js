@@ -19,23 +19,49 @@ class ProductVariantCtrl extends BaseController {
             tenant_id: Joi.string().uuid(),
             published: Joi.boolean().empty('').default(false),
             ordinal: Joi.number().integer().min(0).allow(null),
-            label: Joi.alternatives().try(Joi.string().max(100), Joi.allow(null)),
-            basic_color_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
+            label: Joi.alternatives().try(
+                Joi.string().max(100),
+                Joi.allow(null)
+            ),
+            basic_color_type: Joi.alternatives().try(
+                Joi.number().integer().positive(),
+                Joi.allow(null)
+            ),
+            max_cart_qty: Joi.alternatives().try(
+                Joi.number().integer().min(0),
+                Joi.allow(null)
+            ),
 
             // PRICING
-            currency: Joi.alternatives().try(Joi.string().max(3), Joi.allow(null)),
+            currency: Joi.alternatives().try(
+                Joi.string().max(3),
+                Joi.allow(null)
+            ),
+
             base_price: Joi.number().integer().min(0).empty('').default(0),
             cost_price: Joi.number().integer().min(0).empty('').default(0),
             compare_at_price: Joi.number().integer().min(0).empty('').default(0),
             sale_price: Joi.number().integer().min(0).empty('').default(0),
             is_on_sale: Joi.boolean().empty('').default(false),
             is_taxable: Joi.boolean().empty('').default(false),
-            tax_code: Joi.alternatives().try(Joi.number(), Joi.allow(null)),
+            tax_code: Joi.alternatives().try(
+                Joi.number(),
+                Joi.allow(null)
+            ),
 
             // ACCENT MESSAGE
-            accent_message_id: Joi.alternatives().try(Joi.string().uuid(), Joi.allow(null)),
-            accent_message_begin: Joi.alternatives().try(Joi.date(), Joi.allow(null)),
-            accent_message_end: Joi.alternatives().try(Joi.date(), Joi.allow(null)),
+            accent_message_id: Joi.alternatives().try(
+                Joi.string().uuid(),
+                Joi.allow(null)
+            ),
+            accent_message_begin: Joi.alternatives().try(
+                Joi.date(),
+                Joi.allow(null)
+            ),
+            accent_message_end: Joi.alternatives().try(
+                Joi.date(),
+                Joi.allow(null)
+            ),
 
             // MEDIA
             images: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
@@ -44,8 +70,14 @@ class ProductVariantCtrl extends BaseController {
             // SHIPPING
             requires_shipping: Joi.boolean().empty('').default(true),
             weight_oz: Joi.number().precision(2).min(0).max(99999999.99).empty('').default(0),
-            customs_country_of_origin: Joi.alternatives().try(Joi.string().max(2), Joi.allow(null)),
-            customs_harmonized_system_code: Joi.alternatives().try(Joi.string(), Joi.allow(null)),
+            customs_country_of_origin: Joi.alternatives().try(
+                Joi.string().max(2),
+                Joi.allow(null)
+            ),
+            customs_harmonized_system_code: Joi.alternatives().try(
+                Joi.string(),
+                Joi.allow(null)
+            ),
 
             // product_id: Joi.string().uuid().required(),
             product_id: Joi.string().uuid(),
