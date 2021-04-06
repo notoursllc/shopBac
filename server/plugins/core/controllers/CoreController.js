@@ -12,6 +12,13 @@ function setServer(s) {
 }
 
 
+function appConfigHandler(request, h) {
+    return h.apiSuccess({
+        CART_MAX_TOTAL_QUANTITY: parseInt(process.env.CART_MAX_TOTAL_QUANTITY, 10)
+    });
+}
+
+
 function loggerHandler(request, h) {
     switch(request.payload.type) {
         // Only supportig the 'error' and 'info' types for now
@@ -99,6 +106,7 @@ function faviconHandler(request, h) {
 
 module.exports = {
     setServer,
+    appConfigHandler,
     loggerHandler,
     healthzHandler,
     faviconHandler,

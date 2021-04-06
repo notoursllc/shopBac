@@ -92,6 +92,17 @@ exports.plugin = {
 
         server.route([
             {
+                method: 'GET',
+                path: '/api/v1/app_config',
+                options: {
+                    auth: false,
+                    description: 'Returns public app config info',
+                    handler: (request, h) => {
+                        return CoreController.appConfigHandler(request, h);
+                    }
+                }
+            },
+            {
                 method: 'POST',
                 path: '/api/v1/logger',
                 options: {
