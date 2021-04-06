@@ -57,6 +57,7 @@
     "knex": "^0.19.4",
     "lodash.clonedeep": "^4.5.0",
     "lodash.foreach": "^4.5.0",
+    "lodash.isfinite": "^3.3.2",
     "lodash.isobject": "^3.0.2",
     "lodash.isstring": "^4.0.1",
     "mailgun-js": "^0.22.0",
@@ -84,7 +85,6 @@
     "nodemon": "^1.19.3"
   },
   "engines": {
-    "node": "12.14.1",
-    "npm": "6.13.4"
+    "node": "12.14.1"
   }
 }

@@ -131,6 +131,30 @@ exports.plugin = {
                     /******************************
                      * Product variants
                      ******************************/
+                     {
+                        method: 'GET',
+                        path: `${routePrefix}/product/variant`,
+                        options: {
+                            description: 'Gets a product variant',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required(),
+                                    skus: Joi.string().valid('true', 'false')
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductVariantCtrl.getByIdHandler(
+                                    request,
+                                    request.query.skus === 'true' ? { withRelated: ['skus'] } : null,
+                                    h
+                                );
+                            }
+                        }
+                    },
                     {
                         method: 'DELETE',
                         path: `${routePrefix}/product/variant`,
@@ -166,6 +190,7 @@ exports.plugin = {
                             }
                         }
                     },
+
 
                     /******************************
                      * Product Accent Messages

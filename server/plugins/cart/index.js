@@ -85,11 +85,29 @@ exports.plugin = {
                             },
                             validate: {
                                 payload: Joi.object({
-                                    ...CartCtrl.getAddItemSchema()
+                                    ...CartItemCtrl.getSchema()
                                 })
                             },
                             handler: (request, h) => {
-                                return CartCtrl.addItemHandler(request, h);
+                                return CartItemCtrl.createHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'PUT',
+                        path: '/cart/item',
+                        options: {
+                            description: 'Updates a CartItem',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    ...CartItemCtrl.getSchema(true)
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartItemCtrl.updateHandler(request, h);
                             }
                         }
                     },
