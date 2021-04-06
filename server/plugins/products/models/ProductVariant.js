@@ -89,7 +89,6 @@ module.exports = function (baseModel, bookshelf) {
                 'ordinal',
                 'label',
                 'basic_color_type',
-                'max_cart_qty',
                 'currency',
                 'base_price',
                 'cost_price',

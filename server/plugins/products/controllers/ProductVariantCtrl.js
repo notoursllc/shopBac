@@ -27,10 +27,6 @@ class ProductVariantCtrl extends BaseController {
                 Joi.number().integer().positive(),
                 Joi.allow(null)
             ),
-            max_cart_qty: Joi.alternatives().try(
-                Joi.number().integer().min(0),
-                Joi.allow(null)
-            ),
 
             // PRICING
             currency: Joi.alternatives().try(

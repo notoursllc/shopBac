@@ -10,7 +10,6 @@ module.exports.up = (knex) => {
             t.integer('ordinal').nullable().defaultTo(1);
             t.string('label').nullable();
             t.integer('basic_color_type').nullable();
-            t.integer('max_cart_qty').nullable().defaultTo(10);
 
             // PRICING
             t.string('currency').defaultTo('usd');

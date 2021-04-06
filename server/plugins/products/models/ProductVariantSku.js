@@ -43,7 +43,6 @@ module.exports = function (baseModel, bookshelf) {
             'label',
             'sku',
             'barcode',
-            'max_cart_qty',
             'base_price',
             'compare_at_price',
             'cost_price',
