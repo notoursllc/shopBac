@@ -44,7 +44,16 @@ class CartItemCtrl extends BaseController {
         return this.CartCtrl.getActiveCart(
             cartId,
             tenantId,
-            { withRelated: ['cart_items', 'cart_items.product', 'cart_items.product_variant', 'cart_items.product_variant_sku'] }
+            {
+                withRelated: {
+                    'cart_items': (query) => {
+                        query.orderBy('created_at', 'ASC');
+                    },
+                    'cart_items.product': null,
+                    'cart_items.product_variant': null,
+                    'cart_items.product_variant_sku': null
+                }
+            }
         );
     }
 
@@ -203,7 +212,7 @@ class CartItemCtrl extends BaseController {
     /**
      * Updates the quantity or the ProductVariantSku of a cart item
      */
-    async updateHandler(request, h) {
+     async updateHandler(request, h) {
         global.logger.info(`REQUEST: CartItemCtrl.updateHandler`, {
             meta: request.payload
         });
@@ -221,12 +230,15 @@ class CartItemCtrl extends BaseController {
                 this.CartCtrl.getActiveCart(
                     request.payload.cart_id,
                     tenantId,
-                    { withRelated: ['cart_items'] }
+                    { withRelated: ['cart_items', 'cart_items.product'] }
                 ),
-                this.modelForgeFetch({
-                    id: request.payload.id,
-                    tenant_id: tenantId
-                })
+                this.modelForgeFetch(
+                    {
+                        id: request.payload.id,
+                        tenant_id: tenantId
+                    },
+                    { withRelated: ['product'] }
+                )
             ]);
 
             if(!ProductVariantSku) {
@@ -239,21 +251,37 @@ class CartItemCtrl extends BaseController {
                 throw new Error('CartItem does not exist');
             }
 
+
+            // For the purpose of checking the total quantity of each product,
+            // putting the cart items into a lookup table
+            const cart_items = Cart.related('cart_items');
+            const lookup = {};
+
+            cart_items.forEach((cItem) => {
+                const product = cItem.related('product');
+                const productId = product.get('id');
+
+                if(!lookup.hasOwnProperty(productId)) {
+                    lookup[productId] = 0;
+                }
+
+                // add the 'new' quantity if the id from the request mathces the cItem id
+                if(cItem.get('id') === request.payload.id) {
+                    lookup[productId] += parseInt(request.payload.qty, 10);
+                }
+                else {
+                    lookup[productId] += parseInt(cItem.get('qty'), 10);
+                }
+            });
+
+            // if the lookup prod is over the max then that will tell us how much
+            // we need to trim from the request
+            const pid = CartItem.related('product').get('id');
+            const exceeded = lookup[pid] - parseInt(process.env.CART_MAX_PRODUCT_INSTANCES, 10);
             let requestQty = parseInt(request.payload.qty, 10);
 
-            // Remove the existing qty for this item in the cart
-            // and replace it with the qty from the request.
-            let adjustedCartQty = Cart.num_items - CartItem.get('qty');
-            adjustedCartQty += requestQty;
-
-            // If the new cart qty is over the max, adjust the requested qty by
-            // subtracting the overage amount
-            const maxQty = parseInt(process.env.CART_MAX_TOTAL_QUANTITY, 10);
-            const qtyExceededAmount = adjustedCartQty > maxQty ? adjustedCartQty - maxQty : 0;
-
-            requestQty = requestQty - qtyExceededAmount;
-            if(requestQty < 0) {
-                requestQty = 0;
+            if(exceeded > 0) {
+                requestQty -= exceeded;
             }
 
             await this.getModel().update(
@@ -283,81 +311,6 @@ class CartItemCtrl extends BaseController {
             global.bugsnag(err);
             throw Boom.badRequest(err);
         }
-
-
-
-
-
-/*
-
-            // Get the ProductVariant
-            const ProductVariant = await this.ProductVariantCtrl.modelForgeFetch({
-                id: ProductVariantSku.get('product_variant_id'),
-                tenant_id: tenantId
-            });
-
-            if(!ProductVariant) {
-                throw new Error('ProductVariant does not exist');
-            }
-
-
-            // Get the product
-            const Product = await this.ProductCtrl.modelForgeFetch({
-                id: ProductVariant.get('product_id'),
-                tenant_id: tenantId
-            });
-
-            if(!Product) {
-                throw new Error('Product does not exist');
-            }
-
-            const cartId = Cart.get('id');
-            const productVariantSkuId = ProductVariantSku.get('id');
-
-            await this.CartItemCtrl.createOrUpdate({
-                tenant_id: tenantId,
-                qty: request.payload.qty,
-                cart_id: cartId,
-                product_variant_sku_id: productVariantSkuId,
-                product_id: Product.get('id'),
-                product_variant_id: ProductVariant.get('id'),
-            });
-
-            // get an updated Cart to return
-            const UpdatedCart = await this.modelForgeFetch(
-                { id: cartId, tenant_id: tenantId },
-                { withRelated: ['cart_items', 'cart_items.product', 'cart_items.product_variant', 'cart_items.product_variant_sku'] }
-            );
-
-            // TODO: use the mask plugin here to hide the unneeded product and product_variant props
-            // before returning
-            // https://github.com/seegno/bookshelf-mask
-
-
-
-
-            return h.apiSuccess(
-                // mask plugin:
-                // https://github.com/seegno/bookshelf-mask
-                UpdatedCart.mask(`*,cart_items(id,qty,product(id,title,description),product_variant(id,currency,display_price,base_price,is_on_sale,sale_price,images,label,swatches),product_variant_sku(id,label,display_price,base_price,is_on_sale,sale_price,sku))`)
-                // UpdatedCart.mask(`
-                //     id,
-                //     billing_firstName,
-                //     billing_lastName,
-                //     billing_company,
-                //     billing_streetAddress,
-                //     billing_extendedAddress,
-                // `)
-                // UpdatedCart.mask('cart_items(product(id,title))')
-            );
-
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-            throw Boom.badRequest(err);
-        }
-        */
     }
 
 }
