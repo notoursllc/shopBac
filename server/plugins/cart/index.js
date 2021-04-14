@@ -111,6 +111,25 @@ exports.plugin = {
                             }
                         }
                     },
+                    {
+                        method: 'DELETE',
+                        path: '/cart/item',
+                        options: {
+                            description: 'Removes an item from the cart',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required(),
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartItemCtrl.deleteHandler(request, h);
+                            }
+                        }
+                    },
 
                     /*
                     {

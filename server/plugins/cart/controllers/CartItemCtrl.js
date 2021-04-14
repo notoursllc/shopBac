@@ -313,6 +313,51 @@ class CartItemCtrl extends BaseController {
         }
     }
 
+
+    /**
+     * Deletes a product, including its related skus and images
+     *
+     * @param {*} request
+     * @param {*} h
+     */
+    async deleteHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: CartItemCtrl.deleteHandler', {
+                meta: request.query
+            });
+
+            const cartItemId = request.query.id;
+            const tenantId = this.getTenantIdFromAuth(request);
+
+            const CartItem = await this.modelForgeFetch(
+                {
+                    id: cartItemId,
+                    tenant_id: tenantId
+                },
+                { withRelated: ['product'] }
+            );
+
+            if(!CartItem) {
+                throw Boom.badRequest('Unable to find CartItem.');
+            }
+
+            await this.deleteModel(cartItemId, tenantId);
+            const UpdatedCart = await this.getActiveCart(CartItem.get('cart_id'), tenantId);
+            const updatedCartJson = UpdatedCart.toJSON();
+
+            global.logger.info('RESPONSE: CartItemCtrl.deleteHandler', {
+                meta: updatedCartJson
+            });
+
+            return h.apiSuccess(updatedCartJson);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
 }
 
 
