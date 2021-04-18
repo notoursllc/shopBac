@@ -14,7 +14,7 @@ function setServer(s) {
 
 function appConfigHandler(request, h) {
     return h.apiSuccess({
-        CART_MAX_PRODUCT_INSTANCES: parseInt(process.env.CART_MAX_PRODUCT_INSTANCES, 10)
+        CART_PRODUCT_QUANTITY_LIMIT: parseInt(process.env.CART_PRODUCT_QUANTITY_LIMIT, 10)
     });
 }
 

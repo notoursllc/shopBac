@@ -128,8 +128,8 @@ class CartCtrl extends BaseController {
     }
 
 
-    async getOrCreateCart(id, tenant_id) {
-        const Cart = await this.getActiveCart(id, tenant_id);
+    async getOrCreateCart(id, tenant_id, fetchOptions) {
+        const Cart = await this.getActiveCart(id, tenant_id, fetchOptions);
 
         if(!Cart) {
             // create
