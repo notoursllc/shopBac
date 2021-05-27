@@ -64,14 +64,9 @@ class ProductVariantCtrl extends BaseController {
             swatches: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
 
             // SHIPPING
-            requires_shipping: Joi.boolean().empty('').default(true),
             weight_oz: Joi.number().precision(2).min(0).max(99999999.99).empty('').default(0),
             customs_country_of_origin: Joi.alternatives().try(
                 Joi.string().max(2),
-                Joi.allow(null)
-            ),
-            customs_harmonized_system_code: Joi.alternatives().try(
-                Joi.string(),
                 Joi.allow(null)
             ),
 

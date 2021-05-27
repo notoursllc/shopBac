@@ -96,6 +96,11 @@ module.exports = function (baseModel, bookshelf) {
                 'seo_page_title',
                 'seo_page_desc',
                 'seo_uri',
+
+                'requires_shipping',
+                'customs_country_of_origin',
+                'customs_harmonized_system_code',
+
                 'video_url',
                 'created_at',
                 'updated_at',

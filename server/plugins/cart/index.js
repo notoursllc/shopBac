@@ -66,7 +66,7 @@ exports.plugin = {
                             },
                             validate: {
                                 payload: Joi.object({
-                                    ...CartCtrl.getSchema()
+                                    ...CartCtrl.getSchema(true)
                                 })
                             },
                             handler: (request, h) => {
@@ -127,6 +127,51 @@ exports.plugin = {
                             },
                             handler: (request, h) => {
                                 return CartItemCtrl.deleteHandler(request, h);
+                            }
+                        }
+                    },
+
+
+                    /******************
+                     * SHIPPING
+                     ******************/
+
+                    {
+                        method: 'POST',
+                        path: '/cart/shipping/estimate',
+                        options: {
+                            description: 'Returns shipping rates for the cart',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required(),
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.shippingRateEstimateHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'POST',
+                        path: '/cart/shipping/rate',
+                        options: {
+                            description: 'Persists a selected shipping rate for the cart.',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required(),
+                                    rate_id: Joi.string().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.selectShippingRateHandler(request, h);
                             }
                         }
                     },

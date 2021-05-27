@@ -31,10 +31,8 @@ module.exports.up = (knex) => {
             t.jsonb('swatches').nullable();
 
             // SHIPPING
-            t.boolean('requires_shipping').defaultTo(true);
             t.decimal('weight_oz').nullable().defaultTo(null);
             t.string('customs_country_of_origin').nullable();
-            t.string('customs_harmonized_system_code').nullable();
 
             // TIMESTAMPS
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());

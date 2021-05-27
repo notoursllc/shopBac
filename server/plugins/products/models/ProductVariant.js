@@ -51,19 +51,13 @@ module.exports = function (baseModel, bookshelf) {
                 // },
 
                 display_price: function() {
-                    let base_price = this.get('base_price');
+                    const sale_price = this.get('sale_price');
 
-                    if(base_price !== null) {
-                        const sale_price = this.get('sale_price');
-
-                        if(this.get('is_on_sale') && sale_price !== null) {
-                            return sale_price;
-                        }
-
-                        return base_price;
+                    if(this.get('is_on_sale') && sale_price !== null) {
+                        return sale_price;
                     }
 
-                    return null;
+                    return this.get('base_price');
                 },
 
                 total_inventory_count: function() {
@@ -103,9 +97,7 @@ module.exports = function (baseModel, bookshelf) {
                 'accent_message_end',
                 'images',
                 'swatches',
-                'requires_shipping',
                 'customs_country_of_origin',
-                'customs_harmonized_system_code',
                 'created_at',
                 'updated_at',
                 // 'deleted_at'

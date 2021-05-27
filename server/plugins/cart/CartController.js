@@ -9,7 +9,7 @@ const uuidValidate = require('uuid-validate');
 const Cookie = require('cookie');
 const accounting = require('accounting');
 
-const salesTaxService = require('./services/SalesTaxService');
+// const salesTaxService = require('./services/SalesTaxService');
 const shoppingCartEmailService = require('./services/ShoppingCartEmailService');
 const shippoOrdersAPI = require('../shipping/shippoAPI/orders');
 const { getLocationId } = require('../payment/square_helpers');

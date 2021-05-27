@@ -4,6 +4,18 @@ const after = function (server) {
     const ShippingCtrl = new (require('./ShippingCtrl'))(server);
 
     server.route([
+        // SHIP ENGINE APIS
+        // {
+        //     method: 'GET',
+        //     path: '/shipping/estimates',
+        //     options: {
+        //         description: 'Returns shipping estimates for our carriers',
+        //         handler: (request, h) => {
+        //             return ShippingCtrl.getAllHandler(request, null, h);
+        //         }
+        //     }
+        // },
+
         {
             method: 'POST',
             path: '/shipping/validateAddress',

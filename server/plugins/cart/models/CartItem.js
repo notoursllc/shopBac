@@ -1,5 +1,7 @@
 const { DB_TABLES } = require('../../core/services/CoreService');
 const accounting = require('accounting');
+const isObject = require('lodash.isobject');
+const { mimeTypes } = require('file-type');
 
 
 module.exports = function (baseModel, bookshelf) {
@@ -31,12 +33,52 @@ module.exports = function (baseModel, bookshelf) {
                 return this.belongsTo('ProductVariantSku', 'product_variant_sku_id');
             },
 
-            // virtuals: {
-            //     total_item_price: function() {
-            //         let val = this.get('qty') * this.related('product_variant_sku').get('display_price');
-            //         return accounting.toFixed(val, 2);
-            //     }
-            // },
+            virtuals: {
+                item_price_total: function() {
+                    const qty = this.get('qty');
+                    let total = null;
+
+                    if(qty) {
+                        const product_variant_price = this.related('product_variant').get('display_price');
+                        const product_variant_sku_price = this.related('product_variant_sku').get('display_price');
+
+
+                        // The SKU price gets prescident if it exists
+                        if (product_variant_sku_price !== null) {
+                            total = product_variant_sku_price * qty;
+                        }
+                        else if (product_variant_price !== null) {
+                            total = product_variant_price * qty;
+                        }
+
+                        // if(total !== null) {
+                        //     total = accounting.toFixed(total, 2);
+                        // }
+                    }
+
+                    return total;
+                },
+
+                item_weight_total: function() {
+                    const qty = this.get('qty');
+                    let total = null;
+
+                    if(qty) {
+                        const product_variant_weight = this.related('product_variant').get('weight_oz');
+                        const product_variant_sku_weight = this.related('product_variant_sku').get('weight_oz');
+
+                        // The SKU price gets prescident if it exists
+                        if (product_variant_sku_weight !== null) {
+                            total = product_variant_sku_weight * qty;
+                        }
+                        else if (product_variant_weight !== null) {
+                            total = product_variant_weight * qty;
+                        }
+                    }
+
+                    return total;
+                }
+            },
 
             visible: [
                 'id',
@@ -51,7 +93,11 @@ module.exports = function (baseModel, bookshelf) {
                 'cart',
                 'product',
                 'product_variant',
-                'product_variant_sku'
+                'product_variant_sku',
+
+                // virtuals
+                'item_price_total',
+                'item_weight_total'
             ]
         },
         {

@@ -27,82 +27,89 @@ module.exports = function (baseModel, bookshelf, server) {
                     return numItems;
                 },
 
-                product_weight_total: function() {
-                    // TODO: use product options instead
-                    return 1;
+                weight_oz_total: function() {
+                    let weight = 0;
+
+                    this.related('cart_items').forEach((model) => {
+                        weight += model.get('item_weight_total') || 0;
+                    });
+
+                    return weight;
                 },
-
-                // product_weight_total: function() {
-                //     let weight = 0;
-
-                //     this.related('cart_items').forEach((model) => {
-                //         let prod = model.related('product');
-                //         let qty = model.get('qty');
-                //         let variants = model.get('variants');
-                //         let selectedSizeVariant = isObject(variants) ? variants.size : null;
-                //         let finalWeight = 0;
-
-                //         if(prod && qty) {
-                //             // If any of the product sizes has it's own weight_oz value, then that will
-                //             // override the general weight_oz value of the product
-                //             let prodSizes = prod.related('sizes');
-
-                //             if(selectedSizeVariant && prodSizes) {
-                //                 // Note 'prodSizes' is a Bookshelf collection object,
-                //                 // which has a forEach function
-                //                 prodSizes.forEach((ProductSize) => {
-                //                     let weight = ProductSize.get('weight_oz');
-
-                //                     if(ProductSize.get('size') === selectedSizeVariant && parseFloat(weight) > 0) {
-                //                         finalWeight = parseFloat(weight);
-                //                     }
-                //                 })
-                //             }
-
-                //             // If none of the product sizes has a weight_oz value, then
-                //             // use the general weight_oz value of the product
-                //             if(!finalWeight) {
-                //                 finalWeight = prod.get('weight_oz')
-                //             }
-
-                //             weight += parseFloat((finalWeight * qty) || 0);
-                //         }
-                //     });
-
-                //     return accounting.toFixed(weight, 1);
-                // },
 
                 sub_total: function() {
                     // return server.plugins.Cart.getCartSubTotal( this.related('cart_data') );
                     let subtotal = 0;
 
                     this.related('cart_items').forEach((model) => {
-                        const product_variant_sku = model.related('product_variant_sku');
-                        if(product_variant_sku) {
-
-                        }
-                        subtotal += parseFloat(model.get('total_item_price') || 0);
+                        subtotal += model.get('item_price_total') || 0;
                     });
+
+                    return subtotal;
 
                     // NOTE: accounting.toFixed() returns a string!
                     // http://openexchangerates.github.io/accounting.js/
-                    return accounting.toFixed(subtotal, 2);
+                    // return accounting.toFixed(subtotal, 2);
+                },
+
+                /**
+                 * Calculate the sales tax amount.
+                 * Pretty simple for now as we only have nexus in CA.
+                 *
+                 * https://blog.taxjar.com/sales-tax-and-shipping/
+                 */
+                sales_tax: function() {
+                    let taxAmount = 0;
+                    const subTotal = this.get('sub_total');
+
+                    if(this.get('shipping_countryCodeAlpha2') === 'US' && subTotal) {
+                        switch(this.get('shipping_state')) {
+                            case 'CA':
+                                // NOTE: shipping is not taxable in CA as long as we show the shipping
+                                // cost as a separate line item (i.e. not included in the price)
+                                taxAmount = subTotal * parseFloat(process.env.TAX_RATE_CALIFORNIA || '0.09');
+                                break;
+
+                            default:
+                        }
+                    }
+
+                    // accounting.toFixed returns a string, so converting to float:
+                    // return accounting.toFixed(taxAmount, 2);
+                    return Math.ceil(taxAmount);
                 },
 
                 shipping_total: function() {
-                    let obj = this.get('shipping_rate');
-                    if(isObject(obj) && obj.amount) {
-                        return accounting.toFixed(obj.amount, 2);
+                    const obj = this.get('shipping_rate');
+                    let total = 0;
+
+                    if(isObject(obj)) {
+                        if(isObject(obj.shipping_amount)) {
+                            total += obj.shipping_amount.amount ? obj.shipping_amount.amount * 100 : 0;
+                        }
+
+                        if(isObject(obj.other_amount)) {
+                            total += obj.other_amount.amount ? obj.other_amount.amount * 100 : 0;
+                        }
+
+                        if(isObject(obj.insurance_amount)) {
+                            total += obj.insurance_amount.amount ? obj.insurance_amount.amount * 100 : 0;
+                        }
+
+                        if(isObject(obj.confirmation_amount)) {
+                            total += obj.confirmation_amount.amount ? obj.confirmation_amount.amount * 100 : 0;
+                        }
                     }
-                    return null;
+
+                    return total;
                 },
 
                 grand_total: function() {
-                    let subtotal = parseFloat(this.get('sub_total'));
-                    let salesTax = parseFloat(this.get('sales_tax') || 0);
-                    let shipping = parseFloat(this.get('shipping_total') || 0);
+                    const subtotal = this.get('sub_total') || 0;
+                    const salesTax = this.get('sales_tax') || 0;
+                    const shipping = this.get('shipping_total') || 0;
 
-                    return accounting.toFixed((subtotal + salesTax + shipping), 2);
+                    return subtotal + salesTax + shipping;
                 },
 
                 shipping_fullName: function() {
@@ -151,8 +158,10 @@ module.exports = function (baseModel, bookshelf, server) {
                 'shipping_state',
                 'shipping_postalCode',
                 'shipping_countryCodeAlpha2',
+                'shipping_phone',
                 'shipping_email',
 
+                'shipping_rate',
                 'sales_tax',
 
                 'created_at',
@@ -162,6 +171,10 @@ module.exports = function (baseModel, bookshelf, server) {
 
                 // virtuals
                 'num_items',
+                'sub_total',
+                'grand_total',
+                'weight_oz_total',
+                'shipping_total',
 
                 // relations
                 'cart_items'

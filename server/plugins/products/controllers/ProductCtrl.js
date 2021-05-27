@@ -52,6 +52,17 @@ class ProductCtrl extends BaseController {
             // images: Joi.array().allow(null),
             video_url: Joi.string().trim().max(500).empty('').allow(null).default(null),
 
+            // SHIPPING
+            requires_shipping: Joi.boolean().empty('').default(true),
+            customs_country_of_origin: Joi.alternatives().try(
+                Joi.string().max(2),
+                Joi.allow(null)
+            ),
+            customs_harmonized_system_code: Joi.alternatives().try(
+                Joi.string(),
+                Joi.allow(null)
+            ),
+
             variants: Joi.array().items(
                 // Note: should not pass the 'isUpdate' flag to getSchema() in this case.
                 // When creating a product, the user doesn't necessarily have to also create variants,

@@ -18,19 +18,13 @@ module.exports = function (baseModel, bookshelf) {
 
         virtuals: {
             display_price: function() {
-                let base_price = this.get('base_price');
+                const sale_price = this.get('sale_price');
 
-                if(base_price !== null) {
-                    const sale_price = this.get('sale_price');
-
-                    if(this.get('is_on_sale') && sale_price !== null) {
-                        return sale_price;
-                    }
-
-                    return base_price;
+                if(this.get('is_on_sale') && sale_price !== null) {
+                    return sale_price;
                 }
 
-                return null;
+                return this.get('base_price');
             },
         },
 

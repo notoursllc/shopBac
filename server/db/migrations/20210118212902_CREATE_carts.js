@@ -28,8 +28,10 @@ module.exports.up = (knex) => {
             t.string('shipping_state').nullable();
             t.string('shipping_postalCode').nullable();
             t.string('shipping_countryCodeAlpha2').nullable();
+            t.string('shipping_phone').nullable();
             t.string('shipping_email').nullable();
 
+            t.jsonb('shipping_rate').nullable();
             t.decimal('sales_tax').nullable();
 
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
