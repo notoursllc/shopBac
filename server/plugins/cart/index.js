@@ -176,6 +176,51 @@ exports.plugin = {
                         }
                     },
 
+
+                    /******************
+                     * STRIPE
+                     ******************/
+                     {
+                        method: 'POST',
+                        path: '/cart/payment/intent',
+                        options: {
+                            description: 'Returns a PaymentIntent object from stripe',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required(),
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.getStripePaymentIntentHandler(request, h);
+                            }
+                        }
+                    },
+
+                    {
+                        method: 'POST',
+                        path: '/cart/payment',
+                        options: {
+                            description: 'Persist a successful payment',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required(),
+                                    stripe_payment_intent_id: Joi.string().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.paymentSuccessHandler(request, h);
+                            }
+                        }
+                    },
+
                     /*
                     {
                         method: 'GET',
@@ -189,26 +234,6 @@ exports.plugin = {
                                 { method: CartCtrl.pre_cart, assign: 'm1' }
                             ],
                             handler: CartCtrl.cartGetHandler
-                        }
-                    },
-                    {
-                        method: 'POST',
-                        path: '/cart/item/add',
-                        options: {
-                            description: 'Adds a new item to the cart',
-                            auth: {
-                                strategies: ['storeauth', 'session']
-                            },
-                            validate: {
-                                payload: Joi.object({
-                                    id: Joi.string().uuid().required(),
-                                    options: Joi.object({
-                                        size: Joi.string().uppercase().min(6), // 'SIZE_?'
-                                        qty: Joi.number().min(1).required()
-                                    }).required()
-                                })
-                            },
-                            handler: CartCtrl.cartItemAddHandler
                         }
                     },
                     {

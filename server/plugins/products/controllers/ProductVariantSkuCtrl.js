@@ -160,6 +160,45 @@ class ProductVariantSkuCtrl extends BaseController {
             throw err;
         }
     }
+
+
+    // decrementInventoryCount(Cart) {
+    //     try {
+    //         global.logger.info(`REQUEST: ProductVariantSkuCtrl.decrementInventoryCount`, {
+    //             meta: {
+    //                 cart_id: Cart.get('id')
+    //             }
+    //         });
+
+    //         // TODO: IN PROGRESS
+    //         Cart.related('cart_items').forEach((model) => {
+    //             const ProductVariantSku = model.related('product_variant_sku');
+
+    //             if(ProductVariantSku) {
+    //                 // TODO: I think CartItem model needs to be updated
+    //                 // so inventory_count is returned
+    //                 let newInventoryCount = ProductVariantSku.get('inventory_count') - model.get('qty');
+    //                 if(newInventoryCount < 0) {
+    //                     newInventoryCount = 0;
+    //                 }
+
+    //                 const UpdatedProductVariantSku = await getModel().update(
+    //                     { inventory_count: newInventoryCount },
+    //                     { id: ProductVariantSku.get('id') }
+    //                 );
+    //             }
+    //         });
+
+    //         global.logger.info(`RESPONSE: ProductVariantSkuCtrl.decrementInventoryCount`, {
+    //             meta: {}
+    //         });
+    //     }
+    //     catch(err) {
+    //         global.logger.error(err);
+    //         global.bugsnag(err);
+    //         throw err;
+    //     }
+    // }
 }
 
 

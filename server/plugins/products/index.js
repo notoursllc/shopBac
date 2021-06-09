@@ -606,6 +606,17 @@ exports.plugin = {
                 ]);
 
 
+                // REGISTERING EVENTS:
+                //  server.event('CART_CHECKOUT_SUCCESS');
+
+
+                // // DEFINING EVENT HANDLERS:
+                // server.events.on(
+                //     'CART_CHECKOUT_SUCCESS',
+                //     ProductVariantSkuCtrl.decrementInventoryCount
+                // );
+
+
                 // LOADING BOOKSHELF MODELS:
                 const baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
 

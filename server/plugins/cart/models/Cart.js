@@ -161,8 +161,10 @@ module.exports = function (baseModel, bookshelf, server) {
                 'shipping_phone',
                 'shipping_email',
 
+                'currency',
                 'shipping_rate',
                 'sales_tax',
+                // 'stripe_payment_intent_id'
 
                 'created_at',
                 'updated_at',

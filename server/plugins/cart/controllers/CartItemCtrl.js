@@ -40,24 +40,6 @@ class CartItemCtrl extends BaseController {
     }
 
 
-    getActiveCart(cartId, tenantId) {
-        return this.CartCtrl.getActiveCart(
-            cartId,
-            tenantId,
-            {
-                withRelated: {
-                    'cart_items': (query) => {
-                        query.orderBy('created_at', 'ASC');
-                    },
-                    'cart_items.product': null,
-                    'cart_items.product_variant': null,
-                    'cart_items.product_variant_sku': null
-                }
-            }
-        );
-    }
-
-
     async createOrUpdate(data) {
         // First, try to fetch a CartItem for this cart & SKU
         const CartItem = await this.modelForgeFetch({
@@ -191,11 +173,11 @@ class CartItemCtrl extends BaseController {
 
     async createHandler(request, h) {
         try {
-            const tenantId = this.getTenantIdFromAuth(request);
-
             global.logger.info('RESPONSE: CartItemCtrl.createHandler', {
                 meta: request.payload
             });
+
+            const tenantId = this.getTenantIdFromAuth(request);
 
             // Fetch the SKU to make sure it exists
             // and also fetch the Cart
@@ -272,9 +254,10 @@ class CartItemCtrl extends BaseController {
                 product_variant_id: ProductVariant.get('id'),
             });
 
-            const UpdatedCart = await this.getActiveCart(
+            const UpdatedCart = await this.CartCtrl.getActiveCart(
                 Cart.get('id'),
-                tenantId
+                tenantId,
+                { withRelated: this.CartCtrl.getAllCartRelations() }
             );
 
             return h.apiSuccess(
@@ -330,7 +313,12 @@ class CartItemCtrl extends BaseController {
             await this.dedupeCart(request.payload.cart_id, tenantId);
 
             // get a fresh cart to return
-            const UpdatedCart = await this.getActiveCart(request.payload.cart_id, tenantId);
+            const UpdatedCart = await this.CartCtrl.getActiveCart(
+                request.payload.cart_id,
+                tenantId,
+                { withRelated: this.CartCtrl.getAllCartRelations() }
+            );
+
             const updatedCartJson = UpdatedCart.toJSON();
 
             global.logger.info('RESPONSE: CartItemCtrl.updateHandler', {
@@ -375,7 +363,13 @@ class CartItemCtrl extends BaseController {
             }
 
             await this.deleteModel(cartItemId, tenantId);
-            const UpdatedCart = await this.getActiveCart(CartItem.get('cart_id'), tenantId);
+
+            const UpdatedCart = await this.CartCtrl.getActiveCart(
+                CartItem.get('cart_id'),
+                tenantId,
+                { withRelated: this.CartCtrl.getAllCartRelations() }
+            );
+
             const updatedCartJson = UpdatedCart.toJSON();
 
             global.logger.info('RESPONSE: CartItemCtrl.deleteHandler', {

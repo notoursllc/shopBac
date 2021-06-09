@@ -789,7 +789,7 @@ async function processPayment(request, paymentType, paymentData) {
 
     // The products controller catches this and descrments the product size inventory count
     // Errors do not need to be caught here because any failures should not affect the transaction
-    server.events.emit('SHOPPING_CART_CHECKOUT_SUCCESS', Cart);
+    server.events.emit('CART_CHECKOUT_SUCCESS', Cart);
 
     global.logger.info('processPayment - Updating Shopping Cart', {
         meta: {

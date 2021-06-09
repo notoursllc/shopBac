@@ -2,6 +2,7 @@ const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const isObject = require('lodash.isobject');
 const uuidV4 = require('uuid/v4');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { ObtainTokenRequest } = require('square-connect');
 const BaseController = require('../../core/controllers/BaseController');
 const ShipEngine = require('../../shipping/shipEngineApi/ShipEngine')
@@ -45,6 +46,7 @@ class CartCtrl extends BaseController {
             shipping_phone: getJoiStringOrNull(),
             shipping_email: Joi.alternatives().try(Joi.string().email().max(50).label('Shipping: Email'), Joi.allow(null)),
 
+            currency: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             shipping_rate: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             sales_tax: Joi.alternatives().try(Joi.number().integer().min(0), Joi.allow(null)),
 
@@ -115,50 +117,36 @@ class CartCtrl extends BaseController {
     // }
 
 
-    /**
-     * This is just a helper function to determine if the cart token being sent
-     * is for an active cart.
-     * Used by functions below to determine if we should continue with other operations,
-     * or just quit immediately.
-     */
     async getActiveCart(id, tenant_id, fetchOptions) {
         if(!id || !tenant_id) {
             return false;
         }
 
-        const Cart = await this.modelForgeFetch(
-            { id, tenant_id },
-            fetchOptions
-        );
-
-        if(!Cart || Cart.get('closed_at')) {
-            return false;
-        }
-
-        return Cart;
+        return this.getModel()
+            .query((qb) => {
+                qb.where('closed_at', 'IS', null);
+                qb.andWhere('id', '=', id);
+                qb.andWhere('tenant_id', '=', tenant_id);
+            })
+            .fetch(fetchOptions);
     }
 
 
-    async getActiveCartWithAllRelations(id, tenant_id) {
-        return this.getActiveCart(
-            id,
-            tenant_id,
-            {
-                withRelated: {
-                    'cart_items': (query) => {
-                        query.orderBy('created_at', 'ASC');
-                    },
-                    'cart_items.product': null,
-                    'cart_items.product_variant': null,
-                    'cart_items.product_variant_sku': null
-                }
-            }
-        )
+    getAllCartRelations() {
+        return {
+            'cart_items': (query) => {
+                query.orderBy('created_at', 'ASC');
+            },
+            'cart_items.product': null,
+            'cart_items.product_variant': null,
+            'cart_items.product_variant_sku': null
+        }
     }
 
 
     async getOrCreateCart(id, tenant_id, fetchOptions) {
         const Cart = await this.getActiveCart(id, tenant_id, fetchOptions);
+        console.log("GET OR CREATE: CART", Cart)
 
         if(!Cart) {
             // create
@@ -186,9 +174,10 @@ class CartCtrl extends BaseController {
         try {
             const Cart = await super.upsertModel(request.payload);
 
-            const UpdatedCart = await this.getActiveCartWithAllRelations(
+            const UpdatedCart = await this.getActiveCart(
                 Cart.get('id'),
-                this.getTenantIdFromAuth(request)
+                this.getTenantIdFromAuth(request),
+                { withRelated: this.getAllCartRelations() }
             );
 
             return h.apiSuccess(
@@ -294,9 +283,10 @@ class CartCtrl extends BaseController {
 
     async shippingRateEstimateHandler(request, h) {
         try {
-            const Cart = await this.getActiveCartWithAllRelations(
+            const Cart = await this.getActiveCart(
                 request.payload.id,
-                this.getTenantIdFromAuth(request)
+                this.getTenantIdFromAuth(request),
+                { withRelated: this.getAllCartRelations() }
             );
 
             if(!Cart) {
@@ -402,9 +392,10 @@ class CartCtrl extends BaseController {
                 throw new Error('A shipping rate for the given ID was not found')
             }
 
-            const Cart = await this.getActiveCartWithAllRelations(
+            const Cart = await this.getActiveCart(
                 request.payload.id,
-                this.getTenantIdFromAuth(request)
+                this.getTenantIdFromAuth(request),
+                { withRelated: this.getAllCartRelations() }
             );
 
             const UpdatedCart = await Cart.save({
@@ -423,6 +414,175 @@ class CartCtrl extends BaseController {
             global.logger.error(err);
             global.bugsnag(err);
             throw Boom.badRequest(err);
+        }
+    }
+
+
+    async getStripePaymentIntentHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: CartCtrl.getStripePaymentIntentHandler', {
+                meta: request.payload
+            });
+
+            const Cart = await this.getActiveCart(
+                request.payload.id,
+                this.getTenantIdFromAuth(request),
+                { withRelated: this.getAllCartRelations() }
+            );
+
+            if(!Cart) {
+                throw new Error('Cart not found');
+            }
+
+            console.log("CART", Cart.toJSON())
+
+            // IN PROGRESS
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: Cart.get('grand_total'),
+                currency: Cart.get('currency') || 'usd',
+                payment_method_types: ['card'],
+            });
+
+            if(!paymentIntent) {
+                throw new Error('PaymentIntent returned null');
+            }
+
+            global.logger.info('RESPONSE: CartCtrl.getStripePaymentIntentHandler', {
+                meta: {
+                    paymentIntent
+                }
+            });
+
+            return h.apiSuccess({
+                clientSecret: paymentIntent.client_secret
+            });
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
+
+    async paymentSuccessHandler(request, h) {
+        global.logger.info('REQUEST: CartCtrl.paymentSuccess', {
+            meta: request.payload
+        });
+
+        let Cart = null;
+        const tenantId = this.getTenantIdFromAuth(request);
+
+        try {
+            // Update the cart with the Stripe payment intent ID
+            // and close close the cart
+            Cart = await super.upsertModel({
+                ...request.payload,
+                closed_at: new Date()
+            });
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+        }
+
+        // The products controller catches this and descrments the ProductVariantSku inventory count
+        // Errors do not need to be caught here because any failures should not affect the transaction
+        // this.server.events.emit('CART_CHECKOUT_SUCCESS', C);
+        try {
+            await this.decrementInventoryCount(
+                Cart.get('id'),
+                tenantId
+            );
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+        }
+
+        // NOTE: Any failures that happen after this do not affect the Square transaction
+        // and thus should fail silently (catching and logging errors), as the user has already been changed
+        // and we can't give the impression of an overall transaction failure that may prompt them
+        // to re-do the purchase.
+
+        // TODO: is a cart with all relations really needed to be returned?
+        try {
+            const UpdatedCart = await this.getModel()
+                .query((qb) => {
+                    qb.where('id', '=', Cart.get('id'));
+                    qb.andWhere('tenant_id', '=', tenantId);
+                })
+                .fetch(
+                    { withRelated: this.getAllCartRelations() }
+                );
+
+            const maskedCart = this.getMaskedCart(UpdatedCart);
+            global.logger.info('RESPONSE: CartCtrl.paymentSuccess', {
+                meta: maskedCart
+            });
+
+            return h.apiSuccess(maskedCart);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+        }
+    }
+
+
+    async decrementInventoryCount(cartId, tenantId) {
+        try {
+            global.logger.info(`REQUEST: CartCtrl.decrementInventoryCount`, {
+                meta: {
+                    cart_id: cartId
+                }
+            });
+
+            // TODO: IN PROGRESS
+            const Cart = await this.getModel()
+                .query((qb) => {
+                    qb.where('id', '=', cartId);
+                    qb.andWhere('tenant_id', '=', tenantId);
+                })
+                .fetch(
+                    { withRelated: {
+                        'cart_items': (query) => {
+                            query.orderBy('created_at', 'ASC');
+                        },
+                        'cart_items.product_variant_sku': null
+                    } }
+                );
+
+            const promises = [];
+
+            Cart.related('cart_items').forEach(async (CartItem) => {
+                const ProductVariantSku = CartItem.related('product_variant_sku');
+
+                if(ProductVariantSku) {
+                    let newInventoryCount = ProductVariantSku.get('inventory_count') - CartItem.get('qty');
+                    if(newInventoryCount < 0) {
+                        newInventoryCount = 0;
+                    }
+
+                    promises.push(
+                        this.server.app.bookshelf.model('ProductVariantSku').update(
+                            { inventory_count: newInventoryCount },
+                            { id: ProductVariantSku.get('id') }
+                        )
+                    );
+                }
+            });
+
+            await Promise.all(promises);
+
+            global.logger.info(`RESPONSE: ProductVariantSkuCtrl.decrementInventoryCount`, {
+                meta: {}
+            });
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw err;
         }
     }
 
