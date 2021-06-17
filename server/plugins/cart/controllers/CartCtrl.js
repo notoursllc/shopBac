@@ -5,11 +5,14 @@ const uuidV4 = require('uuid/v4');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { ObtainTokenRequest } = require('square-connect');
 const BaseController = require('../../core/controllers/BaseController');
-const ShipEngine = require('../../shipping/shipEngineApi/ShipEngine')
+const ShipEngine = require('../../shipping/shipEngineApi/ShipEngine');
+const { sendPurchaseEmails } = require('../services/MailgunService');
+
 
 function getJoiStringOrNull(strLen) {
     return Joi.alternatives().try(Joi.string().trim().max(strLen || 100), Joi.allow(null));
 }
+
 class CartCtrl extends BaseController {
 
     constructor(server) {
@@ -418,6 +421,37 @@ class CartCtrl extends BaseController {
     }
 
 
+    /**
+     * Clears the shipping_rate value from the cart.
+     * This should be done whenever a cart item is added/removed from the cart,
+     * as the total product weight will have changed.
+     *
+     * @param String cartId
+     * @param String tenantId
+     * @returns Promise
+     */
+     async clearShippingRate(cartId, tenantId) {
+        try {
+            global.logger.info('REQUEST: CartCtrl.clearShippingRate', {
+                meta: {
+                    cartId,
+                    tenantId
+                }
+            });
+
+            const Cart = await this.getActiveCart(cartId, tenantId);
+
+            return Cart.save({
+                shipping_rate: null
+            });
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+        }
+    }
+
+
     async getStripePaymentIntentHandler(request, h) {
         try {
             global.logger.info('REQUEST: CartCtrl.getStripePaymentIntentHandler', {
@@ -465,19 +499,21 @@ class CartCtrl extends BaseController {
     }
 
 
-    async paymentSuccessHandler(request, h) {
-        global.logger.info('REQUEST: CartCtrl.paymentSuccess', {
-            meta: request.payload
+    async onPaymentSuccess(cartId, tenantId, cartUpsertData) {
+        global.logger.info('REQUEST: CartCtrl.onPaymentSuccess', {
+            meta: {
+                cartId,
+                tenantId,
+                cartUpsertData
+            }
         });
 
-        let Cart = null;
-        const tenantId = this.getTenantIdFromAuth(request);
-
         try {
-            // Update the cart with the Stripe payment intent ID
+            // Update the cart with the supplied data
             // and close close the cart
-            Cart = await super.upsertModel({
-                ...request.payload,
+            await super.upsertModel({
+                ...cartUpsertData,
+                id: cartId,
                 closed_at: new Date()
             });
         }
@@ -486,26 +522,50 @@ class CartCtrl extends BaseController {
             global.bugsnag(err);
         }
 
-        // The products controller catches this and descrments the ProductVariantSku inventory count
-        // Errors do not need to be caught here because any failures should not affect the transaction
-        // this.server.events.emit('CART_CHECKOUT_SUCCESS', C);
+        // NOTE: Any failures that happen after this do not affect the transaction
+        // and thus should fail silently (catching and logging errors), as the user has already been changed
+        // and we can't give the impression of an overall transaction failure that may prompt them
+        // to re-do the purchase.
+
         try {
-            await this.decrementInventoryCount(
-                Cart.get('id'),
-                tenantId
-            );
+            this.decrementInventoryCount(cartId, tenantId);
         }
         catch(err) {
             global.logger.error(err);
             global.bugsnag(err);
         }
 
-        // NOTE: Any failures that happen after this do not affect the Square transaction
-        // and thus should fail silently (catching and logging errors), as the user has already been changed
-        // and we can't give the impression of an overall transaction failure that may prompt them
-        // to re-do the purchase.
+        try {
+            const Cart = await this.getModel().query((qb) => {
+                qb.where('id', '=', cartId);
+                qb.andWhere('tenant_id', '=', tenantId);
+            });
+
+            sendPurchaseEmails(Cart);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+        }
+
+        global.logger.info('RESPONSE: CartCtrl.onPaymentSuccess', {
+            meta: {}
+        });
+    }
+
+
+    async paymentSuccessHandler(request, h) {
+        await this.onPaymentSuccess(
+            request.payload.id,
+            this.getTenantIdFromAuth(request),
+            request.payload
+        );
+
+        return h.apiSuccess();
+
 
         // TODO: is a cart with all relations really needed to be returned?
+        /*
         try {
             const UpdatedCart = await this.getModel()
                 .query((qb) => {
@@ -527,6 +587,7 @@ class CartCtrl extends BaseController {
             global.logger.error(err);
             global.bugsnag(err);
         }
+        */
     }
 
 

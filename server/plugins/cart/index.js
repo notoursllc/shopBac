@@ -12,6 +12,7 @@ exports.plugin = {
             function (server) {
                 const CartCtrl = new (require('./controllers/CartCtrl'))(server);
                 const CartItemCtrl = new (require('./controllers/CartItemCtrl'))(server);
+                const PaypalCartCtrl = new (require('./controllers/PaypalCartCtrl'))(server);
 
                 server.route([
                     // {
@@ -85,7 +86,8 @@ exports.plugin = {
                             },
                             validate: {
                                 payload: Joi.object({
-                                    ...CartItemCtrl.getSchema()
+                                    ...CartItemCtrl.getSchema(),
+                                    clear_shipping_rate: Joi.boolean().optional()
                                 })
                             },
                             handler: (request, h) => {
@@ -103,7 +105,8 @@ exports.plugin = {
                             },
                             validate: {
                                 payload: Joi.object({
-                                    ...CartItemCtrl.getSchema(true)
+                                    ...CartItemCtrl.getSchema(true),
+                                    clear_shipping_rate: Joi.boolean().optional()
                                 })
                             },
                             handler: (request, h) => {
@@ -123,6 +126,7 @@ exports.plugin = {
                                 query: Joi.object({
                                     id: Joi.string().uuid().required(),
                                     tenant_id: Joi.string().uuid().required(),
+                                    clear_shipping_rate: Joi.boolean().optional()
                                 })
                             },
                             handler: (request, h) => {
@@ -217,6 +221,50 @@ exports.plugin = {
                             },
                             handler: (request, h) => {
                                 return CartCtrl.paymentSuccessHandler(request, h);
+                            }
+                        }
+                    },
+
+
+                    /******************
+                     * PAYPAL
+                     ******************/
+                    {
+                        method: 'POST',
+                        path: '/cart/payment/paypal',
+                        options: {
+                            description: 'Returns a paypal transaction id', // is this the right description?
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return PaypalCartCtrl.createPaymentHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'PUT',
+                        path: '/cart/payment/paypal',
+                        options: {
+                            description: 'Executes a PayPal payment',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required(),
+                                    token: Joi.string().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return PaypalCartCtrl.executePaymentHandler(request, h);
                             }
                         }
                     },

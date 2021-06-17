@@ -254,6 +254,14 @@ class CartItemCtrl extends BaseController {
                 product_variant_id: ProductVariant.get('id'),
             });
 
+            // Clear the shipping_rate value, if requested
+            if(request.payload.clear_shipping_rate) {
+                await this.CartCtrl.clearShippingRate(
+                    Cart.get('id'),
+                    tenantId
+                )
+            }
+
             const UpdatedCart = await this.CartCtrl.getActiveCart(
                 Cart.get('id'),
                 tenantId,
@@ -312,6 +320,14 @@ class CartItemCtrl extends BaseController {
 
             await this.dedupeCart(request.payload.cart_id, tenantId);
 
+            // Clear the shipping_rate value, if requested
+            if(request.payload.clear_shipping_rate) {
+                await this.CartCtrl.clearShippingRate(
+                    request.payload.cart_id,
+                    tenantId
+                )
+            }
+
             // get a fresh cart to return
             const UpdatedCart = await this.CartCtrl.getActiveCart(
                 request.payload.cart_id,
@@ -363,6 +379,14 @@ class CartItemCtrl extends BaseController {
             }
 
             await this.deleteModel(cartItemId, tenantId);
+
+            // Clear the shipping_rate value, if requested
+            if(request.query.clear_shipping_rate) {
+                await this.CartCtrl.clearShippingRate(
+                    CartItem.get('cart_id'),
+                    tenantId
+                )
+            }
 
             const UpdatedCart = await this.CartCtrl.getActiveCart(
                 CartItem.get('cart_id'),

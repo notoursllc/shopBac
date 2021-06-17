@@ -9,444 +9,101 @@ exports.seed = (knex) => {
         // })
         .then(
             () => {
+                const promises = [];
+                const sampleData = {
+                    product_type: [
+                        { name: 'Apparel', slug: 'apparel', description: 'apparel description' }
+                    ],
+                    product_sub_type: [
+                        { name: 'Hats', slug: 'hats', description: 'hats description' },
+                        { name: 'Tops', slug: 'tops', description: 'tops description' }
+                    ],
+                    product_basic_color_type: [
+                        { name: 'Black', slug: 'black', metadata: {"property":"hex","value":"#000"} },
+                        { name: 'White', slug: 'white', metadata: {"property":"hex","value":"#fff"} },
+                        { name: 'Red', slug: 'red', metadata: {"property":"hex","value":"#e7352b"} },
+                        { name: 'Blue', slug: 'blue', metadata: {"property":"hex","value":"#2290c8"} },
+                        { name: 'Green', slug: 'green', metadata: {"property":"hex","value":"#7bba3c"} },
+                        { name: 'Grey', slug: 'grey', metadata: {"property":"hex","value":"#808080"} },
+                        { name: 'Orange', slug: 'orange', metadata: {"property":"hex","value":"#f36b26"} },
+                        { name: 'Yellow', slug: 'yellow', metadata: {"property":"hex","value":"#fdd532"} },
+                        { name: 'Brown', slug: 'brown', metadata: {"property":"hex","value":"#825d41"} },
+                        { name: 'Pink', slug: 'pink', metadata: {"property":"hex","value":"#f0728f"} },
+                        { name: 'Purple', slug: 'purple', metadata: {"property":"hex","value":"#8d429f"} },
+                        { name: 'Multi-color', slug: 'multi_color', metadata: {"property":"hex","value":""} }
+                    ],
+                    product_feature_type: [
+                        { name: 'Pockets', slug: 'pockets' },
+                        { name: 'Hooded', slug: 'hooded' },
+                        { name: 'Seamless', slug: 'seamless' },
+                    ],
+                    product_fit_type: [
+                        { name: 'Loose', slug: 'loose', description: 'loose description' },
+                        { name: 'Slim', slug: 'slim', description: 'slim description' },
+                        { name: 'Standard', slug: 'standard', description: 'standard description' },
+                    ],
+                    product_gender_type: [
+                        { name: 'Mens', slug: 'mens', description: 'mens description' },
+                        { name: 'Womens', slug: 'womens', description: 'womens description' },
+                        { name: 'Boys', slug: 'boys', description: 'boys description' },
+                        { name: 'Girls', slug: 'girls', description: 'girls description' },
+                        { name: 'Unisex', slug: 'unisex', description: 'unisex description' },
+                    ],
+                    product_sales_channel_type: [
+                        { name: 'goBreadVan.com', slug: 'gobreadvan.com', description: 'gobreadvan.com description' },
+                    ],
+                    product_sleeve_length_type: [
+                        { name: 'Short sleeve', slug: 'short sleeve', description: 'short sleeve description' },
+                        { name: 'Long sleeve', slug: 'long sleeve', description: 'long sleeve description' },
+                        { name: 'Sleeveless / Tank', slug: 'sleeveless_tank', description: 'sleeveless_tank description' },
+                    ],
+                    product_vendor_type: [
+                        { name: 'BreadVan', slug: 'breadvan', description: 'breadvan description' },
+                    ],
+                    product_size_type: [
+                        { name: 'XS', slug: 'XS' },
+                        { name: 'S', slug: 'S' },
+                        { name: 'M', slug: 'M' },
+                        { name: 'L', slug: 'L' },
+                        { name: 'XL', slug: 'XL' },
+                        { name: '2XL', slug: '2XL' },
+                        { name: '3XL', slug: '3XL' },
+                        { name: '4XL', slug: '4XL' },
+                        { name: '5XL', slug: '5XL' }
+                    ]
+                }
+
                 const d = new Date();
 
-                return Promise.all([
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_type',
-                        name: 'Apparel',
-                        value: 1,
-                        slug: 'apparel',
-                        description: 'apparel description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
+                for(const key in sampleData) {
+                    const fibs = [];
 
-                    // product_sub_type
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_sub_type',
-                        name: 'Hats',
-                        value: 1,
-                        slug: 'hats',
-                        description: 'hats description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_sub_type',
-                        name: 'Tops',
-                        value: 2,
-                        slug: 'tops',
-                        description: 'tops description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
+                    sampleData[key].forEach((obj, index) => {
+                        const fibonacci = index === 0 ? 1 : fibs[index-1] * 2
+                        fibs.push(fibonacci)
 
-                    // product_basic_color_type
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_basic_color_type',
-                        name: 'Black',
-                        value: 1,
-                        slug: 'black',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"hex","value":"#000"}]),
-                        ordinal: 1,
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_basic_color_type',
-                        name: 'White',
-                        value: 2,
-                        slug: 'white',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"hex","value":"#fff"}]),
-                        ordinal: 2,
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_basic_color_type',
-                        name: 'Red',
-                        value: 4,
-                        slug: 'red',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"hex","value":"#e7352b"}]),
-                        ordinal: 3,
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_basic_color_type',
-                        name: 'Blue',
-                        value: 8,
-                        slug: 'blue',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"hex","value":"#2290c8"}]),
-                        ordinal: 4,
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_basic_color_type',
-                        name: 'Green',
-                        value: 16,
-                        slug: 'green',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"hex","value":"#7bba3c"}]),
-                        ordinal: 5,
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_basic_color_type',
-                        name: 'Grey',
-                        value: 32,
-                        slug: 'grey',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"hex","value":"#808080"}]),
-                        ordinal: 6,
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_basic_color_type',
-                        name: 'Orange',
-                        value: 64,
-                        slug: 'orange',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"hex","value":"#f36b26"}]),
-                        ordinal: 7,
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_basic_color_type',
-                        name: 'Yellow',
-                        value: 128,
-                        slug: 'yellow',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"hex","value":"#fdd532"}]),
-                        ordinal: 8,
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_basic_color_type',
-                        name: 'Brown',
-                        value: 256,
-                        slug: 'brown',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"hex","value":"#825d41"}]),
-                        ordinal: 9,
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_basic_color_type',
-                        name: 'Pink',
-                        value: 512,
-                        slug: 'pink',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"hex","value":"#f0728f"}]),
-                        ordinal: 10,
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_basic_color_type',
-                        name: 'Purple',
-                        value: 1024,
-                        slug: 'purple',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"hex","value":"8d429f"}]),
-                        ordinal: 11,
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_basic_color_type',
-                        name: 'Multi-color',
-                        value: 2048,
-                        slug: 'multi_color',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"hex","value":""}]),
-                        ordinal: 12,
-                        created_at: d,
-                        updated_at: d
-                    }),
-
-
-                    // product_feature_type
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_feature_type',
-                        name: 'Pockets',
-                        value: 1,
-                        slug: 'pockets',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_feature_type',
-                        name: 'Hooded',
-                        value: 2,
-                        slug: 'hooded',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_feature_type',
-                        name: 'Seamless',
-                        value: 4,
-                        slug: 'seamless',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-
-                    // product_fit_type
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_fit_type',
-                        name: 'Loose',
-                        value: 1,
-                        slug: 'loose',
-                        description: 'loose description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_fit_type',
-                        name: 'Slim',
-                        value: 2,
-                        slug: 'slim',
-                        description: 'slim description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_fit_type',
-                        name: 'Standard',
-                        value: 4,
-                        slug: 'standard',
-                        description: 'standard description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-
-
-                    // product_gender_type
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_gender_type',
-                        name: 'Mens',
-                        value: 1,
-                        slug: 'mens',
-                        description: 'mens description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_gender_type',
-                        name: 'Womens',
-                        value: 2,
-                        slug: 'womens',
-                        description: 'womens description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_gender_type',
-                        name: 'Boys',
-                        value: 4,
-                        slug: 'boys',
-                        description: 'boys description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_gender_type',
-                        name: 'Girls',
-                        value: 8,
-                        slug: 'girls',
-                        description: 'girls description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_gender_type',
-                        name: 'Unisex',
-                        value: 16,
-                        slug: 'unisex',
-                        description: '',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-
-                    // product_sales_channel_type
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_sales_channel_type',
-                        name: 'goBreadVan.com',
-                        value: 1,
-                        slug: 'gobreadvan.com',
-                        description: 'gobreadvan.com description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-
-                    // product_sleeve_length_type
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_sleeve_length_type',
-                        name: 'Short sleeve',
-                        value: 1,
-                        slug: 'short_sleeve',
-                        description: 'shortsleeve description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_sleeve_length_type',
-                        name: 'Long sleeve',
-                        value: 2,
-                        slug: 'long_sleeve',
-                        description: 'long_sleeve description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_sleeve_length_type',
-                        name: 'Sleeveless / Tank',
-                        value: 4,
-                        slug: 'sleeveless_tank',
-                        description: 'sleeveless_tank description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
-                    }),
-
-
-                    // product_vendor_type
-                    knex(DB_TABLES.master_types).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        published: true,
-                        object: 'product_vendor_type',
-                        name: 'BreadVan',
-                        value: 1,
-                        slug: 'breadvan',
-                        description: 'breadvan description',
-                        metadata: JSON.stringify([{"property":"sample","value":"meta data"}]),
-                        created_at: d,
-                        updated_at: d
+                        promises.push(
+                            knex(DB_TABLES.master_types).insert({
+                                id: randomUuid(),
+                                tenant_id: tenantId,
+                                published: true,
+                                object: key,
+                                name: obj.name,
+                                slug: obj.slug,
+                                value: fibonacci,
+                                description: obj.description || '',
+                                metadata: JSON.stringify([
+                                    obj.metadata || {"property":"sample","value":"meta data"}
+                                ]),
+                                ordinal: index + 1,
+                                created_at: d,
+                                updated_at: d
+                            })
+                        )
                     })
-                ]);
+                }
+
+                return Promise.all(promises);
             }
         );
 };

@@ -1054,38 +1054,7 @@ async function paypalCreatePayment(request, h) {
 }
 
 
-// https://github.com/paypal/Checkout-NodeJS-SDK/blob/master/samples/CaptureIntentExamples/captureOrder.js
-async function paypalExecutePayment(request, h) {
-    const { PAYMENT_TYPE_PAYPAL } = require('../payment/paymentController');
 
-    global.logger.info('REQUEST: paypalExecutePayment', {
-        meta: request.payload
-    });
-
-    try {
-        const req = new paypal.orders.OrdersCaptureRequest(request.payload.paymentToken);
-        req.requestBody({});
-
-        const paypalTransaction = await getPaypalClient().execute(req);
-
-        const Payment = await processPayment(
-            request,
-            PAYMENT_TYPE_PAYPAL,
-            paypalTransaction
-        );
-
-        global.logger.info('RESPONSE: paypalExecutePayment', {
-            meta: Payment ? Payment.toJSON() : null
-        });
-
-        return onPaymentSuccess(h, Payment);
-    }
-    catch(err) {
-        global.logger.error(err);
-        global.bugsnag(err);
-        throw Boom.badData(err);
-    }
-}
 
 
 function onPaymentSuccess(h, Payment) {
@@ -1119,5 +1088,5 @@ module.exports = {
     cartShippingRateHandler,
     cartCheckoutHandler,
     paypalCreatePayment,
-    paypalExecutePayment
+    // paypalExecutePayment
 }

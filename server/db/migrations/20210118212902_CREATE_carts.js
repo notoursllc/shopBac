@@ -34,7 +34,8 @@ module.exports.up = (knex) => {
             t.string('currency').notNullable().defaultTo('usd');
             t.jsonb('shipping_rate').nullable();
             t.decimal('sales_tax').nullable();
-            t.string('stripe_payment_intent_id').nullable()
+            t.string('stripe_payment_intent_id').nullable();
+            t.string('paypal_order_id').nullable();
 
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();

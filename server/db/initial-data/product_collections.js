@@ -9,23 +9,37 @@ exports.seed = (knex) => {
         // })
         .then(
             () => {
+                const promises = [];
                 const d = new Date();
 
-                return Promise.all([
-                    knex(DB_TABLES.product_collections).insert({
-                        id: randomUuid(),
-                        published: true,
-                        tenant_id: tenantId,
+                [
+                    {
                         name: 'Fall 2020',
                         value: 1,
                         description: 'fall 2020 description',
                         seo_page_title: 'BreadVan Fall 2020 Collection!',
                         seo_page_desc: 'An exciting description goes here',
-                        seo_uri: 'fall2020',
-                        created_at: d,
-                        updated_at: d
-                    })
-                ]);
+                        seo_uri: 'fall2020'
+                    }
+                ].forEach((obj) => {
+                    promises.push(
+                        knex(DB_TABLES.product_collections).insert({
+                            id: randomUuid(),
+                            published: true,
+                            tenant_id: tenantId,
+                            name: obj.name,
+                            value: obj.value,
+                            description: obj.description,
+                            seo_page_title: obj.seo_page_title,
+                            seo_page_desc: obj.seo_page_desc,
+                            seo_uri: obj.seo_uri,
+                            created_at: d,
+                            updated_at: d
+                        })
+                    )
+                });
+
+                return Promise.all(promises);
             }
         );
 };

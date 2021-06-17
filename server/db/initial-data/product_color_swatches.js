@@ -10,39 +10,28 @@ exports.seed = (knex) => {
         // })
         .then(
             () => {
+                const promises = [];
                 const d = new Date();
 
-                return Promise.all([
-                    knex(DB_TABLES.product_color_swatches).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        hex: '#e21212',
-                        label: 'Red',
-                        description: 'Red color description',
-                        created_at: d,
-                        updated_at: d
-                    }),
+                [
+                    { hex: '#e21212', label: 'Red', description: 'Red color description' },
+                    { hex: '#4b7bd2', label: 'Blue', description: 'Blue color description' },
+                    { hex: '#62d24b', label: 'Green', description: 'Green color description' }
+                ].forEach((obj) => {
+                    promises.push(
+                        knex(DB_TABLES.product_color_swatches).insert({
+                            id: randomUuid(),
+                            tenant_id: tenantId,
+                            hex: obj.hex,
+                            label: obj.label,
+                            description: obj.description,
+                            created_at: d,
+                            updated_at: d
+                        }),
+                    )
+                });
 
-                    knex(DB_TABLES.product_color_swatches).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        hex: '#4b7bd2',
-                        label: 'Blue',
-                        description: 'Blue color description',
-                        created_at: d,
-                        updated_at: d
-                    }),
-
-                    knex(DB_TABLES.product_color_swatches).insert({
-                        id: randomUuid(),
-                        tenant_id: tenantId,
-                        hex: '#62d24b',
-                        label: 'Green',
-                        description: 'Green color description',
-                        created_at: d,
-                        updated_at: d
-                    }),
-                ]);
+                return Promise.all(promises);
             }
         );
 };
