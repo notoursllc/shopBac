@@ -70,6 +70,24 @@ exports.plugin = {
                             }
                         }
                     },
+                    {
+                        method: 'POST',
+                        path: '/cart/shippingaddress',
+                        options: {
+                            description: 'Validates a shipping address, and saves it if valid',
+                            auth: {
+                                strategies: ['storeauth']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    ...CartCtrl.getSchema(true)
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.setShippingAddressIfValid(request, h);
+                            }
+                        }
+                    },
 
                     {
                         method: 'POST',

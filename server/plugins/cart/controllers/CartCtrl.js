@@ -5,7 +5,8 @@ const BaseController = require('../../core/controllers/BaseController');
 
 // third party APIs
 const { sendPurchaseEmails } = require('../services/MailgunService');
-const ShipEngine = require('../../shipping/shipEngineApi/ShipEngine');
+const ShipEngineService = require('../services/shipEngine/ShipEngineService');
+const ShipEngineAPI = require('../services/shipEngine/ShipEngineAPI');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const {
     getOrder: getPaypalOrder,
@@ -22,7 +23,6 @@ class CartCtrl extends BaseController {
 
     constructor(server) {
         super(server, 'Cart');
-        this.ShipEngine = new ShipEngine();
     }
 
 
@@ -173,92 +173,71 @@ class CartCtrl extends BaseController {
     }
 
 
-    bestGuessPackageTypesForCart(Cart) {
-        const numItems = Cart.get('num_items') || 1;
-
-        if(numItems <= 2) {
-            return [
-                'flat_rate_envelope', // usps
-                // 'fedex_envelope', // fedex
-            ];
-        }
-        if(numItems <= 4) {
-            return [
-                'small_flat_rate_box' // usps
-                // 'fedex_small_box_onerate', // fedex
-            ];
-        }
-        if(numItems <= 6) {
-            return [
-                'medium_flat_rate_box' // usps
-                // 'fedex_medium_box_onerate', // fedex
-            ];
-        }
-        if(numItems <= 8) {
-            return [
-                'large_flat_rate_box'  // usps
-                // 'fedex_large_box_onerate', // fedex
-            ];
-        }
-        return [
-            'large_flat_rate_box'  // usps
-            // 'fedex_extra_large_box_onerate', // fedex
-        ];
-    }
-
-
-    isInternationalShipment(Cart) {
-        return Cart.get('shipping_countryCodeAlpha2') !== process.env.SHIPPING_ADDRESS_FROM_COUNTRY_CODE
-    }
-
-
-    getServiceCodesForCart(Cart) {
-        return this.isInternationalShipment(Cart)
-            ? ['usps_priority_mail_international']
-            : ['usps_priority_mail'];
-
-            // fedex comparible: fedex_standard_overnight / fedex_international_economy
-    }
-
-    getCarrierIds() {
-        return [
-            // 'se-168142', // fedex
-            'se-164967' // usps
-        ]
-    }
-
-
-    /**
-     * https://www.shipengine.com/international-shipping/
-     *
-     * @param {*} Cart
-     * @returns
-     */
-    getCustomsConfig(Cart) {
-        const config = {
-            contents: 'merchandise',
-            non_delivery: 'treat_as_abandoned',
-            customs_items: []
-        }
-
-        Cart.related('cart_items').forEach((model) => {
-            const product = model.related('product');
-            const cartItem = {};
-
-            cartItem.harmonized_tariff_code = product.get('customs_harmonized_system_code');
-            cartItem.country_of_manufacture = product.get('customs_country_of_origin');
-            cartItem.country_of_origin = product.get('customs_country_of_origin');
-            cartItem.quantity = model.get('qty');
-            cartItem.description = product.get('description');
-            cartItem.value = {
-                currency: 'usd',
-                amount: model.related('product_variant_sku').get('display_price') || model.related('product_variant').get('display_price')
-            }
-
-            config.customs_items.push(cartItem);
+    async setShippingAddressIfValid(request, h) {
+        global.logger.info('REQUEST: CartCtrl.setShippingAddressIfValid', {
+            meta: request.payload
         });
 
-        return config;
+        try {
+            // convert the cart shipping params names to respective params for ShipEngine
+            const response = await ShipEngineAPI.validateAddresses([
+                {
+                    address_line1: request.payload.shipping_streetAddress,
+                    city_locality: request.payload.shipping_city,
+                    state_province: request.payload.shipping_state,
+                    postal_code: request.payload.shipping_postalCode,
+                    country_code: request.payload.shipping_countryCodeAlpha2,
+                }
+            ]);
+
+            // Hopefully this never happens
+            if(!Array.isArray(response)) {
+                global.logger.error(`CartCtrl.setShippingAddressIfValid - the API resposne was expected to be an array but it is of type: ${typeof data}`, {
+                    meta: { 'API response': data }
+                });
+                throw Boom.badRequest();
+            }
+
+            // we only submitted one address so we only care about the first response:
+            const validation = response[0];
+
+            // Only persisting the cart data if there was no validation error
+            // https://www.shipengine.com/docs/addresses/validation/#address-status-meanings
+            if(validation.status === 'error') {
+                return h.apiSuccess({
+                    validation_status: validation.status,
+                    cart: null
+                });
+            }
+
+            // Adjust the request payload with the address returned from the ShipEngine API
+            if(validation.matched_address) {
+                request.payload.shipping_streetAddress = validation.matched_address.address_line1;
+                request.payload.shipping_city = validation.matched_address.city_locality;
+                request.payload.shipping_postalCode = validation.matched_address.postal_code;
+
+                // NOTE: not updating shipping_state and shipping_countryCodeAlpha2 because those values
+                // need to be maintained for UI elements to work properly
+            }
+
+            const Cart = await super.upsertModel(request.payload);
+
+            const UpdatedCart = await this.getActiveCart(
+                Cart.get('id'),
+                this.getTenantIdFromAuth(request),
+                { withRelated: this.getAllCartRelations() }
+            );
+
+            return h.apiSuccess({
+                validation_status: validation.status,
+                cart: UpdatedCart.toJSON()
+            });
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
     }
 
 
@@ -274,84 +253,9 @@ class CartCtrl extends BaseController {
                 throw new Error("Cart not found")
             }
 
-            console.log("CART", Cart.toJSON());
+            const rates = await ShipEngineService.getShippingRatesForCart(Cart);
 
-            const apiPayload = {
-                rate_options: {
-                    carrier_ids: this.getCarrierIds(),
-                    service_codes: this.getServiceCodesForCart(Cart),
-                    package_types: this.bestGuessPackageTypesForCart(Cart),
-                    calculate_tax_amount: false,
-                    preferred_currency: 'usd'
-                },
-                shipment: {
-                    ship_from: {
-                        company_name: process.env.SHIPPING_ADDRESS_FROM_COMPANY,
-                        name: "Greg Bruins",
-                        phone: process.env.SHIPPING_ADDRESS_FROM_PHONE,
-                        address_line1: process.env.SHIPPING_ADDRESS_FROM_ADDRESS1,
-                        // address_line2: "Suite 300",
-                        city_locality: process.env.SHIPPING_ADDRESS_FROM_CITY,
-                        state_province: process.env.SHIPPING_ADDRESS_FROM_STATE,
-                        postal_code: process.env.SHIPPING_ADDRESS_FROM_ZIP,
-                        country_code: process.env.SHIPPING_ADDRESS_FROM_COUNTRY_CODE,
-                        // address_residential_indicator: "no"
-                      },
-                    ship_to: {
-                        name: `${Cart.get('shipping_firstName')} ${Cart.get('shipping_lastName')}`,
-                        phone: Cart.get('shipping_phone'),
-                        address_line1: Cart.get('shipping_streetAddress'),
-                        city_locality: Cart.get('shipping_city'),
-                        state_province: Cart.get('shipping_state'),
-                        postal_code: Cart.get('shipping_postalCode'),
-                        country_code: Cart.get('shipping_countryCodeAlpha2'),
-                        // address_residential_indicator: "yes"
-                    },
-                    packages: [
-                        {
-                            weight: {
-                                value: Cart.get('weight_oz_total'),
-                                unit: 'ounce' // pound,ounce
-                            }
-                        }
-                    ]
-                }
-            };
-
-            if(this.isInternationalShipment(Cart)) {
-                apiPayload.shipment.customs = this.getCustomsConfig(Cart)
-            }
-
-            // console.log("API PAYLOAD", apiPayload)
-            // console.log("CUSTOME ITEMS", apiPayload.shipment.customs)
-
-            const { data } = await this.ShipEngine.$axios.post('rates', apiPayload);
-
-            // test: sort by delivery_days
-            const rates = {};
-
-            // TODO: add logic that will not add to the rates obj
-            // if the entry's shipping_amount is greater than the shipping_amount of a faster entry
-            // - ignore rate if delivery_days/estimated_deleivery_date is null
-            if(isObject(data) && isObject(data.rate_response) && Array.isArray(data.rate_response.rates)) {
-                data.rate_response.rates.forEach((obj) => {
-                    if(!rates.hasOwnProperty(obj.delivery_days)) {
-                        rates[obj.delivery_days] = obj;
-                    }
-                    else {
-                        if(rates[obj.delivery_days].shipping_amount.amount > obj.shipping_amount.amount) {
-                            rates[obj.delivery_days] = obj;
-                        }
-                    }
-                });
-
-                console.log("RATES", data.rate_response.rates);
-                console.log("INVALID RATES", data.rate_response.invalid_rates);
-            }
-
-            return h.apiSuccess(
-                Object.values(rates)
-            );
+            return h.apiSuccess(rates);
         }
         catch(err) {
             global.logger.error(err);
@@ -367,7 +271,7 @@ class CartCtrl extends BaseController {
                 meta: request.payload
             });
 
-            const { data } = await this.ShipEngine.$axios.get(`rates/${request.payload.rate_id}`);
+            const data = await ShipEngineAPI.getRate(request.payload.rate_id);
 
             if(!data) {
                 throw new Error('A shipping rate for the given ID was not found')
