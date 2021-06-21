@@ -8,6 +8,7 @@ module.exports.up = (knex) => {
             t.string('api_key').nullable();
             t.string('application_name').nullable();
             t.string('application_url').nullable();
+            t.text('application_logo').nullable();
             t.boolean('active').defaultTo(true);
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();

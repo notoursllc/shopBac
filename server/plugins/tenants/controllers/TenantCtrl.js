@@ -37,7 +37,8 @@ class TenantCtrl extends TenantBaseCtrl {
         return {
             password: Joi.string().max(100).required(),
             application_name: Joi.string().max(100),
-            application_url: Joi.string().max(100)
+            application_url: Joi.string().max(100),
+            application_logo: Joi.string()
         };
     }
 

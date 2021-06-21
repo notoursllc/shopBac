@@ -148,6 +148,7 @@ module.exports = function (baseModel, bookshelf, server) {
                 'billing_postalCode',
                 'billing_countryCodeAlpha2',
                 'billing_phone',
+                'billing_same_as_shipping',
 
                 'shipping_firstName',
                 'shipping_lastName',
@@ -164,7 +165,8 @@ module.exports = function (baseModel, bookshelf, server) {
                 'currency',
                 'shipping_rate',
                 'sales_tax',
-                // 'stripe_payment_intent_id'
+                'stripe_payment_intent_id',
+                'paypal_order_id',
 
                 'created_at',
                 'updated_at',

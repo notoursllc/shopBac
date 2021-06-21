@@ -12,7 +12,6 @@ exports.plugin = {
             function (server) {
                 const CartCtrl = new (require('./controllers/CartCtrl'))(server);
                 const CartItemCtrl = new (require('./controllers/CartItemCtrl'))(server);
-                const PaypalCartCtrl = new (require('./controllers/PaypalCartCtrl'))(server);
 
                 server.route([
                     // {
@@ -45,15 +44,11 @@ exports.plugin = {
                                 query: Joi.object({
                                     id: Joi.string().uuid(),
                                     tenant_id: Joi.string().uuid(),
+                                    relations: Joi.boolean().optional()
                                 })
                             },
                             handler: (request, h) => {
-                                console.log("GET CART", request.query)
-                                return CartCtrl.getByIdHandler(
-                                    request,
-                                    null,
-                                    h
-                                );
+                                return CartCtrl.getByIdHandler(request, h);
                             }
                         }
                     },
@@ -185,6 +180,25 @@ exports.plugin = {
                      * STRIPE
                      ******************/
                      {
+                        method: 'GET',
+                        path: '/cart/payment',
+                        options: {
+                            description: 'Gets payment info for the given cart id',
+                            auth: {
+                                strategies: ['storeauth']
+                            },
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid(),
+                                    tenant_id: Joi.string().uuid(),
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.getPaymentHandler(request, h);
+                            }
+                        }
+                    },
+                    {
                         method: 'POST',
                         path: '/cart/payment/intent',
                         options: {
@@ -203,7 +217,6 @@ exports.plugin = {
                             }
                         }
                     },
-
                     {
                         method: 'POST',
                         path: '/cart/payment',
@@ -244,7 +257,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return PaypalCartCtrl.createPaymentHandler(request, h);
+                                return CartCtrl.createPaypalPaymentHandler(request, h);
                             }
                         }
                     },
@@ -264,7 +277,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return PaypalCartCtrl.executePaymentHandler(request, h);
+                                return CartCtrl.executePaypalPaymentHandler(request, h);
                             }
                         }
                     },

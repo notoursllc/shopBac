@@ -1,12 +1,17 @@
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const isObject = require('lodash.isobject');
-const uuidV4 = require('uuid/v4');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const { ObtainTokenRequest } = require('square-connect');
 const BaseController = require('../../core/controllers/BaseController');
-const ShipEngine = require('../../shipping/shipEngineApi/ShipEngine');
+
+// third party APIs
 const { sendPurchaseEmails } = require('../services/MailgunService');
+const ShipEngine = require('../../shipping/shipEngineApi/ShipEngine');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const {
+    getOrder: getPaypalOrder,
+    createPaymentFromCart: createPaypalPaymentFromCart,
+    executePayment: executePaypalPayment } = require('../services/PaypalService');
+
 
 
 function getJoiStringOrNull(strLen) {
@@ -36,6 +41,7 @@ class CartCtrl extends BaseController {
             billing_postalCode: getJoiStringOrNull(),
             billing_countryCodeAlpha2: getJoiStringOrNull(2),
             billing_phone: getJoiStringOrNull(),
+            billing_same_as_shipping: Joi.boolean().default(true),
 
             shipping_firstName: getJoiStringOrNull(),
             shipping_lastName: getJoiStringOrNull(),
@@ -52,6 +58,8 @@ class CartCtrl extends BaseController {
             currency: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             shipping_rate: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             sales_tax: Joi.alternatives().try(Joi.number().integer().min(0), Joi.allow(null)),
+            stripe_payment_intent_id: getJoiStringOrNull(),
+            paypal_order_id: getJoiStringOrNull(),
 
             created_at: Joi.date(),
             updated_at: Joi.date(),
@@ -67,60 +75,7 @@ class CartCtrl extends BaseController {
     }
 
 
-
-
-
-
-
-
-    // async createHandler(request, h) {
-    //     try {
-    //         global.logger.info(`REQUEST: CartCtrl.createHandler (${this.modelName})`);
-
-    //         request.payload.token = uuidV4();
-
-    //         const ShoppingCart = await this.getModel().create(request.payload);
-
-    //         global.logger.info(`RESPONSE: CartCtrl.createHandler (${this.modelName})`, {
-    //             meta: {
-    //                 model: ShoppingCart ? ShoppingCart.toJSON() : null
-    //             }
-    //         });
-
-    //         return h.apiSuccess(ShoppingCart);
-    //     }
-    //     catch(err) {
-    //         global.logger.error(err);
-    //         global.bugsnag(err);
-    //         throw Boom.badRequest(err);
-    //     }
-    // }
-
-    // async createModel(request, h) {
-    //     try {
-    //         global.logger.info(`REQUEST: CartCtrl.createHandler (${this.modelName})`);
-
-    //         request.payload.token = uuidV4();
-
-    //         const ShoppingCart = await this.getModel().create(request.payload);
-
-    //         global.logger.info(`RESPONSE: CartCtrl.createHandler (${this.modelName})`, {
-    //             meta: {
-    //                 model: ShoppingCart ? ShoppingCart.toJSON() : null
-    //             }
-    //         });
-
-    //         return h.apiSuccess(ShoppingCart);
-    //     }
-    //     catch(err) {
-    //         global.logger.error(err);
-    //         global.bugsnag(err);
-    //         throw Boom.badRequest(err);
-    //     }
-    // }
-
-
-    async getActiveCart(id, tenant_id, fetchOptions) {
+    getActiveCart(id, tenant_id, fetchOptions) {
         if(!id || !tenant_id) {
             return false;
         }
@@ -149,7 +104,6 @@ class CartCtrl extends BaseController {
 
     async getOrCreateCart(id, tenant_id, fetchOptions) {
         const Cart = await this.getActiveCart(id, tenant_id, fetchOptions);
-        console.log("GET OR CREATE: CART", Cart)
 
         if(!Cart) {
             // create
@@ -169,8 +123,32 @@ class CartCtrl extends BaseController {
     }
 
 
+    async getByIdHandler(request, h) {
+        global.logger.info('REQUEST: CartCtrl.getByIdHandler', {
+            meta: request.query
+        });
+
+        const Cart = await this.getModel()
+            .query((qb) => {
+                qb.where('id', '=', request.query.id);
+                qb.andWhere('tenant_id', '=', this.getTenantIdFromAuth(request));
+            })
+            .fetch(
+                { withRelated: request.query.relations ? this.getAllCartRelations() : null }
+            );
+
+        global.logger.info('RESPONSE: CartCtrl.getByIdHandler', {
+            meta: null
+        });
+
+        return h.apiSuccess(
+            this.getMaskedCart(Cart)
+        );
+    }
+
+
     async upsertHandler(request, h) {
-        global.logger.info('RESPONSE: CartCtrl.upsertHandler', {
+        global.logger.info('REQUEST: CartCtrl.upsertHandler', {
             meta: request.payload
         });
 
@@ -344,8 +322,8 @@ class CartCtrl extends BaseController {
                 apiPayload.shipment.customs = this.getCustomsConfig(Cart)
             }
 
-            console.log("API PAYLOAD", apiPayload)
-            console.log("CUSTOME ITEMS", apiPayload.shipment.customs)
+            // console.log("API PAYLOAD", apiPayload)
+            // console.log("CUSTOME ITEMS", apiPayload.shipment.customs)
 
             const { data } = await this.ShipEngine.$axios.post('rates', apiPayload);
 
@@ -470,7 +448,6 @@ class CartCtrl extends BaseController {
 
             console.log("CART", Cart.toJSON())
 
-            // IN PROGRESS
             const paymentIntent = await stripe.paymentIntents.create({
                 amount: Cart.get('grand_total'),
                 currency: Cart.get('currency') || 'usd',
@@ -536,12 +513,22 @@ class CartCtrl extends BaseController {
         }
 
         try {
-            const Cart = await this.getModel().query((qb) => {
-                qb.where('id', '=', cartId);
-                qb.andWhere('tenant_id', '=', tenantId);
-            });
+            const Cart = await this.getModel()
+                .query((qb) => {
+                    qb.where('id', '=', cartId);
+                    qb.andWhere('tenant_id', '=', tenantId);
+                })
+                .fetch(
+                    { withRelated: this.getAllCartRelations() }
+                );
 
-            sendPurchaseEmails(Cart);
+            const Tenant = await this.server.app.bookshelf.model('Tenant')
+                .query((qb) => {
+                    qb.where('id', '=', tenantId);
+                })
+                .fetch();
+
+            sendPurchaseEmails(Cart, Tenant);
         }
         catch(err) {
             global.logger.error(err);
@@ -562,32 +549,372 @@ class CartCtrl extends BaseController {
         );
 
         return h.apiSuccess();
+    }
 
 
-        // TODO: is a cart with all relations really needed to be returned?
-        /*
-        try {
-            const UpdatedCart = await this.getModel()
-                .query((qb) => {
-                    qb.where('id', '=', Cart.get('id'));
-                    qb.andWhere('tenant_id', '=', tenantId);
-                })
-                .fetch(
-                    { withRelated: this.getAllCartRelations() }
-                );
+    async getPaymentHandler(request, h) {
+        global.logger.info('REQUEST: CartCtrl.getPaymentHandler', {
+            meta: request.query
+        });
 
-            const maskedCart = this.getMaskedCart(UpdatedCart);
-            global.logger.info('RESPONSE: CartCtrl.paymentSuccess', {
-                meta: maskedCart
-            });
+        const Cart = await this.getModel()
+            .query((qb) => {
+                qb.where('id', '=', request.query.id);
+                qb.andWhere('tenant_id', '=', this.getTenantIdFromAuth(request));
+            })
+            .fetch();
 
-            return h.apiSuccess(maskedCart);
+        if(!Cart) {
+            throw new Error('Cart does not exist');
         }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
+
+        // Homoginizing the API response so it's the same
+        // wether the payment was processed via Stripe or Paypal
+        const paymentData = {
+            amount: null,
+            currency: null,
+            payment_method_details: {}
         }
-        */
+
+        // Stripe
+        if(Cart.get('stripe_payment_intent_id')) {
+            const stripePaymentIntent = await stripe.paymentIntents.retrieve(
+                Cart.get('stripe_payment_intent_id')
+            );
+
+/*
+// SAMPLE PAYMENT INTENT RESPONSE
+{
+    "id": "pi_0J3th3lUxEbdEgd3nL7YiqJV",
+    "object": "payment_intent",
+    "allowed_source_types": [
+      "card"
+    ],
+    "amount": 1939,
+    "amount_capturable": 0,
+    "amount_received": 1939,
+    "application": null,
+    "application_fee_amount": null,
+    "canceled_at": null,
+    "cancellation_reason": null,
+    "capture_method": "automatic",
+    "charges": {
+      "object": "list",
+      "count": 1,
+      "data": [
+        {
+          "id": "ch_0J3th4lUxEbdEgd3uHT4t0jL",
+          "object": "charge",
+          "amount": 1939,
+          "amount_captured": 1939,
+          "amount_refunded": 0,
+          "application": null,
+          "application_fee": null,
+          "application_fee_amount": null,
+          "balance_transaction": "txn_0J3th5lUxEbdEgd3saEkvZuK",
+          "billing_details": {
+            "address": {
+              "city": "burlingame",
+              "country": "US",
+              "line1": "123 abc st",
+              "line2": null,
+              "postal_code": "94401",
+              "state": "CA"
+            },
+            "email": null,
+            "name": "robert labla",
+            "phone": null
+          },
+          "calculated_statement_descriptor": "Stripe",
+          "captured": true,
+          "card": null,
+          "created": 1624068838,
+          "currency": "usd",
+          "customer": null,
+          "description": null,
+          "destination": null,
+          "dispute": null,
+          "disputed": false,
+          "failure_code": null,
+          "failure_message": null,
+          "fee": 86,
+          "fee_details": [
+            {
+              "amount": 86,
+              "amount_refunded": 0,
+              "application": null,
+              "currency": "usd",
+              "description": "Stripe processing fees",
+              "type": "stripe_fee"
+            }
+          ],
+          "fraud_details": {},
+          "invoice": null,
+          "livemode": false,
+          "metadata": {},
+          "on_behalf_of": null,
+          "order": null,
+          "outcome": {
+            "network_status": "approved_by_network",
+            "reason": null,
+            "risk_level": "normal",
+            "risk_score": 11,
+            "seller_message": "Payment complete.",
+            "type": "authorized"
+          },
+          "paid": true,
+          "payment_intent": "pi_0J3th3lUxEbdEgd3nL7YiqJV",
+          "payment_method": "pm_0J3th4lUxEbdEgd3HXALrCjJ",
+          "payment_method_details": {
+            "card": {
+              "brand": "visa",
+              "checks": {
+                "address_line1_check": "pass",
+                "address_postal_code_check": "pass",
+                "cvc_check": "pass"
+              },
+              "country": "US",
+              "exp_month": 11,
+              "exp_year": 2022,
+              "fingerprint": "Gwiy8I00xFJzKCpN",
+              "funding": "credit",
+              "installments": null,
+              "last4": "4242",
+              "network": "visa",
+              "three_d_secure": null,
+              "wallet": null
+            },
+            "type": "card"
+          },
+          "receipt_email": null,
+          "receipt_number": null,
+          "receipt_url": "https://pay.stripe.com/receipts/lUxEbdEgd3sGdHsGqutxjTJ1DpfibSxo/ch_0J3th4lUxEbdEgd3uHT4t0jL/rcpt_JhIHXX5kT8SQifOjYTSaDHvHhxZEOKN",
+          "refunded": false,
+          "refunds": [],
+          "review": null,
+          "shipping": null,
+          "source": null,
+          "source_transfer": null,
+          "statement_description": null,
+          "statement_descriptor": null,
+          "statement_descriptor_suffix": null,
+          "status": "paid",
+          "transfer_data": null,
+          "transfer_group": null,
+          "uncaptured": null
+        }
+      ],
+      "has_more": false,
+      "total_count": 1,
+      "url": "/v1/charges?payment_intent=pi_0J3th3lUxEbdEgd3nL7YiqJV"
+    },
+    "client_secret": "pi_0J3th3lUxEbdEgd3nL7YiqJV_secret_3qvHqFK3JdIGoxjc3qwvUpAHt",
+    "confirmation_method": "automatic",
+    "created": 1624068837,
+    "currency": "usd",
+    "customer": null,
+    "description": null,
+    "invoice": null,
+    "last_payment_error": null,
+    "livemode": false,
+    "metadata": {},
+    "next_action": null,
+    "next_source_action": null,
+    "on_behalf_of": null,
+    "payment_method": "pm_0J3th4lUxEbdEgd3HXALrCjJ",
+    "payment_method_options": {
+      "card": {
+        "installments": null,
+        "network": null,
+        "request_three_d_secure": "automatic"
+      }
+    },
+    "payment_method_types": [
+      "card"
+    ],
+    "receipt_email": null,
+    "review": null,
+    "setup_future_usage": null,
+    "shipping": null,
+    "source": null,
+    "statement_descriptor": null,
+    "statement_descriptor_suffix": null,
+    "status": "succeeded",
+    "transfer_data": null,
+    "transfer_group": null
+}
+*/
+
+            // Not everything needs to be returned to the client.
+            // Cherry-picking only the data that seems most appropriate
+            if(isObject(stripePaymentIntent)) {
+                // The payment intent returns an array of charges,
+                // but in our case I think it will never be more than one charge,
+                // so im simplifying the response by simply returning data for the
+                // first charge.
+                const data = stripePaymentIntent.charges.data[0];
+
+                paymentData.amount = data.amount;
+                paymentData.currency = data.currency;
+                paymentData.payment_method_details = {
+                    ...data.payment_method_details
+                }
+
+            }
+        }
+        // Paypal
+        else if(Cart.get('paypal_order_id')) {
+            const paypalData = await getPaypalOrder(Cart.get('paypal_order_id'));
+
+/*
+// SAMPLE PAYPAL ORDER RESPONSE
+{
+    "statusCode": 200,
+    "headers": {
+      "cache-control": "max-age=0, no-cache, no-store, must-revalidate",
+      "content-length": "1674",
+      "content-type": "application/json",
+      "date": "Sat, 19 Jun 2021 18:01:47 GMT",
+      "paypal-debug-id": "ae7639518e536",
+      "connection": "close"
+    },
+    "result": {
+      "id": "67A693631X658172K",
+      "intent": "CAPTURE",
+      "status": "COMPLETED",
+      "purchase_units": [
+        {
+          "reference_id": "default",
+          "amount": {
+            "currency_code": "USD",
+            "value": "19.39",
+            "breakdown": {
+              "item_total": {
+                "currency_code": "USD",
+                "value": "11.00"
+              },
+              "shipping": {
+                "currency_code": "USD",
+                "value": "7.40"
+              },
+              "tax_total": {
+                "currency_code": "USD",
+                "value": "0.99"
+              }
+            }
+          },
+          "payee": {
+            "email_address": "gbruins-facilitator@not-ours.com",
+            "merchant_id": "FR8YCDM9SB5TJ",
+            "display_data": {
+              "brand_name": "BreadVan"
+            }
+          },
+          "payments": {
+            "captures": [
+              {
+                "id": "66A01300605931714",
+                "status": "COMPLETED",
+                "amount": {
+                  "currency_code": "USD",
+                  "value": "19.39"
+                },
+                "final_capture": true,
+                "seller_protection": {
+                  "status": "ELIGIBLE",
+                  "dispute_categories": [
+                    "ITEM_NOT_RECEIVED",
+                    "UNAUTHORIZED_TRANSACTION"
+                  ]
+                },
+                "seller_receivable_breakdown": {
+                  "gross_amount": {
+                    "currency_code": "USD",
+                    "value": "19.39"
+                  },
+                  "paypal_fee": {
+                    "currency_code": "USD",
+                    "value": "0.86"
+                  },
+                  "net_amount": {
+                    "currency_code": "USD",
+                    "value": "18.53"
+                  }
+                },
+                "links": [
+                  {
+                    "href": "https://api.sandbox.paypal.com/v2/payments/captures/66A01300605931714",
+                    "rel": "self",
+                    "method": "GET"
+                  },
+                  {
+                    "href": "https://api.sandbox.paypal.com/v2/payments/captures/66A01300605931714/refund",
+                    "rel": "refund",
+                    "method": "POST"
+                  },
+                  {
+                    "href": "https://api.sandbox.paypal.com/v2/checkout/orders/67A693631X658172K",
+                    "rel": "up",
+                    "method": "GET"
+                  }
+                ],
+                "create_time": "2021-06-19T18:01:44Z",
+                "update_time": "2021-06-19T18:01:44Z"
+              }
+            ]
+          }
+        }
+      ],
+      "payer": {
+        "name": {
+          "given_name": "greg",
+          "surname": "bruins"
+        },
+        "email_address": "gbruins2@not-ours.com",
+        "payer_id": "84JUWSBRDAB9C",
+        "address": {
+          "country_code": "US"
+        }
+      },
+      "create_time": "2021-06-19T18:01:14Z",
+      "update_time": "2021-06-19T18:01:44Z",
+      "links": [
+        {
+          "href": "https://api.sandbox.paypal.com/v2/checkout/orders/67A693631X658172K",
+          "rel": "self",
+          "method": "GET"
+        }
+      ]
+    }
+}
+*/
+
+            if(isObject(paypalData)) {
+                // Just like the array of charges in the Stripe response,
+                // paypal returns an array of 'purchase_units', which I believe
+                // in our case will always be just one:
+                const data = paypalData.result.purchase_units[0];
+
+                paymentData.amount = data.amount.value * 100; // convert to cents
+                paymentData.currency = data.amount.currency_code ? data.amount.currency_code.toLowerCase() : null;
+                paymentData.payment_method_details = {
+                    type: 'paypal'
+                };
+
+                // this one is unique for paypal transactions:
+                paymentData.payer = {
+                    email_address: paypalData.result.payer.email_address
+                }
+            }
+        }
+
+        global.logger.info('RESPONSE: CartCtrl.getPaymentHandler', {
+            meta: {
+                paymentData
+            }
+        });
+
+        return h.apiSuccess(paymentData);
     }
 
 
@@ -599,7 +926,6 @@ class CartCtrl extends BaseController {
                 }
             });
 
-            // TODO: IN PROGRESS
             const Cart = await this.getModel()
                 .query((qb) => {
                     qb.where('id', '=', cartId);
@@ -644,6 +970,74 @@ class CartCtrl extends BaseController {
             global.logger.error(err);
             global.bugsnag(err);
             throw err;
+        }
+    }
+
+
+
+    /*******************
+     * PAYPAL related
+     ********************/
+
+     async createPaypalPaymentHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: PaypalCartCtrl:createPaymentHandler', {
+                meta: request.payload
+            });
+
+            const Cart = await this.getActiveCart(
+                request.payload.id,
+                this.getTenantIdFromAuth(request),
+                { withRelated: this.getAllCartRelations() }
+            );
+
+            const order = await createPaypalPaymentFromCart(Cart);
+
+            global.logger.info('RESPONSE: PaypalCartCtrl:createPaymentHandler', {
+                meta: {
+                    paymentToken: order.result.id
+                }
+            });
+
+            return h.apiSuccess({
+                paymentToken: order.result.id
+            });
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badData(err);
+        }
+    }
+
+
+    async executePaypalPaymentHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: PaypalCartCtrl:executePaymentHandler', {
+                meta: request.payload
+            });
+
+            const paypalTransaction = await executePaypalPayment(request.payload.token)
+            console.log("PAYPAL TRANSACTION", paypalTransaction)
+
+            await this.onPaymentSuccess(
+                request.payload.id,
+                this.getTenantIdFromAuth(request),
+                {
+                    paypal_order_id: paypalTransaction.result.id
+                }
+            );
+
+            global.logger.info('RESPONSE: PaypalCartCtrl:executePaymentHandler', {
+                meta: {}
+            });
+
+            return h.apiSuccess();
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badData(err);
         }
     }
 
