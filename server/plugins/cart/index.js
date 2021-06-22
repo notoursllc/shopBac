@@ -74,17 +74,18 @@ exports.plugin = {
                         method: 'POST',
                         path: '/cart/shippingaddress',
                         options: {
-                            description: 'Validates a shipping address, and saves it if valid',
+                            description: 'Sets the shipping address in the cart, and optionally validates it',
                             auth: {
                                 strategies: ['storeauth']
                             },
                             validate: {
                                 payload: Joi.object({
-                                    ...CartCtrl.getSchema(true)
+                                    ...CartCtrl.getSchema(true),
+                                    validate: Joi.boolean().optional()
                                 })
                             },
                             handler: (request, h) => {
-                                return CartCtrl.setShippingAddressIfValid(request, h);
+                                return CartCtrl.setShippingAddress(request, h);
                             }
                         }
                     },

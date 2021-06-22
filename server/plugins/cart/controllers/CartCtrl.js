@@ -173,51 +173,61 @@ class CartCtrl extends BaseController {
     }
 
 
-    async setShippingAddressIfValid(request, h) {
-        global.logger.info('REQUEST: CartCtrl.setShippingAddressIfValid', {
+    async setShippingAddress(request, h) {
+        global.logger.info('REQUEST: CartCtrl.setShippingAddress', {
             meta: request.payload
         });
 
         try {
-            // convert the cart shipping params names to respective params for ShipEngine
-            const response = await ShipEngineAPI.validateAddresses([
-                {
-                    address_line1: request.payload.shipping_streetAddress,
-                    city_locality: request.payload.shipping_city,
-                    state_province: request.payload.shipping_state,
-                    postal_code: request.payload.shipping_postalCode,
-                    country_code: request.payload.shipping_countryCodeAlpha2,
+            // Save to a variable and then delete because the entire payload
+            // is used to upsert the shipping data, and a DB error will orrur
+            // if this 'validate' property exists
+            const validate = request.payload.validate;
+            delete request.payload.validate;
+
+            let validationResponse;
+
+            if(validate) {
+                // convert the cart shipping params names to respective params for ShipEngine
+                const response = await ShipEngineAPI.validateAddresses([
+                    {
+                        address_line1: request.payload.shipping_streetAddress,
+                        city_locality: request.payload.shipping_city,
+                        state_province: request.payload.shipping_state,
+                        postal_code: request.payload.shipping_postalCode,
+                        country_code: request.payload.shipping_countryCodeAlpha2,
+                    }
+                ]);
+
+                // Hopefully this never happens
+                if(!Array.isArray(response)) {
+                    global.logger.error(`CartCtrl.setShippingAddress - the API resposne was expected to be an array but it is of type: ${typeof data}`, {
+                        meta: { 'API response': data }
+                    });
+                    throw Boom.badRequest();
                 }
-            ]);
 
-            // Hopefully this never happens
-            if(!Array.isArray(response)) {
-                global.logger.error(`CartCtrl.setShippingAddressIfValid - the API resposne was expected to be an array but it is of type: ${typeof data}`, {
-                    meta: { 'API response': data }
-                });
-                throw Boom.badRequest();
-            }
+                // we only submitted one address so we only care about the first response:
+                validationResponse = response[0];
 
-            // we only submitted one address so we only care about the first response:
-            const validation = response[0];
+                // Only persisting the cart data if there was no validation error
+                // https://www.shipengine.com/docs/addresses/validation/#address-status-meanings
+                if(validationResponse.status === 'error') {
+                    return h.apiSuccess({
+                        validation_status: validationResponse.status,
+                        cart: null
+                    });
+                }
 
-            // Only persisting the cart data if there was no validation error
-            // https://www.shipengine.com/docs/addresses/validation/#address-status-meanings
-            if(validation.status === 'error') {
-                return h.apiSuccess({
-                    validation_status: validation.status,
-                    cart: null
-                });
-            }
+                // Adjust the request payload with the address returned from the ShipEngine API
+                if(validationResponse.matched_address) {
+                    request.payload.shipping_streetAddress = validationResponse.matched_address.address_line1;
+                    request.payload.shipping_city = validationResponse.matched_address.city_locality;
+                    request.payload.shipping_postalCode = validationResponse.matched_address.postal_code;
 
-            // Adjust the request payload with the address returned from the ShipEngine API
-            if(validation.matched_address) {
-                request.payload.shipping_streetAddress = validation.matched_address.address_line1;
-                request.payload.shipping_city = validation.matched_address.city_locality;
-                request.payload.shipping_postalCode = validation.matched_address.postal_code;
-
-                // NOTE: not updating shipping_state and shipping_countryCodeAlpha2 because those values
-                // need to be maintained for UI elements to work properly
+                    // NOTE: not updating shipping_state and shipping_countryCodeAlpha2 because those values
+                    // need to be maintained for UI elements to work properly
+                }
             }
 
             const Cart = await super.upsertModel(request.payload);
@@ -229,7 +239,7 @@ class CartCtrl extends BaseController {
             );
 
             return h.apiSuccess({
-                validation_status: validation.status,
+                validation_status: isObject(validationResponse) ? validationResponse.status : null,
                 cart: UpdatedCart.toJSON()
             });
         }
