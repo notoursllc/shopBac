@@ -165,7 +165,7 @@ class ProductCtrl extends BaseController {
 
 
     /**
-     * Deletes a product, including its related skus and images
+     * Deletes a product, including its related variants
      *
      * @param {*} request
      * @param {*} h
@@ -188,7 +188,6 @@ class ProductCtrl extends BaseController {
                 throw Boom.badRequest('Unable to find product.');
             }
 
-            // Delete product images, skus, and the product model:
             await Promise.all([
                 this.deleteVariants(Product, tenantId),
                 this.deleteModel(productId, tenantId)

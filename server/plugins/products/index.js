@@ -172,6 +172,23 @@ exports.plugin = {
                         }
                     },
                     {
+                        method: 'DELETE',
+                        path: `${routePrefix}/product/variant/image`,
+                        options: {
+                            description: 'Deletes a product variant image',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    media_id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductVariantCtrl.deleteImageHandler(request, h);
+                            }
+                        }
+                    },
+                    {
                         method: 'GET',
                         path: `${routePrefix}/product/variant/sku`,
                         options: {

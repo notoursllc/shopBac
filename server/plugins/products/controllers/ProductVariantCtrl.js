@@ -186,7 +186,7 @@ class ProductVariantCtrl extends BaseController {
 
 
     /**
-     * Deletes a sku, including all of its images
+     * Deletes a product variant, including all of it's SKUs
      *
      * @param {*} request
      * @param {*} h
@@ -250,6 +250,55 @@ class ProductVariantCtrl extends BaseController {
             global.logger.error(err);
             global.bugsnag(err);
             throw Boom.badRequest(err);
+        }
+    }
+
+
+    async deleteImageHandler(request, h) {
+        try {
+            global.logger.info(`REQUEST: ProductVariantCtrl.deleteImageHandler`, {
+                meta: request.query
+            });
+
+            const ProductVariant = await this.getModel()
+                .query((qb) => {
+                    qb.andWhere('id', '=', request.query.id);
+                    qb.andWhere('tenant_id', '=', this.getTenantIdFromAuth(request));
+                })
+                .fetch();
+
+            const images = ProductVariant.get('images');
+
+            if(Array.isArray(images)) {
+                let matched = false;
+
+                for(let i=images.length - 1; i>=0; i--) {
+                    if(images[i].id === request.query.media_id) {
+                        images.splice(i, 1);
+                        matched = true;
+                    }
+                }
+
+                if(matched) {
+                    await this.getModel().update(
+                        { images },
+                        { id: ProductVariant.get('id') }
+                    )
+                }
+            }
+
+            global.logger.info('RESPONSE: ProductVariantCtrl.deleteImageHandler', {
+                meta: { images }
+            });
+
+            return h.apiSuccess({
+                images
+            });
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw err;
         }
     }
 
