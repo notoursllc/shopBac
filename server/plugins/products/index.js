@@ -110,22 +110,6 @@ exports.plugin = {
                             }
                         }
                     },
-                    // {
-                    //     method: 'DELETE',
-                    //     path: `${routePrefix}/product/image`,
-                    //     options: {
-                    //         description: 'Deletes a Product image',
-                    //         validate: {
-                    //             query: Joi.object({
-                    //                 id: Joi.string().uuid().required(),
-                    //                 tenant_id: Joi.string().uuid()
-                    //             })
-                    //         },
-                    //         handler: (request, h) => {
-                    //             return ProductImageCtrl.deleteHandler(request, h);
-                    //         }
-                    //     }
-                    // },
 
 
                     /******************************

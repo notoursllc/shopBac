@@ -3,6 +3,7 @@ const Boom = require('@hapi/boom');
 const cloneDeep = require('lodash.clonedeep');
 const BaseController = require('../../core/controllers/BaseController');
 const ProductVariantSkuCtrl = require('./ProductVariantSkuCtrl');
+const StorageService = require('../../core/services/StorageService')
 
 
 class ProductVariantCtrl extends BaseController {
@@ -270,16 +271,34 @@ class ProductVariantCtrl extends BaseController {
             const images = ProductVariant.get('images');
 
             if(Array.isArray(images)) {
-                let matched = false;
+                let matchedIndex = null;
 
-                for(let i=images.length - 1; i>=0; i--) {
-                    if(images[i].id === request.query.media_id) {
-                        images.splice(i, 1);
-                        matched = true;
+                images.forEach((obj, index) => {
+                    if(obj.id === request.query.media_id) {
+                        matchedIndex = index;
                     }
-                }
+                });
 
-                if(matched) {
+                if(matchedIndex !== null) {
+                    // Delete the image file.
+                    // Any errors here should only be logged
+                    // so they don't affect the outcome of this operation
+                    try {
+                        if(Array.isArray(images[matchedIndex].variants)) {
+                            images[matchedIndex].variants.forEach((obj) => {
+                                StorageService.deleteFile(obj.url);
+                            })
+                        }
+                    }
+                    catch(err) {
+                        global.logger.error(err);
+                        global.bugsnag(err);
+                    }
+
+                    // Take the matched index out of the images array
+                    images.splice(matchedIndex, 1);
+
+                    // Update the model with the new 'images' array
                     await this.getModel().update(
                         { images },
                         { id: ProductVariant.get('id') }
