@@ -79,18 +79,6 @@ const webManifest = {
                 }
             },
             {
-                plugin: './plugins/shipping',
-                routes: {
-                    prefix: routePrefix
-                }
-            },
-            {
-                plugin: './plugins/payment',
-                routes: {
-                    prefix: routePrefix
-                }
-            },
-            {
                 plugin: './plugins/cart',
                 routes: {
                     prefix: routePrefix

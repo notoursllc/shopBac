@@ -107,7 +107,7 @@ async function getShippingRatesForCart(Cart) {
             shipment: {
                 ship_from: {
                     company_name: process.env.SHIPPING_ADDRESS_FROM_COMPANY,
-                    name: "Greg Bruins",
+                    name: process.env.SHIPPING_ADDRESS_FROM_NAME,
                     phone: process.env.SHIPPING_ADDRESS_FROM_PHONE,
                     address_line1: process.env.SHIPPING_ADDRESS_FROM_ADDRESS1,
                     // address_line2: "Suite 300",
@@ -161,8 +161,8 @@ async function getShippingRatesForCart(Cart) {
                 }
             });
 
-            console.log("RATES", rate_response.rates);
-            console.log("INVALID RATES", rate_response.invalid_rates);
+            // console.log("RATES", rate_response.rates);
+            // console.log("INVALID RATES", rate_response.invalid_rates);
         }
 
         return Object.values(rates);

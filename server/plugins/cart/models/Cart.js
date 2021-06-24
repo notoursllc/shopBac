@@ -120,15 +120,6 @@ module.exports = function (baseModel, bookshelf, server) {
 
             // Relationships:
 
-            // A payment could fail first, then another attempt
-            // could succeed, all related to the same Cart,
-            // so a Cart can have many Payments
-            //
-            // http://bookshelfjs.org/#Model-instance-hasMany
-            // payments: function() {
-            //     return this.hasMany('Payment', 'cart_id');
-            // },
-
             // cart_id is the foreign key in CartItem
             cart_items: function() {
                 return this.hasMany('CartItem', 'cart_id');
