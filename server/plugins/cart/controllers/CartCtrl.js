@@ -4,7 +4,7 @@ const isObject = require('lodash.isobject');
 const BaseController = require('../../core/controllers/BaseController');
 
 // third party APIs
-const { sendPurchaseEmails } = require('../services/MailgunService');
+const { sendPurchaseEmails } = require('../services/PostmarkService');
 const ShipEngineService = require('../services/shipEngine/ShipEngineService');
 const ShipEngineAPI = require('../services/shipEngine/ShipEngineAPI');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
