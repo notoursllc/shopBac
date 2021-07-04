@@ -1,9 +1,7 @@
-'use strict';
-
 const Hoek = require('@hapi/hoek');
 const testHelpers = require('../../testHelpers');
 const serverSetup = require('./_serverSetup');
-const controller = require('../../../../server/plugins/core/coreController');
+const controller = require('../../../../server/plugins/core/controllers/BaseController');
 
 let manifest = Hoek.clone(serverSetup.manifest);
 

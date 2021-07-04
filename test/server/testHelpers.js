@@ -19,69 +19,6 @@ function destroyKnexAndStopServer(server, done) {
 }
 
 
-function getFakeBillingAddress() {
-    let fakeShipping = getFakeShippingAddress();
-    delete fakeShipping.email;
-    fakeShipping.phone = '123-456-7890';
-
-    return fakeShipping;
-}
-
-
-function getFakeShippingAddress() {
-    return {
-        firstName: 'wayne',
-        lastName: 'gretzky',
-        company: 'Edmonton Oilers',
-        streetAddress: '215 Clayton St.',
-        city: 'San Francisco',
-        state: 'CA',
-        postalCode: '94117',
-        countryCodeAlpha2: 'US',
-        email: 'gregbruins@gmail.com'
-    }
-}
-
-
-function setCartCookie(server, callback) {
-    const request = {
-        method: 'GET',
-        url: getApiPrefix('/jwt')
-    };
-
-    server.inject(request, (res) => {
-        server.state('cart-jwt', {
-            ttl: 24 * 60 * 60 * 1000,     // One day
-            isSecure: false,
-            isHttpOnly: true,
-            encoding: 'base64json',
-            clearInvalid: false,
-            strictHeader: true
-         });
-
-        request.state['cart-jwt'] = res.headers.authorization
-        callback();
-    });
-}
-
-
-function getJwtHeaders(server, callback) {
-    server.inject({
-        method: 'GET',
-        url: getApiPrefix('/jwt')
-    })
-    .then((res) => {
-        let headers = {
-            cookie: 'cart-jwt=' + res.headers.authorization
-        };
-        callback(headers);
-    })
-    .catch((err) => {
-        // console.error("ERROR GETTING JWT", err)
-    });
-}
-
-
 async function startServer(manifest, options) {
     return Server.init(manifest, options);
 }
@@ -255,8 +192,6 @@ function getRequestHeader() {
 
 module.exports = {
     destroyKnexAndStopServer,
-    getFakeBillingAddress,
-    getFakeShippingAddress,
     getBasicManifest,
     startServer,
     getServer,

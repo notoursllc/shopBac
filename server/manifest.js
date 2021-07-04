@@ -66,6 +66,12 @@ const webManifest = {
                 }
             },
             {
+                plugin: './plugins/package-types',
+                routes: {
+                    prefix: routePrefix
+                }
+            },
+            {
                 plugin: './plugins/storage',
                 routes: {
                     prefix: routePrefix

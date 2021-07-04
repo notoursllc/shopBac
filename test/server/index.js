@@ -12,6 +12,20 @@ const lab = exports.lab = Lab.script();
 const expect = Code.expect;
 const it = lab.test;
 
+const manifest = {
+    server: {
+        port: 0
+    },
+    register: {
+        plugins: []
+    }
+};
+
+const composeOptions = {
+    // Relative to the real hapi server
+    relativeTo: Path.resolve(__dirname, '../../server')
+};
+
 
 // it('starts server and returns hapi server object', (done) => {
 //
@@ -60,7 +74,7 @@ const it = lab.test;
 //         name: 'fake version'
 //     };
 //
-//     App.init(internals.manifest, internals.composeOptions, (err, server) => {
+//     App.init(manifest, composeOptions, (err, server) => {
 //
 //         expect(err).to.exist();
 //         expect(err.message).to.equal('register version failed');
@@ -70,16 +84,6 @@ const it = lab.test;
 // });
 
 
-internals.manifest = {
-    server: {
-        port: 0
-    },
-    register: {
-        plugins: []
-    }
-};
 
-internals.composeOptions = {
-    // Relative to the real hapi server
-    relativeTo: Path.resolve(__dirname, '../../server')
-};
+
+

@@ -5,6 +5,7 @@ const DB_TABLES = {
 
     master_types: 'master_types',
     media: 'media',
+    package_types: 'package_types',
     product_accent_messages: 'product_accent_messages',
     product_collections: 'product_collections',
     product_color_swatches: 'product_color_swatches',
