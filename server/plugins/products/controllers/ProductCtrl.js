@@ -8,6 +8,11 @@ const helperService = require('../../../helpers.service');
 const globalTypes = require('../../../global_types.js');
 const ProductVariantCtrl = require('./ProductVariantCtrl');
 
+// Using this so many time below, so setting as a variable:
+const joiPositiveNumberOrNull = Joi.alternatives().try(
+    Joi.number().integer().positive(),
+    Joi.allow(null)
+);
 
 class ProductCtrl extends BaseController {
 
@@ -30,22 +35,31 @@ class ProductCtrl extends BaseController {
             metadata: Joi.alternatives().try(Joi.array(), Joi.allow(null)),
 
             // TYPES
-            type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
-            sub_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
-            sales_channel_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
-            package_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
-            vendor_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
-            collections: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
-            gender_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
-            fit_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
-            sleeve_length_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
-            feature_type: Joi.alternatives().try( Joi.number().integer().positive(), Joi.allow(null) ),
+            type: joiPositiveNumberOrNull,
+            sub_type: joiPositiveNumberOrNull,
+            sales_channel_type: joiPositiveNumberOrNull,
+            package_type: joiPositiveNumberOrNull,
+            vendor_type: joiPositiveNumberOrNull,
+            collections: joiPositiveNumberOrNull,
+            gender_type: joiPositiveNumberOrNull,
+            fit_type: joiPositiveNumberOrNull,
+            sleeve_length_type: joiPositiveNumberOrNull,
+            feature_type: joiPositiveNumberOrNull,
             // vendor_id: Joi.string().uuid().optional().empty('').allow(null).default(null),
 
             // SEO
-            seo_page_title: Joi.alternatives().try(Joi.string().trim().max(70), Joi.allow(null)),
-            seo_page_desc: Joi.alternatives().try(Joi.string().trim().max(320), Joi.allow(null)),
-            seo_uri: Joi.alternatives().try(Joi.string().trim().max(50), Joi.allow(null)),
+            seo_page_title: Joi.alternatives().try(
+                Joi.string().trim().max(70),
+                Joi.allow(null)
+            ),
+            seo_page_desc: Joi.alternatives().try(
+                Joi.string().trim().max(320),
+                Joi.allow(null)
+            ),
+            seo_uri: Joi.alternatives().try(
+                Joi.string().trim().max(50),
+                Joi.allow(null)
+            ),
 
             // MEDIA
             // images: Joi.array().allow(null),
@@ -53,7 +67,6 @@ class ProductCtrl extends BaseController {
 
             // SHIPPING
             shippable: Joi.boolean().empty('').default(true),
-            ship_alone: Joi.boolean().empty('').default(false),
             customs_country_of_origin: Joi.alternatives().try(
                 Joi.string().max(2),
                 Joi.allow(null)
@@ -62,6 +75,12 @@ class ProductCtrl extends BaseController {
                 Joi.string(),
                 Joi.allow(null)
             ),
+
+            // PACKAGING
+            ship_alone: Joi.boolean().empty('').default(false),
+            packing_length: joiPositiveNumberOrNull,
+            packing_width: joiPositiveNumberOrNull,
+            packing_height: joiPositiveNumberOrNull,
 
             variants: Joi.array().items(
                 // Note: should not pass the 'isUpdate' flag to getSchema() in this case.

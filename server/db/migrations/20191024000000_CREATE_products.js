@@ -36,12 +36,14 @@ module.exports.up = (knex) => {
 
             // SHIPPING
             t.boolean('shippable').defaultTo(true);
-            t.boolean('ship_alone').defaultTo(false);
-            t.integer('packing_width_inches').nullable();
-            t.integer('packing_height_inches').nullable();
-            t.integer('packing_depth_inches').nullable();
             t.string('customs_country_of_origin').nullable();
             t.string('customs_harmonized_system_code').nullable();
+
+            // PACKAGING
+            t.boolean('ship_alone').defaultTo(false);
+            t.integer('packing_length').nullable();
+            t.integer('packing_width').nullable();
+            t.integer('packing_height').nullable();
 
             // TIMESTAMPS
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());

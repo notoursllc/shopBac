@@ -98,6 +98,9 @@ module.exports = function (baseModel, bookshelf) {
 
                 'shippable',
                 'ship_alone',
+                'packing_length',
+                'packing_width',
+                'packing_height',
                 'customs_country_of_origin',
                 'customs_harmonized_system_code',
 
