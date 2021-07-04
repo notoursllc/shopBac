@@ -78,7 +78,6 @@ module.exports = function (baseModel, bookshelf) {
                 'title',
                 'caption',
                 'description',
-                'shippable',
                 'metadata',
                 'is_good',
 
@@ -97,7 +96,8 @@ module.exports = function (baseModel, bookshelf) {
                 'seo_page_desc',
                 'seo_uri',
 
-                'requires_shipping',
+                'shippable',
+                'ship_alone',
                 'customs_country_of_origin',
                 'customs_harmonized_system_code',
 

@@ -10,7 +10,7 @@ module.exports.up = (knex) => {
             t.string('title').nullable();
             t.string('caption').nullable();
             t.text('description').nullable();
-            t.boolean('shippable').defaultTo(true);
+
             t.jsonb('metadata').nullable();
             t.boolean('is_good').defaultTo(false); // good / service
 
@@ -35,7 +35,11 @@ module.exports.up = (knex) => {
             t.string('video_url').nullable();
 
             // SHIPPING
-            t.boolean('requires_shipping').defaultTo(true);
+            t.boolean('shippable').defaultTo(true);
+            t.boolean('ship_alone').defaultTo(false);
+            t.integer('packing_width_inches').nullable();
+            t.integer('packing_height_inches').nullable();
+            t.integer('packing_depth_inches').nullable();
             t.string('customs_country_of_origin').nullable();
             t.string('customs_harmonized_system_code').nullable();
 

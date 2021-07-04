@@ -24,7 +24,6 @@ class ProductCtrl extends BaseController {
             title: Joi.alternatives().try(Joi.string().trim().max(100), Joi.allow(null)),
             caption: Joi.alternatives().try(Joi.string().trim().max(100), Joi.allow(null)),
             description: Joi.alternatives().try(Joi.string().trim().max(500), Joi.allow(null)),
-            shippable: Joi.boolean().default(true),
             is_good: Joi.boolean().default(true),
 
             // these should be stringified values in the payload:
@@ -53,7 +52,8 @@ class ProductCtrl extends BaseController {
             video_url: Joi.string().trim().max(500).empty('').allow(null).default(null),
 
             // SHIPPING
-            requires_shipping: Joi.boolean().empty('').default(true),
+            shippable: Joi.boolean().empty('').default(true),
+            ship_alone: Joi.boolean().empty('').default(false),
             customs_country_of_origin: Joi.alternatives().try(
                 Joi.string().max(2),
                 Joi.allow(null)
