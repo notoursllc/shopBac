@@ -67,8 +67,13 @@ module.exports = function (baseModel, bookshelf) {
                     }
 
                     return totalCount;
-                }
+                },
 
+                packing_volume_cm: function() {
+                    return (this.get('packing_length_cm') || 0)
+                        * (this.get('packing_width_cm') || 0)
+                        * (this.get('packing_height_cm') || 0);
+                }
             },
 
             visible: [
@@ -98,9 +103,9 @@ module.exports = function (baseModel, bookshelf) {
 
                 'shippable',
                 'ship_alone',
-                'packing_length',
-                'packing_width',
-                'packing_height',
+                'packing_length_cm',
+                'packing_width_cm',
+                'packing_height_cm',
                 'customs_country_of_origin',
                 'customs_harmonized_system_code',
 
@@ -113,7 +118,8 @@ module.exports = function (baseModel, bookshelf) {
                 'variants',
 
                 // virtuals
-                'total_inventory_count'
+                'total_inventory_count',
+                'packing_volume_cm'
             ]
         }
     );

@@ -25,10 +25,41 @@ class PackageTypeCtrl extends BaseController {
             height_cm: Joi.number().integer().min(0).allow(null),
             weight_oz: Joi.number().integer().min(0).allow(null),
             max_weight_oz: Joi.number().integer().min(0).allow(null),
+            ordinal: Joi.number().integer().min(0).allow(null),
             created_at: Joi.date(),
             updated_at: Joi.date(),
             deleted_at: Joi.date()
         };
+    }
+
+
+    async bulkUpdateOrdinals(request, h) {
+        try {
+            global.logger.info(`REQUEST: PackageTypeCtrl.bulkUpdateOrdinals`);
+
+            const promises = [];
+            const tenant_id = this.getTenantIdFromAuth(request);
+
+            request.payload.ordinals.forEach((obj) => {
+                promises.push(
+                    this.upsertModel({
+                        ...obj,
+                        tenant_id
+                    })
+                );
+            });
+
+            await Promise.all(promises);
+
+            global.logger.info('RESPONSE: PackageTypeCtrl.bulkUpdateOrdinals');
+
+            return h.apiSuccess();
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
     }
 
 }

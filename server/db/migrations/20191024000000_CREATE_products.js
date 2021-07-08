@@ -41,9 +41,9 @@ module.exports.up = (knex) => {
 
             // PACKAGING
             t.boolean('ship_alone').defaultTo(false);
-            t.integer('packing_length').nullable();
-            t.integer('packing_width').nullable();
-            t.integer('packing_height').nullable();
+            t.integer('packing_length_cm').nullable();
+            t.integer('packing_width_cm').nullable();
+            t.integer('packing_height_cm').nullable();
 
             // TIMESTAMPS
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());

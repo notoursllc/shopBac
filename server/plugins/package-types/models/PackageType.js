@@ -10,6 +10,14 @@ module.exports = function (baseModel, bookshelf) {
 
         softDelete: true,
 
+        virtuals: {
+            volume_cm: function() {
+                return (this.get('length_cm') || 0)
+                    * (this.get('width_cm') || 0)
+                    * (this.get('height_cm') || 0);
+            }
+        },
+
         visible: [
             'id',
             // 'tenant_id',
@@ -22,9 +30,13 @@ module.exports = function (baseModel, bookshelf) {
             'height_cm',
             'weight_oz',
             'max_weight_oz',
+            'ordinal',
             'created_at',
             'updated_at',
             // 'deleted_at'
+
+            // virtuals:
+            'volume_cm'
         ]
     });
 };

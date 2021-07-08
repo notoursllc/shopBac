@@ -78,9 +78,9 @@ class ProductCtrl extends BaseController {
 
             // PACKAGING
             ship_alone: Joi.boolean().empty('').default(false),
-            packing_length: joiPositiveNumberOrNull,
-            packing_width: joiPositiveNumberOrNull,
-            packing_height: joiPositiveNumberOrNull,
+            packing_length_cm: joiPositiveNumberOrNull,
+            packing_width_cm: joiPositiveNumberOrNull,
+            packing_height_cm: joiPositiveNumberOrNull,
 
             variants: Joi.array().items(
                 // Note: should not pass the 'isUpdate' flag to getSchema() in this case.

@@ -79,27 +79,27 @@ const after = function (server) {
                 }
             }
         },
-        // {
-        //     method: 'PUT',
-        //     path: '/package_type/ordinal',
-        //     options: {
-        //         description: 'Updates master type ordinals',
-        //         validate: {
-        //             payload: Joi.object({
-        //                 tenant_id: Joi.string().uuid().required(),
-        //                 ordinals: Joi.array().items(
-        //                     Joi.object().keys({
-        //                         id: Joi.string().uuid().required(),
-        //                         ordinal: Joi.number().integer().required()
-        //                     })
-        //                 )
-        //             })
-        //         },
-        //         handler: (request, h) => {
-        //             return PackageTypeCtrl.bulkUpdateOrdinals(request, h);
-        //         }
-        //     }
-        // },
+        {
+            method: 'PUT',
+            path: '/package_types/ordinal',
+            options: {
+                description: 'Bulk update package type ordinals',
+                validate: {
+                    payload: Joi.object({
+                        tenant_id: Joi.string().uuid().required(),
+                        ordinals: Joi.array().items(
+                            Joi.object().keys({
+                                id: Joi.string().uuid().required(),
+                                ordinal: Joi.number().integer().required()
+                            })
+                        )
+                    })
+                },
+                handler: (request, h) => {
+                    return PackageTypeCtrl.bulkUpdateOrdinals(request, h);
+                }
+            }
+        },
         {
             method: 'DELETE',
             path: '/package_type',
