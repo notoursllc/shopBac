@@ -69,6 +69,7 @@ function pickSmallestBoxForProduct(product, allBoxes) {
 
     allBoxes.forEach((box) => {
         const result = doesItFit(product, box);
+        // console.log("pickSmallestBoxForProduct -> doesItFit results", result)
 
         // if the package fits in the box...
         if(result.fitItems !== 0) {
@@ -112,6 +113,7 @@ function getAllBoxesThatFitProduct(product, boxes) {
         }
     });
 
+    // sort the results from best to worst fit.
     const ordered = Object.keys(fits)
         .map(key => parseFloat(key)) // convert each key into a float so it can be sorted
         .sort()
@@ -197,6 +199,9 @@ function productsWithoutSuitableBox(products, boxes) {
  * @returns
  */
 function packProcessor(products, boxes, maxRecursionCounter, collector) {
+    // Defining the collector here so the initial caller doesn't need to know
+    // about the collector.  It's kind of an implementation detail.  The
+    // collector is passed along during recursion.
     if(!isObject(collector)) {
         collector = { packed: [], unpacked: [] }
     }
@@ -211,26 +216,45 @@ function packProcessor(products, boxes, maxRecursionCounter, collector) {
         [...products]
     );
 
+    // Before we get into packing multiple products in a box
+    // we need to first find any products that have 'ship_alone' = true
+    // and find the best box for that product. Then the product should be
+    // removed from sortedProducts so it doesn't get re-packed
+    for(let i=sortedProducts.length - 1; i>=0; i--) {
+        if(sortedProducts[i].ship_alone) {
+            const shipAloneProduct = sortedProducts.splice(i, 1); // splice returns an array of removed items
+            const smallestBox = pickSmallestBoxForProduct(shipAloneProduct[0], boxes);
+
+            collector.packed.push({
+                box: smallestBox,
+                products: [shipAloneProduct[0]],
+                remainingVolume: smallestBox.volume_cm - shipAloneProduct[0].packing_volume_cm
+            });
+        }
+    }
+
     // See which box holds the most products:
     // For each box, try to pack as many products into it.
     const boxPackingTestResults = [];
-    boxes.forEach((box, index) => {
+    boxes.forEach((box) => {
         boxPackingTestResults.push(
             addProductsToBox(sortedProducts, box)
         );
     });
 
-    // console.log("boxPackingTestResults", boxPackingTestResults)
+    // console.log("boxPackingTestResults:")
+    // boxPackingTestResults.forEach((obj) => console.log(obj))
+
 
     // Now that all boxes have been packed,
     // lets find the one box with the most packed products and the least remaining volume
     let bestPackedBox = null;
-    boxPackingTestResults.forEach((packedBox, idx) => {
+    boxPackingTestResults.forEach((boxPackingResult, idx) => {
         if(!bestPackedBox ||
-            (packedBox.packed.length > bestPackedBox.packed.length && packedBox.remainingVolume <= bestPackedBox.remainingVolume)) {
+            (boxPackingResult.packed.length >= bestPackedBox.packed.length && boxPackingResult.remainingVolume <= bestPackedBox.remainingVolume)) {
 
             bestPackedBox = {
-                ...packedBox,
+                ...boxPackingResult,
                 box: boxes[idx]
             };
         }
@@ -239,11 +263,14 @@ function packProcessor(products, boxes, maxRecursionCounter, collector) {
     // console.log("SELETED bestPackedBox", bestPackedBox);
 
     if(bestPackedBox) {
-        collector.packed.push({
-            box: bestPackedBox.box,
-            products: bestPackedBox.packed,
-            remainingVolume: bestPackedBox.remainingVolume
-        });
+
+        if(bestPackedBox.packed.length) {
+            collector.packed.push({
+                box: bestPackedBox.box,
+                products: bestPackedBox.packed,
+                remainingVolume: bestPackedBox.remainingVolume
+            });
+        }
 
         if(bestPackedBox.unpacked.length) {
             collector.unpacked = collector.unpacked.concat(bestPackedBox.unpacked);
@@ -278,8 +305,6 @@ function packProducts(products, allBoxes) {
         );
     });
 
-    // TODO: addProductsToBox() should be updated to pack products into single boxes that have 'ship_alone' = true
-
     // Now productsCopy holds products that all have suitable boxes...
     // so we can recurse and all products should eventually end up in a box
     const results = packProcessor(
@@ -290,12 +315,7 @@ function packProducts(products, allBoxes) {
 
     results.unpacked = results.unpacked.concat(knownUnpacked);
 
-    results.packed.forEach((obj, idx) => {
-        console.log(`PACKED ${idx}`, obj)
-    });
-    results.unpacked.forEach((obj, idx) => {
-        console.log(`UNPACKED ${idx}`, obj)
-    });
+    return results;
 }
 
 
