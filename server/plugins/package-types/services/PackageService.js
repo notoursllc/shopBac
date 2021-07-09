@@ -225,11 +225,16 @@ function packProcessor(products, boxes, maxRecursionCounter, collector) {
             const shipAloneProduct = sortedProducts.splice(i, 1); // splice returns an array of removed items
             const smallestBox = pickSmallestBoxForProduct(shipAloneProduct[0], boxes);
 
-            collector.packed.push({
-                box: smallestBox,
-                products: [shipAloneProduct[0]],
-                remainingVolume: smallestBox.volume_cm - shipAloneProduct[0].packing_volume_cm
-            });
+            if(smallestBox) {
+                collector.packed.push({
+                    box: smallestBox,
+                    products: [shipAloneProduct[0]],
+                    remainingVolume: smallestBox.volume_cm - shipAloneProduct[0].packing_volume_cm
+                });
+            }
+            else {
+                collector.unpacked.push(shipAloneProduct[0])
+            }
         }
     }
 
@@ -299,11 +304,11 @@ function packProducts(products, allBoxes) {
     const productsCopy = [...products];
 
     // First lets remove any products from productsCopy that dont have any suitable boxes at all
-    productsWithoutSuitableBox(productsCopy, allBoxes).forEach((idx) => {
-        knownUnpacked.push(
-            productsCopy.splice(idx, 1) // splice returns the removed item
-        );
-    });
+    const productIndexes = productsWithoutSuitableBox(productsCopy, allBoxes);
+    for(let i=productIndexes.length - 1; i>=0; i--) {
+        const removed = productsCopy.splice(i, 1); // splice returns an array of removed items
+        knownUnpacked.push(removed[0]);
+    }
 
     // Now productsCopy holds products that all have suitable boxes...
     // so we can recurse and all products should eventually end up in a box
