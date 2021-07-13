@@ -10,21 +10,16 @@ module.exports = function (baseModel, bookshelf) {
 
         softDelete: true,
 
-        format(attributes) {
-            if (attributes.variants) {
-                attributes.variants = JSON.stringify(attributes.variants);
-            }
-
-            return attributes;
-        },
-
         visible: [
             'id',
             // 'tenant_id',
             'resource_type',
             'alt_text',
             'ordinal',
-            'variants',
+            'url',
+            'width',
+            'height',
+            'mime',
             'created_at',
             'updated_at',
             // 'deleted_at'

@@ -20,7 +20,10 @@ class MediaCtrl extends BaseController {
             resource_type: Joi.string().required(),
             alt_text: Joi.string().max(100).allow(null),
             ordinal: Joi.number().integer().min(0).allow(null),
-            variants: Joi.array().allow(null),
+            url: Joi.string().max(200).allow(null),
+            width: Joi.number().integer().min(0).allow(null),
+            height: Joi.number().integer().min(0).allow(null),
+            mime: Joi.string().max(50).allow(null),
             created_at: Joi.date(),
             updated_at: Joi.date(),
             deleted_at: Joi.date()
@@ -69,21 +72,27 @@ class MediaCtrl extends BaseController {
             resizeBufferToMultipleImages(
                 File._data,
                 [
-                    { width: 1200 },
-                    { width: 600 },
-                    { width: 75 }
+                    { width: 1200 }
                 ],
                 true
             )
         );
 
-        return this.upsertModel({
+        const modelData = {
             tenant_id: tenantId,
             resource_type: 'IMAGE',
             alt_text: null,
-            ordinal: 0,
-            variants: Array.isArray(resizeResults) ? resizeResults : []
-        });
+            ordinal: 0
+        }
+
+        if(Array.isArray(resizeResults)) {
+            modelData.url = resizeResults[0].url;
+            modelData.width = resizeResults[0].width;
+            modelData.height = resizeResults[0].height;
+            modelData.mime = resizeResults[0].mime;
+        }
+
+        return this.upsertModel(modelData);
     }
 
 
