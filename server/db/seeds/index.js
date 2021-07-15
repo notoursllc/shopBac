@@ -1,6 +1,7 @@
 const tenants = require('../initial-data/tenants');
 const tenant_members = require('../initial-data/tenant_members');
 const master_types = require('../initial-data/master_types');
+const package_types = require('../initial-data/package_types');
 const product_collections = require('../initial-data/product_collections');
 const product_accent_messages = require('../initial-data/product_accent_messages');
 const product_color_swatches = require('../initial-data/product_color_swatches');
@@ -22,6 +23,9 @@ exports.seed = (knex, Promise) => {
         })
         .then(() => {
             return master_types.seed(knex, Promise);
+        })
+        .then(() => {
+            return package_types.seed(knex, Promise);
         })
         .then(() => {
             return product_collections.seed(knex, Promise);

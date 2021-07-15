@@ -12,9 +12,11 @@ module.exports = function (baseModel, bookshelf) {
 
         virtuals: {
             volume_cm: function() {
-                return (this.get('length_cm') || 0)
-                    * (this.get('width_cm') || 0)
-                    * (this.get('height_cm') || 0);
+                const val = parseFloat(this.get('length_cm') || 0, 2)
+                    * parseFloat(this.get('width_cm') || 0, 2)
+                    * parseFloat(this.get('height_cm') || 0, 2);
+
+                return val.toFixed(2);
             }
         },
 
@@ -23,6 +25,7 @@ module.exports = function (baseModel, bookshelf) {
             // 'tenant_id',
             'label',
             'description',
+            'notes',
             'code',
             'code_for_carrier',
             'length_cm',
