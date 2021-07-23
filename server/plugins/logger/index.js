@@ -9,17 +9,19 @@ exports.plugin = {
     register: function (server, options) {
 
         // Bugsnag setup:
-        const bugsnagClient = bugsnag({
-            apiKey: process.env.BUG_SNAG_API_KEY,
-            releaseStage: 'production'
-        });
+        if(process.env.NODE_ENV !== 'test') {
+            const bugsnagClient = bugsnag({
+                apiKey: process.env.BUG_SNAG_API_KEY,
+                releaseStage: 'production'
+            });
 
-        global.bugsnag = () => {
-            const args = arguments;
-            if(process.env.NODE_ENV === 'production') {
-                bugsnagClient.notify(args);
-            }
-        };
+            global.bugsnag = () => {
+                const args = arguments;
+                if(process.env.NODE_ENV === 'production') {
+                    bugsnagClient.notify(args);
+                }
+            };
+        }
 
         const prettyJson = winston.format.printf((info) => {
             if (isObject(info.meta)) {
@@ -40,7 +42,7 @@ exports.plugin = {
             ),
             transports: [
                 new winston.transports.Console({
-                    level: process.env.NODE_ENV === 'test' ? 'error' : (process.env.LOG_LEVEL || 'info')
+                    level: process.env.LOG_LEVEL || 'info'
                 })
             ]
         });
