@@ -1,11 +1,8 @@
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
-const isObject = require('lodash.isobject');
 const cloneDeep = require('lodash.clonedeep');
 const { createSitemap } = require('sitemap');
 const BaseController = require('../../core/controllers/BaseController');
-const helperService = require('../../../helpers.service');
-const globalTypes = require('../../../global_types.js');
 const ProductVariantCtrl = require('./ProductVariantCtrl');
 
 // Using this so many time below, so setting as a variable:
@@ -235,15 +232,6 @@ class ProductCtrl extends BaseController {
     }
 
 
-    productInfoHandler(request, h) {
-        return h.apiSuccess({
-            types: globalTypes.product.types,
-            subTypes: globalTypes.product.subtypes,
-            fits: globalTypes.product.fits
-        });
-    }
-
-
     // TODO: need to get product subtypes from DB, but globals file
     // TODO: uses productPicController
     async sitemapHandler(request, h) {
@@ -259,18 +247,18 @@ class ProductCtrl extends BaseController {
             ]
         };
 
-        Object.keys(globalTypes.product.subtypes).forEach((key) => {
-            if(key) {
-                const parts = key.split('_');
-                if(parts[2]) {
-                    sitemapConfig.urls.push({
-                        url: `/${parts[2].toLowerCase()}/`,
-                        changefreq: 'weekly',
-                        priority: 0.8
-                    });
-                }
-            }
-        });
+        // Object.keys(globalTypes.product.subtypes).forEach((key) => {
+        //     if(key) {
+        //         const parts = key.split('_');
+        //         if(parts[2]) {
+        //             sitemapConfig.urls.push({
+        //                 url: `/${parts[2].toLowerCase()}/`,
+        //                 changefreq: 'weekly',
+        //                 priority: 0.8
+        //             });
+        //         }
+        //     }
+        // });
 
         const Products = await this.getModel()
             .query((qb) => {
@@ -315,33 +303,6 @@ class ProductCtrl extends BaseController {
         const xml = sitemap.toXML();
 
         return h.response(xml).type('application/xml')
-    }
-
-
-    // TODO STILL NEEDS REFACTORING
-    async productShareHandler(request, h) {
-        try {
-            const uriParts = request.query.uri.split('/');
-            const seoUri = uriParts[uriParts.length - 1];
-
-            const Product = await getProductByAttribute('seo_uri', seoUri);
-            const p = isObject(Product) ? Product.toJSON() : {};
-            const url = helperService.getSiteUrl(true);
-            const urlImages = `${url}/images/`;
-            const featuredPic = this.featuredProductPic(p);
-
-            return await h.view('views/socialshare', {
-                title: p.title || `Welcome to ${helperService.getBrandName()}`,
-                description: p.description_short || '',
-                image: featuredPic ? `${urlImages}product/${featuredPic}` : `${urlImages}logo_email.png`,
-                url: `${url}/${request.query.uri}`
-            });
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-            throw Boom.badRequest(err);
-        }
     }
 
 

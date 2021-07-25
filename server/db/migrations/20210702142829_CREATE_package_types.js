@@ -17,12 +17,14 @@ exports.up = function(knex) {
             t.float('weight_oz').nullable();
             t.float('max_weight_oz').nullable();
             t.integer('ordinal').nullable().defaultTo(1);
+            t.boolean('published').defaultTo(true);
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();
             t.timestamp('deleted_at', true).nullable();
 
             t.index([
-                'id'
+                'id',
+                'tenant_id'
             ]);
         }
     );

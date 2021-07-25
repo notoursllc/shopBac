@@ -1,11 +1,5 @@
 require('dotenv').config();
 
-const Server = require('../../server');
-const isObject = require('lodash.isobject');
-const queryString = require('query-string');
-
-let cartToken = null;
-
 
 function destroyKnexAndStopServer(server, done) {
     if(server.app.hasOwnProperty('knex')) {
@@ -16,90 +10,6 @@ function destroyKnexAndStopServer(server, done) {
     else {
         server.stop(done);
     }
-}
-
-
-async function startServer(manifest, options) {
-    return Server.init(manifest, options);
-}
-
-async function getServer(manifest, options) {
-    return await startServer(manifest, options)
-}
-
-
-
-function startServerAndGetHeaders(manifest, composeOptions) {
-    // Mocking the appInsightsClient object
-    global.appInsightsClient = {
-        trackException: (err) => {
-            console.log('CAUGHT ERROR', err)
-        }
-    };
-
-    return new Promise((resolve, reject) => {
-        Server.init(manifest, composeOptions, (err, server) => {
-            if(err) {
-                resolve({
-                    err,
-                    server
-                });
-                return;
-            }
-
-            getJwtHeaders(server, (headers) => {
-                resolve({
-                    err,
-                    server,
-                    headers
-                });
-            });
-        });
-    });
-}
-
-
-function getRegistrationIndexFromManifest(path, manifest) {
-    let i = -1;
-
-    if(isObject(manifest) && Array.isArray(manifest.register.plugins)) {
-        manifest.register.plugins.forEach((obj, index) => {
-            if(isObject(obj) && obj.plugin === path) {
-                i = index;
-            }
-        })
-    }
-
-    return i;
-}
-
-
-function spliceRegistrationFromManifest(path, manifest) {
-    let index = getRegistrationIndexFromManifest(path, manifest);
-    if(index > -1) {
-        manifest.register.plugins.splice(index, 1);
-    }
-}
-
-
-async function getProduct(server, paramString) {
-    let paramStringDefault = queryString.stringify(
-        {
-            where: ['is_available', '=', true],
-            limit: 1
-        },
-        { arrayFormat: 'bracket' }
-    );
-
-    let apiPrefix = getApiPrefix();
-
-    let { result } = await server.inject({
-        method: 'GET',
-        url: `${apiPrefix}/products?${paramString || paramStringDefault}`
-    });
-
-    let data = JSON.parse(JSON.stringify(result.data));
-    return data[0].id;
 }
 
 
@@ -115,93 +25,81 @@ function getApiPrefix(path) {
 }
 
 
-function getBasicManifest() {
-    let manifest = {
-        server: {
-            port: 0
-        },
-        register: {
-            plugins: [
-                { plugin: '@hapi/inert' },
-                { plugin: './plugins/logger' },
-                {
-                    plugin: './plugins/bookshelf-orm',
-                    options: {
-                        knex: {
-                            debug: false
-                        }
-                    }
-                },
-                // { plugin: './plugins/auth-scheme-jwt-cookie' },
-                { plugin: './plugins/core' }
-            ]
-        }
-    };
-
-    return manifest;
-}
-
-
-async function addToCart(server, productId, options) {
-    let opts = options || {qty: 1, size: 'SIZE_ADULT_3XL'};
-
-    let config = {
-        method: 'POST',
-        url: '/cart/item/add',
-        payload: {
-            id: productId,
-            options: opts
-        }
-    };
-
-    let headers = getRequestHeader();
-
-    if(headers) {
-        config.headers = headers;
-    }
-
-    let response = await server.inject(config);
-    setCartToken(response);
-
-    return response;
-}
-
-
-function setCartToken(response) {
-    if(isObject(response) && isObject(response.headers) && response.headers['x-cart-token']) {
-        cartToken = response.headers['x-cart-token'];
-    }
-}
-
-
-function getCartToken() {
-    return cartToken;
-}
-
-
 function getRequestHeader() {
-    if(!cartToken) {
-        return;
+    const encodedToken = Buffer.from(`${process.env.TEST_TENANT_ID}:${process.env.TEST_TENANT_API_KEY}`).toString('base64');
+    return {
+        Authorization: `Basic ${encodedToken}`
+    }
+}
+
+
+function getMockCart(numItems) {
+    const mockCart = {
+        billing_firstName: null,
+        billing_lastName: null,
+        billing_company: null,
+        billing_streetAddress: null,
+        billing_extendedAddress: null,
+        billing_city: null,
+        billing_state: null,
+        billing_postalCode: null,
+        billing_countryCodeAlpha2: null,
+        billing_phone: null,
+        billing_same_as_shipping: true,
+        shipping_firstName: 'Tim',
+        shipping_lastName: 'Tebow',
+        shipping_streetAddress: '123 Abc St',
+        shipping_extendedAddress: null,
+        shipping_company: null,
+        shipping_city: 'Denver',
+        shipping_state: 'CO',
+        shipping_postalCode: '11111',
+        shipping_countryCodeAlpha2: 'US',
+        shipping_phone: '867-5309',
+        shipping_email: null,
+        shipping_rate: null,
+        num_items: 3,
+        sub_total: 3300,
+        grand_total: 3300,
+        weight_oz_total: 33,
+        shipping_total: 0,
+        cart_items: []
+    };
+
+    for(let i=0; i<(numItems || 1); i++) {
+        mockCart.cart_items.push({
+            id: i,
+            qty: 1,
+            product: {
+                id: i,
+                package_type: null,
+                shippable: true,
+                ship_alone: false,
+                packing_length_cm: 40, // 15.7 inches
+                packing_width_cm: 25, // 10 inches
+                packing_height_cm: 3,  // just over 1 inch
+                packing_volume_cm: 3000,
+                customs_country_of_origin: null,
+                customs_harmonized_system_code: null,
+            },
+            product_variant: {
+                display_price: 1100,
+                weight_oz: 11
+            },
+            product_variant_sku: {
+                display_price: 1200,
+                weight_oz: 12
+            }
+        })
     }
 
-    return {
-        Cookie: `cart_token=${cartToken}`
-    }
+    return mockCart;
 }
 
 
 module.exports = {
     destroyKnexAndStopServer,
-    getBasicManifest,
-    startServer,
-    getServer,
-    startServerAndGetHeaders,
-    getRegistrationIndexFromManifest,
-    spliceRegistrationFromManifest,
-    getProduct,
-    addToCart,
     getApiPrefix,
-    setCartToken,
-    getCartToken,
-    getRequestHeader
+    getRequestHeader,
+    getMockCart
 }

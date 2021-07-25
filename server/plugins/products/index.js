@@ -542,40 +542,6 @@ exports.plugin = {
 
 
                     /******************************
-                     * Misc
-                     ******************************/
-                    {
-                        method: 'GET',
-                        path: '/product/share', // NOTE: no routePrefix on this one
-                        options: {
-                            auth: {
-                                strategies: ['storeauth', 'session']
-                            },
-                            validate: {
-                                query: Joi.object({
-                                    uri: Joi.string()
-                                })
-                            }
-                        },
-                        handler: (request, h) => {
-                            return ProductCtrl.productShareHandler(request, h);
-                        }
-                    },
-                    {
-                        method: 'GET',
-                        path: `${routePrefix}/product/info`,
-                        options: {
-                            description: 'Returns general info about products',
-                            auth: {
-                                strategies: ['storeauth', 'session']
-                            },
-                            handler: (request, h) => {
-                                return ProductCtrl.productInfoHandler(request, h);
-                            }
-                        }
-                    },
-
-                    /******************************
                      * Admin routes
                      ******************************/
                     {

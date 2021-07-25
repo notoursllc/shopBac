@@ -1,5 +1,6 @@
 const isObject = require('lodash.isobject');
 const ShipEngineAPI = require('./ShipEngineAPI');
+const PackageService = require('../../../package-types/services/PackageService')
 
 
 function getCarrierIds() {
@@ -12,95 +13,155 @@ function getCarrierIds() {
 }
 
 
-function isInternationalShipment(Cart) {
-    return Cart.get('shipping_countryCodeAlpha2') !== process.env.SHIPPING_ADDRESS_FROM_COUNTRY_CODE
+function isDomesticShipment(cart) {
+    if(isObject(cart)
+        && cart.shipping_countryCodeAlpha2
+        && cart.shipping_countryCodeAlpha2 !== process.env.SHIPPING_ADDRESS_FROM_COUNTRY_CODE) {
+        return false;
+    }
+
+    return true;
+//     if(
+//         !isObject(cart)
+//         || !cart.hasOwnProperty('shipping_countryCodeAlpha2')
+//         || !cart.shipping_countryCodeAlpha2
+//         || (isObject(cart) && cart.shipping_countryCodeAlpha2 === process.env.SHIPPING_ADDRESS_FROM_COUNTRY_CODE)) {
+//         return true;
+//     }
+
+//     return false;
 }
 
 
-function getServiceCodesForCart(Cart) {
-    return isInternationalShipment(Cart)
-        ? ['usps_priority_mail_international']
-        : ['usps_priority_mail'];
+function getServiceCodesForCart(cart) {
+    return isDomesticShipment(cart)
+        ? ['usps_priority_mail']
+        : ['usps_priority_mail_international'];
 
         // fedex comparible: fedex_standard_overnight / fedex_international_economy
 }
 
 
-function bestGuessPackageTypesForCart(Cart) {
-    const numItems = Cart.get('num_items') || 1;
+function getProductArrayFromCart(cartJson) {
+    if(!isObject(cartJson)) {
+        return;
+    }
 
-    if(numItems <= 2) {
-        return [
-            'flat_rate_envelope', // usps
-            // 'fedex_envelope', // fedex
-        ];
+    const products = [];
+
+    cartJson.cart_items.forEach((cartItem) => {
+        for(let i=0; i<cartItem.qty; i++) {
+            products.push(
+                cartItem.product
+            );
+        }
+    });
+
+    return products;
+}
+
+
+function getProductWeight(productId, cart) {
+    let weight = 0;
+
+    if(Array.isArray(cart.cart_items)) {
+        cart.cart_items.forEach((obj) => {
+            if(obj.product.id === productId) {
+                const variantSkuWeight = isObject(obj.product_variant_sku) ? parseFloat(obj.product_variant_sku.weight_oz || 0) : 0;
+                const variantWeight = isObject(obj.product_variant) ? parseFloat(obj.product_variant.weight_oz || 0) : 0;
+
+                // product_variant_sku get's first preference
+                if(variantSkuWeight) {
+                    weight = variantSkuWeight;
+                }
+                else if(variantWeight) {
+                    weight = variantWeight;
+                }
+            }
+        })
     }
-    if(numItems <= 4) {
-        return [
-            'small_flat_rate_box' // usps
-            // 'fedex_small_box_onerate', // fedex
-        ];
-    }
-    if(numItems <= 6) {
-        return [
-            'medium_flat_rate_box' // usps
-            // 'fedex_medium_box_onerate', // fedex
-        ];
-    }
-    if(numItems <= 8) {
-        return [
-            'large_flat_rate_box'  // usps
-            // 'fedex_large_box_onerate', // fedex
-        ];
-    }
-    return [
-        'large_flat_rate_box'  // usps
-        // 'fedex_extra_large_box_onerate', // fedex
-    ];
+
+    return weight;
 }
 
 
 /**
  * https://www.shipengine.com/international-shipping/
  *
- * @param {*} Cart
+ * @param {*} cart
  * @returns
  */
-function getCustomsConfig(Cart) {
+ function getCustomsConfig(cart) {
     const config = {
         contents: 'merchandise',
         non_delivery: 'treat_as_abandoned',
         customs_items: []
     }
 
-    Cart.related('cart_items').forEach((model) => {
-        const product = model.related('product');
-        const cartItem = {};
+    if(Array.isArray(cart.cart_items)) {
+        cart.cart_items.forEach((obj) => {
+            config.customs_items.push({
+                quantity: obj.qty,
+                description: obj.product.description,
+                harmonized_tariff_code: obj.product.customs_harmonized_system_code,
+                country_of_manufacture: obj.product.customs_country_of_origin,
+                country_of_origin: obj.product.customs_country_of_origin,
 
-        cartItem.harmonized_tariff_code = product.get('customs_harmonized_system_code');
-        cartItem.country_of_manufacture = product.get('customs_country_of_origin');
-        cartItem.country_of_origin = product.get('customs_country_of_origin');
-        cartItem.quantity = model.get('qty');
-        cartItem.description = product.get('description');
-        cartItem.value = {
-            currency: 'usd',
-            amount: model.related('product_variant_sku').get('display_price') || model.related('product_variant').get('display_price')
-        }
-
-        config.customs_items.push(cartItem);
-    });
+                value: {
+                    currency: 'usd',
+                    amount: obj.product_variant_sku.display_price || obj.product_variant.display_price
+                }
+            });
+        });
+    }
 
     return config;
 }
 
 
-async function getShippingRatesForCart(Cart) {
+function getApiPackageTypes(cart, packageTypes) {
+    const package_types = [];
+
+    // if any of the DB packageTypes have a specific value defined, then add it:
+    packageTypes.forEach((type) => {
+        if(type.code_for_carrier && !package_types.includes(type.code_for_carrier)) {
+            package_types.push(type.code_for_carrier);
+        }
+    });
+
+    // USPS has a more generic type called "package",
+    // which seems like a good thing to add as a fallback.
+    // (This may change though as I learn more about shipping)
+    // NOTE: currently, I am only using USPS, so this will always be true.  Future proofing though
+    // in case I use fedex someday
+    const service_codes = getServiceCodesForCart(cart);
+    if(
+        (service_codes.includes('usps_priority_mail') || service_codes.includes('usps_priority_mail_international'))
+        && !package_types.includes('package')
+    ) {
+        package_types.push('package');
+    }
+
+    return package_types;
+}
+
+
+/**
+ * Builds the API request payload for ShipEngineAPI.getRates()
+ *
+ * Separating out this method from getShippingRatesForCart
+ * so it can be unit tested.  It's important that the API
+ * request payload is correct.
+ *
+ * @param {*} cart
+ */
+function getRatesApiPayload(cart, packageTypes) {
     try {
         const apiPayload = {
             rate_options: {
                 carrier_ids: getCarrierIds(),
-                service_codes: getServiceCodesForCart(Cart),
-                package_types: bestGuessPackageTypesForCart(Cart),
+                service_codes: getServiceCodesForCart(cart),
+                // package_types: getApiPackageTypes(cart, packageTypes),
                 calculate_tax_amount: false,
                 preferred_currency: 'usd'
             },
@@ -118,54 +179,123 @@ async function getShippingRatesForCart(Cart) {
                     // address_residential_indicator: "no"
                 },
                 ship_to: {
-                    name: `${Cart.get('shipping_firstName')} ${Cart.get('shipping_lastName')}`,
-                    phone: Cart.get('shipping_phone'),
-                    address_line1: Cart.get('shipping_streetAddress'),
-                    city_locality: Cart.get('shipping_city'),
-                    state_province: Cart.get('shipping_state'),
-                    postal_code: Cart.get('shipping_postalCode'),
-                    country_code: Cart.get('shipping_countryCodeAlpha2'),
+                    name: `${cart.shipping_firstName} ${cart.shipping_lastName}`,
+                    phone: cart.shipping_phone,
+                    address_line1: cart.shipping_streetAddress,
+                    city_locality: cart.shipping_city,
+                    state_province: cart.shipping_state,
+                    postal_code: cart.shipping_postalCode,
+                    country_code: cart.shipping_countryCodeAlpha2,
                     // address_residential_indicator: "yes"
                 },
-                packages: [
-                    {
-                        weight: {
-                            value: Cart.get('weight_oz_total'),
-                            unit: 'ounce' // pound,ounce
-                        }
-                    }
-                ]
+                packages: [] // this will be constructed below
             }
         };
 
-        if(isInternationalShipment(Cart)) {
-            apiPayload.shipment.customs = getCustomsConfig(Cart)
+        const packingResults = PackageService.packProducts(
+            getProductArrayFromCart(cart),
+            packageTypes
+        );
+
+        // console.log("PACKING RESULTS", packingResults)
+        // console.log("PACKING PACKED", packingResults.packed);
+        // console.log("PACKING PACKED[0] BOX", packingResults.packed[0].box);
+
+        // Collecting the array of boxes (package_types) so I can determine
+        // the apiPayload.rate_options.package_types value.  Sending specific
+        // package_types in the API request will give the most accurate rates.
+        //
+        // NOTE that there is a scenario where packingResults.packed is an empty array.
+        // This would occur if none of the packageTypes passed into getRatesApiPayload()
+        // was a fit for the producs(s). If this were to occur then of course
+        // apiPayload.shipment.packages would remain empty, and calling
+        // ShipEngineAPI.getRates(apiPayload) would not return any rates.
+        const packedBoxes = packingResults.packed.map((obj) => {
+            if(isObject(obj) && isObject(obj.box)) {
+                return obj.box;
+            }
+        });
+        apiPayload.rate_options.package_types = getApiPackageTypes(cart, packedBoxes)
+
+        // build the 'apiPayload.shipment.packages' API argument
+        packingResults.packed.forEach((obj) => {
+            const apiPackage = {
+                weight: {
+                    value: typeof obj.box.weight_oz === 'number' ? obj.box.weight_oz : 0, // the weight of the box itself
+                    unit: 'ounce' // pound,ounce
+                },
+                dimensions: {
+                    length: obj.box.length_cm,
+                    width: obj.box.width_cm,
+                    height: obj.box.height_cm,
+                    unit: 'centimeter' // inch,centimeter: https://www.shipengine.com/docs/shipping/size-and-weight/#dimensions
+                }
+            }
+
+            // The initial value of apiPackage.weight.value is simply the
+            // weight of the box itself (if specified).
+            // Now we add to that value the combined weight of all products in the box:
+            if(Array.isArray(obj.products)) {
+                obj.products.forEach((prod) => {
+                    apiPackage.weight.value += getProductWeight(prod.id, cart);
+                });
+            }
+
+            apiPayload.shipment.packages.push(apiPackage);
+        });
+
+        if(!isDomesticShipment(cart)) {
+            apiPayload.shipment.customs = getCustomsConfig(cart)
         }
 
+        return apiPayload;
+    }
+    catch(err) {
+        global.logger.error(err);
+        global.bugsnag(err);
+        throw err;
+    }
+}
+
+
+async function getShippingRatesForCart(cart, packageTypes) {
+    try {
         // API call to get ShipEngine rates
-        const { rate_response } = await ShipEngineAPI.getRates(apiPayload);
-        const rates = {};
+        const apiArgs = getRatesApiPayload(cart, packageTypes);
+        // console.log("getShippingRatesForCart: API ARGS", apiArgs)
+        // console.log("getShippingRatesForCart: API ARGS PACKAGES", apiArgs.shipment.packages)
+
+        // If the apiArgs.shipment.packages is an empth array
+        // then no rates will be returned by ShipEngineAPI.getRates()
+        // understandably, since it has ship_from and ship_to but no
+        // idea of what the packages are.
+        // I don't think it's the responsibility of this method to
+        // determine how to handle this scenario.
+
+        const { rate_response } = await ShipEngineAPI.getRates(apiArgs);
+        const response = {};
+
+        // console.log("RATE RESPONSE", rate_response);
+        // console.log("RATES", rate_response.rates);
+        // console.log("INVALID RATES", rate_response.invalid_rates);
 
         // TODO: add logic that will not add to the rates obj
         // if the entry's shipping_amount is greater than the shipping_amount of a faster entry
         // - ignore rate if delivery_days/estimated_deleivery_date is null
         if(isObject(rate_response) && Array.isArray(rate_response.rates)) {
             rate_response.rates.forEach((obj) => {
-                if(!rates.hasOwnProperty(obj.delivery_days)) {
-                    rates[obj.delivery_days] = obj;
+                if(!response.hasOwnProperty(obj.delivery_days)) {
+                    response[obj.delivery_days] = obj;
                 }
                 else {
-                    if(rates[obj.delivery_days].shipping_amount.amount > obj.shipping_amount.amount) {
-                        rates[obj.delivery_days] = obj;
+                    if(response[obj.delivery_days].shipping_amount.amount > obj.shipping_amount.amount) {
+                        response[obj.delivery_days] = obj;
                     }
                 }
             });
-
-            // console.log("RATES", rate_response.rates);
-            // console.log("INVALID RATES", rate_response.invalid_rates);
         }
 
-        return Object.values(rates);
+        return Object.values(response);
     }
     catch(err) {
         global.logger.error(err);
@@ -176,5 +306,12 @@ async function getShippingRatesForCart(Cart) {
 
 
 module.exports = {
-    getShippingRatesForCart
+    isDomesticShipment,
+    getServiceCodesForCart,
+    getCustomsConfig,
+    getShippingRatesForCart,
+    getProductArrayFromCart,
+    getProductWeight,
+    getApiPackageTypes,
+    getRatesApiPayload
 };

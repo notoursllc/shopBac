@@ -31,6 +31,12 @@ async function getCarriers() {
 // }
 
 
+/**
+ * https://www.shipengine.com/docs/rates/
+ *
+ * @param {*} payload
+ * @returns
+ */
 async function getRates(payload) {
     global.logger.info('REQUEST: ShipEngineAPI.getRates', {
         meta: { payload }

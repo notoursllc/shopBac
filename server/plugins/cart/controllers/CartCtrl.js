@@ -2,7 +2,7 @@ const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const isObject = require('lodash.isobject');
 const BaseController = require('../../core/controllers/BaseController');
-
+const PackageTypeCtrl = require('../../package-types/controllers/PackageTypeCtrl');
 // third party APIs
 const { sendPurchaseEmails } = require('../services/PostmarkService');
 const ShipEngineService = require('../services/shipEngine/ShipEngineService');
@@ -23,6 +23,7 @@ class CartCtrl extends BaseController {
 
     constructor(server) {
         super(server, 'Cart');
+        this.PackageTypeCtrl = new PackageTypeCtrl(server);
     }
 
 
@@ -117,9 +118,13 @@ class CartCtrl extends BaseController {
 
 
     getMaskedCart(Cart) {
+        if(!Cart) {
+            return;
+        }
+
         // mask plugin:
         // https://github.com/seegno/bookshelf-mask
-        return Cart.mask(`*,cart_items(id,qty,product(id,title,description),product_variant(id,currency,display_price,base_price,is_on_sale,sale_price,images,label,swatches),product_variant_sku(id,label,display_price,base_price,is_on_sale,sale_price,sku))`)
+        return Cart.mask(`*,cart_items(id,qty,product(*),product_variant(id,currency,display_price,base_price,is_on_sale,sale_price,images,label,swatches),product_variant_sku(id,label,display_price,base_price,is_on_sale,sale_price,sku))`)
     }
 
 
@@ -252,18 +257,52 @@ class CartCtrl extends BaseController {
 
 
     async shippingRateEstimateHandler(request, h) {
+        global.logger.info('REQUEST: CartCtrl.shippingRateEstimateHandler', {
+            meta: request.payload
+        });
+
         try {
-            const Cart = await this.getActiveCart(
-                request.payload.id,
-                this.getTenantIdFromAuth(request),
-                { withRelated: this.getAllCartRelations() }
-            );
+            const tenantId = this.getTenantIdFromAuth(request);
+
+            const res = await Promise.all([
+                this.getActiveCart(
+                    request.payload.id,
+                    tenantId,
+                    { withRelated: this.getAllCartRelations() }
+                ),
+
+                this.PackageTypeCtrl.getModel()
+                    .query((qb) => {
+                        qb.where('published', '=', true);
+
+                        if(tenantId) {
+                            qb.andWhere('tenant_id', '=', tenantId);
+                        }
+                    })
+                    .orderBy('ordinal', 'ASC')
+                    .fetchAll()
+            ]);
+
+            const Cart = res[0];
+            const PackageTypes = res[1];
+
+            // console.log("CART ITEMS", Cart.related('cas').toJSON())
+            // console.log("ALL PACKAGE TYPES", PackageTypes.toJSON())rt_item
 
             if(!Cart) {
                 throw new Error("Cart not found")
             }
 
-            const rates = await ShipEngineService.getShippingRatesForCart(Cart);
+            const rates = await ShipEngineService.getShippingRatesForCart(
+                Cart.toJSON(),
+                PackageTypes.toJSON()
+            );
+
+            global.logger.info('REQUEST: CartCtrl.shippingRateEstimateHandler', {
+                meta: {
+                    rates
+                }
+            });
 
             return h.apiSuccess(rates);
         }

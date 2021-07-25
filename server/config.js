@@ -8,12 +8,10 @@ function normalizePort(val) {
     var port = parseInt(val, 10);
 
     if (isNaN(port)) {
-        // named pipe
         return val;
     }
 
     if (port >= 0) {
-        // port number
         return port;
     }
 
@@ -32,7 +30,6 @@ const config = {
         // },
         server: {
             $filter: 'env',
-            test: 8080,
             production: normalizePort(process.env.SERVER_PORT || 4000),
             $default: normalizePort(process.env.SERVER_PORT || 4000)
         }
@@ -40,6 +37,9 @@ const config = {
     db: {
         $filter: 'env',
         production: {
+            debug: false
+        },
+        test: {
             debug: false
         },
         $default: {

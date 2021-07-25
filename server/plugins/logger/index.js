@@ -22,6 +22,11 @@ exports.plugin = {
                 }
             };
         }
+        else {
+            global.bugsnag = function(err) {
+                console.error(err);
+            }
+        }
 
         const prettyJson = winston.format.printf((info) => {
             if (isObject(info.meta)) {

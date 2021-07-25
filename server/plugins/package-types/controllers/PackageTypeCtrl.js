@@ -63,6 +63,35 @@ class PackageTypeCtrl extends BaseController {
         }
     }
 
+
+    getAllPackageTypes(tenantId, published) {
+        try {
+            global.logger.info('REQUEST: PackageTypeCtrl.getAllPackageTypes', {
+                meta: {
+                    tenantId,
+                    published
+                }
+            });
+
+            return this.getModel()
+                .query((qb) => {
+                    if(published !== undefined) {
+                        qb.where('published', '=', !!published);
+                    }
+
+                    if(tenantId) {
+                        qb.andWhere('tenant_id', '=', tenantId);
+                    }
+                })
+                .orderBy('ordinal', 'ASC')
+                .fetchAll();
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+        }
+    }
+
 }
 
 module.exports = PackageTypeCtrl;
