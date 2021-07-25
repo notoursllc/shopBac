@@ -287,7 +287,7 @@ class CartCtrl extends BaseController {
             const PackageTypes = res[1];
 
             // console.log("CART ITEMS", Cart.related('cas').toJSON())
-            // console.log("ALL PACKAGE TYPES", PackageTypes.toJSON())rt_item
+            // console.log("ALL PACKAGE TYPES", PackageTypes.toJSON())
 
             if(!Cart) {
                 throw new Error("Cart not found")
@@ -298,11 +298,24 @@ class CartCtrl extends BaseController {
                 PackageTypes.toJSON()
             );
 
-            global.logger.info('REQUEST: CartCtrl.shippingRateEstimateHandler', {
+            global.logger.info('RESPONSE: CartCtrl.shippingRateEstimateHandler', {
                 meta: {
                     rates
                 }
             });
+
+            // No shipping rates returned means something is not right.
+            // For example, we do not have any packages defined that fit the given product,
+            // or the user did not specify a shipping address
+            // or the product did not have a weight defined
+            if(!rates.length) {
+                global.logger.warn('RESPONSE: CartCtrl.shippingRateEstimateHandler - NO SHIPPING RATES WERE RETURNED', {
+                    meta: {
+                        rates,
+                        cart: Cart.toJSON()
+                    }
+                });
+            }
 
             return h.apiSuccess(rates);
         }
