@@ -373,13 +373,13 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
 
         // console.log("getShippingRatesForCart - allPackageTypes", allPackageTypes)
 
-        const apiPayload = ShipEngineService.getRatesApiPayload(
+        const { apiArgs }  = ShipEngineService.getRatesApiPayload(
             getMockCart(1),
             [] // package types dont matter for this test
         );
 
         expect(
-            apiPayload.rate_options.service_codes
+            apiArgs.rate_options.service_codes
         ).to.equal(
             [ 'usps_priority_mail' ]
         );
@@ -391,13 +391,13 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
         const cart = getMockCart(1);
         cart.shipping_countryCodeAlpha2 = 'CA';
 
-        const apiPayload = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = ShipEngineService.getRatesApiPayload(
             cart,
             [] // package types dont matter for this test
         );
 
         expect(
-            apiPayload.rate_options.service_codes
+            apiArgs.rate_options.service_codes
         ).to.equal(
             [ 'usps_priority_mail_international' ]
         );
@@ -406,12 +406,12 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
 
     it('should return a "ship_to" object that matches the shipping props in the cart', async () => {
         const cart = getMockCart(1);
-        const apiPayload = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = ShipEngineService.getRatesApiPayload(
             cart,
             [] // package types dont matter for this test
         );
 
-        const shipTo = apiPayload.shipment.ship_to;
+        const shipTo = apiArgs.shipment.ship_to;
 
         expect(shipTo.name).to.equal(`${cart.shipping_firstName} ${cart.shipping_lastName}`);
         expect(shipTo.address_line1).to.equal(cart.shipping_streetAddress);
@@ -425,7 +425,7 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
 
 
     it('should return one package', async () => {
-        const apiPayload = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = ShipEngineService.getRatesApiPayload(
             getMockCart(1),
             [
                 getMockPackageType(40, 25, 3, {
@@ -438,11 +438,11 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
             ]
         );
 
-        // console.log("API PAYLOAD 3", apiPayload.shipment.packages)
+        // console.log("API PAYLOAD 3", apiArgs.shipment.packages)
 
-        expect(apiPayload.shipment.packages.length).to.equal(1);
+        expect(apiArgs.shipment.packages.length).to.equal(1);
 
-        const pkg1 = apiPayload.shipment.packages[0];
+        const pkg1 = apiArgs.shipment.packages[0];
         expect(pkg1.dimensions.length).to.equal(40);
         expect(pkg1.dimensions.width).to.equal(25);
         expect(pkg1.dimensions.height).to.equal(3);
@@ -450,7 +450,7 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
 
 
     it('should return two packages because the the box cant hold both cart products', async () => {
-        const apiPayload = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = ShipEngineService.getRatesApiPayload(
             getMockCart(2),
             [
                 getMockPackageType(40, 25, 3, {
@@ -463,16 +463,16 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
             ]
         );
 
-        // console.log("API PAYLOAD 3", apiPayload.shipment.packages)
+        // console.log("API PAYLOAD 3", apiArgs.shipment.packages)
 
-        expect(apiPayload.shipment.packages.length).to.equal(2);
+        expect(apiArgs.shipment.packages.length).to.equal(2);
 
-        const pkg1 = apiPayload.shipment.packages[0];
+        const pkg1 = apiArgs.shipment.packages[0];
         expect(pkg1.dimensions.length).to.equal(40);
         expect(pkg1.dimensions.width).to.equal(25);
         expect(pkg1.dimensions.height).to.equal(3);
 
-        const pkg2 = apiPayload.shipment.packages[1];
+        const pkg2 = apiArgs.shipment.packages[1];
         expect(pkg2.dimensions.length).to.equal(40);
         expect(pkg2.dimensions.width).to.equal(25);
         expect(pkg2.dimensions.height).to.equal(3);
@@ -480,7 +480,7 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
 
 
     it('should return no packages because none of the package_types fit the product', async () => {
-        const apiPayload = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = ShipEngineService.getRatesApiPayload(
             getMockCart(1),
             [
                 getMockPackageType(9, 4, 4, {
@@ -493,8 +493,8 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
             ]
         );
 
-        // console.log("API PAYLOAD", apiPayload.shipment.packages)
-        expect(apiPayload.shipment.packages.length).to.equal(0);
+        // console.log("API PAYLOAD", apiArgs.shipment.packages)
+        expect(apiArgs.shipment.packages.length).to.equal(0);
     });
 
 
@@ -502,7 +502,7 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
         const cart = getMockCart(2);
         cart.cart_items[1].product.ship_alone = true;
 
-        const apiPayload = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = ShipEngineService.getRatesApiPayload(
             cart,
             [
                 getMockPackageType(40, 25, 3, {
@@ -515,16 +515,16 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
             ]
         );
 
-        // console.log("API PAYLOAD", apiPayload.shipment.packages)
-        expect(apiPayload.shipment.packages.length).to.equal(2);
+        // console.log("API PAYLOAD", apiArgs.shipment.packages)
+        expect(apiArgs.shipment.packages.length).to.equal(2);
 
         // verify that the right package dimensions were returned
-        const pkg1 = apiPayload.shipment.packages[0];
+        const pkg1 = apiArgs.shipment.packages[0];
         expect(pkg1.dimensions.length).to.equal(40);
         expect(pkg1.dimensions.width).to.equal(25);
         expect(pkg1.dimensions.height).to.equal(3);
 
-        const pkg2 = apiPayload.shipment.packages[1];
+        const pkg2 = apiArgs.shipment.packages[1];
         expect(pkg2.dimensions.length).to.equal(40);
         expect(pkg2.dimensions.width).to.equal(25);
         expect(pkg2.dimensions.height).to.equal(3);
@@ -535,27 +535,27 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
         const cart = getMockCart(1);
         cart.shipping_countryCodeAlpha2 = 'CA';
 
-        const apiPayload = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = ShipEngineService.getRatesApiPayload(
             cart,
             [] // package types dont matter for this test
         );
 
-        // console.log("API PAYLOAD", apiPayload.shipment)
+        // console.log("API PAYLOAD", apiArgs.shipment)
         expect(
-            apiPayload.shipment.hasOwnProperty('customs')
+            apiArgs.shipment.hasOwnProperty('customs')
         ).to.equal(true);
     });
 
 
     it('should NOT return a "customs" property when cart.shipping_countryCodeAlpha2 is "US"', async () => {
-        const apiPayload = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = ShipEngineService.getRatesApiPayload(
             getMockCart(1),
             [] // package types dont matter for this test
         );
 
-        // console.log("API PAYLOAD", apiPayload.shipment)
+        // console.log("API PAYLOAD", apiArgs.shipment)
         expect(
-            apiPayload.shipment.hasOwnProperty('customs')
+            apiArgs.shipment.hasOwnProperty('customs')
         ).to.equal(false);
     });
 
@@ -563,7 +563,7 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
         const cart = getMockCart(2);
         cart.cart_items[1].product.ship_alone = true;
 
-        const apiPayload = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = ShipEngineService.getRatesApiPayload(
             cart,
             [
                 getMockPackageType(40, 25, 3, {
@@ -578,10 +578,10 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
             ]
         );
 
-        // console.log("API PAYLOAD", apiPayload.shipment.packages)
-        expect(apiPayload.rate_options.package_types.length).to.equal(2);
-        expect(apiPayload.rate_options.package_types.includes('small_flat_rate_box')).to.equal(true);
-        expect(apiPayload.rate_options.package_types.includes('package')).to.equal(true);
+        // console.log("API PAYLOAD", apiArgs.shipment.packages)
+        expect(apiArgs.rate_options.package_types.length).to.equal(2);
+        expect(apiArgs.rate_options.package_types.includes('small_flat_rate_box')).to.equal(true);
+        expect(apiArgs.rate_options.package_types.includes('package')).to.equal(true);
     });
 
 });
@@ -604,7 +604,7 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
 
     it(`should return rates from ShipEngine that uses "package_type: package"
         because none of the PackageTypes given contain a "code_for_carrier" value`, async () => {
-        const rateResponse = await ShipEngineService.getShippingRatesForCart(
+        const { rates } = await ShipEngineService.getShippingRatesForCart(
             getMockCart(1),
             [
                 getMockPackageType(40, 25, 3, {
@@ -615,14 +615,14 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
 
         // console.log("RATE RESPONSE", rateResponse)
 
-        expect(rateResponse.length).to.equal(1);
-        expect(rateResponse[0].package_type).to.equal('package');
+        expect(rates.length).to.equal(1);
+        expect(rates[0].package_type).to.equal('package');
     });
 
 
     it(`should return rates from ShipEngine that uses "package_type: small_flat_rate_box"
         because the PackageType used has a "code_for_carrier" value of "small_flat_rate_box"`, async () => {
-        const rateResponse = await ShipEngineService.getShippingRatesForCart(
+        const { rates } = await ShipEngineService.getShippingRatesForCart(
             getMockCart(1),
             [
                 getMockPackageType(40, 25, 3, {
@@ -632,16 +632,16 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
             ]
         );
 
-        // console.log("RATE RESPONSE", rateResponse)
+        // console.log("RATE RESPONSE", rates)
 
-        expect(rateResponse.length).to.equal(1);
-        expect(rateResponse[0].package_type).to.equal('small_flat_rate_box');
+        expect(rates.length).to.equal(1);
+        expect(rates[0].package_type).to.equal('small_flat_rate_box');
     });
 
 
     it(`should not return any rates from ShipEngine because we have not provided
         any package types that fit the product"`, async () => {
-        const rateResponse = await ShipEngineService.getShippingRatesForCart(
+        const { rates } = await ShipEngineService.getShippingRatesForCart(
             getMockCart(1),
             [
                 getMockPackageType(30, 15, 3, {
@@ -651,9 +651,9 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
             ]
         );
 
-        // console.log("SERVICE RESPONSE", rateResponse)
+        // console.log("SERVICE RESPONSE", rates)
 
-        expect(rateResponse.length).to.equal(0);
+        expect(rates.length).to.equal(0);
     });
 
 
@@ -664,7 +664,7 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
         cart.shipping_state = null;
         cart.shipping_postalCode = null;
 
-        const rateResponse = await ShipEngineService.getShippingRatesForCart(
+        const { rates } = await ShipEngineService.getShippingRatesForCart(
             cart,
             [
                 // even though the box fits, the response should still be empty
@@ -675,9 +675,9 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
             ]
         );
 
-        // console.log("SERVICE RESPONSE", rateResponse)
+        // console.log("SERVICE RESPONSE", rates)
 
-        expect(rateResponse.length).to.equal(0);
+        expect(rates.length).to.equal(0);
     });
 
 
@@ -686,7 +686,7 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
         cart.cart_items[0].product_variant.weight_oz = null;
         cart.cart_items[0].product_variant_sku.weight_oz = null;
 
-        const rateResponse = await ShipEngineService.getShippingRatesForCart(
+        const { rates } = await ShipEngineService.getShippingRatesForCart(
             cart,
             [
                 // even though the box fits, the response should still be empty
@@ -697,9 +697,9 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
             ]
         );
 
-        // console.log("SERVICE RESPONSE", rateResponse)
+        // console.log("SERVICE RESPONSE", rates)
 
-        expect(rateResponse.length).to.equal(0);
+        expect(rates.length).to.equal(0);
     });
 
 
@@ -715,7 +715,7 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
 
     //     // console.log("getShippingRatesForCart - allPackageTypes", allPackageTypes)
 
-    //     const packingResults = ShipEngineService.getShippingRatesForCart(
+    //     const { rates } = ShipEngineService.getShippingRatesForCart(
     //         mockCart,
     //         allPackageTypes
     //     );
@@ -753,7 +753,7 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
         // console.log("getShippingRatesForCart 1", cart)
         // console.log("getShippingRatesForCart 2", packageTypes)
 
-        const packingResults = ShipEngineService.getShippingRatesForCart(
+        const { rates } = ShipEngineService.getShippingRatesForCart(
             cart,
             packageTypes
         );

@@ -57,7 +57,8 @@ class CartCtrl extends BaseController {
             shipping_email: Joi.alternatives().try(Joi.string().email().max(50).label('Shipping: Email'), Joi.allow(null)),
 
             currency: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
-            shipping_rate: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
+            selected_shipping_rate: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
+            shipping_rate_quote: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             sales_tax: Joi.alternatives().try(Joi.number().integer().min(0), Joi.allow(null)),
             stripe_payment_intent_id: getJoiStringOrNull(),
             paypal_order_id: getJoiStringOrNull(),
@@ -256,6 +257,24 @@ class CartCtrl extends BaseController {
     }
 
 
+    saveShippingRateQuote(Cart, rates, packingResults) {
+        global.logger.info('REQUEST: CartCtrl.saveShippingRateQuote', {
+            meta: {
+                cart: Cart.toJSON(),
+                rates,
+                packingResults
+            }
+        });
+
+        return Cart.save({
+            shipping_rate_quote: {
+                rates: rates,
+                packingResults: packingResults
+            }
+        });
+    }
+
+
     async shippingRateEstimateHandler(request, h) {
         global.logger.info('REQUEST: CartCtrl.shippingRateEstimateHandler', {
             meta: request.payload
@@ -283,7 +302,7 @@ class CartCtrl extends BaseController {
                     .fetchAll()
             ]);
 
-            const Cart = res[0];
+            let Cart = res[0];
             const PackageTypes = res[1];
 
             // console.log("CART ITEMS", Cart.related('cas').toJSON())
@@ -293,10 +312,20 @@ class CartCtrl extends BaseController {
                 throw new Error("Cart not found")
             }
 
-            const rates = await ShipEngineService.getShippingRatesForCart(
+            const { rates, packingResults } = await ShipEngineService.getShippingRatesForCart(
                 Cart.toJSON(),
                 PackageTypes.toJSON()
             );
+
+            // in it's own try/catch so any failure saving the rate quote
+            // won't affect this operation
+            try {
+                await this.saveShippingRateQuote(Cart, rates, packingResults);
+            }
+            catch(err) {
+                global.logger.error(err);
+                global.bugsnag(err);
+            }
 
             global.logger.info('RESPONSE: CartCtrl.shippingRateEstimateHandler', {
                 meta: {
@@ -346,7 +375,7 @@ class CartCtrl extends BaseController {
             );
 
             const UpdatedCart = await Cart.save({
-                shipping_rate: data
+                selected_shipping_rate: data
             });
 
             const UpdatedCartJson = UpdatedCart.toJSON();
@@ -366,7 +395,7 @@ class CartCtrl extends BaseController {
 
 
     /**
-     * Clears the shipping_rate value from the cart.
+     * Clears the selected_shipping_rate value from the cart.
      * This should be done whenever a cart item is added/removed from the cart,
      * as the total product weight will have changed.
      *
@@ -386,7 +415,8 @@ class CartCtrl extends BaseController {
             const Cart = await this.getActiveCart(cartId, tenantId);
 
             return Cart.save({
-                shipping_rate: null
+                selected_shipping_rate: null,
+                shipping_rate_quote: null
             });
         }
         catch(err) {

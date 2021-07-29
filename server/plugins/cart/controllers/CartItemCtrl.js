@@ -254,7 +254,7 @@ class CartItemCtrl extends BaseController {
                 product_variant_id: ProductVariant.get('id'),
             });
 
-            // Clear the shipping_rate value, if requested
+            // Clear the selected_shipping_rate value, if requested
             if(request.payload.clear_shipping_rate) {
                 await this.CartCtrl.clearShippingRate(
                     Cart.get('id'),
@@ -320,7 +320,7 @@ class CartItemCtrl extends BaseController {
 
             await this.dedupeCart(request.payload.cart_id, tenantId);
 
-            // Clear the shipping_rate value, if requested
+            // Clear the selected_shipping_rate value, if requested
             if(request.payload.clear_shipping_rate) {
                 await this.CartCtrl.clearShippingRate(
                     request.payload.cart_id,
@@ -380,7 +380,7 @@ class CartItemCtrl extends BaseController {
 
             await this.deleteModel(cartItemId, tenantId);
 
-            // Clear the shipping_rate value, if requested
+            // Clear the selected_shipping_rate value, if requested
             if(request.query.clear_shipping_rate) {
                 await this.CartCtrl.clearShippingRate(
                     CartItem.get('cart_id'),

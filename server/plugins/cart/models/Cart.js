@@ -16,6 +16,18 @@ module.exports = function (baseModel, bookshelf, server) {
 
             hidden: ['token', 'closed_at'],
 
+            format(attributes) {
+                if (attributes.selected_shipping_rate) {
+                    attributes.selected_shipping_rate = JSON.stringify(attributes.selected_shipping_rate)
+                }
+
+                if (attributes.shipping_rate_quote) {
+                    attributes.shipping_rate_quote = JSON.stringify(attributes.shipping_rate_quote)
+                }
+
+                return attributes;
+            },
+
             virtuals: {
                 num_items: function() {
                     let numItems = 0;
@@ -80,7 +92,7 @@ module.exports = function (baseModel, bookshelf, server) {
                 },
 
                 shipping_total: function() {
-                    const obj = this.get('shipping_rate');
+                    const obj = this.get('selected_shipping_rate');
                     let total = 0;
 
                     if(isObject(obj)) {
@@ -154,7 +166,7 @@ module.exports = function (baseModel, bookshelf, server) {
                 'shipping_email',
 
                 'currency',
-                'shipping_rate',
+                'selected_shipping_rate',
                 'sales_tax',
                 'stripe_payment_intent_id',
                 'paypal_order_id',

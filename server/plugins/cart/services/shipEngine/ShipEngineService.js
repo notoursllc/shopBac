@@ -248,7 +248,10 @@ function getRatesApiPayload(cart, packageTypes) {
             apiPayload.shipment.customs = getCustomsConfig(cart)
         }
 
-        return apiPayload;
+        return {
+            apiArgs: apiPayload,
+            packingResults: packingResults
+        }
     }
     catch(err) {
         global.logger.error(err);
@@ -261,7 +264,7 @@ function getRatesApiPayload(cart, packageTypes) {
 async function getShippingRatesForCart(cart, packageTypes) {
     try {
         // API call to get ShipEngine rates
-        const apiArgs = getRatesApiPayload(cart, packageTypes);
+        const { apiArgs, packingResults } = getRatesApiPayload(cart, packageTypes);
         // console.log("getShippingRatesForCart: API ARGS", apiArgs)
         // console.log("getShippingRatesForCart: API ARGS PACKAGES", apiArgs.shipment.packages)
 
@@ -295,7 +298,11 @@ async function getShippingRatesForCart(cart, packageTypes) {
             });
         }
 
-        return Object.values(response);
+        // Return the rates and the packing results that those rates were based on.
+        return {
+            rates: Object.values(response),
+            packingResults: packingResults
+        }
     }
     catch(err) {
         global.logger.error(err);
