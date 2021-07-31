@@ -36,6 +36,24 @@ describe('ROUTE: /cart', () => {
     });
 
 
+    it('should get a list of carts', async () => {
+        const params = queryString.stringify(
+            {
+                where: ['closed_at', 'is not', 'NULL']
+            },
+            { arrayFormat: 'bracket' }
+        );
+
+        const res = await server.inject({
+            method: 'GET',
+            url: testHelpers.getApiPrefix(`/carts?${params}`),
+            headers: testHelpers.getRequestHeader()
+        });
+
+        console.log("SHOPPING CARTS", res.result);
+    });
+
+
     it('should get shipping estimates', async () => {
         const res = await server.inject({
             method: 'POST',

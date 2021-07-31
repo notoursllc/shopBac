@@ -20,7 +20,7 @@ exports.plugin = {
                         options: {
                             description: 'Gets a shopping cart for the given ID',
                             auth: {
-                                strategies: ['storeauth']
+                                strategies: ['storeauth', 'session']
                             },
                             validate: {
                                 query: Joi.object({
@@ -31,6 +31,20 @@ exports.plugin = {
                             },
                             handler: (request, h) => {
                                 return CartCtrl.getByIdHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: '/carts',
+                        options: {
+                            description: 'Gets a list of carts',
+                            auth: {
+                                strategies: ['session']
+                                // strategies: ['storeauth', 'session']
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.getPageHandler(request, h);
                             }
                         }
                     },
@@ -71,6 +85,23 @@ exports.plugin = {
                             }
                         }
                     },
+                    // {
+                    //     method: 'GET',
+                    //     path: '/cart/orders',
+                    //     options: {
+                    //         description: 'Gets a list of orders (closed carts)',
+                    //         auth: {
+                    //             strategies: ['session']
+                    //         },
+                    //         handler: (request, h) => {
+                    //             return CartCtrl.getOrdersHandler(request, h);
+                    //         }
+                    //     }
+                    // },
+
+                    /******************
+                     * CART ITEM
+                     ******************/
 
                     {
                         method: 'POST',
@@ -130,6 +161,7 @@ exports.plugin = {
                             }
                         }
                     },
+
 
 
                     /******************

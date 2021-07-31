@@ -298,7 +298,7 @@ class BaseController {
             };
         }
 
-        if(Array.isArray(withRelated) && withRelated.length) {
+        if(isObject(withRelated) || (Array.isArray(withRelated) && withRelated.length)) {
             config.withRelated = withRelated;
         }
 
@@ -307,8 +307,16 @@ class BaseController {
                 // qb.innerJoin('manufacturers', 'cars.manufacturer_id', 'manufacturers.id');
                 // qb.groupBy('cars.id');
 
+                // Attempting to pass null from the query string (queryData.where[2])
+                // will result in queryData.where[2] being '' (an empty string).
+                // Therefore, checking for a special string "NULL" and setting the value
+                // to null in that case
                 if(queryData.where) {
-                    qb.where(queryData.where[0], queryData.where[1], queryData.where[2]);
+                    qb.where(
+                        queryData.where[0],
+                        queryData.where[1],
+                        queryData.where[2] === 'NULL' ? null : queryData.where[2]
+                    );
                 }
 
                 if(queryData.whereRaw) {
@@ -462,6 +470,17 @@ class BaseController {
 
     getTenantIdFromAuth(request) {
         return request.auth.credentials.tenant_id;
+    }
+
+
+    getAuthStrategy(request) {
+        return request.auth.strategy;
+    }
+    isAuthStrategy_storeauth(request) {
+        return this.getAuthStrategy(request) === 'storeauth';
+    }
+    isAuthStrategy_session(request) {
+        return this.getAuthStrategy(request) === 'session';
     }
 
 }

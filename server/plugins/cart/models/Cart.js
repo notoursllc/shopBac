@@ -137,54 +137,9 @@ module.exports = function (baseModel, bookshelf, server) {
                 return this.hasMany('CartItem', 'cart_id');
             },
 
-            visible: [
-                'id',
-                // 'tenant_id',
-
-                'billing_firstName',
-                'billing_lastName',
-                'billing_company',
-                'billing_streetAddress',
-                'billing_extendedAddress',
-                'billing_city',
-                'billing_state',
-                'billing_postalCode',
-                'billing_countryCodeAlpha2',
-                'billing_phone',
-                'billing_same_as_shipping',
-
-                'shipping_firstName',
-                'shipping_lastName',
-                'shipping_streetAddress',
-                'shipping_extendedAddress',
-                'shipping_company',
-                'shipping_city',
-                'shipping_state',
-                'shipping_postalCode',
-                'shipping_countryCodeAlpha2',
-                'shipping_phone',
-                'shipping_email',
-
-                'currency',
-                'selected_shipping_rate',
-                'sales_tax',
-                'stripe_payment_intent_id',
-                'paypal_order_id',
-
-                'created_at',
-                'updated_at',
-                // 'deleted_at'
-                'closed_at',
-
-                // virtuals
-                'num_items',
-                'sub_total',
-                'grand_total',
-                'weight_oz_total',
-                'shipping_total',
-
-                // relations
-                'cart_items'
+            hidden: [
+                'tenant_id',
+                'deleted_at'
             ]
         },
         {

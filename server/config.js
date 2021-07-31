@@ -40,7 +40,7 @@ const config = {
             debug: false
         },
         test: {
-            debug: false
+            debug: true
         },
         $default: {
             debug: true

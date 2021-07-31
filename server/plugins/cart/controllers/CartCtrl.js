@@ -969,6 +969,88 @@ class CartCtrl extends BaseController {
         }
     }
 
+/*
+    async getPageHandler2(request, h) {
+        try {
+            global.logger.info(`REQUEST: CartCtrl.getPageHandler`, {
+                meta: {
+                    query: request.query
+                }
+            });
+
+            const parsed = queryString.parse(request.url.search, {arrayFormat: 'bracket'});
+            console.log("PARSED", request.url.search);
+            console.log("REQUEST QUERY", request.query);
+            console.log("REQUEST QUERY WHERE", request.query.where);
+
+            // const result = await this.server.app.knex('carts').whereNotNull('closed_at');
+            const result = await this.server.app.knex.select('*')
+                .from('carts')
+                // .whereNotNull('closed_at')
+                .modify(function(queryBuilder) {
+                    if(request.query.where) {
+                        queryBuilder.whereRaw(
+                            `${request.query.where[0]} ${request.query.where[1]} ?`, null
+                        )
+                    }
+
+                    if(request.query.limit) {
+                        queryBuilder.limit(
+                            parseInt(request.query.limit, 10)
+                        )
+                    }
+
+                    // if(parsed.hasOwnProperty('offset')) {
+                    //     queryBuilder.limit(
+                    //         parseInt(parsed.offset, 10)
+                    //     )
+                    // }
+
+                });
+
+            console.log("TEST RESULT", result)
+
+            global.logger.info(`RESPONSE: CartCtrl.getPageHandler`, {
+                meta: {
+                    // logging the entire products json can be quite large,
+                    // so avoiding it for now, and just logging the pagination data
+                    result
+                }
+            });
+
+            return h.apiSuccess(
+                result
+            );
+
+            // return h.apiSuccess(
+            //     Models,
+            //     pagination
+            // );
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.notFound(err);
+        }
+    }
+*/
+
+    async getPageHandler(request, h) {
+        const Models = await this.getPage(
+            request,
+            request.query.viewAllRelated ? this.getAllCartRelations() : null
+        );
+        const pagination = Models ? Models.pagination : null;
+
+        return h.apiSuccess(
+            Models.serialize(
+                // override the 'hidden' prop in the Cart model so everything is returned
+                // if the auth strategy is 'session'
+                this.isAuthStrategy_session(request) ? { hidden: [] } : null
+            ),
+            pagination
+        );
+    }
 
 
     /*******************
