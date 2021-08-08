@@ -199,6 +199,14 @@ function productsWithoutSuitableBox(products, boxes) {
  * @returns
  */
 function packProcessor(products, boxes, maxRecursionCounter, collector) {
+    global.logger.info('REQUEST: PackageService.packProcessor', {
+        meta: {
+            products,
+            boxes,
+            maxRecursionCounter
+        }
+    });
+
     // Defining the collector here so the initial caller doesn't need to know
     // about the collector.  It's kind of an implementation detail.  The
     // collector is passed along during recursion.
@@ -255,20 +263,22 @@ function packProcessor(products, boxes, maxRecursionCounter, collector) {
     // lets find the one box with the most packed products and the least remaining volume
     let bestPackedBox = null;
     boxPackingTestResults.forEach((boxPackingResult, idx) => {
-        if(!bestPackedBox ||
-            (boxPackingResult.packed.length >= bestPackedBox.packed.length && boxPackingResult.remainingVolume <= bestPackedBox.remainingVolume)) {
+        // only choose from packed
+        if(boxPackingResult.packed.length) {
+            if(!bestPackedBox ||
+                ((boxPackingResult.packed.length >= bestPackedBox.packed.length) && boxPackingResult.remainingVolume <= bestPackedBox.remainingVolume)) {
 
-            bestPackedBox = {
-                ...boxPackingResult,
-                box: boxes[idx]
-            };
+                bestPackedBox = {
+                    ...boxPackingResult,
+                    box: boxes[idx]
+                };
+            }
         }
     });
 
     // console.log("SELETED bestPackedBox", bestPackedBox);
 
     if(bestPackedBox) {
-
         if(bestPackedBox.packed.length) {
             collector.packed.push({
                 box: bestPackedBox.box,
@@ -297,13 +307,22 @@ function packProcessor(products, boxes, maxRecursionCounter, collector) {
 }
 
 
+
 function packProducts(products, allBoxes) {
+    global.logger.info('REQUEST: PackageService.packProducts', {
+        meta: {
+            products,
+            allBoxes
+        }
+    });
+
     const knownUnpacked = [];
 
     // Making a copy so we don't destroy the products array
     const productsCopy = [...products];
 
-    // First lets remove any products from productsCopy that dont have any suitable boxes at all
+    // First lets remove any products from productsCopy that dont have any suitable boxes at all,
+    // and save those into 'knownUnpacked':
     const productIndexes = productsWithoutSuitableBox(productsCopy, allBoxes);
     for(let i=productIndexes.length - 1; i>=0; i--) {
         const removed = productsCopy.splice(i, 1); // splice returns an array of removed items
@@ -319,6 +338,12 @@ function packProducts(products, allBoxes) {
     );
 
     results.unpacked = results.unpacked.concat(knownUnpacked);
+
+    global.logger.info('RESPONSE: PackageService.packProducts', {
+        meta: {
+            results
+        }
+    });
 
     return results;
 }
