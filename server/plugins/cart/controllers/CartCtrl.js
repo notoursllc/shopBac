@@ -59,6 +59,7 @@ class CartCtrl extends BaseController {
             currency: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             selected_shipping_rate: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             shipping_rate_quote: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
+            shipping_label: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             sales_tax: Joi.alternatives().try(Joi.number().integer().min(0), Joi.allow(null)),
             stripe_payment_intent_id: getJoiStringOrNull(),
             paypal_order_id: getJoiStringOrNull(),
@@ -305,9 +306,6 @@ class CartCtrl extends BaseController {
             let Cart = res[0];
             const PackageTypes = res[1];
 
-            // console.log("CART ITEMS", Cart.related('cas').toJSON())
-            // console.log("ALL PACKAGE TYPES", PackageTypes.toJSON())
-
             if(!Cart) {
                 throw new Error("Cart not found")
             }
@@ -327,12 +325,6 @@ class CartCtrl extends BaseController {
                 global.bugsnag(err);
             }
 
-            global.logger.info('RESPONSE: CartCtrl.shippingRateEstimateHandler', {
-                meta: {
-                    rates
-                }
-            });
-
             // No shipping rates returned means something is not right.
             // For example, we do not have any packages defined that fit the given product,
             // or the user did not specify a shipping address
@@ -342,6 +334,13 @@ class CartCtrl extends BaseController {
                     meta: {
                         rates,
                         cart: Cart.toJSON()
+                    }
+                });
+            }
+            else {
+                global.logger.info('RESPONSE: CartCtrl.shippingRateEstimateHandler', {
+                    meta: {
+                        rates
                     }
                 });
             }
@@ -392,6 +391,106 @@ class CartCtrl extends BaseController {
             throw Boom.badRequest(err);
         }
     }
+
+
+    /**
+     * Buys a shipping label from ShipEngine
+     *
+     * @param {*} request
+     * @param {*} h
+     * @returns {*} shipping label
+     */
+    async buyShippingLabelForCartHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: CartCtrl.buyShippingLabelHandler', {
+                meta: request.query
+            });
+
+            const Cart = await this.getModel()
+                .query((qb) => {
+                    qb.andWhere('id', '=', request.payload.id);
+                    qb.andWhere('tenant_id', '=', this.getTenantIdFromAuth(request));
+                })
+                .fetch();
+
+            if(!Cart) {
+                throw new Error(`Cart (${request.payload.id}} could not be found`);
+            }
+
+            const selectedRate = Cart.get('selected_shipping_rate');
+
+            if(!selectedRate || !selectedRate.rate_id) {
+                throw new Error(
+                    `An error occurred when creating a shipping label for Cart ${request.payload.id}. Cart does not have a selected shipping rate value.`
+                );
+            }
+
+            const data = await ShipEngineAPI.buyShippingLabel(selectedRate.rate_id);
+
+            if(!data) {
+                throw new Error(`An error occurred when creating a shipping label for Rate ${request.payload.rate_id}`);
+            }
+
+            if(Array.isArray(data.errors)) {
+                global.logger.error('Errors occurred when buying a label from ShipEngine', {
+                    meta: {
+                        errors: data.errors
+                    }
+                });
+
+                const errorMessages = data.errors.map(obj => obj.message);
+                throw new Error(errorMessages.join('/n'))
+            }
+
+            await Cart.save({
+                shipping_label: data
+            });
+
+            global.logger.info('RESPONSE: CartCtrl.buyShippingLabelHandler', {
+                meta: data
+            });
+
+            return h.apiSuccess(data);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
+
+    /**
+     * Fetch a shipping rate from ShipEngine
+     *
+     * @param {*} request
+     * @param {*} h
+     * @returns {*} shipping rate
+     */
+    // async getShippingRateHandler(request, h) {
+    //     try {
+    //         global.logger.info('REQUEST: CartCtrl.getShippingRateHandler', {
+    //             meta: request.query
+    //         });
+
+    //         const data = await ShipEngineAPI.getRate(request.query.rate_id);
+
+    //         if(!data) {
+    //             throw new Error('A shipping rate for the given ID was not found')
+    //         }
+
+    //         global.logger.info('RESPONSE: CartCtrl.getShippingRateHandler', {
+    //             meta: data
+    //         });
+
+    //         return h.apiSuccess(data);
+    //     }
+    //     catch(err) {
+    //         global.logger.error(err);
+    //         global.bugsnag(err);
+    //         throw Boom.badRequest(err);
+    //     }
+    // }
 
 
     /**

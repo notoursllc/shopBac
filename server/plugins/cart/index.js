@@ -167,7 +167,25 @@ exports.plugin = {
                     /******************
                      * SHIPPING
                      ******************/
-
+                    //  {
+                    //     method: 'GET',
+                    //     path: '/cart/shipping/rate',
+                    //     options: {
+                    //         description: 'Gets the ShipEngine rate by ID',
+                    //         auth: {
+                    //             strategies: ['session']
+                    //         },
+                    //         validate: {
+                    //             query: Joi.object({
+                    //                 rate_id: Joi.string(),
+                    //                 tenant_id: Joi.string().uuid().required()
+                    //             })
+                    //         },
+                    //         handler: (request, h) => {
+                    //             return CartCtrl.getShippingRateHandler(request, h);
+                    //         }
+                    //     }
+                    // },
                     {
                         method: 'POST',
                         path: '/cart/shipping/estimate',
@@ -204,6 +222,25 @@ exports.plugin = {
                             },
                             handler: (request, h) => {
                                 return CartCtrl.selectShippingRateHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'POST',
+                        path: '/cart/shipping/label',
+                        options: {
+                            description: 'Buys a shipping label from ShipEngine',
+                            auth: {
+                                // strategies: ['session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid().required(), // the cart id
+                                    tenant_id: Joi.string().uuid().required(),
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.buyShippingLabelForCartHandler(request, h);
                             }
                         }
                     },

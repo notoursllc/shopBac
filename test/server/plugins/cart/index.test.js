@@ -6,6 +6,9 @@ const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
 const testHelpers = require('../../testHelpers');
 const { init } = require('../../../../server');
 
+// const cartId = 'd81d1a96-4e8a-41ab-84ea-3c8336123598';
+// const cartId = 'b0a6b70b-f8cf-4bea-88d5-1efbf14ef711';
+const cartId = '255ca872-1bbb-4694-8e97-b7b2e6b04b60';
 
 describe('ROUTE: /cart', () => {
     let server;
@@ -21,7 +24,7 @@ describe('ROUTE: /cart', () => {
 
     it('should get the cart', async () => {
         const params = queryString.stringify({
-            id: 'e4fac187-66c1-42e9-866c-0e0a83395098', //TODO
+            id: cartId,
             tenant_id: process.env.TEST_TENANT_ID,
             relations: true
         });
@@ -60,13 +63,59 @@ describe('ROUTE: /cart', () => {
             url: testHelpers.getApiPrefix('/cart/shipping/estimate'),
             headers: testHelpers.getRequestHeader(),
             payload: {
-                id: '02211d05-5474-42af-b661-39d995ecb35e', //TODO
+                id: cartId,
                 tenant_id: process.env.TEST_TENANT_ID
             }
         });
 
         console.log("ESTIMSATE", res.result.data)
         expect(res.result.data.length > 0).to.equal(true);
+    });
+
+});
+
+
+describe('ROUTE: POST /cart/shipping/label', () => {
+    let server;
+    let cookie;
+
+    beforeEach(async () => {
+        server = await init();
+
+        const res = await server.inject({
+            method: 'POST',
+            url: testHelpers.getApiPrefix('/tenant/member/login'),
+            // headers: testHelpers.getRequestHeader(),
+            payload: {
+                email: process.env.TEST_USERNAME,
+                password: process.env.TEST_PASSWORD
+            }
+        });
+
+        cookie = res.headers['set-cookie'][0].split(';')[0];
+        // console.log("COOKIE", cookie)
+    });
+
+    afterEach(async () => {
+        await server.stop();
+    });
+
+
+    it('should get a shipping label', async () => {
+        const res = await server.inject({
+            method: 'POST',
+            url: testHelpers.getApiPrefix('/cart/shipping/label'),
+            headers: {
+                Cookie: cookie
+            },
+            payload: {
+                id: cartId,
+                tenant_id: process.env.TEST_TENANT_ID
+            }
+        });
+
+        console.log("SHIPPING LABEL", res.result.data)
+        expect(res.result.data.hasOwnProperty('label_id')).to.equal(true)
     });
 
 });

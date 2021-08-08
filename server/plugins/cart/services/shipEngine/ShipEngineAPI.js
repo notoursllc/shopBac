@@ -9,6 +9,7 @@ function getAxios() {
                 'api-key': process.env.SHIPENGINE_API_KEY,
                 'Content-Type': 'application/json'
             },
+            timeout: 10000, // wait for 10s
             validateStatus() {
                 return true;
             }
@@ -67,6 +68,21 @@ async function getRate(id) {
 }
 
 
+async function buyShippingLabel(rateId) {
+    global.logger.info('REQUEST: ShipEngineAPI.buyShippingLabel', {
+        meta: { rateId }
+    });
+
+    const { data } = await getAxios().post(`labels/rates/${rateId}`);
+
+    global.logger.info('RESPONSE: ShipEngineAPI.buyShippingLabel', {
+        meta: { data }
+    });
+
+    return data;
+}
+
+
 /*
 * https://www.shipengine.com/docs/addresses/validation/
 */
@@ -88,5 +104,6 @@ async function validateAddresses(payload) {
 module.exports = {
     getRates,
     getRate,
+    buyShippingLabel,
     validateAddresses
 };

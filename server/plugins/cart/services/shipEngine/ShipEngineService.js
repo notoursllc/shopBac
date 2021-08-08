@@ -51,9 +51,16 @@ function getProductArrayFromCart(cartJson) {
 
     cartJson.cart_items.forEach((cartItem) => {
         for(let i=0; i<cartItem.qty; i++) {
-            products.push(
-                cartItem.product
-            );
+
+            // need to stuff the product_variant and product_variant_sku into the
+            // product object so all of the data related to the object is included in
+            // the packing results.  Need SKU info in order to fulfill the order... without
+            // the sku we wouldn't know what to pack in the box when fulfilling orders.
+            products.push({
+                ...cartItem.product,
+                product_variant: cartItem.product_variant,
+                product_variant_sku: cartItem.product_variant_sku
+            });
         }
     });
 
@@ -274,6 +281,13 @@ async function getShippingRatesForCart(cart, packageTypes) {
         // idea of what the packages are.
         // I don't think it's the responsibility of this method to
         // determine how to handle this scenario.
+        if(!apiArgs.shipment.packages.length) {
+            global.logger.warn('ShipEngineService.getShippingRatesForCart - API PAYLOAD DOES NOT CONTAIN ANY PACKAGES', {
+                meta: {
+                    apiArgs
+                }
+            });
+        }
 
         const { rate_response } = await ShipEngineAPI.getRates(apiArgs);
         const response = {};

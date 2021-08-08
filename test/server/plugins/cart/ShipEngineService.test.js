@@ -8,7 +8,7 @@ const { init } = require('../../../../server');
 const ShipEngineService = require('../../../../server/plugins/cart/services/shipEngine/ShipEngineService');
 const PackageTypeController = require('../../../../server/plugins/package-types/controllers/PackageTypeCtrl');
 
-const testCartId = '02211d05-5474-42af-b661-39d995ecb35e';
+const testCartId = '3904d7ab-aa81-478f-bd39-ec9129e52785';
 
 
 function getMockPackageType(length, width, height, mergeObj) {
