@@ -23,10 +23,6 @@ module.exports = function (baseModel, bookshelf, server) {
                     attributes.shipping_rate_quote = JSON.stringify(attributes.shipping_rate_quote)
                 }
 
-                if (attributes.shipping_label) {
-                    attributes.shipping_label = JSON.stringify(attributes.shipping_label)
-                }
-
                 return attributes;
             },
 

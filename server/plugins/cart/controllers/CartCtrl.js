@@ -59,7 +59,7 @@ class CartCtrl extends BaseController {
             currency: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             selected_shipping_rate: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             shipping_rate_quote: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
-            shipping_label: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
+            shipping_label_id: getJoiStringOrNull(),
             sales_tax: Joi.alternatives().try(Joi.number().integer().min(0), Joi.allow(null)),
             stripe_payment_intent_id: getJoiStringOrNull(),
             paypal_order_id: getJoiStringOrNull(),
@@ -67,7 +67,8 @@ class CartCtrl extends BaseController {
             created_at: Joi.date(),
             updated_at: Joi.date(),
             deleted_at: Joi.date(),
-            closed_at: Joi.date()
+            closed_at: Joi.date(),
+            shipped_at: Joi.date(),
         };
 
         if(isUpdate) {
@@ -86,6 +87,17 @@ class CartCtrl extends BaseController {
         return this.getModel()
             .query((qb) => {
                 qb.where('closed_at', 'IS', null);
+                qb.andWhere('id', '=', id);
+                qb.andWhere('tenant_id', '=', tenant_id);
+            })
+            .fetch(fetchOptions);
+    }
+
+
+    getClosedCart(id, tenant_id, fetchOptions) {
+        return this.getModel()
+            .query((qb) => {
+                qb.where('closed_at', 'is not', null);
                 qb.andWhere('id', '=', id);
                 qb.andWhere('tenant_id', '=', tenant_id);
             })
@@ -443,7 +455,7 @@ class CartCtrl extends BaseController {
             }
 
             await Cart.save({
-                shipping_label: data
+                shipping_label_id: data.label_id || null
             });
 
             global.logger.info('RESPONSE: CartCtrl.buyShippingLabelHandler', {
@@ -451,6 +463,47 @@ class CartCtrl extends BaseController {
             });
 
             return h.apiSuccess(data);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
+
+    /**
+     * Gets an order (a closed cart) and the related ShipEngine label data
+     *
+     * @param {*} request
+     * @param {*} h
+     * @returns {}
+     */
+    async getOrderHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: CartCtrl.getOrderHandler', {
+                meta: request.query
+            });
+
+            const Cart = await this.getClosedCart(
+                request.query.id,
+                this.getTenantIdFromAuth(request),
+                { withRelated: this.getAllCartRelations() }
+            );
+
+            if(!Cart) {
+                throw new Error('Cart not found')
+            }
+
+            let label = null;
+            if(Cart.get('shipping_label_id')) {
+                label = await ShipEngineAPI.getShippingLabel(Cart.get('shipping_label_id'));
+            }
+
+            return h.apiSuccess({
+                cart: Cart.toJSON(),
+                label: label
+            });
         }
         catch(err) {
             global.logger.error(err);
@@ -1011,6 +1064,52 @@ class CartCtrl extends BaseController {
 
         return h.apiSuccess(paymentData);
     }
+
+
+    /**
+     * Sets or unsets the 'shipped_at' value for a closed cart
+     *
+     * @param {*} request
+     * @param {*} h
+     * @returns Cart
+     */
+    async cartShippedHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: CartCtrl.cartShippedHandler', {
+                meta: request.payload
+            });
+
+            // You should only be allowed so set the 'shipped_at' value of a closed cart
+            const Cart = await this.getClosedCart(
+                request.payload.id,
+                this.getTenantIdFromAuth(request)
+            );
+
+            if(!Cart) {
+                throw new Error('Cart not found');
+            }
+
+            const UpdatedCart = await Cart.save({
+                shipped_at: request.payload.shipped ? new Date() : null
+            });
+
+            const updatedCartJson = UpdatedCart.toJSON();
+
+            global.logger.info('RESPONSE: CartCtrl.cartShippedHandler', {
+                meta: {
+                    updatedCart: updatedCartJson
+                }
+            });
+
+            return h.apiSuccess(updatedCartJson);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
 
 
     async decrementInventoryCount(cartId, tenantId) {

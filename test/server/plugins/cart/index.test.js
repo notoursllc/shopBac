@@ -6,9 +6,7 @@ const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
 const testHelpers = require('../../testHelpers');
 const { init } = require('../../../../server');
 
-// const cartId = 'd81d1a96-4e8a-41ab-84ea-3c8336123598';
-// const cartId = 'b0a6b70b-f8cf-4bea-88d5-1efbf14ef711';
-const cartId = '255ca872-1bbb-4694-8e97-b7b2e6b04b60';
+const cartId = '5c09938d-08d1-492d-8a6b-029089ec928e';
 
 describe('ROUTE: /cart', () => {
     let server;
@@ -101,10 +99,93 @@ describe('ROUTE: POST /cart/shipping/label', () => {
     });
 
 
-    it('should get a shipping label', async () => {
+    // it('should purchase a shipping label', async () => {
+    //     const res = await server.inject({
+    //         method: 'POST',
+    //         url: testHelpers.getApiPrefix('/cart/shipping/label'),
+    //         headers: {
+    //             Cookie: cookie
+    //         },
+    //         payload: {
+    //             id: cartId,
+    //             tenant_id: process.env.TEST_TENANT_ID
+    //         }
+    //     });
+
+    //     console.log("SHIPPING LABEL", res.result.data)
+    //     expect(res.result.data.hasOwnProperty('label_id')).to.equal(true)
+    // });
+
+});
+
+
+describe('ROUTE: POST /cart/shipped', () => {
+    let server;
+    let cookie;
+
+    beforeEach(async () => {
+        server = await init();
+
         const res = await server.inject({
             method: 'POST',
-            url: testHelpers.getApiPrefix('/cart/shipping/label'),
+            url: testHelpers.getApiPrefix('/tenant/member/login'),
+            // headers: testHelpers.getRequestHeader(),
+            payload: {
+                email: process.env.TEST_USERNAME,
+                password: process.env.TEST_PASSWORD
+            }
+        });
+
+        cookie = res.headers['set-cookie'][0].split(';')[0];
+        // console.log("COOKIE", cookie)
+    });
+
+    afterEach(async () => {
+        await server.stop();
+    });
+
+
+    it('should set the shipped_at value when the "shipped" flag is set in the payload', async () => {
+        const res = await server.inject({
+            method: 'POST',
+            url: testHelpers.getApiPrefix('/cart/shipped'),
+            headers: {
+                Cookie: cookie
+            },
+            payload: {
+                id: cartId,
+                tenant_id: process.env.TEST_TENANT_ID,
+                shipped: true
+            }
+        });
+
+        console.log("SHIPPED AT: SET DATE", res.result.data)
+        expect(res.result.data.shipped_at).not.to.equal(null)
+    });
+
+
+    it('should un-set the shipped_at value when the "shipped" flag is false', async () => {
+        const res = await server.inject({
+            method: 'POST',
+            url: testHelpers.getApiPrefix('/cart/shipped'),
+            headers: {
+                Cookie: cookie
+            },
+            payload: {
+                id: cartId,
+                tenant_id: process.env.TEST_TENANT_ID,
+                shipped: false
+            }
+        });
+
+        expect(res.result.data.shipped_at).to.equal(null)
+    });
+
+
+    it('should un-set the shipped_at value when the "shipped" flag is not sent', async () => {
+        const res = await server.inject({
+            method: 'POST',
+            url: testHelpers.getApiPrefix('/cart/shipped'),
             headers: {
                 Cookie: cookie
             },
@@ -114,8 +195,7 @@ describe('ROUTE: POST /cart/shipping/label', () => {
             }
         });
 
-        console.log("SHIPPING LABEL", res.result.data)
-        expect(res.result.data.hasOwnProperty('label_id')).to.equal(true)
+        expect(res.result.data.shipped_at).to.equal(null)
     });
 
 });

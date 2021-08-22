@@ -85,19 +85,46 @@ exports.plugin = {
                             }
                         }
                     },
-                    // {
-                    //     method: 'GET',
-                    //     path: '/cart/orders',
-                    //     options: {
-                    //         description: 'Gets a list of orders (closed carts)',
-                    //         auth: {
-                    //             strategies: ['session']
-                    //         },
-                    //         handler: (request, h) => {
-                    //             return CartCtrl.getOrdersHandler(request, h);
-                    //         }
-                    //     }
-                    // },
+                    {
+                        method: 'GET',
+                        path: '/cart/order',
+                        options: {
+                            description: 'Gets a closed cart by ID, as well as the related ShipEngine data (label)',
+                            auth: {
+                                strategies: ['session']
+                            },
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid(),
+                                    tenant_id: Joi.string().uuid()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.getOrderHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'POST',
+                        path: '/cart/shipped',
+                        options: {
+                            description: 'Sets the as shipped by setting or unsetting the shipped_at value',
+                            auth: {
+                                strategies: ['session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid(),
+                                    tenant_id: Joi.string().uuid(),
+                                    shipped: Joi.boolean().optional()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.cartShippedHandler(request, h);
+                            }
+                        }
+                    },
+
 
                     /******************
                      * CART ITEM

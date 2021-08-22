@@ -83,6 +83,21 @@ async function buyShippingLabel(rateId) {
 }
 
 
+async function getShippingLabel(labelId) {
+    global.logger.info('REQUEST: ShipEngineAPI.getShippingLabel', {
+        meta: { labelId }
+    });
+
+    const { data } = await getAxios().get(`labels/${labelId}`);
+
+    global.logger.info('RESPONSE: ShipEngineAPI.getShippingLabel', {
+        meta: { data }
+    });
+
+    return data;
+}
+
+
 /*
 * https://www.shipengine.com/docs/addresses/validation/
 */
@@ -105,5 +120,6 @@ module.exports = {
     getRates,
     getRate,
     buyShippingLabel,
+    getShippingLabel,
     validateAddresses
 };
