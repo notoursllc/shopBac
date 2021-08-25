@@ -4,7 +4,7 @@ const isObject = require('lodash.isobject');
 const BaseController = require('../../core/controllers/BaseController');
 const PackageTypeCtrl = require('../../package-types/controllers/PackageTypeCtrl');
 // third party APIs
-const { sendPurchaseEmails } = require('../services/PostmarkService');
+const { emailPurchaseReceiptToBuyer,  emailPurchaseAlertToAdmin, getPurchaseDescription } = require('../services/PostmarkService');
 const ShipEngineService = require('../services/shipEngine/ShipEngineService');
 const ShipEngineAPI = require('../services/shipEngine/ShipEngineAPI');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
@@ -114,6 +114,16 @@ class CartCtrl extends BaseController {
             'cart_items.product_variant': null,
             'cart_items.product_variant_sku': null
         }
+    }
+
+
+    getTenant(tenantId) {
+        return this.server.app.bookshelf
+            .model('Tenant')
+            .query((qb) => {
+                qb.where('id', '=', tenantId);
+            })
+            .fetch();
     }
 
 
@@ -661,22 +671,19 @@ class CartCtrl extends BaseController {
         }
 
         try {
-            const Cart = await this.getModel()
-                .query((qb) => {
-                    qb.where('id', '=', cartId);
-                    qb.andWhere('tenant_id', '=', tenantId);
-                })
-                .fetch(
-                    { withRelated: this.getAllCartRelations() }
-                );
+            const Cart = await this.getClosedCart(
+                cartId,
+                tenantId,
+                { withRelated: this.getAllCartRelations() }
+            );
 
-            const Tenant = await this.server.app.bookshelf.model('Tenant')
-                .query((qb) => {
-                    qb.where('id', '=', tenantId);
-                })
-                .fetch();
+            const Tenant = await this.getTenant(tenantId);
+            const orderTitle = getPurchaseDescription(Cart);
 
-            sendPurchaseEmails(Cart, Tenant);
+            Promise.all([
+                emailPurchaseReceiptToBuyer(Cart, Tenant, orderTitle),
+                emailPurchaseAlertToAdmin(Cart, orderTitle)
+            ]);
         }
         catch(err) {
             global.logger.error(err);
@@ -686,6 +693,38 @@ class CartCtrl extends BaseController {
         global.logger.info('RESPONSE: CartCtrl.onPaymentSuccess', {
             meta: {}
         });
+    }
+
+
+    async resendOrderConfirmaionHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: CartCtrl.resendOrderConfirmaionHandler', {
+                meta: request.payload
+            });
+
+            const Cart = await this.getClosedCart(
+                request.payload.id,
+                request.payload.tenant_id,
+                { withRelated: this.getAllCartRelations() }
+            );
+
+            const Tenant = await this.getTenant(request.payload.tenant_id);
+            const orderTitle = getPurchaseDescription(Cart);
+
+            const response = await emailPurchaseReceiptToBuyer(Cart, Tenant, orderTitle);
+
+            global.logger.info('RESPONSE: CartCtrl.resendOrderConfirmaionHandler', {
+                meta: {
+                    response
+                }
+            });
+
+            return h.apiSuccess();
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+        }
     }
 
 

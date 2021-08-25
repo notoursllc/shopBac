@@ -199,3 +199,48 @@ describe('ROUTE: POST /cart/shipped', () => {
     });
 
 });
+
+
+describe('ROUTE: POST /cart/resend-order-confirmation', {timeout: 20000}, () => {
+    let server;
+    let cookie;
+
+    beforeEach(async () => {
+        server = await init();
+
+        const res = await server.inject({
+            method: 'POST',
+            url: testHelpers.getApiPrefix('/tenant/member/login'),
+            // headers: testHelpers.getRequestHeader(),
+            payload: {
+                email: process.env.TEST_USERNAME,
+                password: process.env.TEST_PASSWORD
+            }
+        });
+
+        cookie = res.headers['set-cookie'][0].split(';')[0];
+    });
+
+    afterEach(async () => {
+        await server.stop();
+    });
+
+
+    it('should resend the order confirmation email', async () => {
+        const res = await server.inject({
+            method: 'POST',
+            url: testHelpers.getApiPrefix('/cart/resend-order-confirmation'),
+            headers: {
+                Cookie: cookie
+            },
+            payload: {
+                id: cartId,
+                tenant_id: process.env.TEST_TENANT_ID
+            }
+        });
+
+        // console.log("RESEND EMAIL RESPONSE", res)
+        expect(res.statusCode).to.equal(200)
+    });
+
+});

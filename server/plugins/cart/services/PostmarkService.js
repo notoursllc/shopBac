@@ -8,33 +8,21 @@ const postmark = require("postmark");
 const postmarkClient = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 
 function send(config) {
-    return new Promise((resolve, reject) => {
-
-        global.logger.debug('REQUEST: PostmarkService -> send()', {
-            meta: config
+    try {
+        return postmarkClient.sendEmail({
+            From: process.env.EMAIL_INFO,
+            To: config.to,
+            Subject: config.subject,
+            HtmlBody: config.html,
+            TextBody: config.text,
+            MessageStream: 'outbound'
         });
-
-        postmarkClient.sendEmail(
-            {
-                From: process.env.EMAIL_INFO,
-                To: config.to,
-                Subject: config.subject,
-                HtmlBody: config.html,
-                TextBody: config.text,
-                MessageStream: 'outbound'
-            },
-            function(err, data) {
-                if(err) {
-                    console.log(err);
-                }
-                else {
-                    global.logger.debug('RESPONSE: PostmarkService -> send()', {
-                        meta: data
-                    });
-                }
-            }
-        );
-    });
+    }
+    catch(err) {
+        global.logger.error(err);
+        global.bugsnag(err);
+        throw err;
+    }
 }
 
 
@@ -127,7 +115,7 @@ function formatPrice(price) {
 }
 
 
-function emailPurchaseReceiptToBuyer(Cart, Tenant, orderTitle) {
+async function emailPurchaseReceiptToBuyer(Cart, Tenant, orderTitle) {
     const pugConfig = {
         orderTitle,
         baseUrl: helpers.getSiteUrl(true),
@@ -143,7 +131,7 @@ function emailPurchaseReceiptToBuyer(Cart, Tenant, orderTitle) {
         grand_total: formatPrice(Cart.get('grand_total'))
     };
 
-    global.logger.debug('REQUEST: PostmarkService -> emailPurchaseReceiptToBuyer()', {
+    global.logger.info('REQUEST: PostmarkService -> emailPurchaseReceiptToBuyer()', {
         meta: {
             pugConfig
         }
@@ -154,20 +142,24 @@ function emailPurchaseReceiptToBuyer(Cart, Tenant, orderTitle) {
         pugConfig
     );
 
-    const sendPromise = send({
+    const response = await send({
         to: Cart.get('shipping_email'),
         subject: `Your order from goBreadVan.com - ${orderTitle}`,
         // text: 'sample text for purchase receipt', //TODO:
         html: html
     });
 
-    global.logger.debug('RESPONSE: PostmarkService -> emailPurchaseReceiptToBuyer()');
+    global.logger.info('RESPONSE: PostmarkService -> emailPurchaseReceiptToBuyer()', {
+        meta: {
+            response
+        }
+    });
 
-    return sendPromise;
+    return response;
 }
 
 
-function emailPurchaseAlertToAdmin(Cart, orderTitle) {
+async function emailPurchaseAlertToAdmin(Cart, orderTitle) {
     try {
         const pugConfig = {
             orderTitle,
@@ -189,7 +181,7 @@ function emailPurchaseAlertToAdmin(Cart, orderTitle) {
             grand_total: formatPrice(Cart.get('grand_total'))
         }
 
-        global.logger.debug('REQUEST: PostmarkService -> emailPurchaseAlertToAdmin()', {
+        global.logger.info('REQUEST: PostmarkService -> emailPurchaseAlertToAdmin()', {
             meta: {
                 pugConfig
             }
@@ -200,15 +192,19 @@ function emailPurchaseAlertToAdmin(Cart, orderTitle) {
             pugConfig
         );
 
-        const sendPromise = send({
+        const response = await send({
             to: process.env.EMAIL_ADMIN,
             subject: `NEW ORDER: ${orderTitle}`,
             html: html
         });
 
-        global.logger.debug('RESPONSE: PostmarkService -> emailPurchaseAlertToAdmin()');
+        global.logger.info('RESPONSE: PostmarkService -> emailPurchaseAlertToAdmin()', {
+            meta: {
+                response
+            }
+        });
 
-        return sendPromise;
+        return response;
     }
     catch(err) {
         global.logger.error(err);
@@ -217,22 +213,8 @@ function emailPurchaseAlertToAdmin(Cart, orderTitle) {
 }
 
 
-function sendPurchaseEmails(Cart, Tenant) {
-    let orderTitle = getPurchaseDescription(Cart);
-
-    Promise
-        .all([
-            emailPurchaseReceiptToBuyer(Cart, Tenant, orderTitle),
-            emailPurchaseAlertToAdmin(Cart, orderTitle)
-        ])
-        .catch((err) => {
-            global.logger.error(err);
-            global.bugsnag(err);
-        });
-}
-
-
-
 module.exports = {
-    sendPurchaseEmails
+    getPurchaseDescription,
+    emailPurchaseReceiptToBuyer,
+    emailPurchaseAlertToAdmin
 }

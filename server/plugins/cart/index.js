@@ -124,6 +124,25 @@ exports.plugin = {
                             }
                         }
                     },
+                    {
+                        method: 'POST',
+                        path: '/cart/resend-order-confirmation',
+                        options: {
+                            description: 'Re-sends the order confirmation email for a given closed cart',
+                            auth: {
+                                strategies: ['session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid(),
+                                    tenant_id: Joi.string().uuid()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.resendOrderConfirmaionHandler(request, h);
+                            }
+                        }
+                    },
 
 
                     /******************
