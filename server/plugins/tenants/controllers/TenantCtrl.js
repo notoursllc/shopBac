@@ -1,9 +1,10 @@
 const Joi = require('@hapi/joi');
+const Boom = require('@hapi/boom');
 // const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const owasp = require('owasp-password-strength-test');
 const TenantBaseCtrl = require('./TenantBaseCtrl');
-
+const { emailContactUsFormToAdmin } = require('../../cart/services/PostmarkService');
 
 owasp.config({
     allowPassphrases: true,
@@ -73,6 +74,25 @@ class TenantCtrl extends TenantBaseCtrl {
     //     request.payload.password = cryptPassword(request.payload.password);
     //     return super.upsertHandler(request, h);
     // }
+
+
+    async contactUsHandler(request, h) {
+        try {
+            await emailContactUsFormToAdmin({
+                name: request.payload.name,
+                company: request.payload.company,
+                email: request.payload.email,
+                message: request.payload.message
+            });
+
+            return h.apiSuccess();
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
 
 
     async storeAuthIsValid(tenant_id, api_key) {

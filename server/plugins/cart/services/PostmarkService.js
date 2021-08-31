@@ -213,8 +213,45 @@ async function emailPurchaseAlertToAdmin(Cart, orderTitle) {
 }
 
 
+async function emailContactUsFormToAdmin(pugConfig) {
+    try {
+        global.logger.info('REQUEST: PostmarkService -> emailContactUsFormToAdmin()', {
+            meta: {
+                pugConfig
+            }
+        });
+
+        const html = pug.renderFile(
+            path.join(__dirname, '../email-templates', 'contact-us.pug'),
+            pugConfig
+        );
+
+        const response = await send({
+            to: process.env.EMAIL_ADMIN,
+            subject: `CONTACT US form submission (${process.env.BRAND_NAME})`,
+            html: html
+        });
+
+        global.logger.info('RESPONSE: PostmarkService -> emailContactUsFormToAdmin()', {
+            meta: {
+                response
+            }
+        });
+
+        return response;
+    }
+    catch(err) {
+        global.logger.error(err);
+        global.bugsnag(err);
+    }
+}
+
+
+
+
 module.exports = {
     getPurchaseDescription,
     emailPurchaseReceiptToBuyer,
-    emailPurchaseAlertToAdmin
+    emailPurchaseAlertToAdmin,
+    emailContactUsFormToAdmin
 }

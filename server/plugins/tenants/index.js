@@ -160,6 +160,28 @@ exports.plugin = {
                         }
                     },
                     */
+                    {
+                        method: 'POST',
+                        path: '/tenant/contactus',
+                        options: {
+                            description: 'Contact us',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    name: Joi.string(),
+                                    company: Joi.string().max(100),
+                                    email: Joi.string().max(100).required(),
+                                    message: Joi.string().max(10000).required(),
+                                    tenant_id: Joi.string().uuid()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return TenantCtrl.contactUsHandler(request, h);
+                            }
+                        }
+                    },
 
 
                     /*
