@@ -170,10 +170,10 @@ exports.plugin = {
                             },
                             validate: {
                                 payload: Joi.object({
-                                    name: Joi.string(),
-                                    company: Joi.string().max(100),
-                                    email: Joi.string().max(100).required(),
-                                    message: Joi.string().max(10000).required(),
+                                    name: Joi.string().trim().max(100).required(),
+                                    company: Joi.alternatives().try(Joi.string().trim().max(100), Joi.allow(null)),
+                                    email: Joi.string().trim().max(100).required(),
+                                    message: Joi.string().trim().max(10000).required(),
                                     tenant_id: Joi.string().uuid()
                                 })
                             },
