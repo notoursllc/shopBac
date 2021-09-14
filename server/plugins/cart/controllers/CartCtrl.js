@@ -719,7 +719,7 @@ class CartCtrl extends BaseController {
                 }
             });
 
-            return h.apiSuccess();
+            return h.apiSuccess(response);
         }
         catch(err) {
             global.logger.error(err);

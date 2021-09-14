@@ -98,6 +98,9 @@ exports.plugin = {
                         path: `${routePrefix}/product`,
                         options: {
                             description: 'Deletes a product',
+                            auth: {
+                                strategies: ['session']
+                            },
                             validate: {
                                 query: Joi.object({
                                     id: Joi.string().uuid().required(),
