@@ -3,7 +3,7 @@ const Boom = require('@hapi/boom');
 const cloneDeep = require('lodash.clonedeep');
 const BaseController = require('../../core/controllers/BaseController');
 const ProductVariantSkuCtrl = require('./ProductVariantSkuCtrl');
-const StorageService = require('../../core/services/StorageService')
+const S3StorageService = require('../../core/services/S3StorageService')
 
 
 class ProductVariantCtrl extends BaseController {
@@ -286,7 +286,7 @@ class ProductVariantCtrl extends BaseController {
                     try {
                         if(Array.isArray(images[matchedIndex].variants)) {
                             images[matchedIndex].variants.forEach((obj) => {
-                                StorageService.deleteFile(obj.url);
+                                S3StorageService.deleteFile(obj.url);
                             })
                         }
                     }

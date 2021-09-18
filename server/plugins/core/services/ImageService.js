@@ -3,7 +3,7 @@ const isObject = require('lodash.isobject');
 const Hoek = require('@hapi/hoek');
 const uuidV4 = require('uuid/v4');
 const sharp = require('sharp');
-const StorageService = require('./StorageService');
+const S3StorageService = require('./S3StorageService');
 
 const imageMimeTypeWhiteList = [
     'image/png',
@@ -147,7 +147,7 @@ async function resizeImageBuffer(buffer, options, saveResult) {
                 target_width: options.width,
                 width: info.width,
                 height: info.height,
-                url: saveResult ? await StorageService.writeBuffer(data, `${uuidV4()}.${imageType.ext}`) : null,
+                url: saveResult ? await S3StorageService.writeBuffer(data, `${uuidV4()}.${imageType.ext}`) : null,
                 ...imageType
             };
         })
