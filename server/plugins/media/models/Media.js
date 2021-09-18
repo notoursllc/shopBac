@@ -10,19 +10,9 @@ module.exports = function (baseModel, bookshelf) {
 
         softDelete: true,
 
-        visible: [
-            'id',
-            // 'tenant_id',
-            'resource_type',
-            'alt_text',
-            'ordinal',
-            'url',
-            'width',
-            'height',
-            'mime',
-            'created_at',
-            'updated_at',
-            // 'deleted_at'
+        hidden: [
+            'tenant_id',
+            'deleted_at'
         ]
     });
 };

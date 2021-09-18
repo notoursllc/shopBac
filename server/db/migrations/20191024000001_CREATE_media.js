@@ -10,9 +10,7 @@ module.exports.up = (knex) => {
             t.string('alt_text').nullable();
             t.integer('ordinal').nullable().defaultTo(1);
             t.string('url').nullable();
-            t.integer('width').nullable();
-            t.integer('height').nullable();
-            t.string('mime').nullable();
+            t.string('third_party_id').nullable();
 
             // TIMESTAMPS
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());

@@ -3,8 +3,9 @@
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const BaseController = require('../../core/controllers/BaseController');
-const { resizeBufferToMultipleImages } = require('../../core/services/ImageService');
-
+// const { resizeBufferToMultipleImages } = require('../../core/services/ImageService');
+const { postImage } = require('../../core/services/CloudflareAPI');
+const isObject = require('lodash.isobject');
 
 class MediaCtrl extends BaseController {
 
@@ -21,9 +22,7 @@ class MediaCtrl extends BaseController {
             alt_text: Joi.string().max(100).allow(null),
             ordinal: Joi.number().integer().min(0).allow(null),
             url: Joi.string().max(200).allow(null),
-            width: Joi.number().integer().min(0).allow(null),
-            height: Joi.number().integer().min(0).allow(null),
-            mime: Joi.string().max(50).allow(null),
+            third_party_id: Joi.string().max(200).allow(null),
             created_at: Joi.date(),
             updated_at: Joi.date(),
             deleted_at: Joi.date()
@@ -31,23 +30,28 @@ class MediaCtrl extends BaseController {
     }
 
 
-    async upsertHandler(request, h) {
+    async imageUpsertHandler(request, h) {
         try {
             const tenant_id = this.getTenantIdFromAuth(request);
 
-            global.logger.info('REQUEST: MediaCtrl.upsertHandler', {
+            global.logger.info('REQUEST: MediaCtrl.imageUpsertHandler', {
                 meta: {
                     tenant_id: tenant_id,
                     file: request.payload.file ? true : false
                 }
             });
 
-            const Media = await this.resizeAndUpsertImage(
-                request.payload.file,
-                tenant_id
-            );
+            const res = await postImage(request.payload.file);
 
-            global.logger.info('RESONSE: MediaCtrl.upsertHandler', {
+            const Media = await this.upsertModel({
+                tenant_id: tenant_id,
+                resource_type: 'IMAGE',
+                alt_text: null,
+                ordinal: 0,
+                third_party_id: isObject(res) ? res.id : null
+            });
+
+            global.logger.info('RESONSE: MediaCtrl.imageUpsertHandler', {
                 meta: Media ? Media.toJSON() : null
             });
 
@@ -61,6 +65,7 @@ class MediaCtrl extends BaseController {
     };
 
 
+    /*
     async resizeAndUpsertImage(File, tenantId) {
         global.logger.info(`REQUEST: MediaCtrl.resizeAndUpsertImage (${this.modelName})`, {
             meta: {
@@ -94,7 +99,7 @@ class MediaCtrl extends BaseController {
 
         return this.upsertModel(modelData);
     }
-
+    */
 
 }
 

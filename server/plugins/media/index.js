@@ -38,7 +38,8 @@ exports.plugin = {
                         options: {
                             description: 'Adds a new resource',
                             payload: {
-                                output: 'stream',
+                                // output: 'stream',
+                                output: 'file',
                                 parse: true,
                                 allow: 'multipart/form-data',
                                 maxBytes: payloadMaxBytes,
@@ -48,11 +49,10 @@ exports.plugin = {
                                 payload: Joi.object({
                                     file: Joi.object(),
                                     tenant_id: Joi.string().uuid()
-                                    // ...MediaCtrl.getSchema()
                                 })
                             },
                             handler: (request, h) => {
-                                return MediaCtrl.upsertHandler(request, h);
+                                return MediaCtrl.imageUpsertHandler(request, h);
                             }
                         }
                     },

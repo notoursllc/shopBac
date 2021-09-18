@@ -40,7 +40,7 @@ async function getCarriers() {
  */
 async function getRates(payload) {
     global.logger.info('REQUEST: ShipEngineAPI.getRates', {
-        meta: { payload }
+        meta: { }
     });
 
     const { data } = await getAxios().post('rates', payload);
