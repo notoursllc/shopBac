@@ -78,12 +78,6 @@ function getServer() {
                             prefix: routePrefix
                         }
                     },
-                    {
-                        plugin: './plugins/storage',
-                        routes: {
-                            prefix: routePrefix
-                        }
-                    },
                     { plugin: './plugins/products' },
                     {
                         plugin: './plugins/media',
