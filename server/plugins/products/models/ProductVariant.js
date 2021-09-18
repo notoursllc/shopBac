@@ -75,39 +75,9 @@ module.exports = function (baseModel, bookshelf) {
                 }
             },
 
-            visible: [
-                'id',
-                // 'tenant_id'
-                'product_id',
-                'published',
-                'ordinal',
-                'label',
-                'basic_color_type',
-                'currency',
-                'base_price',
-                'cost_price',
-                'compare_at_price',
-                'sale_price',
-                'is_on_sale',
-                'is_taxable',
-                'tax_code',
-                'weight_oz',
-                'accent_message_id',
-                'accent_message_begin',
-                'accent_message_end',
-                'images',
-                'swatches',
-                'customs_country_of_origin',
-                'created_at',
-                'updated_at',
-                // 'deleted_at'
-
-                // relations
-                'skus',
-
-                // virtuals
-                'display_price',
-                'total_inventory_count'
+            hidden: [
+                'tenant_id',
+                'deleted_at'
             ]
         }
     );

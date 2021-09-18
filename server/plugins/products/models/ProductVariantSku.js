@@ -28,32 +28,10 @@ module.exports = function (baseModel, bookshelf) {
             },
         },
 
-        visible: [
-            'id',
-            // 'tenant_id'  not visible
-            'product_variant_id',
-            'published',
-            'ordinal',
-            'label',
-            'sku',
-            'barcode',
-            'base_price',
-            'compare_at_price',
-            'cost_price',
-            'sale_price',
-            'is_on_sale',
-            'weight_oz',
-            'customs_country_of_origin',
-            'inventory_count',
-            'track_inventory_count',
-            'visible_if_no_inventory',
-            'is_displayable', // TODO
-            'created_at',
-            'updated_at',
-            // 'deleted_at',  // not visible
 
-            // virtuals
-            'display_price'
+        hidden: [
+            'tenant_id',
+            'deleted_at'
         ]
     });
 };
