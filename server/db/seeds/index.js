@@ -1,5 +1,3 @@
-const tenants = require('../initial-data/tenants');
-const tenant_members = require('../initial-data/tenant_members');
 const master_types = require('../initial-data/master_types');
 const package_types = require('../initial-data/package_types');
 const product_collections = require('../initial-data/product_collections');
@@ -16,14 +14,12 @@ const product_color_swatches = require('../initial-data/product_color_swatches')
  * @returns {*}
  */
 exports.seed = (knex, Promise) => {
-    return tenants
-        .seed(knex, Promise)
-        .then(() => {
-            return tenant_members.seed(knex, Promise);
-        })
-        .then(() => {
-            return master_types.seed(knex, Promise);
-        })
+    // SEED TENANTS MANUALLY
+    // return tenants.seed(knex, Promise)
+        // .then(() => {
+        //     return tenant_members.seed(knex, Promise);
+        // })
+    return master_types.seed(knex, Promise)
         .then(() => {
             return package_types.seed(knex, Promise);
         })

@@ -3,16 +3,13 @@ const Boom = require('@hapi/boom');
 const isObject = require('lodash.isobject');
 const BaseController = require('../../core/controllers/BaseController');
 const PackageTypeCtrl = require('../../package-types/controllers/PackageTypeCtrl');
+const StripeCtrl = require('./StripeCtrl');
+const PayPalCtrl = require('./PayPalCtrl');
+
 // third party APIs
 const { emailPurchaseReceiptToBuyer,  emailPurchaseAlertToAdmin, getPurchaseDescription } = require('../services/PostmarkService');
 const ShipEngineService = require('../services/shipEngine/ShipEngineService');
 const ShipEngineAPI = require('../services/shipEngine/ShipEngineAPI');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const {
-    getOrder: getPaypalOrder,
-    createPaymentFromCart: createPaypalPaymentFromCart,
-    executePayment: executePaypalPayment } = require('../services/PaypalService');
-
 
 
 function getJoiStringOrNull(strLen) {
@@ -24,6 +21,8 @@ class CartCtrl extends BaseController {
     constructor(server) {
         super(server, 'Cart');
         this.PackageTypeCtrl = new PackageTypeCtrl(server);
+        this.StripeCtrl = new StripeCtrl(server);
+        this.PayPalCtrl = new PayPalCtrl(server);
     }
 
 
@@ -594,9 +593,12 @@ class CartCtrl extends BaseController {
                 meta: request.payload
             });
 
+            const tenantId = this.getTenantIdFromAuth(request);
+            const stripe = await this.StripeCtrl.getStripe(tenantId);
+
             const Cart = await this.getActiveCart(
                 request.payload.id,
-                this.getTenantIdFromAuth(request),
+                tenantId,
                 { withRelated: this.getAllCartRelations() }
             );
 
@@ -744,10 +746,13 @@ class CartCtrl extends BaseController {
             meta: request.query
         });
 
+        const tenantId = this.getTenantIdFromAuth(request);
+        const stripe = await this.StripeCtrl.getStripe(tenantId);
+
         const Cart = await this.getModel()
             .query((qb) => {
                 qb.where('id', '=', request.query.id);
-                qb.andWhere('tenant_id', '=', this.getTenantIdFromAuth(request));
+                qb.andWhere('tenant_id', '=', tenantId);
             })
             .fetch();
 
@@ -951,7 +956,7 @@ class CartCtrl extends BaseController {
         }
         // Paypal
         else if(Cart.get('paypal_order_id')) {
-            const paypalData = await getPaypalOrder(Cart.get('paypal_order_id'));
+            const paypalData = await this.PayPalCtrl.getOrder(Cart.get('paypal_order_id'));
 
 /*
 // SAMPLE PAYPAL ORDER RESPONSE
@@ -1306,7 +1311,7 @@ class CartCtrl extends BaseController {
                 { withRelated: this.getAllCartRelations() }
             );
 
-            const order = await createPaypalPaymentFromCart(Cart);
+            const order = await this.PayPalCtrl.createPaymentFromCart(Cart);
 
             global.logger.info('RESPONSE: PaypalCartCtrl:createPaymentHandler', {
                 meta: {
@@ -1332,8 +1337,7 @@ class CartCtrl extends BaseController {
                 meta: request.payload
             });
 
-            const paypalTransaction = await executePaypalPayment(request.payload.token)
-            console.log("PAYPAL TRANSACTION", paypalTransaction)
+            const paypalTransaction = await this.PayPalCtrl.executePayment(request.payload.token);
 
             await this.onPaymentSuccess(
                 request.payload.id,

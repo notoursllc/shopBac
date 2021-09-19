@@ -9,6 +9,9 @@ module.exports.up = (knex) => {
             t.string('application_name').nullable();
             t.string('application_url').nullable();
             t.text('application_logo').nullable();
+            t.string('stripe_key').nullable();
+            t.string('paypal_client_id').nullable();
+            t.string('paypal_client_secret').nullable();
             t.boolean('active').defaultTo(true);
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();
