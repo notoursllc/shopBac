@@ -682,7 +682,10 @@ class CartCtrl extends BaseController {
             const Tenant = await this.getTenant(tenantId);
             const orderTitle = getPurchaseDescription(Cart);
 
-            Promise.all([
+            // Although it's probably not necessary to wait for these to
+            // complete before returning, using async/await will cause
+            // errors to be caught by the catch block.
+            await Promise.all([
                 emailPurchaseReceiptToBuyer(Cart, Tenant, orderTitle),
                 emailPurchaseAlertToAdmin(Cart, orderTitle)
             ]);

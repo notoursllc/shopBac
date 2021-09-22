@@ -160,56 +160,50 @@ async function emailPurchaseReceiptToBuyer(Cart, Tenant, orderTitle) {
 
 
 async function emailPurchaseAlertToAdmin(Cart, orderTitle) {
-    try {
-        const pugConfig = {
-            orderTitle,
-            baseUrl: helpers.getSiteUrl(true),
-            id: Cart.get('id'),
-            shipping_firstName: Cart.get('shipping_firstName'),
-            shipping_lastName: Cart.get('shipping_lastName'),
-            shipping_streetAddress: Cart.get('shipping_streetAddress'),
-            shipping_extendedAddress: Cart.get('shipping_extendedAddress'),
-            shipping_company: Cart.get('shipping_company'),
-            shipping_city: Cart.get('shipping_city'),
-            shipping_state: Cart.get('shipping_state'),
-            shipping_postalCode: Cart.get('shipping_postalCode'),
-            shipping_countryCodeAlpha2: Cart.get('shipping_countryCodeAlpha2'),
-            shipping_email: Cart.get('shipping_email'),
-            sub_total: formatPrice(Cart.get('sub_total')),
-            shipping_total: formatPrice(Cart.get('shipping_total')),
-            sales_tax: formatPrice(Cart.get('sales_tax')),
-            grand_total: formatPrice(Cart.get('grand_total'))
-        }
+    const pugConfig = {
+        orderTitle,
+        baseUrl: helpers.getSiteUrl(true),
+        id: Cart.get('id'),
+        shipping_firstName: Cart.get('shipping_firstName'),
+        shipping_lastName: Cart.get('shipping_lastName'),
+        shipping_streetAddress: Cart.get('shipping_streetAddress'),
+        shipping_extendedAddress: Cart.get('shipping_extendedAddress'),
+        shipping_company: Cart.get('shipping_company'),
+        shipping_city: Cart.get('shipping_city'),
+        shipping_state: Cart.get('shipping_state'),
+        shipping_postalCode: Cart.get('shipping_postalCode'),
+        shipping_countryCodeAlpha2: Cart.get('shipping_countryCodeAlpha2'),
+        shipping_email: Cart.get('shipping_email'),
+        sub_total: formatPrice(Cart.get('sub_total')),
+        shipping_total: formatPrice(Cart.get('shipping_total')),
+        sales_tax: formatPrice(Cart.get('sales_tax')),
+        grand_total: formatPrice(Cart.get('grand_total'))
+    }
 
-        global.logger.info('REQUEST: PostmarkService -> emailPurchaseAlertToAdmin()', {
-            meta: {
-                pugConfig
-            }
-        });
-
-        let html = pug.renderFile(
-            path.join(__dirname, '../email-templates', 'admin-purchase-alert.pug'),
+    global.logger.info('REQUEST: PostmarkService -> emailPurchaseAlertToAdmin()', {
+        meta: {
             pugConfig
-        );
+        }
+    });
 
-        const response = await send({
-            to: process.env.EMAIL_ADMIN,
-            subject: `NEW ORDER: ${orderTitle}`,
-            html: html
-        });
+    let html = pug.renderFile(
+        path.join(__dirname, '../email-templates', 'admin-purchase-alert.pug'),
+        pugConfig
+    );
 
-        global.logger.info('RESPONSE: PostmarkService -> emailPurchaseAlertToAdmin()', {
-            meta: {
-                response
-            }
-        });
+    const response = await send({
+        to: process.env.EMAIL_ADMIN,
+        subject: `NEW ORDER: ${orderTitle}`,
+        html: html
+    });
 
-        return response;
-    }
-    catch(err) {
-        global.logger.error(err);
-        global.bugsnag(err);
-    }
+    global.logger.info('RESPONSE: PostmarkService -> emailPurchaseAlertToAdmin()', {
+        meta: {
+            response
+        }
+    });
+
+    return response;
 }
 
 
