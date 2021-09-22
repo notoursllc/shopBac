@@ -8,13 +8,8 @@ module.exports = function (baseModel, bookshelf) {
 
         hasTimestamps: true,
 
-        visible: [
-            'id',
-            'tenant_id',
-            'email',
-            'active',
-            'created_at',
-            'updated_at'
+        hidden: [
+            'password'
         ]
     });
 };

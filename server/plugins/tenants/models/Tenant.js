@@ -8,14 +8,6 @@ module.exports = function (baseModel, bookshelf) {
 
         hasTimestamps: true,
 
-        visible: [
-            'id',
-            'api_key',
-            'application_name',
-            'application_url',
-            'active',
-            'created_at',
-            'updated_at'
-        ]
+        hidden: []
     });
 };
