@@ -3,7 +3,7 @@ const Boom = require('@hapi/boom');
 const cloneDeep = require('lodash.clonedeep');
 const BaseController = require('../../core/controllers/BaseController');
 const ProductVariantSkuCtrl = require('./ProductVariantSkuCtrl');
-const S3StorageService = require('../../core/services/S3StorageService')
+const CloudflareAPI = require('../../core/services/CloudflareAPI');
 
 
 class ProductVariantCtrl extends BaseController {
@@ -284,11 +284,7 @@ class ProductVariantCtrl extends BaseController {
                     // Any errors here should only be logged
                     // so they don't affect the outcome of this operation
                     try {
-                        if(Array.isArray(images[matchedIndex].variants)) {
-                            images[matchedIndex].variants.forEach((obj) => {
-                                S3StorageService.deleteFile(obj.url);
-                            })
-                        }
+                        CloudflareAPI.deleteImage(images[matchedIndex].third_party_id);
                     }
                     catch(err) {
                         global.logger.error(err);
