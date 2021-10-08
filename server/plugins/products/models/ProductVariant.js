@@ -35,21 +35,6 @@ module.exports = function (baseModel, bookshelf) {
             },
 
             virtuals: {
-                // display_price: function() {
-                //     let price = 0;
-                //     let salePrice = this.get('sale_price') || 0;
-                //     let basePrice = this.get('base_price') || 0;
-
-                //     if(this.get('is_on_sale') && salePrice) {
-                //         price = salePrice;
-                //     }
-                //     else if(basePrice) {
-                //         price = basePrice;
-                //     }
-
-                //     return price;
-                // },
-
                 display_price: function() {
                     const sale_price = this.get('sale_price');
 

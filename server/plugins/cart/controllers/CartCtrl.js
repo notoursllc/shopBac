@@ -59,7 +59,7 @@ class CartCtrl extends BaseController {
             selected_shipping_rate: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             shipping_rate_quote: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             shipping_label_id: getJoiStringOrNull(),
-            sales_tax: Joi.alternatives().try(Joi.number().integer().min(0), Joi.allow(null)),
+            sales_tax_rate: Joi.alternatives().try(Joi.number().integer().min(0), Joi.allow(null)),
             stripe_payment_intent_id: getJoiStringOrNull(),
             paypal_order_id: getJoiStringOrNull(),
 
@@ -126,12 +126,27 @@ class CartCtrl extends BaseController {
     }
 
 
+    /**
+     * NOTE: 'sales_tax_rate' needs to be persisted with the Cart
+     * so the rate at the time of the transaction is known in order
+     * to process refunds. If 'sales_tax_rate' were a virtual
+     * property and the tax rate changed after the transaction, then the
+     * refund amount would be incorrect
+     */
+    upsertCart(data) {
+        return this.upsertModel({
+            sales_tax_rate: parseFloat(process.env.TAX_RATE_CALIFORNIA || '0.09'),
+            ...data
+        });
+    }
+
+
     async getOrCreateCart(id, tenant_id, fetchOptions) {
         const Cart = await this.getActiveCart(id, tenant_id, fetchOptions);
 
         if(!Cart) {
             // create
-            return this.upsertModel({
+            return this.upsertCart({
                 tenant_id
             });
         }
@@ -181,7 +196,7 @@ class CartCtrl extends BaseController {
         });
 
         try {
-            const Cart = await super.upsertModel(request.payload);
+            const Cart = await super.upsertCart(request.payload);
 
             const UpdatedCart = await this.getActiveCart(
                 Cart.get('id'),
@@ -258,7 +273,7 @@ class CartCtrl extends BaseController {
                 }
             }
 
-            const Cart = await super.upsertModel(request.payload);
+            const Cart = await super.upsertCart(request.payload);
 
             const UpdatedCart = await this.getActiveCart(
                 Cart.get('id'),
@@ -648,7 +663,7 @@ class CartCtrl extends BaseController {
         try {
             // Update the cart with the supplied data
             // and close close the cart
-            await super.upsertModel({
+            await super.upsertCart({
                 ...cartUpsertData,
                 id: cartId,
                 closed_at: new Date()

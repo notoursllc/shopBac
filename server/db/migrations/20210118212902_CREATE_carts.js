@@ -36,7 +36,7 @@ module.exports.up = (knex) => {
             t.jsonb('selected_shipping_rate').nullable();
             t.jsonb('shipping_rate_quote').nullable();
             t.string('shipping_label_id').nullable();
-            t.decimal('sales_tax').nullable();
+            t.decimal('sales_tax_rate').defaultTo(0);
             t.string('stripe_payment_intent_id').nullable();
             t.string('paypal_order_id').nullable();
 
