@@ -16,7 +16,7 @@ module.exports.up = (knex) => {
             t.string('billing_city').nullable();
             t.string('billing_state').nullable();
             t.string('billing_postalCode').nullable();
-            t.string('billing_countryCodeAlpha2').nullable();
+            t.string('billing_countryCodeAlpha2', 2).nullable();
             t.string('billing_phone').nullable();
             t.boolean('billing_same_as_shipping').defaultTo(true);
 
@@ -28,7 +28,7 @@ module.exports.up = (knex) => {
             t.string('shipping_city').nullable();
             t.string('shipping_state').nullable();
             t.string('shipping_postalCode').nullable();
-            t.string('shipping_countryCodeAlpha2').nullable();
+            t.string('shipping_countryCodeAlpha2', 2).nullable();
             t.string('shipping_phone').nullable();
             t.string('shipping_email').nullable();
 
