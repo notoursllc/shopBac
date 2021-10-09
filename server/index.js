@@ -90,6 +90,12 @@ function getServer() {
                         routes: {
                             prefix: routePrefix
                         }
+                    },
+                    {
+                        plugin: './plugins/tax-nexus',
+                        routes: {
+                            prefix: routePrefix
+                        }
                     }
                 ]
                 // options: {
