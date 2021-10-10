@@ -81,7 +81,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return CartCtrl.setShippingAddress(request, h);
+                                return CartCtrl.setShippingAddressHandler(request, h);
                             }
                         }
                     },

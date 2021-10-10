@@ -8,7 +8,7 @@ exports.up = function(knex) {
             t.uuid('tenant_id').nullable();
             t.string('countryCodeAlpha2', 2).nullable();
             t.string('state').nullable();
-            t.decimal('tax_rate', 5, 4).defaultTo(0);
+            t.decimal('tax_rate', 6, 5).defaultTo(0);
 
             // TIMESTAMPS
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());

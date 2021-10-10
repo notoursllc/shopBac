@@ -5,6 +5,7 @@ const BaseController = require('../../core/controllers/BaseController');
 const PackageTypeCtrl = require('../../package-types/controllers/PackageTypeCtrl');
 const StripeCtrl = require('./StripeCtrl');
 const PayPalCtrl = require('./PayPalCtrl');
+const TaxNexusCtrl = require('../../tax-nexus/controllers/TaxNexusCtrl');
 
 // third party APIs
 const { emailPurchaseReceiptToBuyer,  emailPurchaseAlertToAdmin, getPurchaseDescription } = require('../services/PostmarkService');
@@ -23,6 +24,7 @@ class CartCtrl extends BaseController {
         this.PackageTypeCtrl = new PackageTypeCtrl(server);
         this.StripeCtrl = new StripeCtrl(server);
         this.PayPalCtrl = new PayPalCtrl(server);
+        this.TaxNexusCtrl = new TaxNexusCtrl(server);
     }
 
 
@@ -59,7 +61,7 @@ class CartCtrl extends BaseController {
             selected_shipping_rate: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             shipping_rate_quote: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             shipping_label_id: getJoiStringOrNull(),
-            sales_tax_rate: Joi.alternatives().try(Joi.number().integer().min(0), Joi.allow(null)),
+            tax_nexus_applied: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             stripe_payment_intent_id: getJoiStringOrNull(),
             paypal_order_id: getJoiStringOrNull(),
 
@@ -126,16 +128,8 @@ class CartCtrl extends BaseController {
     }
 
 
-    /**
-     * NOTE: 'sales_tax_rate' needs to be persisted with the Cart
-     * so the rate at the time of the transaction is known in order
-     * to process refunds. If 'sales_tax_rate' were a virtual
-     * property and the tax rate changed after the transaction, then the
-     * refund amount would be incorrect
-     */
     upsertCart(data) {
         return this.upsertModel({
-            sales_tax_rate: parseFloat(process.env.TAX_RATE_CALIFORNIA || '0.09'),
             ...data
         });
     }
@@ -196,7 +190,7 @@ class CartCtrl extends BaseController {
         });
 
         try {
-            const Cart = await super.upsertCart(request.payload);
+            const Cart = await this.upsertCart(request.payload);
 
             const UpdatedCart = await this.getActiveCart(
                 Cart.get('id'),
@@ -216,12 +210,23 @@ class CartCtrl extends BaseController {
     }
 
 
-    async setShippingAddress(request, h) {
-        global.logger.info('REQUEST: CartCtrl.setShippingAddress', {
+    /**
+     * This is broken out into a separate function because
+     * there is a cost for using the ShipEngine address validation
+     * service.
+     *
+     * TODO: how can I modify this handler so it is not abused
+     * by the client?  Some kind of throttling should happen
+     * so the user can't call the API over and over.
+     */
+    async setShippingAddressHandler(request, h) {
+        global.logger.info('REQUEST: CartCtrl.setShippingAddressHandler', {
             meta: request.payload
         });
 
         try {
+            const tenantId = this.getTenantIdFromAuth(request);
+
             // Save to a variable and then delete because the entire payload
             // is used to upsert the shipping data, and a DB error will orrur
             // if this 'validate' property exists
@@ -244,7 +249,7 @@ class CartCtrl extends BaseController {
 
                 // Hopefully this never happens
                 if(!Array.isArray(response)) {
-                    global.logger.error(`CartCtrl.setShippingAddress - the API resposne was expected to be an array but it is of type: ${typeof data}`, {
+                    global.logger.error(`CartCtrl.setShippingAddressHandler - the API resposne was expected to be an array but it is of type: ${typeof data}`, {
                         meta: { 'API response': data }
                     });
                     throw Boom.badRequest();
@@ -273,11 +278,22 @@ class CartCtrl extends BaseController {
                 }
             }
 
-            const Cart = await super.upsertCart(request.payload);
+            const TaxNexus = await this.TaxNexusCtrl.getModel()
+                .query((qb) => {
+                    qb.where('tenant_id', '=', tenantId);
+                    qb.andWhere('countryCodeAlpha2', '=', request.payload.shipping_countryCodeAlpha2);
+                    qb.andWhere('state', '=', request.payload.shipping_state);
+                })
+                .fetch();
+
+            const Cart = await this.upsertCart({
+                ...request.payload,
+                tax_nexus_applied: TaxNexus ? TaxNexus.toJSON() : null
+            });
 
             const UpdatedCart = await this.getActiveCart(
                 Cart.get('id'),
-                this.getTenantIdFromAuth(request),
+                tenantId,
                 { withRelated: this.getAllCartRelations() }
             );
 
@@ -663,7 +679,7 @@ class CartCtrl extends BaseController {
         try {
             // Update the cart with the supplied data
             // and close close the cart
-            await super.upsertCart({
+            await this.upsertCart({
                 ...cartUpsertData,
                 id: cartId,
                 closed_at: new Date()

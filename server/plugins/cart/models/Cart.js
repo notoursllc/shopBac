@@ -23,6 +23,10 @@ module.exports = function (baseModel, bookshelf, server) {
                     attributes.shipping_rate_quote = JSON.stringify(attributes.shipping_rate_quote)
                 }
 
+                if (attributes.tax_nexus_applied) {
+                    attributes.tax_nexus_applied = JSON.stringify(attributes.tax_nexus_applied)
+                }
+
                 return attributes;
             },
 
@@ -64,30 +68,20 @@ module.exports = function (baseModel, bookshelf, server) {
 
                 /**
                  * Calculate the sales tax amount.
-                 * Pretty simple for now as we only have nexus in CA.
-                 *
                  * https://blog.taxjar.com/sales-tax-and-shipping/
                  */
-                sales_tax: function() {
-                    let taxAmount = 0;
+                 sales_tax: function() {
                     const subTotal = this.get('sub_total');
+                    const tax_nexus_applied = this.get('tax_nexus_applied');
 
-                    if(this.get('shipping_countryCodeAlpha2') === 'US' && subTotal) {
-                        switch(this.get('shipping_state')) {
-                            case 'CA':
-                                // NOTE: shipping is not taxable in CA as long as we show the shipping
-                                // cost as a separate line item (i.e. not included in the price)
-                                taxAmount = subTotal * parseFloat(process.env.TAX_RATE_CALIFORNIA || '0.09');
-                                break;
-
-                            default:
-                        }
-                    }
+                    const taxAmount = subTotal && isObject(tax_nexus_applied) && tax_nexus_applied.tax_rate
+                        ? subTotal * tax_nexus_applied.tax_rate
+                        : 0;
 
                     // accounting.toFixed returns a string, so converting to float:
-                    // return accounting.toFixed(taxAmount, 2);
                     return Math.ceil(taxAmount);
                 },
+
 
                 shipping_total: function() {
                     const obj = this.get('selected_shipping_rate');
