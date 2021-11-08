@@ -6,7 +6,7 @@ const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
 const testHelpers = require('../../testHelpers');
 const { init } = require('../../../../server');
 
-const cartId = '5c09938d-08d1-492d-8a6b-029089ec928e';
+const cartId = '80187e8a-105d-4d00-968b-57f419332337';
 
 describe('ROUTE: /cart', () => {
     let server;
@@ -240,6 +240,54 @@ describe('ROUTE: POST /cart/resend-order-confirmation', {timeout: 20000}, () => 
         });
 
         // console.log("RESEND EMAIL RESPONSE", res)
+        expect(res.statusCode).to.equal(200)
+    });
+
+});
+
+
+describe('ROUTE: GET /cart/refunds', {timeout: 20000}, () => {
+    let server;
+    let cookie;
+
+    beforeEach(async () => {
+        server = await init();
+
+        const res = await server.inject({
+            method: 'POST',
+            url: testHelpers.getApiPrefix('/tenant/member/login'),
+            // headers: testHelpers.getRequestHeader(),
+            payload: {
+                email: process.env.TEST_USERNAME,
+                password: process.env.TEST_PASSWORD
+            }
+        });
+
+        cookie = res.headers['set-cookie'][0].split(';')[0];
+    });
+
+    afterEach(async () => {
+        await server.stop();
+    });
+
+
+    it('should return a list of refunds', async () => {
+        const params = queryString.stringify(
+            {
+                where: ['cart_id', '=', cartId]
+            },
+            { arrayFormat: 'bracket' }
+        );
+
+        const res = await server.inject({
+            method: 'GET',
+            url: testHelpers.getApiPrefix(`/cart/refunds?${params}`),
+            headers: {
+                Cookie: cookie
+            }
+        });
+
+        console.log("REFUND RESPONSE", res.result.data.toJSON())
         expect(res.statusCode).to.equal(200)
     });
 

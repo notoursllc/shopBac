@@ -12,21 +12,15 @@ const after = function (server) {
                 auth: {
                     strategies: ['storeauth', 'session']
                 },
-                handler: (request, h) => {
-                    return MasterTypeCtrl.getPageHandler(request, null, h);
-                }
-            }
-        },
-        {
-            method: 'GET',
-            path: '/master_types/all',
-            options: {
-                description: 'Gets a list of master types',
-                auth: {
-                    strategies: ['storeauth', 'session']
+                validate: {
+                    query: Joi.object({
+                        tenant_id: Joi.string().uuid().required(),
+                        object: Joi.string().max(100),
+                        ...MasterTypeCtrl.getPaginationSchema()
+                    })
                 },
                 handler: (request, h) => {
-                    return MasterTypeCtrl.getAllHandler(request, null, h);
+                    return MasterTypeCtrl.fetchTenantDataHandler(request, h);
                 }
             }
         },

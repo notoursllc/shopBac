@@ -1,8 +1,10 @@
+const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const queryString = require('query-string');
 const isString = require('lodash.isstring');
 const forEach = require('lodash.foreach');
 const isObject = require('lodash.isobject');
+const SqlOperatorBuilder = require('../services/SqlOperatorBuilder.js');
 
 class BaseController {
 
@@ -14,6 +16,23 @@ class BaseController {
 
     getModel() {
         return this.server.app.bookshelf.model(this.modelName)
+    }
+
+
+    getPaginationSchema() {
+        return {
+            _sort: Joi.string().max(50),
+
+            _pageSize: Joi.alternatives().try(
+                Joi.number().integer().min(0),
+                Joi.string().max(5)
+            ),
+
+            _page: Joi.alternatives().try(
+                Joi.number().integer().min(0),
+                Joi.string().max(5)
+            )
+        };
     }
 
 
@@ -157,6 +176,7 @@ class BaseController {
             throw Boom.badRequest(err);
         }
     }
+
 
     getByIdHandler(request, fetchOptions, h) {
         return this.modelForgeFetchHandler(
@@ -439,6 +459,105 @@ class BaseController {
 
         return response;
     }
+
+
+
+    /**
+     *
+     * @param {*} params  - Most likely request.query
+     * @param {*} fetchConfig
+     * @returns Promise
+     * @example:
+     * this.fetchData(
+     *   request.query,
+     *   { withRelated: ['variants'] }
+     * )
+     */
+    fetchData(params, fetchConfig) {
+        let orderBy = null;
+        let orderDir = 'DESC';
+
+        if(params._sort) {
+            const arr = params._sort.split(':');
+            orderBy = arr[0];
+            orderDir = arr[1] || 'DESC'
+        }
+
+        const Model = this.getModel()
+            .query((qb) => {
+                SqlOperatorBuilder.buildFilters(
+                    params,
+                    qb
+                )
+            })
+            .orderBy(orderBy, orderDir);
+
+        if(params._pageSize || params._page) {
+            return Model.fetchPage({
+                pageSize: params._pageSize,
+                page: params._page,
+                ...fetchConfig
+            });
+        }
+
+        return Model.fetchAll({
+            ...fetchConfig
+        });
+    }
+
+
+    /*
+    * NEW
+    */
+    fetchTenantData(request, fetchConfig) {
+        const tenantId = this.getTenantIdFromAuth(request);
+
+        if(!tenantId) {
+            throw Boom.unauthorized();
+        }
+
+        request.query.tenant_id = tenantId;
+        return this.fetchData(request.query, fetchConfig);
+    }
+
+
+    /*
+    * NEW
+    */
+    async fetchTenantDataHandler(request, h, fetchConfig) {
+        try {
+            global.logger.info(`REQUEST: BaseController.fetchTenantDataHandler (${this.modelName})`, {
+                meta: {
+                    query: request.query,
+                    fetchConfig
+                }
+            });
+
+            const Models = await this.fetchTenantData(request, fetchConfig);
+            const pagination = Models ? Models.pagination : null;
+
+            global.logger.info(`RESPONSE: BaseController.fetchTenantDataHandler (${this.modelName})`, {
+                meta: {
+                    // logging the entire products json can be quite large,
+                    // so avoiding it for now, and just logging the pagination data
+                    pagination
+                }
+            });
+
+            return h.apiSuccess(
+                Models,
+                pagination
+            );
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.notFound(err);
+        }
+    }
+
+
+
 
 
     queryHelper(request) {
