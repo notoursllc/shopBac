@@ -1,7 +1,9 @@
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const isFinite = require('lodash.isfinite');
+const isObject = require('lodash.isobject');
 const BaseController = require('../../core/controllers/BaseController');
+const StripeCtrl = require('./StripeCtrl');
 
 const SKU_MAX_QTY_EXCEEDED = 'SKU_MAX_QTY_EXCEEDED';
 
@@ -13,6 +15,7 @@ class CartItemCtrl extends BaseController {
         this.ProductCtrl = new (require('../../products/controllers/ProductCtrl'))(server);
         this.ProductVariantCtrl = new (require('../../products/controllers/ProductVariantCtrl'))(server);
         this.ProductVariantSkuCtrl = new (require('../../products/controllers/ProductVariantSkuCtrl'))(server);
+        this.StripeCtrl = new StripeCtrl(server);
     }
 
 
@@ -408,6 +411,10 @@ class CartItemCtrl extends BaseController {
             throw Boom.badRequest(err);
         }
     }
+
+
+
+
 
 }
 

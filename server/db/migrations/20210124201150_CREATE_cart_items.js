@@ -33,6 +33,7 @@ module.exports.up = (knex) => {
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();
             t.timestamp('deleted_at', true).nullable();
+            t.timestamp('fulfilled_at', true).nullable();
 
             t.index([
                 'id',

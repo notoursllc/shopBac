@@ -1,7 +1,5 @@
 const { DB_TABLES } = require('../../core/services/CoreService');
 const accounting = require('accounting');
-const isObject = require('lodash.isobject');
-const { mimeTypes } = require('file-type');
 
 
 module.exports = function (baseModel, bookshelf) {
@@ -80,26 +78,15 @@ module.exports = function (baseModel, bookshelf) {
                 }
             },
 
-            visible: [
-                'id',
-                // 'tenant_id',
-                'qty',
-
-                'created_at',
-                'updated_at',
-                // 'deleted_at'
-
-                // relations
-                'cart',
-                'product',
-                'product_variant',
-                'product_variant_sku',
-
-                // virtuals
-                'item_price_total',
-                'item_weight_total'
+            hidden: [
+                'tenant_id',
+                'product_id',
+                'product_variant_id',
+                'product_variant_sku_id',
+                'deleted_at'
             ]
         },
+
         {
             /**
              * A simple helper function to find by json property in the 'variant' column

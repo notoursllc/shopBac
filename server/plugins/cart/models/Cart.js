@@ -129,6 +129,11 @@ module.exports = function (baseModel, bookshelf, server) {
                 return this.hasMany('CartItem', 'cart_id');
             },
 
+            // cart_id is the foreign key in CartRefund
+            cart_refunds: function() {
+                return this.hasMany('CartRefund', 'cart_id');
+            },
+
             hidden: [
                 'tenant_id',
                 'deleted_at'

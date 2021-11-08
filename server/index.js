@@ -126,6 +126,6 @@ exports.start = async () => {
 };
 
 process.on('unhandledRejection', (err) => {
-    global.logger.error(err);
+    console.log(err);
     process.exit(1);
 });

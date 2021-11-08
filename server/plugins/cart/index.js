@@ -12,6 +12,7 @@ exports.plugin = {
             function (server) {
                 const CartCtrl = new (require('./controllers/CartCtrl'))(server);
                 const CartItemCtrl = new (require('./controllers/CartItemCtrl'))(server);
+                const CartRefundCtrl = new (require('./controllers/CartRefundCtrl'))(server);
 
                 server.route([
                     {
@@ -106,9 +107,28 @@ exports.plugin = {
                     },
                     {
                         method: 'POST',
+                        path: '/cart/order/resend-confirmation',
+                        options: {
+                            description: 'Re-sends the order confirmation email for a given closed cart',
+                            auth: {
+                                strategies: ['session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid(),
+                                    tenant_id: Joi.string().uuid()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.resendOrderConfirmaionHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'POST',
                         path: '/cart/shipped',
                         options: {
-                            description: 'Sets the as shipped by setting or unsetting the shipped_at value',
+                            description: 'Sets the Cart as shipped by setting or unsetting the shipped_at value',
                             auth: {
                                 strategies: ['session']
                             },
@@ -126,20 +146,39 @@ exports.plugin = {
                     },
                     {
                         method: 'POST',
-                        path: '/cart/resend-order-confirmation',
+                        path: '/cart/refund',
                         options: {
-                            description: 'Re-sends the order confirmation email for a given closed cart',
+                            description: 'Refunds money to the customer',
                             auth: {
                                 strategies: ['session']
                             },
                             validate: {
                                 payload: Joi.object({
-                                    id: Joi.string().uuid(),
-                                    tenant_id: Joi.string().uuid()
+                                    ...CartRefundCtrl.getSchema()
                                 })
                             },
                             handler: (request, h) => {
-                                return CartCtrl.resendOrderConfirmaionHandler(request, h);
+                                return CartRefundCtrl.refundHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: '/cart/refunds',
+                        options: {
+                            description: 'Gets a list of refunds',
+                            auth: {
+                                strategies: ['session']
+                                // strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                query: Joi.object({
+                                    ...CartRefundCtrl.getSchema(),
+                                    ...CartRefundCtrl.getPaginationSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartRefundCtrl.fetchTenantDataHandler(request, h);
                             }
                         }
                     },
@@ -148,7 +187,6 @@ exports.plugin = {
                     /******************
                      * CART ITEM
                      ******************/
-
                     {
                         method: 'POST',
                         path: '/cart/item',
@@ -207,6 +245,7 @@ exports.plugin = {
                             }
                         }
                     },
+
 
 
 
@@ -425,6 +464,11 @@ exports.plugin = {
                 server.app.bookshelf.model(
                     'CartItem',
                     require('./models/CartItem')(baseModel, server.app.bookshelf, server)
+                );
+
+                server.app.bookshelf.model(
+                    'CartRefund',
+                    require('./models/CartRefund')(baseModel, server.app.bookshelf, server)
                 );
             }
         );

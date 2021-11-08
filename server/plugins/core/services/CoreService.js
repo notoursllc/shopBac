@@ -1,7 +1,7 @@
 const DB_TABLES = {
     carts: 'carts',
-    cart_item_returns: 'cart_item_returns',
     cart_items: 'cart_items',
+    cart_refunds: 'cart_refunds',
     payments: 'payments',
     master_types: 'master_types',
     media: 'media',

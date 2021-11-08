@@ -525,9 +525,11 @@ class CartCtrl extends BaseController {
                 meta: request.query
             });
 
+            const tenantId = this.getTenantIdFromAuth(request);
+
             const Cart = await this.getClosedCart(
                 request.query.id,
-                this.getTenantIdFromAuth(request),
+                tenantId,
                 { withRelated: this.getAllCartRelations() }
             );
 
@@ -540,9 +542,15 @@ class CartCtrl extends BaseController {
                 label = await ShipEngineAPI.getShippingLabel(Cart.get('shipping_label_id'));
             }
 
+            const paymentData = await this.getPayment(
+                Cart,
+                tenantId
+            )
+
             return h.apiSuccess({
                 cart: Cart.toJSON(),
-                label: label
+                label: label,
+                payment: paymentData
             });
         }
         catch(err) {
@@ -775,24 +783,15 @@ class CartCtrl extends BaseController {
     }
 
 
-    async getPaymentHandler(request, h) {
-        global.logger.info('REQUEST: CartCtrl.getPaymentHandler', {
-            meta: request.query
+    async getPayment(Cart, tenantId) {
+        global.logger.info('REQUEST: CartCtrl.getPayment', {
+            meta: {
+                cart: Cart.get('id'),
+                tenantId
+            }
         });
 
-        const tenantId = this.getTenantIdFromAuth(request);
         const stripe = await this.StripeCtrl.getStripe(tenantId);
-
-        const Cart = await this.getModel()
-            .query((qb) => {
-                qb.where('id', '=', request.query.id);
-                qb.andWhere('tenant_id', '=', tenantId);
-            })
-            .fetch();
-
-        if(!Cart) {
-            throw new Error('Cart does not exist');
-        }
 
         // Homoginizing the API response so it's the same
         // wether the payment was processed via Stripe or Paypal
@@ -804,172 +803,170 @@ class CartCtrl extends BaseController {
 
         // Stripe
         if(Cart.get('stripe_payment_intent_id')) {
-            const stripePaymentIntent = await stripe.paymentIntents.retrieve(
-                Cart.get('stripe_payment_intent_id')
-            );
+            const stripePaymentIntent = await stripe.paymentIntents.retrieve(Cart.get('stripe_payment_intent_id'));
 
-/*
-// SAMPLE PAYMENT INTENT RESPONSE
-{
-    "id": "pi_0J3th3lUxEbdEgd3nL7YiqJV",
-    "object": "payment_intent",
-    "allowed_source_types": [
-      "card"
-    ],
-    "amount": 1939,
-    "amount_capturable": 0,
-    "amount_received": 1939,
-    "application": null,
-    "application_fee_amount": null,
-    "canceled_at": null,
-    "cancellation_reason": null,
-    "capture_method": "automatic",
-    "charges": {
-      "object": "list",
-      "count": 1,
-      "data": [
-        {
-          "id": "ch_0J3th4lUxEbdEgd3uHT4t0jL",
-          "object": "charge",
-          "amount": 1939,
-          "amount_captured": 1939,
-          "amount_refunded": 0,
-          "application": null,
-          "application_fee": null,
-          "application_fee_amount": null,
-          "balance_transaction": "txn_0J3th5lUxEbdEgd3saEkvZuK",
-          "billing_details": {
-            "address": {
-              "city": "burlingame",
-              "country": "US",
-              "line1": "123 abc st",
-              "line2": null,
-              "postal_code": "94401",
-              "state": "CA"
-            },
-            "email": null,
-            "name": "robert labla",
-            "phone": null
-          },
-          "calculated_statement_descriptor": "Stripe",
-          "captured": true,
-          "card": null,
-          "created": 1624068838,
-          "currency": "usd",
-          "customer": null,
-          "description": null,
-          "destination": null,
-          "dispute": null,
-          "disputed": false,
-          "failure_code": null,
-          "failure_message": null,
-          "fee": 86,
-          "fee_details": [
+            /*
+            // SAMPLE PAYMENT INTENT RESPONSE
             {
-              "amount": 86,
-              "amount_refunded": 0,
-              "application": null,
-              "currency": "usd",
-              "description": "Stripe processing fees",
-              "type": "stripe_fee"
+                "id": "pi_0J3th3lUxEbdEgd3nL7YiqJV",
+                "object": "payment_intent",
+                "allowed_source_types": [
+                "card"
+                ],
+                "amount": 1939,
+                "amount_capturable": 0,
+                "amount_received": 1939,
+                "application": null,
+                "application_fee_amount": null,
+                "canceled_at": null,
+                "cancellation_reason": null,
+                "capture_method": "automatic",
+                "charges": {
+                "object": "list",
+                "count": 1,
+                "data": [
+                    {
+                    "id": "ch_0J3th4lUxEbdEgd3uHT4t0jL",
+                    "object": "charge",
+                    "amount": 1939,
+                    "amount_captured": 1939,
+                    "amount_refunded": 0,
+                    "application": null,
+                    "application_fee": null,
+                    "application_fee_amount": null,
+                    "balance_transaction": "txn_0J3th5lUxEbdEgd3saEkvZuK",
+                    "billing_details": {
+                        "address": {
+                        "city": "burlingame",
+                        "country": "US",
+                        "line1": "123 abc st",
+                        "line2": null,
+                        "postal_code": "94401",
+                        "state": "CA"
+                        },
+                        "email": null,
+                        "name": "robert labla",
+                        "phone": null
+                    },
+                    "calculated_statement_descriptor": "Stripe",
+                    "captured": true,
+                    "card": null,
+                    "created": 1624068838,
+                    "currency": "usd",
+                    "customer": null,
+                    "description": null,
+                    "destination": null,
+                    "dispute": null,
+                    "disputed": false,
+                    "failure_code": null,
+                    "failure_message": null,
+                    "fee": 86,
+                    "fee_details": [
+                        {
+                        "amount": 86,
+                        "amount_refunded": 0,
+                        "application": null,
+                        "currency": "usd",
+                        "description": "Stripe processing fees",
+                        "type": "stripe_fee"
+                        }
+                    ],
+                    "fraud_details": {},
+                    "invoice": null,
+                    "livemode": false,
+                    "metadata": {},
+                    "on_behalf_of": null,
+                    "order": null,
+                    "outcome": {
+                        "network_status": "approved_by_network",
+                        "reason": null,
+                        "risk_level": "normal",
+                        "risk_score": 11,
+                        "seller_message": "Payment complete.",
+                        "type": "authorized"
+                    },
+                    "paid": true,
+                    "payment_intent": "pi_0J3th3lUxEbdEgd3nL7YiqJV",
+                    "payment_method": "pm_0J3th4lUxEbdEgd3HXALrCjJ",
+                    "payment_method_details": {
+                        "card": {
+                        "brand": "visa",
+                        "checks": {
+                            "address_line1_check": "pass",
+                            "address_postal_code_check": "pass",
+                            "cvc_check": "pass"
+                        },
+                        "country": "US",
+                        "exp_month": 11,
+                        "exp_year": 2022,
+                        "fingerprint": "Gwiy8I00xFJzKCpN",
+                        "funding": "credit",
+                        "installments": null,
+                        "last4": "4242",
+                        "network": "visa",
+                        "three_d_secure": null,
+                        "wallet": null
+                        },
+                        "type": "card"
+                    },
+                    "receipt_email": null,
+                    "receipt_number": null,
+                    "receipt_url": "https://pay.stripe.com/receipts/lUxEbdEgd3sGdHsGqutxjTJ1DpfibSxo/ch_0J3th4lUxEbdEgd3uHT4t0jL/rcpt_JhIHXX5kT8SQifOjYTSaDHvHhxZEOKN",
+                    "refunded": false,
+                    "refunds": [],
+                    "review": null,
+                    "shipping": null,
+                    "source": null,
+                    "source_transfer": null,
+                    "statement_description": null,
+                    "statement_descriptor": null,
+                    "statement_descriptor_suffix": null,
+                    "status": "paid",
+                    "transfer_data": null,
+                    "transfer_group": null,
+                    "uncaptured": null
+                    }
+                ],
+                "has_more": false,
+                "total_count": 1,
+                "url": "/v1/charges?payment_intent=pi_0J3th3lUxEbdEgd3nL7YiqJV"
+                },
+                "client_secret": "pi_0J3th3lUxEbdEgd3nL7YiqJV_secret_3qvHqFK3JdIGoxjc3qwvUpAHt",
+                "confirmation_method": "automatic",
+                "created": 1624068837,
+                "currency": "usd",
+                "customer": null,
+                "description": null,
+                "invoice": null,
+                "last_payment_error": null,
+                "livemode": false,
+                "metadata": {},
+                "next_action": null,
+                "next_source_action": null,
+                "on_behalf_of": null,
+                "payment_method": "pm_0J3th4lUxEbdEgd3HXALrCjJ",
+                "payment_method_options": {
+                "card": {
+                    "installments": null,
+                    "network": null,
+                    "request_three_d_secure": "automatic"
+                }
+                },
+                "payment_method_types": [
+                "card"
+                ],
+                "receipt_email": null,
+                "review": null,
+                "setup_future_usage": null,
+                "shipping": null,
+                "source": null,
+                "statement_descriptor": null,
+                "statement_descriptor_suffix": null,
+                "status": "succeeded",
+                "transfer_data": null,
+                "transfer_group": null
             }
-          ],
-          "fraud_details": {},
-          "invoice": null,
-          "livemode": false,
-          "metadata": {},
-          "on_behalf_of": null,
-          "order": null,
-          "outcome": {
-            "network_status": "approved_by_network",
-            "reason": null,
-            "risk_level": "normal",
-            "risk_score": 11,
-            "seller_message": "Payment complete.",
-            "type": "authorized"
-          },
-          "paid": true,
-          "payment_intent": "pi_0J3th3lUxEbdEgd3nL7YiqJV",
-          "payment_method": "pm_0J3th4lUxEbdEgd3HXALrCjJ",
-          "payment_method_details": {
-            "card": {
-              "brand": "visa",
-              "checks": {
-                "address_line1_check": "pass",
-                "address_postal_code_check": "pass",
-                "cvc_check": "pass"
-              },
-              "country": "US",
-              "exp_month": 11,
-              "exp_year": 2022,
-              "fingerprint": "Gwiy8I00xFJzKCpN",
-              "funding": "credit",
-              "installments": null,
-              "last4": "4242",
-              "network": "visa",
-              "three_d_secure": null,
-              "wallet": null
-            },
-            "type": "card"
-          },
-          "receipt_email": null,
-          "receipt_number": null,
-          "receipt_url": "https://pay.stripe.com/receipts/lUxEbdEgd3sGdHsGqutxjTJ1DpfibSxo/ch_0J3th4lUxEbdEgd3uHT4t0jL/rcpt_JhIHXX5kT8SQifOjYTSaDHvHhxZEOKN",
-          "refunded": false,
-          "refunds": [],
-          "review": null,
-          "shipping": null,
-          "source": null,
-          "source_transfer": null,
-          "statement_description": null,
-          "statement_descriptor": null,
-          "statement_descriptor_suffix": null,
-          "status": "paid",
-          "transfer_data": null,
-          "transfer_group": null,
-          "uncaptured": null
-        }
-      ],
-      "has_more": false,
-      "total_count": 1,
-      "url": "/v1/charges?payment_intent=pi_0J3th3lUxEbdEgd3nL7YiqJV"
-    },
-    "client_secret": "pi_0J3th3lUxEbdEgd3nL7YiqJV_secret_3qvHqFK3JdIGoxjc3qwvUpAHt",
-    "confirmation_method": "automatic",
-    "created": 1624068837,
-    "currency": "usd",
-    "customer": null,
-    "description": null,
-    "invoice": null,
-    "last_payment_error": null,
-    "livemode": false,
-    "metadata": {},
-    "next_action": null,
-    "next_source_action": null,
-    "on_behalf_of": null,
-    "payment_method": "pm_0J3th4lUxEbdEgd3HXALrCjJ",
-    "payment_method_options": {
-      "card": {
-        "installments": null,
-        "network": null,
-        "request_three_d_secure": "automatic"
-      }
-    },
-    "payment_method_types": [
-      "card"
-    ],
-    "receipt_email": null,
-    "review": null,
-    "setup_future_usage": null,
-    "shipping": null,
-    "source": null,
-    "statement_descriptor": null,
-    "statement_descriptor_suffix": null,
-    "status": "succeeded",
-    "transfer_data": null,
-    "transfer_group": null
-}
-*/
+            */
 
             // Not everything needs to be returned to the client.
             // Cherry-picking only the data that seems most appropriate
@@ -985,135 +982,134 @@ class CartCtrl extends BaseController {
                 paymentData.payment_method_details = {
                     ...data.payment_method_details
                 }
-
             }
         }
         // Paypal
         else if(Cart.get('paypal_order_id')) {
             const paypalData = await this.PayPalCtrl.getOrder(Cart.get('paypal_order_id'));
 
-/*
-// SAMPLE PAYPAL ORDER RESPONSE
-{
-    "statusCode": 200,
-    "headers": {
-      "cache-control": "max-age=0, no-cache, no-store, must-revalidate",
-      "content-length": "1674",
-      "content-type": "application/json",
-      "date": "Sat, 19 Jun 2021 18:01:47 GMT",
-      "paypal-debug-id": "ae7639518e536",
-      "connection": "close"
-    },
-    "result": {
-      "id": "67A693631X658172K",
-      "intent": "CAPTURE",
-      "status": "COMPLETED",
-      "purchase_units": [
-        {
-          "reference_id": "default",
-          "amount": {
-            "currency_code": "USD",
-            "value": "19.39",
-            "breakdown": {
-              "item_total": {
-                "currency_code": "USD",
-                "value": "11.00"
-              },
-              "shipping": {
-                "currency_code": "USD",
-                "value": "7.40"
-              },
-              "tax_total": {
-                "currency_code": "USD",
-                "value": "0.99"
-              }
-            }
-          },
-          "payee": {
-            "email_address": "gbruins-facilitator@not-ours.com",
-            "merchant_id": "FR8YCDM9SB5TJ",
-            "display_data": {
-              "brand_name": "BreadVan"
-            }
-          },
-          "payments": {
-            "captures": [
-              {
-                "id": "66A01300605931714",
+            /*
+            // SAMPLE PAYPAL ORDER RESPONSE
+            {
+                "statusCode": 200,
+                "headers": {
+                "cache-control": "max-age=0, no-cache, no-store, must-revalidate",
+                "content-length": "1674",
+                "content-type": "application/json",
+                "date": "Sat, 19 Jun 2021 18:01:47 GMT",
+                "paypal-debug-id": "ae7639518e536",
+                "connection": "close"
+                },
+                "result": {
+                "id": "67A693631X658172K",
+                "intent": "CAPTURE",
                 "status": "COMPLETED",
-                "amount": {
-                  "currency_code": "USD",
-                  "value": "19.39"
+                "purchase_units": [
+                    {
+                    "reference_id": "default",
+                    "amount": {
+                        "currency_code": "USD",
+                        "value": "19.39",
+                        "breakdown": {
+                        "item_total": {
+                            "currency_code": "USD",
+                            "value": "11.00"
+                        },
+                        "shipping": {
+                            "currency_code": "USD",
+                            "value": "7.40"
+                        },
+                        "tax_total": {
+                            "currency_code": "USD",
+                            "value": "0.99"
+                        }
+                        }
+                    },
+                    "payee": {
+                        "email_address": "gbruins-facilitator@not-ours.com",
+                        "merchant_id": "FR8YCDM9SB5TJ",
+                        "display_data": {
+                        "brand_name": "BreadVan"
+                        }
+                    },
+                    "payments": {
+                        "captures": [
+                        {
+                            "id": "66A01300605931714",
+                            "status": "COMPLETED",
+                            "amount": {
+                            "currency_code": "USD",
+                            "value": "19.39"
+                            },
+                            "final_capture": true,
+                            "seller_protection": {
+                            "status": "ELIGIBLE",
+                            "dispute_categories": [
+                                "ITEM_NOT_RECEIVED",
+                                "UNAUTHORIZED_TRANSACTION"
+                            ]
+                            },
+                            "seller_receivable_breakdown": {
+                            "gross_amount": {
+                                "currency_code": "USD",
+                                "value": "19.39"
+                            },
+                            "paypal_fee": {
+                                "currency_code": "USD",
+                                "value": "0.86"
+                            },
+                            "net_amount": {
+                                "currency_code": "USD",
+                                "value": "18.53"
+                            }
+                            },
+                            "links": [
+                            {
+                                "href": "https://api.sandbox.paypal.com/v2/payments/captures/66A01300605931714",
+                                "rel": "self",
+                                "method": "GET"
+                            },
+                            {
+                                "href": "https://api.sandbox.paypal.com/v2/payments/captures/66A01300605931714/refund",
+                                "rel": "refund",
+                                "method": "POST"
+                            },
+                            {
+                                "href": "https://api.sandbox.paypal.com/v2/checkout/orders/67A693631X658172K",
+                                "rel": "up",
+                                "method": "GET"
+                            }
+                            ],
+                            "create_time": "2021-06-19T18:01:44Z",
+                            "update_time": "2021-06-19T18:01:44Z"
+                        }
+                        ]
+                    }
+                    }
+                ],
+                "payer": {
+                    "name": {
+                    "given_name": "greg",
+                    "surname": "bruins"
+                    },
+                    "email_address": "gbruins2@not-ours.com",
+                    "payer_id": "84JUWSBRDAB9C",
+                    "address": {
+                    "country_code": "US"
+                    }
                 },
-                "final_capture": true,
-                "seller_protection": {
-                  "status": "ELIGIBLE",
-                  "dispute_categories": [
-                    "ITEM_NOT_RECEIVED",
-                    "UNAUTHORIZED_TRANSACTION"
-                  ]
-                },
-                "seller_receivable_breakdown": {
-                  "gross_amount": {
-                    "currency_code": "USD",
-                    "value": "19.39"
-                  },
-                  "paypal_fee": {
-                    "currency_code": "USD",
-                    "value": "0.86"
-                  },
-                  "net_amount": {
-                    "currency_code": "USD",
-                    "value": "18.53"
-                  }
-                },
+                "create_time": "2021-06-19T18:01:14Z",
+                "update_time": "2021-06-19T18:01:44Z",
                 "links": [
-                  {
-                    "href": "https://api.sandbox.paypal.com/v2/payments/captures/66A01300605931714",
+                    {
+                    "href": "https://api.sandbox.paypal.com/v2/checkout/orders/67A693631X658172K",
                     "rel": "self",
                     "method": "GET"
-                  },
-                  {
-                    "href": "https://api.sandbox.paypal.com/v2/payments/captures/66A01300605931714/refund",
-                    "rel": "refund",
-                    "method": "POST"
-                  },
-                  {
-                    "href": "https://api.sandbox.paypal.com/v2/checkout/orders/67A693631X658172K",
-                    "rel": "up",
-                    "method": "GET"
-                  }
-                ],
-                "create_time": "2021-06-19T18:01:44Z",
-                "update_time": "2021-06-19T18:01:44Z"
-              }
-            ]
-          }
-        }
-      ],
-      "payer": {
-        "name": {
-          "given_name": "greg",
-          "surname": "bruins"
-        },
-        "email_address": "gbruins2@not-ours.com",
-        "payer_id": "84JUWSBRDAB9C",
-        "address": {
-          "country_code": "US"
-        }
-      },
-      "create_time": "2021-06-19T18:01:14Z",
-      "update_time": "2021-06-19T18:01:44Z",
-      "links": [
-        {
-          "href": "https://api.sandbox.paypal.com/v2/checkout/orders/67A693631X658172K",
-          "rel": "self",
-          "method": "GET"
-        }
-      ]
-    }
-}
-*/
+                    }
+                ]
+                }
+            }
+            */
 
             if(isObject(paypalData)) {
                 // Just like the array of charges in the Stripe response,
@@ -1134,13 +1130,44 @@ class CartCtrl extends BaseController {
             }
         }
 
-        global.logger.info('RESPONSE: CartCtrl.getPaymentHandler', {
+        global.logger.info('RESPONSE: CartCtrl.getPayment', {
             meta: {
                 paymentData
             }
         });
 
-        return h.apiSuccess(paymentData);
+        return paymentData;
+    }
+
+
+    async getPaymentHandler(request, h) {
+        try {
+            const tenantId = this.getTenantIdFromAuth(request);
+
+            const Cart = await this.getModel()
+                .query((qb) => {
+                    qb.where('id', '=', request.query.id);
+                    qb.andWhere('tenant_id', '=', tenantId);
+                })
+                .fetch();
+
+            if(!Cart) {
+                throw new Error('Cart does not exist');
+            }
+
+            const paymentData = await this.getPayment(
+                Cart.get('stripe_payment_intent_id'),
+                Cart.get('paypal_order_id'),
+                tenantId
+            )
+
+            return h.apiSuccess(paymentData);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
     }
 
 
