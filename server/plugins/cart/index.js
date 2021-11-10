@@ -37,15 +37,28 @@ exports.plugin = {
                     },
                     {
                         method: 'GET',
-                        path: '/carts',
+                        path: '/carts/closed',
                         options: {
-                            description: 'Gets a list of carts',
+                            description: 'Gets a list of closed carts',
                             auth: {
                                 strategies: ['session']
                                 // strategies: ['storeauth', 'session']
                             },
+                            validate: {
+                                query: Joi.object({
+                                    tenant_id: CartCtrl.getSchema().tenant_id,
+                                    ...CartCtrl.getPaginationSchema(),
+                                    ...CartCtrl.getWithRelatedSchema()
+                                })
+                            },
                             handler: (request, h) => {
-                                return CartCtrl.getPageHandler(request, h);
+                                request.query.closed_at = {null: false};
+
+                                return CartCtrl.fetchTenantDataHandler(
+                                    request,
+                                    h,
+                                    { withRelated: CartCtrl.getWithRelatedFetchConfig(request.query, CartCtrl.getAllCartRelations()) }
+                                );
                             }
                         }
                     },

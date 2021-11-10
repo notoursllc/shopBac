@@ -36,6 +36,37 @@ class BaseController {
     }
 
 
+    getWithRelatedSchema() {
+        return {
+            _withRelated: Joi.string()
+        }
+    }
+
+
+    getWithRelatedFetchConfig(requestQuery, allRelationsObj) {
+        if(!requestQuery._withRelated) {
+            return {};
+        }
+
+        const relations = requestQuery._withRelated.split(',').map(item => item.trim());
+
+        if(relations.includes('*')) {
+            return allRelationsObj
+        }
+        else {
+            let withRelated = {}
+            // Only set if the relation name that was passed exists in allRelationsObj
+            relations.forEach((key) => {
+                if(allRelationsObj.hasOwnProperty(key)) {
+                    withRelated[key] = allRelationsObj[key];
+                }
+            });
+
+            return withRelated;
+        }
+    }
+
+
     /**
      * Creates or updates a model
      * Note this method does not add the tenant_id to the payload

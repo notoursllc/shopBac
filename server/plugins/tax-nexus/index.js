@@ -38,8 +38,15 @@ exports.plugin = {
                             auth: {
                                 strategies: ['session']
                             },
+                            validate: {
+                                query: Joi.object({
+                                    // ...TaxNexusCtrl.getSchema(),
+                                    tenant_id: Joi.string().uuid(),
+                                    ...TaxNexusCtrl.getPaginationSchema()
+                                })
+                            },
                             handler: (request, h) => {
-                                return TaxNexusCtrl.getPageHandler(request, null, h);
+                                return TaxNexusCtrl.fetchTenantDataHandler(request, h);
                             }
                         }
                     },

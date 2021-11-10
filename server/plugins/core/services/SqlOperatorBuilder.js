@@ -1,8 +1,9 @@
-const queryString = require('query-string');
 const qs = require('qs');
 const isObject = require('lodash.isobject');
 
 /**
+ * This pattern was inspired by: https://strapi.oschina.io/documentation/v3.x/content-api/parameters.html#available-operators
+ *
  * No suffix or eq: Equals
  * ne: Not equals
  * lt: Less than
@@ -36,7 +37,8 @@ const isObject = require('lodash.isobject');
     const blacklist = [
         '_pageSize',
         '_page',
-        '_sort'
+        '_sort',
+        '_withRelated'
     ];
 
     let whereUsed = false;
@@ -120,7 +122,7 @@ const isObject = require('lodash.isobject');
                     break;
 
                 case operators.null:
-                    if(propValue === 'true') {
+                    if(propValue === 'true' || propValue === true) {
                         qb.whereNull(prop);
                     }
                     else {
@@ -133,12 +135,6 @@ const isObject = require('lodash.isobject');
 }
 
 
-function buildSort(query) {
-
-}
-
-
 module.exports = {
-    buildFilters,
-    buildSort
+    buildFilters
 };

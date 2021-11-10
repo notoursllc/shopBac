@@ -12,25 +12,17 @@ const after = function (server) {
                 auth: {
                     strategies: ['storeauth', 'session']
                 },
-                handler: (request, h) => {
-                    return PackageTypeCtrl.getPageHandler(request, null, h);
-                }
-            }
-        },
-        {
-            method: 'GET',
-            path: '/package_types/all',
-            options: {
-                description: 'Gets a list of package types',
-                auth: {
-                    strategies: ['storeauth', 'session']
+                validate: {
+                    query: Joi.object({
+                        tenant_id: Joi.string().uuid().required(),
+                        ...PackageTypeCtrl.getPaginationSchema(),
+                    })
                 },
                 handler: (request, h) => {
-                    return PackageTypeCtrl.getAllHandler(request, null, h);
+                    return PackageTypeCtrl.fetchTenantDataHandler(request, h);
                 }
             }
         },
-
         {
             method: 'GET',
             path: '/package_type',
@@ -39,7 +31,8 @@ const after = function (server) {
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required(),
-                        tenant_id: Joi.string().uuid().required()
+                        tenant_id: Joi.string().uuid().required(),
+
                     })
                 },
                 handler: (request, h) => {

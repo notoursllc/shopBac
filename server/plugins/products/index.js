@@ -28,8 +28,19 @@ exports.plugin = {
                             auth: {
                                 strategies: ['storeauth', 'session']
                             },
+                            validate: {
+                                query: Joi.object({
+                                    tenant_id: Joi.string().uuid(),
+                                    ...ProductCtrl.getPaginationSchema(),
+                                    ...ProductCtrl.getWithRelatedSchema()
+                                })
+                            },
                             handler: (request, h) => {
-                                return ProductCtrl.getPageHandler(request, h);
+                                return ProductCtrl.fetchTenantDataHandler(
+                                    request,
+                                    h,
+                                    { withRelated: ProductCtrl.getWithRelatedFetchConfig(request.query, ProductCtrl.getWithRelated()) }
+                                );
                             }
                         }
                     },
@@ -204,21 +215,14 @@ exports.plugin = {
                         path: `${routePrefix}/product/accent_messages`,
                         options: {
                             description: 'Gets a list of product accent messages',
-                            handler: (request, h) => {
-                                return ProductAccentMessageCtrl.getPageHandler(request, null, h);
-                            }
-                        }
-                    },
-                    {
-                        method: 'GET',
-                        path: `${routePrefix}/product/accent_messages/all`,
-                        options: {
-                            description: 'Gets a list of product accent messages',
-                            auth: {
-                                strategies: ['storeauth', 'session']
+                            validate: {
+                                query: Joi.object({
+                                    tenant_id: Joi.string().uuid().required(),
+                                    ...ProductAccentMessageCtrl.getPaginationSchema()
+                                })
                             },
                             handler: (request, h) => {
-                                return ProductAccentMessageCtrl.getAllHandler(request, null, h);
+                                return ProductAccentMessageCtrl.fetchTenantDataHandler(request, h);
                             }
                         }
                     },
@@ -302,19 +306,6 @@ exports.plugin = {
                     },
                     {
                         method: 'GET',
-                        path: `${routePrefix}/product/color_swatches/all`,
-                        options: {
-                            description: 'Gets a list of product color swatches',
-                            auth: {
-                                strategies: ['session']
-                            },
-                            handler: (request, h) => {
-                                return ProductColorSwatchCtrl.getAllHandler(request, null, h);
-                            }
-                        }
-                    },
-                    {
-                        method: 'GET',
                         path: `${routePrefix}/product/color_swatch`,
                         options: {
                             description: 'Gets a product color swatch by ID',
@@ -386,8 +377,14 @@ exports.plugin = {
                         path: `${routePrefix}/product/collections`,
                         options: {
                             description: 'Gets a list of product collections',
+                            validate: {
+                                query: Joi.object({
+                                    tenant_id: Joi.string().uuid().required(),
+                                    ...ProductCollectionCtrl.getPaginationSchema()
+                                })
+                            },
                             handler: (request, h) => {
-                                return ProductCollectionCtrl.getPageHandler(request, null, h);
+                                return ProductCollectionCtrl.fetchTenantDataHandler(request, h);
                             }
                         }
                     },
@@ -461,26 +458,6 @@ exports.plugin = {
                      ******************************/
                     {
                         method: 'GET',
-                        path: `${routePrefix}/product/data_tables`,
-                        options: {
-                            description: 'Gets a list of product data tables',
-                            handler: (request, h) => {
-                                return ProductDataTableCtrl.getPageHandler(request, null, h);
-                            }
-                        }
-                    },
-                    {
-                        method: 'GET',
-                        path: `${routePrefix}/product/data_tables/all`,
-                        options: {
-                            description: 'Gets a list of product data tables',
-                            handler: (request, h) => {
-                                return ProductDataTableCtrl.getAllHandler(request, null, h);
-                            }
-                        }
-                    },
-                    {
-                        method: 'GET',
                         path: `${routePrefix}/product/data_table`,
                         options: {
                             description: 'Gets a product data table by ID',
@@ -492,6 +469,22 @@ exports.plugin = {
                             },
                             handler: (request, h) => {
                                 return ProductDataTableCtrl.getByIdHandler(request, null, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/data_tables`,
+                        options: {
+                            description: 'Gets a list of product data tables',
+                            validate: {
+                                query: Joi.object({
+                                    tenant_id: Joi.string().uuid().required(),
+                                    ...ProductDataTableCtrl.getPaginationSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductDataTableCtrl.fetchTenantDataHandler(request, h);
                             }
                         }
                     },
