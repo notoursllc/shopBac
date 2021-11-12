@@ -28,7 +28,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return MediaCtrl.getByIdHandler(request, null, h);
+                                return MediaCtrl.fetchOneForTenantHandler(request, h);
                             }
                         }
                     },

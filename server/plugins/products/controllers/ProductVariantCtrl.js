@@ -96,7 +96,7 @@ class ProductVariantCtrl extends BaseController {
 
 
     getWithRelated() {
-        const related = [
+        return [
             {
                 skus: (query) => {
                     // query.where('published', '=', true);
@@ -104,8 +104,15 @@ class ProductVariantCtrl extends BaseController {
                 }
             },
         ];
+    }
 
-        return related;
+
+    fetchOneForTenantHandler(request, h) {
+        return super.fetchOneForTenantHandler(
+            request,
+            h,
+            { withRelated: this.getWithRelatedFetchConfig(request.query, this.getWithRelated()) }
+        );
     }
 
 

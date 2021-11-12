@@ -118,6 +118,24 @@ class CartCtrl extends BaseController {
     }
 
 
+    fetchAllForTenantHandler(request, h) {
+        return super.fetchAllForTenantHandler(
+            request,
+            h,
+            { withRelated: this.getWithRelatedFetchConfig(request.query, this.getAllCartRelations()) }
+        );
+    }
+
+
+    fetchOneForTenantHandler(request, h) {
+        return super.fetchOneForTenantHandler(
+            request,
+            h,
+            { withRelated: this.getWithRelatedFetchConfig(request.query, this.getAllCartRelations()) }
+        );
+    }
+
+
     getTenant(tenantId) {
         return this.server.app.bookshelf
             .model('Tenant')
@@ -160,28 +178,28 @@ class CartCtrl extends BaseController {
     }
 
 
-    async getByIdHandler(request, h) {
-        global.logger.info('REQUEST: CartCtrl.getByIdHandler', {
-            meta: request.query
-        });
+    // async getByIdHandler(request, h) {
+    //     global.logger.info('REQUEST: CartCtrl.getByIdHandler', {
+    //         meta: request.query
+    //     });
 
-        const Cart = await this.getModel()
-            .query((qb) => {
-                qb.where('id', '=', request.query.id);
-                qb.andWhere('tenant_id', '=', this.getTenantIdFromAuth(request));
-            })
-            .fetch(
-                { withRelated: request.query.relations ? this.getAllCartRelations() : null }
-            );
+    //     const Cart = await this.getModel()
+    //         .query((qb) => {
+    //             qb.where('id', '=', request.query.id);
+    //             qb.andWhere('tenant_id', '=', this.getTenantIdFromAuth(request));
+    //         })
+    //         .fetch(
+    //             { withRelated: request.query.relations ? this.getAllCartRelations() : null }
+    //         );
 
-        global.logger.info('RESPONSE: CartCtrl.getByIdHandler', {
-            meta: null
-        });
+    //     global.logger.info('RESPONSE: CartCtrl.getByIdHandler', {
+    //         meta: null
+    //     });
 
-        return h.apiSuccess(
-            this.getMaskedCart(Cart)
-        );
-    }
+    //     return h.apiSuccess(
+    //         this.getMaskedCart(Cart)
+    //     );
+    // }
 
 
     async upsertHandler(request, h) {
@@ -1274,24 +1292,22 @@ class CartCtrl extends BaseController {
 
 
 
-    async getPageHandler(request, h) {
-        const Models = await this.getPage(
-            request,
-            request.query.viewAllRelated ? this.getAllCartRelations() : null
-        );
-        const pagination = Models ? Models.pagination : null;
+    // async getPageHandler(request, h) {
+    //     const Models = await this.getPage(
+    //         request,
+    //         request.query.viewAllRelated ? this.getAllCartRelations() : null
+    //     );
+    //     const pagination = Models ? Models.pagination : null;
 
-        return h.apiSuccess(
-            Models.serialize(
-                // override the 'hidden' prop in the Cart model so everything is returned
-                // if the auth strategy is 'session'
-                this.isAuthStrategy_session(request) ? { hidden: [] } : null
-            ),
-            pagination
-        );
-    }
-
-
+    //     return h.apiSuccess(
+    //         Models.serialize(
+    //             // override the 'hidden' prop in the Cart model so everything is returned
+    //             // if the auth strategy is 'session'
+    //             this.isAuthStrategy_session(request) ? { hidden: [] } : null
+    //         ),
+    //         pagination
+    //     );
+    // }
     /*******************
      * PAYPAL related
      ********************/

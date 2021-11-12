@@ -15,15 +15,6 @@ class TenantBaseCtrl extends BaseController {
         );
     }
 
-
-    getByIdHandler(request, h) {
-        return this.modelForgeFetchHandler(
-            { id: request.query.id },
-            null,
-            h
-        );
-    }
-
 }
 
 

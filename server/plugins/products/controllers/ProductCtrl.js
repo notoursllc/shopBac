@@ -117,13 +117,7 @@ class ProductCtrl extends BaseController {
     }
 
 
-    getPageHandler(request, h) {
-        return super.getPageHandler(
-            request,
-            this.getWithRelated(),
-            h
-        );
-    }
+
 
 
     deleteVariants(Product, tenantId) {
@@ -223,12 +217,21 @@ class ProductCtrl extends BaseController {
     }
 
 
-    getAdminProductList(request, h) {
-        const withSelectedOpts = [
-            'skus'
-        ];
+    fetchAllForTenantHandler(request, h) {
+        return super.fetchAllForTenantHandler(
+            request,
+            h,
+            { withRelated: this.getWithRelatedFetchConfig(request.query, this.getWithRelated()) }
+        );
+    }
 
-        return this.getPageHandler(request, withSelectedOpts, h);
+
+    fetchOneForTenantHandler(request, h) {
+        return super.fetchOneForTenantHandler(
+            request,
+            h,
+            { withRelated: this.getWithRelatedFetchConfig(request.query, this.getWithRelated()) }
+        );
     }
 
 

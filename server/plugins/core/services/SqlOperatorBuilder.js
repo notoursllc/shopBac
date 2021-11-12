@@ -1,8 +1,28 @@
 const qs = require('qs');
 const isObject = require('lodash.isobject');
+const isString = require('lodash.isstring');
+
+function parseQuery(query) {
+    if(isObject(query)) {
+        for(let key in query) {
+            const orig = query[key];
+
+            try {
+                if(isString(query[key])) {
+                    query[key] = JSON.parse(query[key]);
+                }
+            }
+            catch(err) {
+                query[key] = orig
+            }
+        }
+    }
+}
+
 
 /**
  * This pattern was inspired by: https://strapi.oschina.io/documentation/v3.x/content-api/parameters.html#available-operators
+ * Knex query builder cheat sheet:  https://devhints.io/knex
  *
  * No suffix or eq: Equals
  * ne: Not equals
@@ -18,8 +38,8 @@ const isObject = require('lodash.isobject');
  * https://knexjs.org/#Builder-wheres
  */
  function buildFilters(query, qb) {
-    const parsed = qs.parse(query);
-    // console.log("PARSED STR", parsed);
+    // const parsed = qs.parse(query);
+    parseQuery(query);
 
     const operators = {
         eq: 'eq',
@@ -31,7 +51,8 @@ const isObject = require('lodash.isobject');
         in: 'in',
         nin: 'nin',
         like: 'like',
-        null: 'null'
+        null: 'null',
+        bitwise_and_gt: 'bitwise_and_gt'
     }
 
     const blacklist = [
@@ -67,19 +88,19 @@ const isObject = require('lodash.isobject');
         return clean;
     }
 
-    for(let prop in parsed) {
+    for(let prop in query) {
         let operator = operators.eq;
-        let propValue = parsed[prop];
+        let propValue = query[prop];
 
         // an operator modifier is an object
         // with only one key, which is one of the
         // keys in 'operators'
-        if(isObject(parsed[prop])) {
-            const keys = Object.keys(parsed[prop]);
+        if(isObject(query[prop])) {
+            const keys = Object.keys(query[prop]);
 
             if(keys.length === 1 && operators.hasOwnProperty(keys[0])) {
                 operator = keys[0];
-                propValue = parsed[prop][operator];
+                propValue = query[prop][operator];
             }
         }
 
@@ -128,6 +149,11 @@ const isObject = require('lodash.isobject');
                     else {
                         qb.whereNotNull(prop);
                     }
+                    break;
+
+                case operators.bitwise_and_gt:
+                    // qb.whereRaw(`${prop} & ? > 0`, [propValue])
+                    qb.whereRaw(`${prop} & ? > ${parseFloat(propValue.right)}`, [propValue.left])
                     break;
             }
         }

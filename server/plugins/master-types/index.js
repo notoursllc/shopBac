@@ -20,7 +20,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return MasterTypeCtrl.fetchTenantDataHandler(request, h);
+                    return MasterTypeCtrl.fetchAllForTenantHandler(request, h);
                 }
             }
         },
@@ -36,7 +36,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return MasterTypeCtrl.getByIdHandler(request, null, h);
+                    return MasterTypeCtrl.fetchOneForTenantHandler(request, h);
                 }
             }
         },

@@ -10,7 +10,7 @@
     "knex:migrate": "node ./node_modules/knex/bin/cli.js migrate:latest --knexfile ./knexfile.js",
     "knex:seed": "node --require dotenv/config ./node_modules/knex/bin/cli.js seed:run --knexfile ./knexfile.js",
     "start": "cross-env NODE_ENV=production node server/start.js",
-    "test:server": "NODE_ENV=test LOG_LEVEL=error lab -v test/server",
+    "test": "NODE_ENV=test LOG_LEVEL=error lab -v test/server",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore ."
   },
   "repository": {
@@ -59,6 +59,7 @@
     "lodash.clonedeep": "^4.5.0",
     "lodash.foreach": "^4.5.0",
     "lodash.isfinite": "^3.3.2",
+    "lodash.isfunction": "^3.0.9",
     "lodash.isobject": "^3.0.2",
     "lodash.isstring": "^4.0.1",
     "nodemailer": "^6.4.6",

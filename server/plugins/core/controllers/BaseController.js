@@ -1,9 +1,5 @@
 const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
-const queryString = require('query-string');
-const isString = require('lodash.isstring');
-const forEach = require('lodash.foreach');
-const isObject = require('lodash.isobject');
 const SqlOperatorBuilder = require('../services/SqlOperatorBuilder.js');
 
 class BaseController {
@@ -16,6 +12,26 @@ class BaseController {
 
     getModel() {
         return this.server.app.bookshelf.model(this.modelName)
+    }
+
+
+    getTenantIdFromAuth(request) {
+        return request.auth.credentials.tenant_id;
+    }
+
+
+    getAuthStrategy(request) {
+        return request.auth.strategy;
+    }
+
+
+    isAuthStrategy_storeauth(request) {
+        return this.getAuthStrategy(request) === 'storeauth';
+    }
+
+
+    isAuthStrategy_session(request) {
+        return this.getAuthStrategy(request) === 'session';
     }
 
 
@@ -43,6 +59,14 @@ class BaseController {
     }
 
 
+    /**
+     * The .fetch() knex method acceps an object of options that
+     * can include a param called "withRelated".
+     * *
+     * @param {*} requestQuery
+     * @param {*} allRelationsObj   All possible relations
+     * @returns
+     */
     getWithRelatedFetchConfig(requestQuery, allRelationsObj) {
         if(!requestQuery._withRelated) {
             return {};
@@ -50,6 +74,7 @@ class BaseController {
 
         const relations = requestQuery._withRelated.split(',').map(item => item.trim());
 
+        // Return all of the relations if the query contains '*'
         if(relations.includes('*')) {
             return allRelationsObj
         }
@@ -196,315 +221,18 @@ class BaseController {
     }
 
 
-    async modelForgeFetchHandler(forgeOptions, fetchOptions, h) {
-        try {
-            const ModelInstance = await this.modelForgeFetch(forgeOptions, fetchOptions);
-            return h.apiSuccess(ModelInstance);
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-            throw Boom.badRequest(err);
-        }
-    }
-
-
-    getByIdHandler(request, fetchOptions, h) {
-        return this.modelForgeFetchHandler(
-            {
-                id: request.query.id,
-                tenant_id: this.getTenantIdFromAuth(request)
-            },
-            fetchOptions,
-            h
-        );
-    }
-
-
-    async getAll(request, withRelated) {
-        try {
-            global.logger.info(`REQUEST: BaseController.getAll (${this.modelName})`);
-
-            const queryData = {
-                ...this.queryHelperParseWhere(request),
-                ...this.queryHelperParseSort(request)
-            };
-
-            const config = {};
-
-            if(Array.isArray(withRelated) && withRelated.length) {
-                config.withRelated = withRelated;
-            }
-
-            const Models = await this.getModel()
-                .query((qb) => {
-                    // qb.innerJoin('manufacturers', 'cars.manufacturer_id', 'manufacturers.id');
-                    // qb.groupBy('cars.id');
-
-                    if(queryData.where) {
-                        qb.where(queryData.where[0], queryData.where[1], queryData.where[2]);
-                    }
-
-                    if(queryData.whereRaw) {
-                        if(queryData.whereRaw.length === 1) {
-                            qb.whereRaw(queryData.whereRaw);
-                        }
-                        else {
-                            qb.whereRaw(queryData.whereRaw.shift(), queryData.whereRaw);
-                        }
-                    }
-
-                    if(queryData.andWhere) {
-                        forEach(queryData.andWhere, function(arr) {
-                            qb.andWhere(arr[0], arr[1], arr[2]);
-                        });
-                    }
-
-                    // tenant id
-                    const tid = this.getTenantIdFromAuth(request);
-                    if(tid) {
-                        qb.andWhere('tenant_id', '=', tid);
-                    }
-                })
-                .orderBy(queryData.orderBy, queryData.orderDir)
-                .fetchAll(config);
-
-            global.logger.info(`RESPONSE: BaseController.getAll (${this.modelName})`, {
-                meta: {
-                    num_results: Models ? Models.length : 0
-                }
-            });
-
-            return Models;
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-            throw Boom.badRequest(err);
-        }
-    }
-
-
-    async getAllHandler(request, withRelated, h) {
-        try {
-            const Models = await this.getAll(request, withRelated);
-            return h.apiSuccess(Models);
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-            throw Boom.badRequest(err);
-        }
-    }
-
-
-    async getAllFromQueryBuffer(queryBufferModiferFn) {
-        try {
-            global.logger.info(`REQUEST: BaseController.getAllFromQueryBuffer (${this.modelName})`);
-
-            const Models = await this.getModel().query(queryBufferModiferFn).fetchAll();
-
-            global.logger.info(`RESPONSE: BaseController.getAllFromQueryBuffer (${this.modelName})`, {
-                meta: Models ? Models.toJSON() : null
-            });
-
-            return Models;
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-            throw Boom.badRequest(err);
-        }
-    }
-
-
-    async getAllFromQueryBufferHandler(h, queryBufferModiferFn) {
-        try {
-            const Models = await this.getAllFromQueryBuffer(queryBufferModiferFn);
-            return h.apiSuccess(Models);
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-            throw Boom.badRequest(err);
-        }
-    }
-
-
-    getPage(request, withRelated) {
-        const queryData = this.queryHelper(request);
-        let config = {};
-
-        if(queryData.hasOwnProperty('limit') && queryData.limit) {
-            config.limit = queryData.limit;
-
-            if(queryData.hasOwnProperty('offset')) {
-                config.offset = queryData.offset;
-            }
-        }
-        else {
-            config = {
-                pageSize: queryData.pageSize || 100,
-                page: queryData.page || 1
-            };
-        }
-
-        if(isObject(withRelated) || (Array.isArray(withRelated) && withRelated.length)) {
-            config.withRelated = withRelated;
-        }
-
-        return this.getModel()
-            .query((qb) => {
-                // qb.innerJoin('manufacturers', 'cars.manufacturer_id', 'manufacturers.id');
-                // qb.groupBy('cars.id');
-
-                // Attempting to pass null from the query string (queryData.where[2])
-                // will result in queryData.where[2] being '' (an empty string).
-                // Therefore, checking for a special string "NULL" and setting the value
-                // to null in that case
-                if(queryData.where) {
-                    qb.where(
-                        queryData.where[0],
-                        queryData.where[1],
-                        queryData.where[2] === 'NULL' ? null : queryData.where[2]
-                    );
-                }
-
-                if(queryData.whereRaw) {
-                    if(queryData.whereRaw.length === 1) {
-                        qb.whereRaw(queryData.whereRaw);
-                    }
-                    else {
-                        qb.whereRaw(queryData.whereRaw.shift(), queryData.whereRaw);
-                    }
-                }
-
-                if(queryData.andWhere) {
-                    forEach(queryData.andWhere, function(arr) {
-                        qb.andWhere(arr[0], arr[1], arr[2]);
-                    });
-                }
-
-                // tenant id
-                const tid = this.getTenantIdFromAuth(request);
-                if(tid) {
-                    qb.andWhere('tenant_id', '=', tid);
-                }
-            })
-            .orderBy(queryData.orderBy, queryData.orderDir)
-            .fetchPage(config);
-    }
-
-
-    async getPageHandler(request, withRelatedConfig, h) {
-        try {
-            global.logger.info(`REQUEST: BaseController.getPageHandler (${this.modelName})`, {
-                meta: {
-                    query: request.query,
-                    withRelatedConfig
-                }
-            });
-
-            const Models = await this.getPage(request, withRelatedConfig);
-            const pagination = Models ? Models.pagination : null;
-
-            global.logger.info(`RESPONSE: BaseController.getPageHandler (${this.modelName})`, {
-                meta: {
-                    // logging the entire products json can be quite large,
-                    // so avoiding it for now, and just logging the pagination data
-                    pagination
-                }
-            });
-
-            return h.apiSuccess(
-                Models,
-                pagination
-            );
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-            throw Boom.notFound(err);
-        }
-    }
-
-
-    queryHelperParseWhere(request) {
-        const response = {
-            where: null,
-            whereRaw: null,
-            andWhere: null
-        };
-
-        const parsed = queryString.parse(request.url.search, {arrayFormat: 'bracket'});
-
-        if(parsed.whereRaw) {
-            response.whereRaw = parsed.whereRaw;
-        }
-        if(parsed.where) {
-            response.where = parsed.where;
-
-            // and where:
-            // andWhere: [ 'product_type_id,=,3', 'total_inventory_count,>,0' ]
-            if(parsed.andWhere) {
-                const andWhere = [];
-
-                if(Array.isArray(parsed.andWhere)) {
-                    forEach(parsed.andWhere, (val) => {
-                        if(isString(val)) {
-                            val = val.split(',').map((item) => {
-                                return item.trim();
-                            });
-                        }
-
-                        if(Array.isArray(val) && val.length === 3) {
-                            andWhere.push(val);
-                        }
-                    });
-
-                    if(andWhere.length) {
-                        response.andWhere = andWhere;
-                    }
-                }
-            }
-        }
-
-        return response;
-    }
-
-
-    queryHelperParseSort(request) {
-        const response = {
-            orderBy: null,
-            orderDir: 'DESC',
-        };
-
-        const parsed = queryString.parse(request.url.search, {arrayFormat: 'bracket'});
-
-        if(parsed.sortDesc) {
-            response.orderDir = parsed.sortDesc === 'true' ? 'DESC' : 'ASC';
-        }
-        if(parsed.sortBy) {
-            response.orderBy = parsed.sortBy;
-        }
-
-        return response;
-    }
-
-
-
     /**
      *
      * @param {*} params  - Most likely request.query
      * @param {*} fetchConfig
      * @returns Promise
      * @example:
-     * this.fetchData(
+     * this.fetchAll(
      *   request.query,
      *   { withRelated: ['variants'] }
      * )
      */
-    fetchData(params, fetchConfig) {
+    fetchAll(params, fetchConfig) {
         let orderBy = null;
         let orderDir = 'DESC';
 
@@ -537,10 +265,21 @@ class BaseController {
     }
 
 
-    /*
-    * NEW
-    */
-    fetchTenantData(request, fetchConfig) {
+    fetchOne(params, fetchConfig) {
+        return this.getModel()
+            .query((qb) => {
+                SqlOperatorBuilder.buildFilters(
+                    params,
+                    qb
+                )
+            })
+            .fetch({
+                ...fetchConfig
+            });
+    }
+
+
+    fetchOneForTenant(request, fetchConfig) {
         const tenantId = this.getTenantIdFromAuth(request);
 
         if(!tenantId) {
@@ -548,26 +287,64 @@ class BaseController {
         }
 
         request.query.tenant_id = tenantId;
-        return this.fetchData(request.query, fetchConfig);
+        return this.fetchOne(request.query, fetchConfig);
     }
 
 
-    /*
-    * NEW
-    */
-    async fetchTenantDataHandler(request, h, fetchConfig) {
+    fetchAllForTenant(request, fetchConfig) {
+        const tenantId = this.getTenantIdFromAuth(request);
+
+        if(!tenantId) {
+            throw Boom.unauthorized();
+        }
+
+        request.query.tenant_id = tenantId;
+        return this.fetchAll(request.query, fetchConfig);
+    }
+
+
+    async fetchOneForTenantHandler(request, h, fetchConfig) {
         try {
-            global.logger.info(`REQUEST: BaseController.fetchTenantDataHandler (${this.modelName})`, {
+            global.logger.info(`REQUEST: BaseController.fetchOneForTenantHandler (${this.modelName})`, {
                 meta: {
                     query: request.query,
                     fetchConfig
                 }
             });
 
-            const Models = await this.fetchTenantData(request, fetchConfig);
+            const Model = await this.fetchOneForTenant(request, fetchConfig);
+
+            global.logger.info(`RESPONSE: BaseController.fetchOneForTenantHandler (${this.modelName})`, {
+                meta: {
+                    model: Model ? Model.toJSON() : null
+                }
+            });
+
+            return h.apiSuccess(
+                Model
+            );
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.notFound(err);
+        }
+    }
+
+
+    async fetchAllForTenantHandler(request, h, fetchConfig) {
+        try {
+            global.logger.info(`REQUEST: BaseController.fetchAllForTenantHandler (${this.modelName})`, {
+                meta: {
+                    query: request.query,
+                    fetchConfig
+                }
+            });
+
+            const Models = await this.fetchAllForTenant(request, fetchConfig);
             const pagination = Models ? Models.pagination : null;
 
-            global.logger.info(`RESPONSE: BaseController.fetchTenantDataHandler (${this.modelName})`, {
+            global.logger.info(`RESPONSE: BaseController.fetchAllForTenantHandler (${this.modelName})`, {
                 meta: {
                     // logging the entire products json can be quite large,
                     // so avoiding it for now, and just logging the pagination data
@@ -586,51 +363,6 @@ class BaseController {
             throw Boom.notFound(err);
         }
     }
-
-
-
-
-
-    queryHelper(request) {
-        const response = {
-            pageSize: null,
-            page: null,
-            limit: null,
-            ...this.queryHelperParseWhere(request),
-            ...this.queryHelperParseSort(request),
-        };
-
-        const parsed = queryString.parse(request.url.search, {arrayFormat: 'bracket'});
-
-        if(parsed.pageSize) {
-            response.pageSize = parseInt(parsed.pageSize, 10) || null;
-        }
-        if(parsed.page) {
-            response.page = parseInt(parsed.page, 10) || null;
-        }
-        if(parsed.limit) {
-            response.limit = parseInt(parsed.limit, 10) || null;
-        }
-
-        return response;
-    }
-
-
-    getTenantIdFromAuth(request) {
-        return request.auth.credentials.tenant_id;
-    }
-
-
-    getAuthStrategy(request) {
-        return request.auth.strategy;
-    }
-    isAuthStrategy_storeauth(request) {
-        return this.getAuthStrategy(request) === 'storeauth';
-    }
-    isAuthStrategy_session(request) {
-        return this.getAuthStrategy(request) === 'session';
-    }
-
 }
 
 module.exports = BaseController;

@@ -19,7 +19,7 @@ const after = function (server) {
                     })
                 },
                 handler: (request, h) => {
-                    return PackageTypeCtrl.fetchTenantDataHandler(request, h);
+                    return PackageTypeCtrl.fetchAllForTenantHandler(request, h);
                 }
             }
         },
@@ -31,16 +31,14 @@ const after = function (server) {
                 validate: {
                     query: Joi.object({
                         id: Joi.string().uuid().required(),
-                        tenant_id: Joi.string().uuid().required(),
-
+                        tenant_id: Joi.string().uuid().required()
                     })
                 },
                 handler: (request, h) => {
-                    return PackageTypeCtrl.getByIdHandler(request, null, h);
+                    return PackageTypeCtrl.fetchOneForTenantHandler(request, h);
                 }
             }
         },
-
         {
             method: 'POST',
             path: '/package_type',

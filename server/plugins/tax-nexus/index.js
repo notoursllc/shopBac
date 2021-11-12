@@ -26,7 +26,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return TaxNexusCtrl.getByIdHandler(request, null, h);
+                                return TaxNexusCtrl.fetchOneForTenantHandler(request, h);
                             }
                         }
                     },
@@ -46,7 +46,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return TaxNexusCtrl.fetchTenantDataHandler(request, h);
+                                return TaxNexusCtrl.fetchAllForTenantHandler(request, h);
                             }
                         }
                     },

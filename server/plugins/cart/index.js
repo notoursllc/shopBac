@@ -27,11 +27,11 @@ exports.plugin = {
                                 query: Joi.object({
                                     id: Joi.string().uuid(),
                                     tenant_id: Joi.string().uuid(),
-                                    relations: Joi.boolean().optional()
+                                    ...CartCtrl.getWithRelatedSchema()
                                 })
                             },
                             handler: (request, h) => {
-                                return CartCtrl.getByIdHandler(request, h);
+                                return CartCtrl.fetchOneForTenantHandler(request, h);
                             }
                         }
                     },
@@ -54,7 +54,7 @@ exports.plugin = {
                             handler: (request, h) => {
                                 request.query.closed_at = {null: false};
 
-                                return CartCtrl.fetchTenantDataHandler(
+                                return CartCtrl.fetchAllForTenantHandler(
                                     request,
                                     h,
                                     { withRelated: CartCtrl.getWithRelatedFetchConfig(request.query, CartCtrl.getAllCartRelations()) }
@@ -171,7 +171,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return CartRefundCtrl.refundHandler(request, h);
+                                return CartRefundCtrl.addRefundHandler(request, h);
                             }
                         }
                     },
@@ -191,7 +191,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return CartRefundCtrl.fetchTenantDataHandler(request, h);
+                                return CartRefundCtrl.fetchAllForTenantHandler(request, h);
                             }
                         }
                     },

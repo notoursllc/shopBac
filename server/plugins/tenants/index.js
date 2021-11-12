@@ -79,41 +79,7 @@ exports.plugin = {
                 server.route([
 
                     /*
-                    {
-                        method: 'GET',
-                        path: '/tenants',
-                        options: {
-                            description: 'Gets a list of tenants',
-                            handler: (request, h) => {
-                                return TenantCtrl.getPageHandler(request, null, h);
-                            }
-                        }
-                    },
-                    {
-                        method: 'GET',
-                        path: '/tenants/all',
-                        options: {
-                            description: 'Gets a list of tenants',
-                            handler: (request, h) => {
-                                return TenantCtrl.getAllHandler(request, null, h);
-                            }
-                        }
-                    },
-                    {
-                        method: 'GET',
-                        path: '/tenant',
-                        options: {
-                            description: 'Gets a Tenant by ID',
-                            validate: {
-                                query: Joi.object({
-                                    id: Joi.string().uuid().required()
-                                })
-                            },
-                            handler: (request, h) => {
-                                return TenantCtrl.getByIdHandler(request, h);
-                            }
-                        }
-                    },
+
                     {
                         method: 'POST',
                         path: '/tenant',

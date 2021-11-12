@@ -31,16 +31,17 @@ exports.plugin = {
                             validate: {
                                 query: Joi.object({
                                     tenant_id: Joi.string().uuid(),
+                                    published: Joi.boolean(),
+                                    sub_type: Joi.alternatives().try(
+                                        Joi.number().integer().positive(),
+                                        Joi.string()
+                                    ),
                                     ...ProductCtrl.getPaginationSchema(),
                                     ...ProductCtrl.getWithRelatedSchema()
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductCtrl.fetchTenantDataHandler(
-                                    request,
-                                    h,
-                                    { withRelated: ProductCtrl.getWithRelatedFetchConfig(request.query, ProductCtrl.getWithRelated()) }
-                                );
+                                return ProductCtrl.fetchAllForTenantHandler(request, h);
                             }
                         }
                     },
@@ -56,15 +57,11 @@ exports.plugin = {
                                 query: Joi.object({
                                     id: Joi.string().uuid(),
                                     tenant_id: Joi.string().uuid(),
-                                    viewAllRelated: Joi.boolean().optional()
+                                    ...ProductCtrl.getWithRelatedSchema()
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductCtrl.getByIdHandler(
-                                    request,
-                                    { withRelated: ProductCtrl.getWithRelated() },
-                                    h
-                                );
+                                return ProductCtrl.fetchOneForTenantHandler(request, h);
                             }
                         }
                     },
@@ -141,15 +138,11 @@ exports.plugin = {
                                 query: Joi.object({
                                     id: Joi.string().uuid().required(),
                                     tenant_id: Joi.string().uuid().required(),
-                                    skus: Joi.string().valid('true', 'false')
+                                    ...ProductCtrl.getWithRelatedSchema()
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductVariantCtrl.getByIdHandler(
-                                    request,
-                                    request.query.skus === 'true' ? { withRelated: ['skus'] } : null,
-                                    h
-                                );
+                                return ProductVariantCtrl.fetchOneForTenantHandler(request, h);
                             }
                         }
                     },
@@ -201,7 +194,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductVariantSkuCtrl.getByIdHandler(request, null, h);
+                                return ProductVariantSkuCtrl.fetchOneForTenantHandler(request, h);
                             }
                         }
                     },
@@ -215,6 +208,9 @@ exports.plugin = {
                         path: `${routePrefix}/product/accent_messages`,
                         options: {
                             description: 'Gets a list of product accent messages',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
                             validate: {
                                 query: Joi.object({
                                     tenant_id: Joi.string().uuid().required(),
@@ -222,7 +218,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductAccentMessageCtrl.fetchTenantDataHandler(request, h);
+                                return ProductAccentMessageCtrl.fetchAllForTenantHandler(request, h);
                             }
                         }
                     },
@@ -238,7 +234,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductAccentMessageCtrl.getByIdHandler(request, null, h);
+                                return ProductAccentMessageCtrl.fetchOneForTenantHandler(request, h);
                             }
                         }
                     },
@@ -300,7 +296,7 @@ exports.plugin = {
                         options: {
                             description: 'Gets a list of product color swatches',
                             handler: (request, h) => {
-                                return ProductColorSwatchCtrl.getPageHandler(request, null, h);
+                                return ProductColorSwatchCtrl.fetchAllForTenantHandler(request, h);
                             }
                         }
                     },
@@ -316,7 +312,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductColorSwatchCtrl.getByIdHandler(request, null, h);
+                                return ProductColorSwatchCtrl.fetchOneForTenantHandler(request, h);
                             }
                         }
                     },
@@ -384,7 +380,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductCollectionCtrl.fetchTenantDataHandler(request, h);
+                                return ProductCollectionCtrl.fetchAllForTenantHandler(request, h);
                             }
                         }
                     },
@@ -400,7 +396,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductCollectionCtrl.getByIdHandler(request, null, h);
+                                return ProductCollectionCtrl.fetchOneForTenantHandler(request, h);
                             }
                         }
                     },
@@ -468,7 +464,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductDataTableCtrl.getByIdHandler(request, null, h);
+                                return ProductDataTableCtrl.fetchOneForTenantHandler(request, h);
                             }
                         }
                     },
@@ -484,7 +480,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductDataTableCtrl.fetchTenantDataHandler(request, h);
+                                return ProductDataTableCtrl.fetchAllForTenantHandler(request, h);
                             }
                         }
                     },
@@ -536,20 +532,6 @@ exports.plugin = {
                         }
                     },
 
-
-                    /******************************
-                     * Admin routes
-                     ******************************/
-                    {
-                        method: 'GET',
-                        path: `${routePrefix}/admin/products`,
-                        options: {
-                            description: 'Gets a list of products',
-                            handler: (request, h) => {
-                                return ProductCtrl.getAdminProductList(request, h);
-                            }
-                        }
-                    },
 
                     /******************************
                      * Other

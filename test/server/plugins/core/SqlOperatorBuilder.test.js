@@ -23,6 +23,8 @@ describe('SqlOperatorBuilder.buildOperators()', () => {
             test12: {null: false},
         });
 
+        console.log("STRINGIFIED PARAMS", params)
+
         const mockData = {};
 
         // Kind of mocking the query builder that should be
