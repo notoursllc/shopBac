@@ -1160,23 +1160,15 @@ class CartCtrl extends BaseController {
 
     async getPaymentHandler(request, h) {
         try {
-            const tenantId = this.getTenantIdFromAuth(request);
-
-            const Cart = await this.getModel()
-                .query((qb) => {
-                    qb.where('id', '=', request.query.id);
-                    qb.andWhere('tenant_id', '=', tenantId);
-                })
-                .fetch();
+            const Cart = await this.fetchOneForTenant(request);
 
             if(!Cart) {
                 throw new Error('Cart does not exist');
             }
 
             const paymentData = await this.getPayment(
-                Cart.get('stripe_payment_intent_id'),
-                Cart.get('paypal_order_id'),
-                tenantId
+                Cart,
+                this.getTenantIdFromAuth(request)
             )
 
             return h.apiSuccess(paymentData);
