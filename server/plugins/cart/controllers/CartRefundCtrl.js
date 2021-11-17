@@ -3,7 +3,7 @@ const Boom = require('@hapi/boom');
 const BaseController = require('../../core/controllers/BaseController');
 const StripeCtrl = require('./StripeCtrl');
 const { config } = require('aws-sdk');
-
+const { DB_TABLES } = require('../../core/services/CoreService');
 class CartRefundCtrl extends BaseController {
 
     constructor(server) {
@@ -54,9 +54,9 @@ class CartRefundCtrl extends BaseController {
     }
 
 
-    async refundHandler(request, h) {
+    async addRefundHandler(request, h) {
         try {
-            global.logger.info('REQUEST: CartRefundCtrl.refundHandler', {
+            global.logger.info('REQUEST: CartRefundCtrl.addRefundHandler', {
                 meta: request.payload
             });
 
@@ -91,29 +91,21 @@ class CartRefundCtrl extends BaseController {
             // If refunds have previously been given for this Cart,
             // then this new refund must be <= the remainder of the
             // Cart.grand_total - total of previously given refunds
-            const CartRefunds = await this.fetchData(
-                {
-                    cart_id: request.payload.cart_id,
-                    tenant_id: tenantId
-                }
-            );
-
-            const previousRefundTotal = 0;
-            CartRefunds.forEach((CartRefund) => {
-                previousRefundTotal += parseInt(CartRefund.get('refund_total'));
-            });
+            const refundSummary = await this.getCartRefundSummary(tenantId, request.payload.cart_id);
+            const previousRefundTotal = parseInt(refundSummary.total, 10) || 0;
+            console.log("REFUND SUMMARY", refundSummary, previousRefundTotal);
 
             const availableRefund = parseInt(Cart.get('grand_total')) - previousRefundTotal;
             if(refundAmount > availableRefund) {
                 global.logger.info(
-                    `CartRefundCtrl.refundHandler - the requested refund ${refundAmount} is
+                    `CartRefundCtrl.addRefundHandler - the requested refund ${refundAmount} is
                     greater than the remaining available refund for this cart ${availableRefund}`, {
                     meta: {
                         cart: Cart.toJSON()
                     }
                 });
 
-                throw new Error('Refund amount is greater than the remaining refund that is available for this cart');
+                throw new Error('Refund amount is greater than the remaining funds available for this cart.');
             }
 
             // This shouldn't happen, but checking just in case I guess
@@ -155,17 +147,17 @@ class CartRefundCtrl extends BaseController {
             // Create a CartRefund
             const CartRefund = await this.getModel().create({
                 tenant_id: tenantId,
+                cart_id: request.payload.cart_id,
                 subtotal_refund: request.payload.subtotal_refund,
                 shipping_refund: request.payload.shipping_refund,
                 tax_refund: request.payload.tax_refund,
                 reason: request.payload.reason,
                 description: request.payload.description,
                 stripe_refund_id: stripeRefund ? stripeRefund.id : null,
-                paypal_refund_id: payPalRefund ? payPalRefund.id : null, // TODO: is this right?
-                cart_id: request.payload.cart_id
+                paypal_refund_id: payPalRefund ? payPalRefund.id : null // TODO: is this right?
             });
 
-            global.logger.info('RESPONSE: CartItemCtrl.refundHandler', {
+            global.logger.info('RESPONSE: CartItemCtrl.addRefundHandler', {
                 meta: CartRefund.toJSON()
             });
 
@@ -179,8 +171,52 @@ class CartRefundCtrl extends BaseController {
     }
 
 
+    async getCartRefundSummary(tenant_id, cart_id) {
+        /*
+        * Note: this also could have been written as:
+        * .select('cart_id', this.server.app.knex.raw('SUM(total_refund) AS total'))
+        */
+        const results = await this.server.app.knex
+            .select('cart_id')
+            .sum({ total: 'total_refund' })
+            .from(DB_TABLES.cart_refunds)
+            .where('tenant_id', tenant_id)
+            .where('cart_id', cart_id)
+            .groupBy('cart_id');
+
+        return results[0];
+    }
 
 
+    async getCartRefundSummaryHandler(request, h) {
+        try {
+            const tenantId = this.getTenantIdFromAuth(request);
+
+            if(!tenantId) {
+                throw Boom.unauthorized();
+            }
+
+            const results = await this.getCartRefundSummary(
+                tenantId,
+                request.query.cart_id
+            )
+
+            global.logger.info(`RESPONSE: CartRefundCtrl.getCartRefundSummary`, {
+                meta: {
+                    results
+                }
+            });
+
+            return h.apiSuccess(
+                results
+            )
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.notFound(err);
+        }
+    }
 }
 
 module.exports = CartRefundCtrl;

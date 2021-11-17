@@ -5,7 +5,7 @@ class PayPalCtrl {
 
     constructor(server) {
         this.server = server;
-        this.paypayEnvironment = null;
+        this.payPalEnvironment = null;
         this.paypalHttpClient = null;
     }
 
@@ -14,8 +14,8 @@ class PayPalCtrl {
      * Set up and return PayPal JavaScript SDK environment with PayPal access credentials.
      */
     async getPaypalEnvironment(tenantId) {
-        if(this.paypayEnvironment) {
-            return this.paypayEnvironment;
+        if(this.payPalEnvironment) {
+            return this.payPalEnvironment;
         }
 
         const Tenant = await this.server.app.bookshelf
@@ -36,13 +36,13 @@ class PayPalCtrl {
         }
 
         if(process.env.PAYPAL_MODE === 'sandbox') {
-            this.paypayEnvironment = new paypalSdk.core.SandboxEnvironment(clientId, clientSecret);
+            this.payPalEnvironment = new paypalSdk.core.SandboxEnvironment(clientId, clientSecret);
         }
         else {
-            this.paypayEnvironment = new paypalSdk.core.ProductionEnvironment(clientId, clientSecret);
+            this.payPalEnvironment = new paypalSdk.core.ProductionEnvironment(clientId, clientSecret);
         }
 
-        return this.paypayEnvironment;
+        return this.payPalEnvironment;
     }
 
 
@@ -52,19 +52,16 @@ class PayPalCtrl {
      * credentials context. Use this instance to invoke PayPal APIs, provided the
      * credentials have access.
      */
-    getPaypalClient() {
+    async getPaypalClient(tenantId) {
         if(this.paypalHttpClient) {
             return this.paypalHttpClient;
         }
 
-        this.paypalHttpClient = new paypalSdk.core.PayPalHttpClient( this.getPaypalEnvironment() );
+        const payPalEnv = await this.getPaypalEnvironment(tenantId);
+        this.paypalHttpClient = new paypalSdk.core.PayPalHttpClient(payPalEnv);
         return this.paypalHttpClient;
     }
 
-
-    exec(request) {
-        return this.getPaypalClient().execute(request);
-    }
 
 
     getUSD(cents) {
@@ -82,16 +79,17 @@ class PayPalCtrl {
     /*
     * https://developer.paypal.com/docs/checkout/reference/server-integration/get-transaction/
     */
-    getOrder(orderId) {
+    async getOrder(orderId, tenantId) {
         const request = new paypalSdk.orders.OrdersGetRequest(orderId);
-        return this.exec(request);
+        const client = await this.getPaypalClient(tenantId);
+        return client.execute(request);
     }
 
 
     /*
     * https://github.com/paypal/Checkout-NodeJS-SDK/blob/master/samples/CaptureIntentExamples/createOrder.js
     */
-    createPaymentFromCart(Cart) {
+    async createPaymentFromCart(Cart) {
         const req = new paypalSdk.orders.OrdersCreateRequest();
         req.prefer("return=representation");
 
@@ -191,18 +189,20 @@ class PayPalCtrl {
         };
 
         req.requestBody(requestConfig);
-        return this.exec(req);
+        const client = await this.getPaypalClient(Cart.get('tenant_id'));
+        return client.execute(req);
     }
 
 
     /*
     * https://github.com/paypal/Checkout-NodeJS-SDK/blob/master/samples/CaptureIntentExamples/captureOrder.js
     */
-    executePayment(paymentToken) {
+    async executePayment(paymentToken, tenantId) {
         const req = new paypalSdk.orders.OrdersCaptureRequest(paymentToken);
         req.requestBody({});
 
-        return this.exec(req);
+        const client = await this.getPaypalClient(tenantId);
+        return client.execute(req);
     }
 
 }

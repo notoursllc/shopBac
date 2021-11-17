@@ -1,15 +1,14 @@
 const { DB_TABLES } = require('../../plugins/core/services/CoreService');
 
-exports.up = function(knex) {
-    return knex.schema.createTable(
+exports.up = async function(knex) {
+    await knex.schema.createTable(
         DB_TABLES.cart_refunds,
         (t) => {
             t.uuid('id').primary();
             t.uuid('tenant_id').nullable();
-            t.integer('subtotal_refund').nullable().defaultTo(null);
-            t.integer('shipping_refund').nullable().defaultTo(null);
-            t.integer('tax_refund').nullable().defaultTo(null);
-
+            t.integer('subtotal_refund').notNullable().defaultTo(0);
+            t.integer('shipping_refund').notNullable().defaultTo(0);
+            t.integer('tax_refund').notNullable().defaultTo(0);
             t.text('description').nullable();
             t.string('reason').nullable(); // duplicate, fraudulent, requested_by_customer
             t.string('stripe_refund_id').nullable();
@@ -33,6 +32,11 @@ exports.up = function(knex) {
             ]);
         }
     );
+
+    return knex.raw(`
+        ALTER TABLE ${DB_TABLES.cart_refunds}
+        ADD COLUMN total_refund integer GENERATED ALWAYS AS (subtotal_refund + shipping_refund + tax_refund) STORED;
+    `);
 };
 
 exports.down = function(knex) {

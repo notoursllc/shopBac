@@ -88,8 +88,8 @@ class CartCtrl extends BaseController {
         return this.getModel()
             .query((qb) => {
                 qb.where('closed_at', 'IS', null);
-                qb.andWhere('id', '=', id);
-                qb.andWhere('tenant_id', '=', tenant_id);
+                qb.where('id', '=', id);
+                qb.where('tenant_id', '=', tenant_id);
             })
             .fetch(fetchOptions);
     }
@@ -99,8 +99,8 @@ class CartCtrl extends BaseController {
         return this.getModel()
             .query((qb) => {
                 qb.where('closed_at', 'is not', null);
-                qb.andWhere('id', '=', id);
-                qb.andWhere('tenant_id', '=', tenant_id);
+                qb.where('id', '=', id);
+                qb.where('tenant_id', '=', tenant_id);
             })
             .fetch(fetchOptions);
     }
@@ -1004,7 +1004,10 @@ class CartCtrl extends BaseController {
         }
         // Paypal
         else if(Cart.get('paypal_order_id')) {
-            const paypalData = await this.PayPalCtrl.getOrder(Cart.get('paypal_order_id'));
+            const paypalData = await this.PayPalCtrl.getOrder(
+                Cart.get('paypal_order_id'),
+                tenantId
+            );
 
             /*
             // SAMPLE PAYPAL ORDER RESPONSE
@@ -1342,11 +1345,16 @@ class CartCtrl extends BaseController {
                 meta: request.payload
             });
 
-            const paypalTransaction = await this.PayPalCtrl.executePayment(request.payload.token);
+            const tenantId = this.getTenantIdFromAuth(request);
+
+            const paypalTransaction = await this.PayPalCtrl.executePayment(
+                request.payload.token,
+                tenantId
+            );
 
             await this.onPaymentSuccess(
                 request.payload.id,
-                this.getTenantIdFromAuth(request),
+                tenantId,
                 {
                     paypal_order_id: paypalTransaction.result.id
                 }

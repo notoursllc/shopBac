@@ -195,6 +195,25 @@ exports.plugin = {
                             }
                         }
                     },
+                    {
+                        method: 'GET',
+                        path: '/cart/refunds/summary',
+                        options: {
+                            description: 'Gets a list of refunds',
+                            auth: {
+                                strategies: ['session']
+                            },
+                            validate: {
+                                query: Joi.object({
+                                    cart_id: Joi.string().uuid().required(),
+                                    ...CartRefundCtrl.getTenantIdSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartRefundCtrl.getCartRefundSummaryHandler(request, h);
+                            }
+                        }
+                    },
 
 
                     /******************
@@ -421,7 +440,7 @@ exports.plugin = {
                             validate: {
                                 payload: Joi.object({
                                     id: Joi.string().uuid().required(),
-                                    tenant_id: Joi.string().uuid().required()
+                                    ...CartCtrl.getTenantIdSchema()
                                 })
                             },
                             handler: (request, h) => {

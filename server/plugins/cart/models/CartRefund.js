@@ -17,16 +17,6 @@ module.exports = function (baseModel, bookshelf) {
                 return this.belongsTo('Cart', 'cart_id');
             },
 
-            virtuals: {
-                refund_total: function() {
-                    let total = 0;
-                    total += parseInt(this.get('subtotal_refund') || 0, 10);
-                    total += parseInt(this.get('shipping_refund') || 0, 10);
-                    total += parseInt(this.get('tax_refund') || 0, 10);
-                    return total;
-                }
-            },
-
             hidden: [
                 'tenant_id',
                 'deleted_at'

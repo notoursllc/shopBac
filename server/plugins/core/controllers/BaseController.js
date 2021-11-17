@@ -52,6 +52,13 @@ class BaseController {
     }
 
 
+    getTenantIdSchema() {
+        return {
+            tenant_id: Joi.string().uuid().required()
+        }
+    }
+
+
     getWithRelatedSchema() {
         return {
             _withRelated: Joi.string()
