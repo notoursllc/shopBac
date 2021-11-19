@@ -2,6 +2,7 @@ const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const BaseController = require('../../core/controllers/BaseController');
 const StripeCtrl = require('./StripeCtrl');
+const PayPalCtrl = require('./PayPalCtrl');
 const { config } = require('aws-sdk');
 const { DB_TABLES } = require('../../core/services/CoreService');
 class CartRefundCtrl extends BaseController {
@@ -10,6 +11,7 @@ class CartRefundCtrl extends BaseController {
         super(server, 'CartRefund');
         this.CartCtrl = new (require('./CartCtrl'))(server);
         this.StripeCtrl = new StripeCtrl(server);
+        this.PayPalCtrl = new PayPalCtrl(server);
     }
 
     getSchema(isUpdate) {
@@ -120,8 +122,8 @@ class CartRefundCtrl extends BaseController {
                 throw new Error('Error processing refund');
             }
 
-            let stripeRefund = null;
-            let payPalRefund = null;
+            let stripeRefundId = null;
+            let payPalRefundId = null;
 
             // Process the refund via Stripe
             if(Cart.get('stripe_payment_intent_id')) {
@@ -137,11 +139,18 @@ class CartRefundCtrl extends BaseController {
                     }
                 }
 
-                stripeRefund = await stripe.refunds.create(stripeArgs);
-                console.log("STRIPE REFUND RESPOSNE", stripeRefund)
+                const stripeRefund = await stripe.refunds.create(stripeArgs);
+                // console.log("STRIPE REFUND RESPOSNE", stripeRefund)
+                stripeRefundId = stripeRefund.id;
             }
             else {
-                // TODO
+                const refundResponse = await this.PayPalCtrl.refundPayment(
+                    Cart.get('paypal_order_id'),
+                    tenantId,
+                    refundAmount
+                );
+                // console.log("PAYPAL REFUND RESPOSNE", refundResponse)
+                payPalRefundId = refundResponse.result.id
             }
 
             // Create a CartRefund
@@ -153,8 +162,8 @@ class CartRefundCtrl extends BaseController {
                 tax_refund: request.payload.tax_refund,
                 reason: request.payload.reason,
                 description: request.payload.description,
-                stripe_refund_id: stripeRefund ? stripeRefund.id : null,
-                paypal_refund_id: payPalRefund ? payPalRefund.id : null // TODO: is this right?
+                stripe_refund_id: stripeRefundId || null,
+                paypal_refund_id: payPalRefundId || null
             });
 
             global.logger.info('RESPONSE: CartItemCtrl.addRefundHandler', {
@@ -184,7 +193,7 @@ class CartRefundCtrl extends BaseController {
             .where('cart_id', cart_id)
             .groupBy('cart_id');
 
-        return results[0];
+        return results[0] || { cart_id: cart_id, total: 0 };
     }
 
 

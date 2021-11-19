@@ -1009,6 +1009,10 @@ class CartCtrl extends BaseController {
                 tenantId
             );
 
+            // global.logger.info('PAYPAL ORDER"', {
+            //     meta: paypalData
+            // });
+
             /*
             // SAMPLE PAYPAL ORDER RESPONSE
             {

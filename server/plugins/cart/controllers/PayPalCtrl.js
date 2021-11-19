@@ -63,6 +63,11 @@ class PayPalCtrl {
     }
 
 
+    async sendRequest(tenantId, request) {
+        const client = await this.getPaypalClient(tenantId);
+        return client.execute(request);
+    }
+
 
     getUSD(cents) {
         if(cents) {
@@ -81,8 +86,40 @@ class PayPalCtrl {
     */
     async getOrder(orderId, tenantId) {
         const request = new paypalSdk.orders.OrdersGetRequest(orderId);
-        const client = await this.getPaypalClient(tenantId);
-        return client.execute(request);
+        return this.sendRequest(tenantId, request);
+    }
+
+
+    /*
+    * https://developer.paypal.com/docs/checkout/integration-features/refunds/
+    */
+    async refundPayment(orderId, tenantId, amount) {
+        const paypalData = await this.getOrder(orderId, tenantId);
+        let paymentCaptureId = null;
+
+        // console.log("PAYPAL ORDER", orderId, tenantId, paypalData.result.purchase_units[0].payments.captures)
+
+        if(Array.isArray(paypalData.result.purchase_units) && Array.isArray(paypalData.result.purchase_units[0].payments.captures)) {
+            paypalData.result.purchase_units[0].payments.captures.forEach((obj) => {
+                if(obj.final_capture) {
+                    paymentCaptureId = obj.id;
+                }
+            });
+        }
+
+        if(!paymentCaptureId) {
+            throw new Error("A PayPal payment capture ID could not be found for this transaction");
+        }
+
+        const request = new paypalSdk.payments.CapturesRefundRequest(paymentCaptureId);
+        request.requestBody({
+            amount: {
+                currency_code: 'USD',
+                value: this.getUSD(amount)
+            }
+        });
+
+        return this.sendRequest(tenantId, request);
     }
 
 
@@ -189,8 +226,7 @@ class PayPalCtrl {
         };
 
         req.requestBody(requestConfig);
-        const client = await this.getPaypalClient(Cart.get('tenant_id'));
-        return client.execute(req);
+        return this.sendRequest(Cart.get('tenant_id'), req);
     }
 
 
@@ -201,8 +237,7 @@ class PayPalCtrl {
         const req = new paypalSdk.orders.OrdersCaptureRequest(paymentToken);
         req.requestBody({});
 
-        const client = await this.getPaypalClient(tenantId);
-        return client.execute(req);
+        return this.sendRequest(tenantId, req);
     }
 
 }
