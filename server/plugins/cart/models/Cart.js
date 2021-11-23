@@ -71,11 +71,19 @@ module.exports = function (baseModel, bookshelf, server) {
                  * https://blog.taxjar.com/sales-tax-and-shipping/
                  */
                  sales_tax: function() {
-                    const subTotal = this.get('sub_total');
                     const tax_nexus_applied = this.get('tax_nexus_applied');
+                    let taxableAmount = 0;
 
-                    const taxAmount = subTotal && isObject(tax_nexus_applied) && tax_nexus_applied.tax_rate
-                        ? subTotal * tax_nexus_applied.tax_rate
+                    this.related('cart_items').forEach((CartItem) => {
+                        const ProductVariant = CartItem.related('product_variant');
+
+                        if(ProductVariant && ProductVariant.get('is_taxable')) {
+                            taxableAmount += CartItem.get('item_price_total') || 0;
+                        }
+                    });
+
+                    const taxAmount = taxableAmount && isObject(tax_nexus_applied) && tax_nexus_applied.tax_rate
+                        ? taxableAmount * tax_nexus_applied.tax_rate
                         : 0;
 
                     // accounting.toFixed returns a string, so converting to float:
