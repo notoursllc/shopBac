@@ -64,6 +64,7 @@ class CartCtrl extends BaseController {
             tax_nexus_applied: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             stripe_payment_intent_id: getJoiStringOrNull(),
             paypal_order_id: getJoiStringOrNull(),
+            is_gift: Joi.boolean(),
 
             created_at: Joi.date(),
             updated_at: Joi.date(),
