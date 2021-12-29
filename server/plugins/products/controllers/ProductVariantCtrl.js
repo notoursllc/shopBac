@@ -3,8 +3,7 @@ const Boom = require('@hapi/boom');
 const cloneDeep = require('lodash.clonedeep');
 const BaseController = require('../../core/controllers/BaseController');
 const ProductVariantSkuCtrl = require('./ProductVariantSkuCtrl');
-const CloudflareAPI = require('../../core/services/CloudflareAPI');
-
+const BunnyAPI = require('../../core/services/BunnyAPI');
 
 class ProductVariantCtrl extends BaseController {
 
@@ -291,7 +290,7 @@ class ProductVariantCtrl extends BaseController {
                     // Any errors here should only be logged
                     // so they don't affect the outcome of this operation
                     try {
-                        CloudflareAPI.deleteImage(images[matchedIndex].third_party_id);
+                        BunnyAPI.deleteFile(images[matchedIndex].url);
                     }
                     catch(err) {
                         global.logger.error(err);

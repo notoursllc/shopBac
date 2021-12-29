@@ -4,8 +4,9 @@ const Joi = require('@hapi/joi');
 const Boom = require('@hapi/boom');
 const BaseController = require('../../core/controllers/BaseController');
 // const { resizeBufferToMultipleImages } = require('../../core/services/ImageService');
-const { postImage } = require('../../core/services/CloudflareAPI');
+const BunnyAPI = require('../../core/services/BunnyAPI');
 const isObject = require('lodash.isobject');
+const uuidV4 = require('uuid/v4');
 
 class MediaCtrl extends BaseController {
 
@@ -37,18 +38,23 @@ class MediaCtrl extends BaseController {
             global.logger.info('REQUEST: MediaCtrl.imageUpsertHandler', {
                 meta: {
                     tenant_id: tenant_id,
-                    file: request.payload.file ? true : false
+                    // file: request.payload.file ? true : false
                 }
             });
 
-            const res = await postImage(request.payload.file);
+            const url = await BunnyAPI.uploadFile(
+                'images',
+                `${Date.now()}-${request.payload.file.filename}`,
+                request.payload.file
+            );
 
             const Media = await this.upsertModel({
                 tenant_id: tenant_id,
                 resource_type: 'IMAGE',
                 alt_text: null,
                 ordinal: 0,
-                third_party_id: isObject(res) ? res.id : null
+                url: url
+                // third_party_id: isObject(res) ? res.id : null
             });
 
             global.logger.info('RESONSE: MediaCtrl.imageUpsertHandler', {
