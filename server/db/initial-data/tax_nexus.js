@@ -17,7 +17,7 @@ exports.seed = (knex) => {
                     {
                         countryCodeAlpha2: 'US',
                         state: 'CA',
-                        tax_rate: '0.09'
+                        tax_rate: '0.0965'
 
                     }
                 ].forEach((obj) => {
