@@ -96,7 +96,13 @@ function getServer() {
                         routes: {
                             prefix: routePrefix
                         }
-                    }
+                    },
+                    {
+                        plugin: './plugins/heros',
+                        routes: {
+                            prefix: routePrefix
+                        }
+                    },
                 ]
                 // options: {
                 //     once: false
