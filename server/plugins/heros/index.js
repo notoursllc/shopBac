@@ -43,6 +43,7 @@ exports.plugin = {
                             validate: {
                                 query: Joi.object({
                                     tenant_id: Joi.string().uuid().required(),
+                                    published: Joi.boolean(),
                                     ...HeroCtrl.getPaginationSchema()
                                 })
                             },
