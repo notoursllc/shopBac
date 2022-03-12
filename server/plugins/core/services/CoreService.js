@@ -8,6 +8,7 @@ const DB_TABLES = {
     media: 'media',
     package_types: 'package_types',
     product_accent_messages: 'product_accent_messages',
+    product_artists: 'product_artists',
     product_collections: 'product_collections',
     product_color_swatches: 'product_color_swatches',
     product_data_tables: 'product_data_tables',

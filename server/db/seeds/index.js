@@ -3,6 +3,7 @@ const package_types = require('../initial-data/package_types');
 const product_collections = require('../initial-data/product_collections');
 const product_accent_messages = require('../initial-data/product_accent_messages');
 const product_color_swatches = require('../initial-data/product_color_swatches');
+const product_artists = require('../initial-data/product_artists');
 const tax_nexus = require('../initial-data/tax_nexus');
 
 
@@ -30,6 +31,9 @@ exports.seed = (knex, Promise) => {
         })
         .then(() => {
             return product_color_swatches.seed(knex, Promise)
+        })
+        .then(() => {
+            return product_artists.seed(knex, Promise)
         })
         .then(() => {
             return tax_nexus.seed(knex, Promise)

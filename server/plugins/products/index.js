@@ -16,6 +16,7 @@ exports.plugin = {
                 const ProductColorSwatchCtrl = new (require('./controllers/ProductColorSwatchCtrl'))(server);
                 const ProductCollectionCtrl = new (require('./controllers/ProductCollectionCtrl'))(server);
                 const ProductDataTableCtrl = new (require('./controllers/ProductDataTableCtrl'))(server);
+                const ProductArtistCtrl = new (require('./controllers/ProductArtistCtrl'))(server);
 
                 const payloadMaxBytes = process.env.ROUTE_PAYLOAD_MAXBYTES || 10485760; // 10MB (1048576 (1 MB) is the default)
 
@@ -534,6 +535,111 @@ exports.plugin = {
 
 
                     /******************************
+                     * Product artist
+                     ******************************/
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/artist`,
+                        options: {
+                            description: 'Gets a product artist by ID',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductArtistCtrl.fetchOneForTenantHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/artists`,
+                        options: {
+                            description: 'Gets a list of product artist',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                query: Joi.object({
+                                    tenant_id: Joi.string().uuid().required(),
+                                    ...ProductArtistCtrl.getPaginationSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductArtistCtrl.fetchAllForTenantHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'POST',
+                        path: `${routePrefix}/product/artist`,
+                        options: {
+                            description: 'Adds a new product artist',
+                            payload: {
+                                // output: 'stream',
+                                output: 'file',
+                                parse: true,
+                                allow: 'multipart/form-data',
+                                maxBytes: payloadMaxBytes,
+                                multipart: true
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    file: Joi.object(),
+                                    ...ProductArtistCtrl.getSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductArtistCtrl.upsertHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'PUT',
+                        path: `${routePrefix}/product/artist`,
+                        options: {
+                            description: 'Updates a product artist',
+                            payload: {
+                                // output: 'stream',
+                                output: 'file',
+                                parse: true,
+                                allow: 'multipart/form-data',
+                                maxBytes: payloadMaxBytes,
+                                multipart: true
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    file: Joi.object(),
+                                    ...ProductArtistCtrl.getSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductArtistCtrl.upsertHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'DELETE',
+                        path: `${routePrefix}/product/artist`,
+                        options: {
+                            description: 'Deletes a product artist',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductArtistCtrl.deleteHandler(request, h);
+                            }
+                        }
+                    },
+
+
+                    /******************************
                      * Other
                      ******************************/
                     {
@@ -598,6 +704,11 @@ exports.plugin = {
                 server.app.bookshelf.model(
                     'ProductDataTable',
                     require('./models/ProductDataTable')(baseModel, server.app.bookshelf, server)
+                );
+
+                server.app.bookshelf.model(
+                    'ProductArtist',
+                    require('./models/ProductArtist')(baseModel, server.app.bookshelf, server)
                 );
             }
         );

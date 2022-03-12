@@ -82,8 +82,9 @@ async function deleteFile(url) {
         meta: { url }
     });
 
+    const instance = getAxios();
+
     try {
-        const instance = getAxios();
         const res = await instance.delete(url);
 
         global.logger.info('RESPONSE: BunnyAPI.deleteImage', {

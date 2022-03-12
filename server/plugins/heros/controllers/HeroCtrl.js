@@ -95,6 +95,84 @@ class HerolCtrl extends BaseController {
         }
     }
 
+
+    async deleteImage(id, tenant_id) {
+        global.logger.info('REQUEST: HeroCtrl.deleteImage', {
+            meta: { id, tenant_id }
+        });
+
+        const Hero = await this.fetchOne({
+            id,
+            tenant_id
+        });
+
+        if(!Hero) {
+            throw new Error('Unable to find Hero');
+        }
+
+        try {
+            const image = Hero.get('url');
+
+            if(image) {
+                await BunnyAPI.deleteFile(image);
+            }
+
+            global.logger.info('RESPONSE: HeroCtrl.deleteImage', {
+                meta: { image }
+            });
+
+            return image
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw err;
+        }
+    }
+
+    /**
+     * Deletes a ProductArtist, including its image
+     *
+     * @param {*} request
+     * @param {*} h
+     */
+    async deleteHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: HeroCtrl.deleteHandler', {
+                meta: request.query
+            });
+
+            const id = request.query.id;
+            const tenant_id = this.getTenantIdFromAuth(request);
+
+            const Hero = await this.fetchOne({
+                id,
+                tenant_id
+            });
+
+            if(!Hero) {
+                throw new Error('Unable to find Hero');
+            }
+
+            try {
+                await this.deleteImage(id, tenant_id);
+            }
+            catch(err) {
+                global.logger.error(err);
+                global.bugsnag(err);
+            }
+
+            await this.deleteModel(id, tenant_id);
+
+            return h.apiSuccess();
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
 }
 
 module.exports = HerolCtrl;

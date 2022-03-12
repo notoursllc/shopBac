@@ -17,6 +17,11 @@ module.exports = function (baseModel, bookshelf) {
                 return this.belongsTo('Product', 'product_id');
             },
 
+            artist: function() {
+                // product_artist_id is the foreign key in this model
+                return this.belongsTo('ProductArtist', 'product_artist_id');
+            },
+
             skus: function() {
                 // product_variant_id is the foreign key in ProductVariantSku
                 return this.hasMany('ProductVariantSku', 'product_variant_id');
