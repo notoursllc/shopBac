@@ -50,6 +50,13 @@ module.exports.up = (knex) => {
             t.timestamp('updated_at', true).nullable();
             t.timestamp('deleted_at', true).nullable();
 
+            // Foreign Keys:
+            t.uuid('product_artist_id')
+                .notNullable()
+                .references('id')
+                .inTable(DB_TABLES.product_artists)
+                .nullable();
+
             t.index([
                 'id',
                 'tenant_id',

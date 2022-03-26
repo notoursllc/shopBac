@@ -5,7 +5,8 @@
   "scripts": {
     "prod-deploy": "npm install && npm run knex:migrate",
     "dev": "cross-env NODE_ENV=development nodemon server/start.js --watch server",
-    "devMigrateSeed": "NODE_ENV=development npm run knex:migrate; npm run knex:seed",
+    "devMigrate": "NODE_ENV=development npm run knex:migrate; npm run knex:seed",
+    "devSeed": "NODE_ENV=development npm run knex:migrate; npm run knex:seed",
     "gensecret": "node ./utils/gensecret.js",
     "knex:migrate": "node ./node_modules/knex/bin/cli.js migrate:latest --knexfile ./knexfile.js",
     "knex:seed": "node --require dotenv/config ./node_modules/knex/bin/cli.js seed:run --knexfile ./knexfile.js",

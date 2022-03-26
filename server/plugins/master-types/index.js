@@ -26,6 +26,25 @@ const after = function (server) {
         },
         {
             method: 'GET',
+            path: '/master_types/all',
+            options: {
+                description: 'Gets a list of master types',
+                auth: {
+                    strategies: ['storeauth', 'session']
+                },
+                validate: {
+                    query: Joi.object({
+                        tenant_id: Joi.string().uuid().required(),
+                        ...MasterTypeCtrl.getPaginationSchema()
+                    })
+                },
+                handler: (request, h) => {
+                    return MasterTypeCtrl.fetchAllHandler(request, h);
+                }
+            }
+        },
+        {
+            method: 'GET',
             path: '/master_type',
             options: {
                 description: 'Gets an master type by ID',

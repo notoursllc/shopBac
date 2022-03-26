@@ -46,11 +46,6 @@ module.exports.up = (knex) => {
                 .inTable(DB_TABLES.products);
             // .onDelete('CASCADE');
 
-            t.uuid('product_artist_id')
-                .notNullable()
-                .references('id')
-                .inTable(DB_TABLES.product_artists);
-
             t.index([
                 'id',
                 'tenant_id',

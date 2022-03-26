@@ -11,8 +11,8 @@ module.exports = function (baseModel, bookshelf) {
         softDelete: true,
 
         // http://bookshelfjs.org/#Model-instance-hasMany
-        product_variants: function() {
-            return this.hasMany('ProductVariant', 'product_artist_id');
+        products: function() {
+            return this.hasMany('Product', 'product_artist_id');
         },
 
         hidden: [

@@ -20,9 +20,9 @@ const tax_nexus = require('../initial-data/tax_nexus');
  */
 exports.seed = (knex, Promise) => {
     return master_types.seed(knex, Promise)
-        .then(() => {
-            return package_types.seed(knex, Promise);
-        })
+        // .then(() => {
+        //     return package_types.seed(knex, Promise);
+        // })
         .then(() => {
             return product_collections.seed(knex, Promise);
         })
@@ -35,9 +35,9 @@ exports.seed = (knex, Promise) => {
         .then(() => {
             return product_artists.seed(knex, Promise)
         })
-        .then(() => {
-            return tax_nexus.seed(knex, Promise)
-        })
+        // .then(() => {
+        //     return tax_nexus.seed(knex, Promise)
+        // })
         // .then(() => {
                // NOTE: Promise.all requires Bluebird, as the node Promise doesn't support all
                // which is why Im commenting this out for now

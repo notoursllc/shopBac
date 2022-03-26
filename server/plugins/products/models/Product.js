@@ -21,6 +21,11 @@ module.exports = function (baseModel, bookshelf) {
             //     return this.belongsTo('PackageType', 'shipping_package_type_id');
             // },
 
+            artist: function() {
+                // product_artist_id is the foreign key in this model
+                return this.belongsTo('ProductArtist', 'product_artist_id');
+            },
+
             variants: function() {
                 // product_id is the foreign key in ProductVariant
                 return this.hasMany('ProductVariant', 'product_id');
@@ -76,6 +81,13 @@ module.exports = function (baseModel, bookshelf) {
                 }
             },
 
+
+            hidden: [
+                'tenant_id',
+                'deleted_at'
+            ],
+
+            /*
             visible: [
                 'id',
                 // 'tenant_id', not visible
@@ -121,6 +133,7 @@ module.exports = function (baseModel, bookshelf) {
                 'total_inventory_count',
                 'packing_volume_cm'
             ]
+            */
         }
     );
 };

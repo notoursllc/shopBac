@@ -105,6 +105,45 @@ class MasterTypeCtrl extends BaseController {
         }
     }
 
+
+    async fetchAllHandler(request, h) {
+        try {
+            global.logger.info(`REQUEST: MasterTypeController.fetchAllHandler`, {
+                meta: {
+                    query: request.query
+                }
+            });
+
+            const Models = await this.fetchAllForTenant(request);
+
+            // console.log("FETCH ALL", Models)
+            const json = Models.toJSON();
+            const all = {};
+
+            json.forEach((obj) => {
+                if(obj.object && !all.hasOwnProperty(obj.object)) {
+                    all[obj.object] = [];
+                }
+
+                all[obj.object].push(obj);
+            })
+
+            global.logger.info(`RESPONSE: MasterTypeController.fetchAllHandler`, {
+                meta: {
+                }
+            });
+
+            return h.apiSuccess(
+                all
+            );
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.notFound(err);
+        }
+    }
+
 }
 
 module.exports = MasterTypeCtrl;

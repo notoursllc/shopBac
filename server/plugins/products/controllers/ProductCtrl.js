@@ -42,7 +42,7 @@ class ProductCtrl extends BaseController {
             fit_type: joiPositiveNumberOrNull,
             sleeve_length_type: joiPositiveNumberOrNull,
             feature_type: joiPositiveNumberOrNull,
-            // vendor_id: Joi.string().uuid().optional().empty('').allow(null).default(null),
+
 
             // SEO
             seo_page_title: Joi.alternatives().try(
@@ -87,6 +87,8 @@ class ProductCtrl extends BaseController {
                 Joi.object(this.ProductVariantCtrl.getSchema())
             ),
 
+            product_artist_id: Joi.string().uuid().optional().empty('').allow(null).default(null),
+
             // TIMESTAMPS
             // created_at: Joi.date().optional(),
             // updated_at: Joi.date().optional()
@@ -112,6 +114,7 @@ class ProductCtrl extends BaseController {
                     query.orderBy('ordinal', 'ASC');
                 }
             },
+            'artist'
             // 'skus.images.media'
         ];
     }
