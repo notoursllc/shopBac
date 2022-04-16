@@ -10,6 +10,7 @@ exports.plugin = {
             function (server) {
                 const routePrefix = '/api/v1';
                 const ProductCtrl = new (require('./controllers/ProductCtrl'))(server);
+                const ProductDao = new (require('./dao/ProductDao'))(server);
                 const ProductVariantCtrl = new (require('./controllers/ProductVariantCtrl'))(server);
                 const ProductVariantSkuCtrl = new (require('./controllers/ProductVariantSkuCtrl'))(server);
                 const ProductAccentMessageCtrl = new (require('./controllers/ProductAccentMessageCtrl'))(server);
@@ -73,11 +74,11 @@ exports.plugin = {
                             description: 'Creates a product',
                             validate: {
                                 payload: Joi.object({
-                                    ...ProductCtrl.getSchema()
+                                    ...ProductDao.getSchemaWithRelations()
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductCtrl.upsertHandler(request, h);
+                                return ProductCtrl.createHandler(request, h);
                             },
                             payload: {
                                 maxBytes: payloadMaxBytes
@@ -91,7 +92,8 @@ exports.plugin = {
                             description: 'Updates a product',
                             validate: {
                                 payload: Joi.object({
-                                    ...ProductCtrl.getSchema(true)
+                                    id: Joi.string().uuid(),
+                                    ...ProductDao.getSchemaWithRelations()
                                 })
                             },
                             handler: (request, h) => {
@@ -119,6 +121,24 @@ exports.plugin = {
                             handler: (request, h) => {
                                 // TODO:  need to refactor this
                                 return ProductCtrl.deleteHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: `${routePrefix}/product/tax_codes`,
+                        options: {
+                            description: 'Returns a list of Stripe tax codes',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                query: Joi.object({
+                                    tenant_id: Joi.string().uuid()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductCtrl.getStripeTaxCodesHandler(request, h);
                             }
                         }
                     },

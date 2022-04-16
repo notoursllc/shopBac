@@ -4,101 +4,19 @@ const cloneDeep = require('lodash.clonedeep');
 const { createSitemap } = require('sitemap');
 const BaseController = require('../../core/controllers/BaseController');
 const ProductVariantCtrl = require('./ProductVariantCtrl');
+const ProductDao = require('../dao/ProductDao.js');
+const ProductVariantDao = require('../dao/ProductVariantDao.js');
+const ProductVariantSkuDao = require('../dao/ProductVariantSkuDao.js');
 
-// Using this so many time below, so setting as a variable:
-const joiPositiveNumberOrNull = Joi.alternatives().try(
-    Joi.number().integer().positive(),
-    Joi.allow(null)
-);
 
 class ProductCtrl extends BaseController {
 
     constructor(server) {
         super(server, 'Product');
         this.ProductVariantCtrl = new ProductVariantCtrl(server);
-    }
-
-
-    getSchema(isUpdate) {
-        const schema = {
-            tenant_id: Joi.string().uuid(),
-            published: Joi.boolean().default(false),
-            title: Joi.alternatives().try(Joi.string().trim().max(100), Joi.allow(null)),
-            caption: Joi.alternatives().try(Joi.string().trim().max(100), Joi.allow(null)),
-            description: Joi.alternatives().try(Joi.string().trim().max(500), Joi.allow(null)),
-            is_good: Joi.boolean().default(true),
-
-            // these should be stringified values in the payload:
-            metadata: Joi.alternatives().try(Joi.array(), Joi.allow(null)),
-
-            // TYPES
-            type: joiPositiveNumberOrNull,
-            sub_type: joiPositiveNumberOrNull,
-            sales_channel_type: joiPositiveNumberOrNull,
-            package_type: joiPositiveNumberOrNull,
-            vendor_type: joiPositiveNumberOrNull,
-            collections: joiPositiveNumberOrNull,
-            gender_type: joiPositiveNumberOrNull,
-            fit_type: joiPositiveNumberOrNull,
-            sleeve_length_type: joiPositiveNumberOrNull,
-            feature_type: joiPositiveNumberOrNull,
-
-
-            // SEO
-            seo_page_title: Joi.alternatives().try(
-                Joi.string().trim().max(70),
-                Joi.allow(null)
-            ),
-            seo_page_desc: Joi.alternatives().try(
-                Joi.string().trim().max(320),
-                Joi.allow(null)
-            ),
-            seo_uri: Joi.alternatives().try(
-                Joi.string().trim().max(50),
-                Joi.allow(null)
-            ),
-
-            // MEDIA
-            // images: Joi.array().allow(null),
-            video_url: Joi.string().trim().max(500).empty('').allow(null).default(null),
-
-            // SHIPPING
-            shippable: Joi.boolean().empty('').default(true),
-            customs_country_of_origin: Joi.alternatives().try(
-                Joi.string().max(2),
-                Joi.allow(null)
-            ),
-            customs_harmonized_system_code: Joi.alternatives().try(
-                Joi.string(),
-                Joi.allow(null)
-            ),
-
-            // PACKAGING
-            ship_alone: Joi.boolean().empty('').default(false),
-            packing_length_cm: joiPositiveNumberOrNull,
-            packing_width_cm: joiPositiveNumberOrNull,
-            packing_height_cm: joiPositiveNumberOrNull,
-
-            variants: Joi.array().items(
-                // Note: should not pass the 'isUpdate' flag to getSchema() in this case.
-                // When creating a product, the user doesn't necessarily have to also create variants,
-                // therefore updating a product may be the first time that a variants is added, in
-                // which case the variant will not have an id
-                Joi.object(this.ProductVariantCtrl.getSchema())
-            ),
-
-            product_artist_id: Joi.string().uuid().optional().empty('').allow(null).default(null),
-
-            // TIMESTAMPS
-            // created_at: Joi.date().optional(),
-            // updated_at: Joi.date().optional()
-        };
-
-        if(isUpdate) {
-            schema.id = Joi.string().uuid().required();
-        }
-
-        return schema;
+        this.ProductDao = new ProductDao(server);
+        this.ProductVariantDao = new ProductVariantDao(server);
+        this.ProductVariantSkuDao = new ProductVariantSkuDao(server);
     }
 
 
@@ -118,9 +36,6 @@ class ProductCtrl extends BaseController {
             // 'skus.images.media'
         ];
     }
-
-
-
 
 
     deleteVariants(Product, tenantId) {
@@ -145,17 +60,123 @@ class ProductCtrl extends BaseController {
     }
 
 
+    async createHandler(request, h) {
+        try {
+            const tenant_id = this.getTenantIdFromAuth(request);
+            const trx = await this.ProductDao.knex.transaction();
+
+            const productIds = await this.ProductDao.tenantInsert(
+                tenant_id,
+                this.ProductDao.stripInvalidCols(request.payload),
+                trx
+            );
+
+            if(Array.isArray(request.payload.variants)) {
+                // NOTE: using a for loop allows for using async/await inside the loop
+                for (let i=0, l=request.payload.variants.length; i<l; i++) {
+                    const variant = request.payload.variants[i];
+
+                    const variantIds = await this.ProductVariantDao.tenantInsert(
+                        tenant_id,
+                        {
+                            ...this.ProductVariantDao.stripInvalidCols(variant),
+                            product_id: productIds[0]
+                        },
+                        trx
+                    );
+
+                    // insert variant SKUS for this variant
+                    if(Array.isArray(variant.skus)) {
+                        const variantSkuPayload = variant.skus.map((sku) => {
+                            return this.ProductVariantSkuDao.stripInvalidCols({
+                                ...sku,
+                                product_variant_id: variantIds[0]
+                            });
+                        });
+
+                        if(variantSkuPayload.length) {
+                            await this.ProductVariantSkuDao.tenantInsert(
+                                tenant_id,
+                                variantSkuPayload,
+                                trx
+                            );
+                        }
+                    }
+                }
+            }
+
+            await trx.commit();
+
+            const Product = await this.ProductDao.tenantGet(
+                tenant_id,
+                productIds[0]
+            );
+
+            // console.log("RETURNING PRODUCT", Product[0]);
+
+            return h.apiSuccess(Product[0]);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
+    // async createHandler(request, h) {
+    //     try {
+    //         const tenant_id = this.getTenantIdFromAuth(request);
+
+    //         const productIds = await this.ProductDao.tenantInsert(
+    //             tenant_id,
+    //             request.payload
+    //         );
+
+    //         console.log("CONTROLLER INSERT RESPOSNE", productIds)
+
+    //         const Product = await this.ProductDao.tenantGetOne(
+    //             tenant_id,
+    //             productIds[0]
+    //         );
+
+    //         console.log("RETURNING PRODUCT", Product[0]);
+
+    //         return h.apiSuccess(Product[0]);
+    //     }
+    //     catch(err) {
+    //         global.logger.error(err);
+    //         global.bugsnag(err);
+    //         throw Boom.badRequest(err);
+    //     }
+    // }
+
     async upsertHandler(request, h) {
         try {
+            const tenant_id = this.getTenantIdFromAuth(request);
+
             const variants = cloneDeep(request.payload.variants);
             delete request.payload.variants;
 
-            const Product = await this.upsertModel(request.payload);
+            let productId;
 
-            if(Product) {
+            if(request.payload.id) {
+                productId = this.ProductDao.tenantUpdate(
+                    tenant_id,
+                    request.payload.id,
+                    request.payload
+                );
+            }
+            else {
+                productId = this.ProductDao.tenantInsert(
+                    tenant_id,
+                    request.payload
+                );
+            }
+
+            if(productId) {
                 const promises = [];
-                const tenant_id = this.getTenantIdFromAuth(request);
 
+                //TODO: create ProductVariantDao
                 promises.push(
                     this.ProductVariantCtrl.upsertVariants(
                         variants,
@@ -166,6 +187,23 @@ class ProductCtrl extends BaseController {
 
                 await Promise.all(promises);
             }
+
+            // const Product = await this.upsertModel(request.payload);
+
+            // if(Product) {
+            //     const promises = [];
+            //     const tenant_id = this.getTenantIdFromAuth(request);
+
+            //     promises.push(
+            //         this.ProductVariantCtrl.upsertVariants(
+            //             variants,
+            //             Product.get('id'),
+            //             tenant_id
+            //         )
+            //     );
+
+            //     await Promise.all(promises);
+            // }
 
             return h.apiSuccess(Product);
         }
