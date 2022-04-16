@@ -4,12 +4,14 @@ const cloneDeep = require('lodash.clonedeep');
 const BaseController = require('../../core/controllers/BaseController');
 const ProductVariantSkuCtrl = require('./ProductVariantSkuCtrl');
 const BunnyAPI = require('../../core/services/BunnyAPI');
+const StripeCtrl = require('../../cart/controllers/StripeCtrl');
 
 class ProductVariantCtrl extends BaseController {
 
     constructor(server) {
         super(server, 'ProductVariant');
         this.ProductVariantSkuCtrl = new ProductVariantSkuCtrl(server);
+        this.StripeCtrl = new StripeCtrl(server);
     }
 
 
@@ -118,74 +120,64 @@ class ProductVariantCtrl extends BaseController {
     }
 
 
-    upsertVariant(data) {
-        return new Promise(async (resolve, reject) => {
-            try {
-                global.logger.info(`REQUEST: ProductVariantCtrl.upsertVariant (${this.modelName})`, {
-                    meta: {
-                        variant: data
-                    }
-                });
-
-                // remove skus from the data so we can save the model
-                const skus = cloneDeep(data.skus);
-                delete data.skus;
-
-                const ProductVariant = await this.upsertModel(data);
-
-                // resize and save variant images
-                if(ProductVariant) {
-                    await this.ProductVariantSkuCtrl.upsertSkus(
-                        skus,
-                        ProductVariant.get('id'),
-                        ProductVariant.get('tenant_id')
-                    );
-                }
-
-                global.logger.info(`RESPONSE: ProductVariantCtrl.upsertVariant (${this.modelName})`, {
-                    meta: {
-                        productVariant: ProductVariant ? ProductVariant.toJSON() : null
-                    }
-                });
-
-                resolve(ProductVariant);
-            }
-            catch(err) {
-                global.logger.error(err);
-                global.bugsnag(err);
-                reject(err);
-            }
-        });
-    }
-
-
-    upsertVariants(variants, productId, tenantId) {
+    async upsertVariant(data, options) {
         try {
-            global.logger.info(`REQUEST: ProductVariantCtrl.upsertVariants (${this.modelName})`, {
+            global.logger.info(`REQUEST: ProductVariantCtrl.upsertVariant`, {
                 meta: {
-                    tenantId,
-                    productId,
-                    variants
+                    data,
+                    options
                 }
             });
 
-            const promises = [];
+            // remove skus from the data so we can save the model
+            const skus = cloneDeep(data.skus);
+            delete data.skus;
 
-            if(Array.isArray(variants)) {
-                variants.forEach((v) => {
-                    promises.push(
-                        this.upsertVariant({
-                            tenant_id: tenantId,
-                            product_id: productId,
-                            ...v
-                        })
+            const ProductVariant = await this.upsertModel(data, options);
+
+            // resize and save variant images
+            if(ProductVariant && Array.isArray(skus)) {
+                const tenant_id = ProductVariant.get('tenant_id');
+
+                for(let i=0, l=skus.length; i<l; i++) {
+                    const Sku = await this.ProductVariantSkuCtrl.upsertModel(
+                        {
+                            tenant_id,
+                            product_variant_id: ProductVariant.get('id'),
+                            ...skus[i]
+                        },
+                        options
                     );
-                });
+
+                    // Create the product in Stripe
+                    if(!Sku.get('stripe_product_id')) {
+                        const stripe = await this.StripeCtrl.getStripe(tenant_id);
+
+                        const stripePrice = await stripe.prices.create({
+                            currency: 'USD',
+                            unit_amount: Sku.get('display_price') || ProductVariant.get('display_price'),
+                            'product_data[name]': Sku.get('id'),
+                            'product_data[id]':  Sku.get('id')
+                        });
+
+                        // Update the ProductVariantSku with the stripe product ID
+                        await this.ProductVariantSkuCtrl.upsertModel(
+                            {
+                                id: Sku.get('id'),
+                                tenant_id,
+                                stripe_product_id: stripePrice.product
+                            },
+                            options
+                        );
+                    }
+                }
             }
 
-            global.logger.info(`RESPONSE: ProductVariantCtrl.upsertVariants (${this.modelName}) - returning ${promises.length} promises`);
-
-            return Promise.all(promises);
+            global.logger.info(`RESPONSE: ProductVariantCtrl.upsertVariant`, {
+                meta: {
+                    productVariant: ProductVariant ? ProductVariant.toJSON() : null
+                }
+            });
         }
         catch(err) {
             global.logger.error(err);

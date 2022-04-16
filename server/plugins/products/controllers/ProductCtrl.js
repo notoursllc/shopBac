@@ -4,6 +4,7 @@ const cloneDeep = require('lodash.clonedeep');
 const { createSitemap } = require('sitemap');
 const BaseController = require('../../core/controllers/BaseController');
 const ProductVariantCtrl = require('./ProductVariantCtrl');
+const StripeCtrl = require('../../cart/controllers/StripeCtrl');
 
 // Using this so many time below, so setting as a variable:
 const joiPositiveNumberOrNull = Joi.alternatives().try(
@@ -16,6 +17,7 @@ class ProductCtrl extends BaseController {
     constructor(server) {
         super(server, 'Product');
         this.ProductVariantCtrl = new ProductVariantCtrl(server);
+        this.StripeCtrl = new StripeCtrl(server);
     }
 
 
@@ -42,7 +44,6 @@ class ProductCtrl extends BaseController {
             fit_type: joiPositiveNumberOrNull,
             sleeve_length_type: joiPositiveNumberOrNull,
             feature_type: joiPositiveNumberOrNull,
-
 
             // SEO
             seo_page_title: Joi.alternatives().try(
@@ -78,6 +79,11 @@ class ProductCtrl extends BaseController {
             packing_length_cm: joiPositiveNumberOrNull,
             packing_width_cm: joiPositiveNumberOrNull,
             packing_height_cm: joiPositiveNumberOrNull,
+
+            tax_code: Joi.alternatives().try(
+                Joi.string().trim().max(50),
+                Joi.allow(null)
+            ),
 
             variants: Joi.array().items(
                 // Note: should not pass the 'isUpdate' flag to getSchema() in this case.
@@ -120,9 +126,6 @@ class ProductCtrl extends BaseController {
     }
 
 
-
-
-
     deleteVariants(Product, tenantId) {
         const variants = Product.related('variants').toArray();
         const promises = [];
@@ -146,34 +149,49 @@ class ProductCtrl extends BaseController {
 
 
     async upsertHandler(request, h) {
-        try {
-            const variants = cloneDeep(request.payload.variants);
-            delete request.payload.variants;
+        const variants = cloneDeep(request.payload.variants);
+        delete request.payload.variants;
 
-            const Product = await this.upsertModel(request.payload);
-
-            if(Product) {
-                const promises = [];
-                const tenant_id = this.getTenantIdFromAuth(request);
-
-                promises.push(
-                    this.ProductVariantCtrl.upsertVariants(
-                        variants,
-                        Product.get('id'),
-                        tenant_id
-                    )
+        return this.server.app.bookshelf.transaction(async (trx) => {
+            try {
+                // First upsert the Product
+                const Product = await this.upsertModel(
+                    request.payload,
+                    { transacting: trx }
                 );
 
-                await Promise.all(promises);
-            }
+                // Then upsert the ProductVariants
+                if(Product && Array.isArray(variants)) {
+                    const tenant_id = this.getTenantIdFromAuth(request);
 
+                    for(let i=0, l=variants.length; i<l; i++) {
+                        await this.ProductVariantCtrl.upsertVariant(
+                            {
+                                tenant_id: tenant_id,
+                                product_id: Product.get('id'),
+                                ...variants[i]
+                            },
+                            { transacting: trx }
+                        )
+                    }
+                }
+
+                return Product;
+            }
+            catch(err) {
+                global.logger.error(err);
+                global.bugsnag(err);
+                throw Boom.badRequest(err);
+            }
+        })
+        .then((Product) => {
             return h.apiSuccess(Product);
-        }
-        catch(err) {
+        })
+        .catch((err) => {
             global.logger.error(err);
             global.bugsnag(err);
             throw Boom.badRequest(err);
-        }
+        });
     }
 
 
@@ -211,6 +229,26 @@ class ProductCtrl extends BaseController {
             });
 
             return h.apiSuccess(Product);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
+
+    async getStripeTaxCodesHandler(request, h) {
+        try {
+            const tenantId = this.getTenantIdFromAuth(request);
+            const stripe = await this.StripeCtrl.getStripe(tenantId);
+
+            // https://stripe.com/docs/api/tax_codes/list?p=t
+            const taxCodes = await stripe.taxCodes.list({
+                limit: 999
+            });
+
+            return h.apiSuccess(taxCodes.data);
         }
         catch(err) {
             global.logger.error(err);

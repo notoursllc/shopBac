@@ -85,55 +85,7 @@ module.exports = function (baseModel, bookshelf) {
             hidden: [
                 'tenant_id',
                 'deleted_at'
-            ],
-
-            /*
-            visible: [
-                'id',
-                // 'tenant_id', not visible
-                'published',
-                'title',
-                'caption',
-                'description',
-                'metadata',
-                'is_good',
-
-                'type',
-                'sub_type',
-                'sales_channel_type',
-                'package_type',
-                'vendor_type',
-                'collections',
-                'gender_type',
-                'fit_type',
-                'sleeve_length_type',
-                'feature_type',
-
-                'seo_page_title',
-                'seo_page_desc',
-                'seo_uri',
-
-                'shippable',
-                'ship_alone',
-                'packing_length_cm',
-                'packing_width_cm',
-                'packing_height_cm',
-                'customs_country_of_origin',
-                'customs_harmonized_system_code',
-
-                'video_url',
-                'created_at',
-                'updated_at',
-                // 'deleted_at',  // not visible
-
-                // relations
-                'variants',
-
-                // virtuals
-                'total_inventory_count',
-                'packing_volume_cm'
             ]
-            */
         }
     );
 };

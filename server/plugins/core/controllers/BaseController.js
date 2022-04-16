@@ -105,36 +105,36 @@ class BaseController {
      *
      * @param {*} data
      */
-    async upsertModel(data) {
-        try {
-            global.logger.info(`REQUEST: BaseController.upsertModel (${this.modelName})`, {
-                meta: data
-            });
-
-            // this fixes an edge case where sending an id attribute with a null value
-            // would cause the create method to throw an error because it expects the payload
-            // not to have an id attribute
-            const modelId = data.id;
-            if(!modelId) {
-                delete data.id;
+    async upsertModel(data, options) {
+        global.logger.info(`REQUEST: BaseController.upsertModel (${this.modelName})`, {
+            meta: {
+                data,
+                options
             }
+        });
 
-            const ModelInstance = modelId
-                ? await this.getModel().update(data, {id: modelId})
-                : await this.getModel().create(data);
-
-            global.logger.info(`RESPONSE: BaseController.upsertModel (${this.modelName})`, {
-                meta: {
-                    model: ModelInstance ? ModelInstance.toJSON() : null
-                }
-            });
-
-            return ModelInstance;
+        // this fixes an edge case where sending an id attribute with a null value
+        // would cause the create method to throw an error because it expects the payload
+        // not to have an id attribute
+        const modelId = data.id;
+        if(!modelId) {
+            delete data.id;
         }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-        }
+
+        // https://bookshelfjs.org/api.html#Model-instance-save
+        const ModelInstance = await this.getModel()
+            .forge(
+                modelId ? {id: modelId} : null
+            )
+            .save(data, options)
+
+        global.logger.info(`RESPONSE: BaseController.upsertModel (${this.modelName})`, {
+            meta: {
+                model: ModelInstance ? ModelInstance.toJSON() : null
+            }
+        });
+
+        return ModelInstance;
     }
 
 

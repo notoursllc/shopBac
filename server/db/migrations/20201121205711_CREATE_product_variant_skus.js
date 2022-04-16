@@ -19,6 +19,9 @@ module.exports.up = (knex) => {
             t.integer('sale_price').nullable().defaultTo(null);
             t.boolean('is_on_sale').defaultTo(false);
 
+            // STRIPE
+            t.string('stripe_product_id').nullable();
+
             // SHIPPING
             t.decimal('weight_oz').nullable().defaultTo(null);
             t.string('customs_country_of_origin').nullable().defaultTo(null);

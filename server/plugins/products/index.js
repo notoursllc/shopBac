@@ -67,6 +67,24 @@ exports.plugin = {
                         }
                     },
                     {
+                        method: 'GET',
+                        path: `${routePrefix}/product/tax_codes`,
+                        options: {
+                            description: 'Returns a list of Stripe tax codes',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            validate: {
+                                query: Joi.object({
+                                    tenant_id: Joi.string().uuid()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductCtrl.getStripeTaxCodesHandler(request, h);
+                            }
+                        }
+                    },
+                    {
                         method: 'POST',
                         path: `${routePrefix}/product`,
                         options: {

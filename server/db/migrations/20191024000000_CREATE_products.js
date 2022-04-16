@@ -45,6 +45,9 @@ module.exports.up = (knex) => {
             t.integer('packing_width_cm').nullable();
             t.integer('packing_height_cm').nullable();
 
+            // TAX
+            t.string('tax_code').nullable();
+
             // TIMESTAMPS
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();
