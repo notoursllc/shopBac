@@ -20,6 +20,7 @@ module.exports.up = (knex) => {
             t.boolean('is_on_sale').defaultTo(false);
 
             // STRIPE
+            t.string('stripe_price_id').nullable();
             t.string('stripe_product_id').nullable();
 
             // SHIPPING

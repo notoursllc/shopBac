@@ -68,6 +68,9 @@ class ProductVariantSkuCtrl extends BaseController {
             track_inventory_count: Joi.boolean().empty('').default(true),
             visible_if_no_inventory: Joi.boolean().empty('').default(true),
             product_variant_id: Joi.string().uuid(),
+
+            // STRIPE
+            stripe_price_id: Joi.string().uuid(),
             stripe_product_id: Joi.string().uuid(),
 
             // TIMESTAMPS

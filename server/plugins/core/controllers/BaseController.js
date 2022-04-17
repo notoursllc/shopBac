@@ -162,7 +162,7 @@ class BaseController {
     }
 
 
-    async deleteModel(id, tenant_id) {
+    async deleteModel(id, tenant_id, options) {
         global.logger.info(`REQUEST: BaseController.deleteModel (${this.modelName})`, {
             meta: {
                 id,
@@ -170,10 +170,12 @@ class BaseController {
             }
         });
 
-        const ModelInstance = await this.getModel().destroy({
-            id,
-            tenant_id
-        });
+        const ModelInstance = await this.getModel()
+            .forge({
+                id,
+                tenant_id
+            })
+            .destroy(options);
 
         global.logger.info(`RESPONSE: BaseController.deleteModel (${this.modelName})`, {
             meta: ModelInstance ? ModelInstance.toJSON() : null

@@ -126,28 +126,6 @@ class ProductCtrl extends BaseController {
     }
 
 
-    deleteVariants(Product, tenantId) {
-        const variants = Product.related('variants').toArray();
-        const promises = [];
-
-        if(Array.isArray(variants)) {
-            try {
-                variants.forEach((obj) => {
-                    promises.push(
-                        this.ProductVariantCtrl.deleteVariant(obj.id, tenantId)
-                    );
-                });
-            }
-            catch(err) {
-                global.logger.error('ProductCtrl.deleteVariants - ERROR DELETING PRODUCT VARIANTS: ', err);
-                throw err;
-            }
-        }
-
-        return Promise.all(promises);
-    }
-
-
     async upsertHandler(request, h) {
         const variants = cloneDeep(request.payload.variants);
         delete request.payload.variants;
@@ -166,6 +144,7 @@ class ProductCtrl extends BaseController {
 
                     for(let i=0, l=variants.length; i<l; i++) {
                         await this.ProductVariantCtrl.upsertVariant(
+                            Product,
                             {
                                 tenant_id: tenant_id,
                                 product_id: Product.get('id'),
@@ -202,39 +181,77 @@ class ProductCtrl extends BaseController {
      * @param {*} h
      */
     async deleteHandler(request, h) {
-        try {
-            global.logger.info('REQUEST: ProductCtrl.deleteHandler', {
-                meta: request.query
-            });
+        global.logger.info('REQUEST: ProductCtrl.deleteHandler', {
+            meta: request.query
+        });
 
-            const productId = request.query.id;
-            const tenantId = this.getTenantIdFromAuth(request);
+        return this.server.app.bookshelf.transaction(async (trx) => {
+            try {
+                const productId = request.query.id;
+                const tenantId = this.getTenantIdFromAuth(request);
 
-            const Product = await this.modelForgeFetch(
-                { id: productId, tenant_id: tenantId },
-                { withRelated: ['variants'] }
-            );
+                const Product = await this.modelForgeFetch(
+                    {
+                        id: productId,
+                        tenant_id: tenantId
+                    },
+                    {
+                        withRelated: ['variants'],
+                        transacting: trx
+                    }
+                );
 
-            if(!Product) {
-                throw Boom.badRequest('Unable to find product.');
+                if(!Product) {
+                    throw Boom.badRequest('Unable to find product.');
+                }
+
+                // Delete the variants
+                const variants = Product.related('variants').toArray();
+                const promises = [];
+
+                if(Array.isArray(variants)) {
+                    for(let i=0, l=variants.length; i<l; i++) {
+                        promises.push(
+                            this.ProductVariantCtrl.deleteVariant(
+                                variants[i].id,
+                                tenantId,
+                                { transacting: trx }
+                            )
+                        );
+                    }
+                }
+
+                // Delete the product
+                promises.push(
+                    this.deleteModel(
+                        productId,
+                        tenantId,
+                        { transacting: trx }
+                    )
+                );
+
+                await Promise.all(promises);
+
+                global.logger.info('RESPONSE: ProductCtrl.deleteHandler', {
+                    meta: Product ? Product.toJSON() : null
+                });
+
+                return Product;
             }
-
-            await Promise.all([
-                this.deleteVariants(Product, tenantId),
-                this.deleteModel(productId, tenantId)
-            ]);
-
-            global.logger.info('RESPONSE: ProductCtrl.deleteHandler', {
-                meta: Product ? Product.toJSON() : null
-            });
-
+            catch(err) {
+                global.logger.error(err);
+                global.bugsnag(err);
+                throw Boom.badRequest(err);
+            }
+        })
+        .then((Product) => {
             return h.apiSuccess(Product);
-        }
-        catch(err) {
+        })
+        .catch((err) => {
             global.logger.error(err);
             global.bugsnag(err);
             throw Boom.badRequest(err);
-        }
+        });
     }
 
 
