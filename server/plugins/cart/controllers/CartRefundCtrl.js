@@ -95,7 +95,7 @@ class CartRefundCtrl extends BaseController {
             // Cart.grand_total - total of previously given refunds
             const refundSummary = await this.getCartRefundSummary(tenantId, request.payload.cart_id);
             const previousRefundTotal = parseInt(refundSummary.total, 10) || 0;
-            console.log("REFUND SUMMARY", refundSummary, previousRefundTotal);
+            // console.log("REFUND SUMMARY", refundSummary, previousRefundTotal);
 
             const availableRefund = parseInt(Cart.get('grand_total')) - previousRefundTotal;
             if(refundAmount > availableRefund) {

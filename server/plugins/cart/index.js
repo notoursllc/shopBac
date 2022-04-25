@@ -389,7 +389,7 @@ exports.plugin = {
                         method: 'POST',
                         path: '/cart/payment/intent',
                         options: {
-                            description: 'Returns a PaymentIntent object from stripe',
+                            description: 'Returns a payment intent ID from Stripe',
                             auth: {
                                 strategies: ['storeauth', 'session']
                             },
@@ -400,7 +400,7 @@ exports.plugin = {
                                 })
                             },
                             handler: (request, h) => {
-                                return CartCtrl.getStripePaymentIntentHandler(request, h);
+                                return CartCtrl.getStripeOrderHandler(request, h);
                             }
                         }
                     },

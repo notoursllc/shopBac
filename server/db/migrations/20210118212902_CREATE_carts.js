@@ -38,7 +38,9 @@ module.exports.up = (knex) => {
             t.string('shipping_label_id').nullable();
             t.jsonb('tax_nexus_applied').nullable();
             t.string('stripe_payment_intent_id').nullable();
+            t.string('stripe_order_id').nullable();
             t.string('paypal_order_id').nullable();
+            t.integer('sales_tax').nullable();
 
             t.timestamp('created_at', true).notNullable().defaultTo(knex.fn.now());
             t.timestamp('updated_at', true).nullable();

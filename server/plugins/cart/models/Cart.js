@@ -69,26 +69,30 @@ module.exports = function (baseModel, bookshelf, server) {
                 /**
                  * Calculate the sales tax amount.
                  * https://blog.taxjar.com/sales-tax-and-shipping/
+                 *
+                 * UPDATE: Commenting this out for now since I am using
+                 * Stripe Tax instead, and thus sales_tax is now an actual
+                 * column in the DB
                  */
-                 sales_tax: function() {
-                    const tax_nexus_applied = this.get('tax_nexus_applied');
-                    let taxableAmount = 0;
+                //  sales_tax: function() {
+                //     const tax_nexus_applied = this.get('tax_nexus_applied');
+                //     let taxableAmount = 0;
 
-                    this.related('cart_items').forEach((CartItem) => {
-                        const ProductVariant = CartItem.related('product_variant');
+                //     this.related('cart_items').forEach((CartItem) => {
+                //         const ProductVariant = CartItem.related('product_variant');
 
-                        if(ProductVariant && ProductVariant.get('is_taxable')) {
-                            taxableAmount += CartItem.get('item_price_total') || 0;
-                        }
-                    });
+                //         if(ProductVariant && ProductVariant.get('is_taxable')) {
+                //             taxableAmount += CartItem.get('item_price_total') || 0;
+                //         }
+                //     });
 
-                    const taxAmount = taxableAmount && isObject(tax_nexus_applied) && tax_nexus_applied.tax_rate
-                        ? taxableAmount * tax_nexus_applied.tax_rate
-                        : 0;
+                //     const taxAmount = taxableAmount && isObject(tax_nexus_applied) && tax_nexus_applied.tax_rate
+                //         ? taxableAmount * tax_nexus_applied.tax_rate
+                //         : 0;
 
-                    // accounting.toFixed returns a string, so converting to float:
-                    return Math.ceil(taxAmount);
-                },
+                //     // accounting.toFixed returns a string, so converting to float:
+                //     return Math.ceil(taxAmount);
+                // },
 
 
                 shipping_total: function() {
@@ -124,9 +128,41 @@ module.exports = function (baseModel, bookshelf, server) {
                     return subtotal + salesTax + shipping;
                 },
 
+                tax_rate: function() {
+                    const salesTax = this.get('sales_tax') || 0;
+                    const grandTotal = this.get('grand_total');
+
+                    if(!salesTax || !grandTotal) {
+                        return null;
+                    }
+
+                    const preTaxGrandTotal = grandTotal - salesTax;
+                    return (salesTax / preTaxGrandTotal).toFixed(5);
+                },
+
                 shipping_fullName: function() {
-                    let name = `${this.get('shipping_firstName')} ${this.get('shipping_lastName')}`;
-                    return name.trim();
+                    return `${this.get('shipping_firstName')} ${this.get('shipping_lastName')}`.trim();
+                },
+
+                billing_fullName: function() {
+                    const prefix = this.get('billing_same_as_shipping') ? 'shipping' : 'billing';
+                    return `${this.get(`${prefix}_firstName`)} ${this.get(`${prefix}_lastName`)}`.trim();
+                },
+
+                billing_address: function() {
+                    const prefix = this.get('billing_same_as_shipping') ? 'shipping' : 'billing';
+
+                    return {
+                        firstName: this.get(`${prefix}_firstName`),
+                        lastName: this.get(`${prefix}_lastName`),
+                        streetAddress: this.get(`${prefix}_streetAddress`),
+                        extendedAddress: this.get(`${prefix}_extendedAddress`),
+                        city: this.get(`${prefix}_city`),
+                        state: this.get(`${prefix}_state`),
+                        postalCode: this.get(`${prefix}_postalCode`),
+                        countryCodeAlpha2: this.get(`${prefix}_countryCodeAlpha2`),
+                        phone: this.get(`${prefix}_phone`)
+                    }
                 }
             },
 

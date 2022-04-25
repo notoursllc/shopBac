@@ -21,10 +21,15 @@ class StripeCtrl {
         const stripeKey = Tenant.get('stripe_key')
 
         if(!stripeKey) {
-            throw new Error("Unable to obtain stripe key from Tenant")
+            throw new Error('Unable to obtain stripe key from Tenant');
         }
 
-        this.stripe = require('stripe')(stripeKey);
+        this.stripe = require('stripe')(
+            stripeKey,
+            {
+                apiVersion: '2012-03-25; orders_beta=v3'
+            }
+        );
 
         return this.stripe;
     }

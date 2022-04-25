@@ -63,7 +63,12 @@ class CartCtrl extends BaseController {
             shipping_label_id: getJoiStringOrNull(),
             tax_nexus_applied: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             stripe_payment_intent_id: getJoiStringOrNull(),
+            stripe_order_id: getJoiStringOrNull(),
             paypal_order_id: getJoiStringOrNull(),
+            sales_tax: Joi.alternatives().try(
+                Joi.number().integer().min(0),
+                Joi.allow(null)
+            ),
             is_gift: Joi.boolean(),
 
             created_at: Joi.date(),
@@ -297,18 +302,35 @@ class CartCtrl extends BaseController {
                 }
             }
 
-            const TaxNexus = await this.TaxNexusCtrl.getModel()
-                .query((qb) => {
-                    qb.where('tenant_id', '=', tenantId);
-                    qb.andWhere('countryCodeAlpha2', '=', request.payload.shipping_countryCodeAlpha2);
-                    qb.andWhere('state', '=', request.payload.shipping_state);
-                })
-                .fetch();
+            // createStripeOrderForCart() needs the cart to have shipping address data
+            // so persisting the new address info here:
+            let Cart = await this.upsertCart(request.payload);
 
-            const Cart = await this.upsertCart({
-                ...request.payload,
-                tax_nexus_applied: TaxNexus ? TaxNexus.toJSON() : null
+            // Create an "Order" in stripe so the tax amount can be set
+            const stripeOrder = await this.createStripeOrderForCart(tenantId, Cart.get('id'));
+
+            if(!stripeOrder) {
+                throw new Error('Stripe Order returned null');
+            }
+
+            Cart = await this.upsertCart({
+                id: Cart.get('id'),
+                stripe_order_id: stripeOrder.id,
+                sales_tax: stripeOrder.total_details.amount_tax
             });
+
+            // const TaxNexus = await this.TaxNexusCtrl.getModel()
+            //     .query((qb) => {
+            //         qb.where('tenant_id', '=', tenantId);
+            //         qb.andWhere('countryCodeAlpha2', '=', request.payload.shipping_countryCodeAlpha2);
+            //         qb.andWhere('state', '=', request.payload.shipping_state);
+            //     })
+            //     .fetch();
+
+            // const Cart = await this.upsertCart({
+            //     ...request.payload,
+            //     tax_nexus_applied: TaxNexus ? TaxNexus.toJSON() : null
+            // });
 
             const UpdatedCart = await this.getActiveCart(
                 Cart.get('id'),
@@ -645,45 +667,131 @@ class CartCtrl extends BaseController {
     }
 
 
-    async getStripePaymentIntentHandler(request, h) {
+    async createStripeOrderForCart(tenantId, cartId) {
+        const Cart = await this.getActiveCart(
+            cartId,
+            tenantId,
+            { withRelated: this.getAllCartRelations() }
+        );
+
+        if(!Cart) {
+            throw new Error('Cart not found');
+        }
+
+        const stripe = await this.StripeCtrl.getStripe(tenantId);
+        const c = Cart.toJSON();
+        // console.log("CART", c);
+
+        // https://stripe.com/docs/api/orders_v2/create#create_order_v2-line_items
+        const line_items = c.cart_items.map((item) => {
+            // Note: the Stripe "Price" has the product data included in it,
+            // so there's no need to specify the 'product' in the API request.
+            // In fact, only one 'price' or 'product' argument can be sent but not both
+            return {
+                price: item.product_variant_sku.stripe_price_id,
+                quantity: item.qty
+            }
+        });
+
+        return stripe.orders.create({
+            currency: c.currency || 'usd',
+            line_items: line_items,
+            payment: {
+                settings: {
+                    payment_method_types: ['card']
+                }
+            },
+            automatic_tax: {
+                enabled: true
+            },
+
+            // https://stripe.com/docs/api/orders_v2/create#create_order_v2-shipping_details
+            shipping_details: {
+                // name: `${c.shipping_firstName} ${c.shipping_lastName}`.trim(),
+                name: c.shipping_fullName,
+                address: {
+                    city: c.shipping_city,
+                    country: c.shipping_countryCodeAlpha2,
+                    line1: c.shipping_streetAddress,
+                    line2: c.shipping_extendedAddress,
+                    postal_code: c.shipping_postalCode,
+                    state: c.shipping_state
+                }
+            },
+
+            // https://stripe.com/docs/api/orders_v2/create#create_order_v2-billing_details
+            // This helps with "Risk Insights"
+            billing_details: {
+                address: {
+                    city: c.billing_address.city,
+                    country: c.billing_address.countryCodeAlpha2,
+                    line1: c.billing_address.streetAddress,
+                    line2: c.billing_address.extendedAddress,
+                    postal_code: c.billing_address.postalCode,
+                    state: c.billing_address.state
+                },
+                email: c.shipping_email,
+                name: c.billing_fullName,
+                phone: c.billing_same_as_shipping ? c.shipping_phone : c.billing_phone
+            },
+
+            expand: ['line_items']
+        });
+    }
+
+
+    /**
+     * Submits the Stripe order
+     * https://stripe.com/docs/orders-beta/tax?html-or-react=html#submit-order
+     *
+     * @param {*} tenantId
+     * @param {*} stripeOrder
+     * @returns
+     */
+     async submitStripeOrderForCart(tenantId, cartId) {
+        const Cart = await this.getActiveCart(
+            cartId,
+            tenantId,
+            { withRelated: this.getAllCartRelations() }
+        );
+
+        if(!Cart) {
+            throw new Error('Cart not found');
+        }
+
+        const stripe = await this.StripeCtrl.getStripe(tenantId);
+
+        const resource = stripe.StripeResource.extend({
+            request: stripe.StripeResource.method({
+                method: 'POST',
+                path: `orders/${Cart.get('stripe_order_id')}/submit`
+            })
+        });
+
+        return new resource(stripe).request({
+            expected_total: Cart.get('grand_total'),
+            expand: ['payment.payment_intent'],
+        });
+    }
+
+
+    async getStripeOrderHandler(request, h) {
         try {
-            global.logger.info('REQUEST: CartCtrl.getStripePaymentIntentHandler', {
+            global.logger.info('REQUEST: CartCtrl.getStripeOrderHandler', {
                 meta: request.payload
             });
 
             const tenantId = this.getTenantIdFromAuth(request);
-            const stripe = await this.StripeCtrl.getStripe(tenantId);
+            const submittedOrder = await this.submitStripeOrderForCart(tenantId, request.payload.id)
 
-            const Cart = await this.getActiveCart(
-                request.payload.id,
-                tenantId,
-                { withRelated: this.getAllCartRelations() }
-            );
-
-            if(!Cart) {
-                throw new Error('Cart not found');
-            }
-
-            console.log("CART", Cart.toJSON())
-
-            const paymentIntent = await stripe.paymentIntents.create({
-                amount: Cart.get('grand_total'),
-                currency: Cart.get('currency') || 'usd',
-                payment_method_types: ['card'],
-            });
-
-            if(!paymentIntent) {
-                throw new Error('PaymentIntent returned null');
-            }
-
-            global.logger.info('RESPONSE: CartCtrl.getStripePaymentIntentHandler', {
+            global.logger.info('RESPONSE: CartCtrl.getStripeOrderHandler', {
                 meta: {
-                    paymentIntent
+                    submittedOrder
                 }
             });
 
             return h.apiSuccess({
-                clientSecret: paymentIntent.client_secret
+                clientSecret: submittedOrder.payment.payment_intent.client_secret
             });
         }
         catch(err) {
