@@ -11,6 +11,7 @@ const DB_TABLES = {
     product_artists: 'product_artists',
     product_collections: 'product_collections',
     product_color_swatches: 'product_color_swatches',
+    product_cross_sells: 'product_cross_sells',
     product_data_tables: 'product_data_tables',
     product_variant_skus: 'product_variant_skus',
     product_variants: 'product_variants',
