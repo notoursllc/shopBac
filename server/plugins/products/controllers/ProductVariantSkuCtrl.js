@@ -70,7 +70,7 @@ class ProductVariantSkuCtrl extends BaseController {
             product_variant_id: Joi.string().uuid(),
 
             // STRIPE
-            stripe_price_id: Joi.string().uuid(),
+            stripe_price_id: Joi.string(),
             stripe_product_id: Joi.string().uuid(),
 
             // TIMESTAMPS
