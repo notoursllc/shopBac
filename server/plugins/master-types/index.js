@@ -1,4 +1,4 @@
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 
 const after = function (server) {
     const MasterTypeCtrl = new (require('./controllers/MasterTypeCtrl'))(server);

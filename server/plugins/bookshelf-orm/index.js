@@ -1,4 +1,4 @@
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 const Hoek = require('@hapi/hoek');
 
 
@@ -46,7 +46,7 @@ exports.plugin = {
         }
 
         // loading bookshelf plugins:
-        ['registry', 'virtuals', 'visibility', 'pagination', 'bookshelf-uuid', 'bookshelf-paranoia', 'bookshelf-mask'].map((plugin) => {
+        ['bookshelf-virtuals-plugin', 'bookshelf-uuid', 'bookshelf-paranoia', 'bookshelf-mask'].map((plugin) => {
             bookshelf.plugin(plugin);
         });
 

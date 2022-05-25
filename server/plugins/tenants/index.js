@@ -1,4 +1,4 @@
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 const isObject = require('lodash.isobject');
 
 const isProd = process.env.NODE_ENV === 'production';
@@ -46,23 +46,49 @@ exports.plugin = {
 
 
                 // Basic auth for store API usage
-                server.auth.strategy('storeauth', 'basic', {
-                    validate: async (request, tenant_id, api_key) => {
-                        const tenantData = await TenantCtrl.storeAuthIsValid(tenant_id, api_key);
-                        let credentials = null;
+                const validateStoreAuth = async (request, tenant_id, api_key) => {
+                    const tenantData = await TenantCtrl.storeAuthIsValid(tenant_id, api_key);
+                    let credentials = null;
 
-                        if(isObject(tenantData) && tenantData.id) {
-                            credentials = {
-                                tenant_id: tenantData.id
-                            };
-                        }
+                    console.log('REQUEST: storeauth1', credentials);
 
-                        return {
-                            isValid: !!tenantData,
-                            credentials: credentials
+                    if(isObject(tenantData) && tenantData.id) {
+                        credentials = {
+                            tenant_id: tenantData.id
                         };
                     }
-                });
+
+                    console.log('REQUEST: storeauth2', credentials);
+
+                    return {
+                        isValid: !!tenantData,
+                        credentials: credentials
+                    };
+                };
+
+                server.auth.strategy('storeauth', 'basic', { validate: validateStoreAuth });
+
+                // server.auth.strategy('storeauth', 'basic', {
+                //     validate: async (request, tenant_id, api_key) => {
+                //         const tenantData = await TenantCtrl.storeAuthIsValid(tenant_id, api_key);
+                //         let credentials = null;
+
+                //         console.log('REQUEST: storeauth1', credentials);
+
+                //         if(isObject(tenantData) && tenantData.id) {
+                //             credentials = {
+                //                 tenant_id: tenantData.id
+                //             };
+                //         }
+
+                //         console.log('REQUEST: storeauth2', credentials);
+
+                //         return {
+                //             isValid: !!tenantData,
+                //             credentials: credentials
+                //         };
+                //     }
+                // });
 
 
                 // By default the admin can access all routes

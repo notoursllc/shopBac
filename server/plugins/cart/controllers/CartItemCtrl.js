@@ -1,4 +1,4 @@
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 const Boom = require('@hapi/boom');
 const isFinite = require('lodash.isfinite');
 const isObject = require('lodash.isobject');

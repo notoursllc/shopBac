@@ -1,4 +1,4 @@
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 const isObject = require('lodash.isobject');
 const CoreController = require('./controllers/CoreController');
 
@@ -36,6 +36,7 @@ exports.plugin = {
         server.ext('onPostAuth', (request, h) => {
             global.logger.debug('onPostAuth: Adding tenant_id to request', {
                 meta: {
+                    'request.auth': request.auth,
                     'request.auth.credentials': request.auth.credentials
                 }
             });

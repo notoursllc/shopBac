@@ -1,4 +1,4 @@
-const Joi = require('@hapi/joi');
+const Joi = require('joi');
 const Boom = require('@hapi/boom');
 // const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
@@ -95,7 +95,7 @@ class TenantCtrl extends TenantBaseCtrl {
     }
 
 
-    async storeAuthIsValid(tenant_id, api_key) {
+    async storeAuthIsValid2(tenant_id, api_key) {
         global.logger.info('REQUEST: TenantCtrl:storeAuthIsValid', {
             meta: {
                 tenant_id,
@@ -108,41 +108,124 @@ class TenantCtrl extends TenantBaseCtrl {
             return false;
         }
 
-        const Tenant = await this.modelForgeFetch({
-            id: tenant_id,
-            active: true
-        });
-
-        if(!Tenant) {
-            global.logger.info('TenantCtrl:storeAuthIsValid - FAILED - no Tenant found');
-            return false;
-        }
-
-        const tenantApiKey = Tenant.get('api_key');
-
-        if(!tenantApiKey) {
-            global.logger.info('TenantCtrl:storeAuthIsValid - FAILED - Tenant does not have an API key');
-            return false;
-        }
-
-        const isValid = await bcrypt.compare(api_key, tenantApiKey);
-
-        if(!isValid) {
-            global.logger.info('TenantCtrl:storeAuthIsValid - FAILED - api key does not match hash');
-            return false;
-        }
-
-        const tenantJson = Tenant.toJSON();
-
-        global.logger.info('TenantCtrl:storeAuthIsValid - SUCCESS', {
+        global.logger.debug('TenantCtrl:11111', {
             meta: {
-                tenant: tenantJson
+                api_key,
             }
         });
 
-        return tenantJson;
+        this.fetchOne({
+            id: tenant_id,
+            active: true
+        })
+        .then((Tenant) => {
+            global.logger.debug('TenantCtrl:222222', {
+                meta: {
+                    api_key
+                }
+            });
+
+            if(!Tenant) {
+                global.logger.info('TenantCtrl:storeAuthIsValid - FAILED - no Tenant found');
+                return false;
+            }
+
+            const tenantApiKey = Tenant.get('api_key');
+
+            if(!tenantApiKey) {
+                global.logger.info('TenantCtrl:storeAuthIsValid - FAILED - Tenant does not have an API key');
+                return false;
+            }
+
+            global.logger.debug('TenantCtrl:bcrypt.compare', {
+                meta: {
+                    api_key,
+                    tenantApiKey
+                }
+            });
+
+            // const isValid = await bcrypt.compare(api_key, tenantApiKey);
+            const isValid = bcrypt.compareSync(api_key, tenantApiKey);
+
+            if(!isValid) {
+                global.logger.info('TenantCtrl:storeAuthIsValid - FAILED - api key does not match hash');
+                return false;
+            }
+
+            const tenantJson = Tenant.toJSON();
+
+            global.logger.info('TenantCtrl:storeAuthIsValid - SUCCESS', {
+                meta: {
+                    tenant: tenantJson
+                }
+            });
+
+            return tenantJson;
+        });
     }
 
+
+    async storeAuthIsValid(tenant_id, api_key) {
+        try {
+            global.logger.info('REQUEST: TenantCtrl:storeAuthIsValid', {
+                meta: {
+                    tenant_id,
+                    api_key
+                }
+            });
+
+            if (!tenant_id || !api_key) {
+                global.logger.info('TenantCtrl:storeAuthIsValid - FAILED');
+                return false;
+            }
+
+            const Tenant = await this.getModel()
+                .forge({
+                    id: tenant_id,
+                    active: true
+                })
+                .fetch();
+
+            if(!Tenant) {
+                global.logger.info('TenantCtrl:storeAuthIsValid - FAILED - no Tenant found');
+                return false;
+            }
+
+            const tenantApiKey = Tenant.get('api_key');
+
+            if(!tenantApiKey) {
+                global.logger.info('TenantCtrl:storeAuthIsValid - FAILED - Tenant does not have an API key');
+                return false;
+            }
+
+            global.logger.debug('TenantCtrl:bcrypt.compare', {
+                meta: {
+                    api_key,
+                    tenantApiKey
+                }
+            });
+
+            const isValid = await bcrypt.compare(api_key, tenantApiKey);
+
+            if(!isValid) {
+                global.logger.info('TenantCtrl:storeAuthIsValid - FAILED - api key does not match hash');
+                return false;
+            }
+
+            const tenantJson = Tenant.toJSON();
+
+            global.logger.info('TenantCtrl:storeAuthIsValid - SUCCESS', {
+                meta: {
+                    tenant: tenantJson
+                }
+            });
+
+            return tenantJson;
+        }
+        catch(err) {
+            console.log(err);
+        }
+    }
 }
 
 
