@@ -102,9 +102,6 @@ class ProductVariantCtrl extends BaseController {
                 skus: (query) => {
                     // query.where('published', '=', true);
                     query.orderBy('ordinal', 'ASC');
-                },
-                artist: (query) => {
-                    query.where('published', '=', true);
                 }
             },
         ];
