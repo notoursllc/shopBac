@@ -50,15 +50,11 @@ exports.plugin = {
                     const tenantData = await TenantCtrl.storeAuthIsValid(tenant_id, api_key);
                     let credentials = null;
 
-                    console.log('REQUEST: storeauth1', credentials);
-
                     if(isObject(tenantData) && tenantData.id) {
                         credentials = {
                             tenant_id: tenantData.id
                         };
                     }
-
-                    console.log('REQUEST: storeauth2', credentials);
 
                     return {
                         isValid: !!tenantData,
