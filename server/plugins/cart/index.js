@@ -485,22 +485,19 @@ exports.plugin = {
 
 
                 // LOADING BOOKSHELF MODEL:
-                // let baseModel = bookshelf.Model.extend({});
-                const baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
-
                 server.app.bookshelf.model(
                     'Cart',
-                    require('./models/Cart')(baseModel, server.app.bookshelf, server)
+                    require('./models/Cart')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(
                     'CartItem',
-                    require('./models/CartItem')(baseModel, server.app.bookshelf, server)
+                    require('./models/CartItem')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(
                     'CartRefund',
-                    require('./models/CartRefund')(baseModel, server.app.bookshelf, server)
+                    require('./models/CartRefund')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
             }
         );

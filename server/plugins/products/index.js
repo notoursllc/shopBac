@@ -687,46 +687,44 @@ exports.plugin = {
 
 
                 // LOADING BOOKSHELF MODELS:
-                const baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
-
                 server.app.bookshelf.model(
                     'Product',
-                    require('./models/Product')(baseModel, server.app.bookshelf, server)
+                    require('./models/Product')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(
                     'ProductVariant',
-                    require('./models/ProductVariant')(baseModel, server.app.bookshelf, server)
+                    require('./models/ProductVariant')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(
                     'ProductVariantSku',
-                    require('./models/ProductVariantSku')(baseModel, server.app.bookshelf, server)
+                    require('./models/ProductVariantSku')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(
                     'ProductAccentMessage',
-                    require('./models/ProductAccentMessage')(baseModel, server.app.bookshelf, server)
+                    require('./models/ProductAccentMessage')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(
                     'ProductColorSwatch',
-                    require('./models/ProductColorSwatch')(baseModel, server.app.bookshelf, server)
+                    require('./models/ProductColorSwatch')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(
                     'ProductCollection',
-                    require('./models/ProductCollection')(baseModel, server.app.bookshelf, server)
+                    require('./models/ProductCollection')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(
                     'ProductDataTable',
-                    require('./models/ProductDataTable')(baseModel, server.app.bookshelf, server)
+                    require('./models/ProductDataTable')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(
                     'ProductArtist',
-                    require('./models/ProductArtist')(baseModel, server.app.bookshelf, server)
+                    require('./models/ProductArtist')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
             }
         );

@@ -142,11 +142,9 @@ exports.plugin = {
 
 
                 // LOADING BOOKSHELF MODELS:
-                const baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
-
                 server.app.bookshelf.model(
                     'Hero',
-                    require('./models/Hero')(baseModel, server.app.bookshelf, server)
+                    require('./models/Hero')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
             }
         );

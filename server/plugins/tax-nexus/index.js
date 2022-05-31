@@ -101,11 +101,9 @@ exports.plugin = {
 
 
                 // LOADING BOOKSHELF MODELS:
-                const baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
-
                 server.app.bookshelf.model(
                     'TaxNexus',
-                    require('./models/TaxNexus')(baseModel, server.app.bookshelf, server)
+                    require('./models/TaxNexus')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
             }
         );

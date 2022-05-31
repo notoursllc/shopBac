@@ -4,9 +4,7 @@ module.exports = function (baseModel, bookshelf) {
     return baseModel.extend({
         tableName: DB_TABLES.tenant_members,
 
-        uuid: true,
-
-        hasTimestamps: true,
+        softDelete: false,
 
         hidden: [
             'password'

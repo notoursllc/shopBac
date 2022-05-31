@@ -50,7 +50,17 @@ exports.plugin = {
             bookshelf.plugin(plugin);
         });
 
+        server.app.knex = knex;
         server.app.bookshelf = bookshelf;
-        server.app.knex = knex
+
+        // The base model for bookshelf
+        const BaseModel = require('bookshelf-modelbase')(bookshelf);
+        server.app.bookshelfBaseModel = BaseModel.extend({
+            requireFetch: false,  // https://bookshelfjs.org/api.html#Model-instance-requireFetch
+            uuid: true,
+            hasTimestamps: true,
+            softDelete: true
+        });
+
     }
 };

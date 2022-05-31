@@ -5,12 +5,6 @@ module.exports = function (baseModel, bookshelf) {
         {
             tableName: DB_TABLES.product_variants,
 
-            uuid: true,
-
-            hasTimestamps: true,
-
-            softDelete: true,
-
             // One-to-One relation with Product
             // product_id is the foreign key in this model
             product: function() {

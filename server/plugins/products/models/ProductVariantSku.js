@@ -4,12 +4,6 @@ module.exports = function (baseModel, bookshelf) {
     return baseModel.extend({
         tableName: DB_TABLES.product_variant_skus,
 
-        uuid: true,
-
-        hasTimestamps: true,
-
-        softDelete: true,
-
         // One-to-One relation with ProductVariant
         // product_variant_id is the foreign key in this model
         product_variant: function() {
@@ -27,7 +21,6 @@ module.exports = function (baseModel, bookshelf) {
                 return this.get('base_price');
             },
         },
-
 
         hidden: [
             'tenant_id',

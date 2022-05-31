@@ -221,16 +221,14 @@ exports.plugin = {
                 ]);
 
                 // LOADING BOOKSHELF MODELS:
-                const baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
-
                 server.app.bookshelf.model(
                     'Tenant',
-                    require('./models/Tenant')(baseModel, server.app.bookshelf, server)
+                    require('./models/Tenant')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
 
                 server.app.bookshelf.model(
                     'TenantMember',
-                    require('./models/TenantMember')(baseModel, server.app.bookshelf, server)
+                    require('./models/TenantMember')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
             }
         );

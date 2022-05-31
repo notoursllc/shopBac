@@ -4,12 +4,6 @@ module.exports = function (baseModel, bookshelf) {
     return baseModel.extend({
         tableName: DB_TABLES.product_artists,
 
-        uuid: true,
-
-        hasTimestamps: true,
-
-        softDelete: true,
-
         // http://bookshelfjs.org/#Model-instance-hasMany
         products: function() {
             return this.hasMany('Product', 'product_artist_id');

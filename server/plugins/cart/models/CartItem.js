@@ -7,12 +7,6 @@ module.exports = function (baseModel, bookshelf) {
         {
             tableName: DB_TABLES.cart_items,
 
-            uuid: true,
-
-            hasTimestamps: true,
-
-            softDelete: true,
-
             // One-to-One relation with Cart
             // cart_id is the foreign key in this model
             cart: function() {

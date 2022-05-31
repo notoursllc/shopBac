@@ -4,9 +4,7 @@ module.exports = function (baseModel, bookshelf) {
     return baseModel.extend({
         tableName: DB_TABLES.tax_nexus,
 
-        uuid: true,
-
-        hasTimestamps: true,
+        softDelete: false,
 
         hidden: [
             'tenant_id'

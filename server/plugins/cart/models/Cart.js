@@ -8,12 +8,6 @@ module.exports = function (baseModel, bookshelf, server) {
         {
             tableName: DB_TABLES.carts,
 
-            uuid: true,
-
-            hasTimestamps: true,
-
-            softDelete: true,
-
             format(attributes) {
                 if (attributes.selected_shipping_rate) {
                     attributes.selected_shipping_rate = JSON.stringify(attributes.selected_shipping_rate)

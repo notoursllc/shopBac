@@ -94,11 +94,9 @@ exports.plugin = {
 
 
                 // LOADING BOOKSHELF MODELS:
-                const baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
-
                 server.app.bookshelf.model(
                     'Media',
-                    require('./models/Media')(baseModel, server.app.bookshelf, server)
+                    require('./models/Media')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
                 );
             }
         );

@@ -5,12 +5,6 @@ module.exports = function (baseModel, bookshelf) {
         {
             tableName: DB_TABLES.products,
 
-            uuid: true,
-
-            hasTimestamps: true,
-
-            softDelete: true,
-
             // tax: function() {
             //     // tax_id is the foreign key in this model
             //     return this.belongsTo('ProductTax', 'tax_id');

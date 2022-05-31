@@ -111,11 +111,9 @@ const after = function (server) {
 
 
     // LOADING BOOKSHELF MODELS:
-    const baseModel = require('bookshelf-modelbase')(server.app.bookshelf);
-
     server.app.bookshelf.model(
         'PackageType',
-        require('./models/PackageType')(baseModel, server.app.bookshelf, server)
+        require('./models/PackageType')(server.app.bookshelfBaseModel, server.app.bookshelf, server)
     );
 };
 

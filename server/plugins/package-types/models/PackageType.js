@@ -4,12 +4,6 @@ module.exports = function (baseModel, bookshelf) {
     return baseModel.extend({
         tableName: DB_TABLES.package_types,
 
-        uuid: true,
-
-        hasTimestamps: true,
-
-        softDelete: true,
-
         virtuals: {
             volume_cm: function() {
                 const val = parseFloat(this.get('length_cm') || 0, 2)
