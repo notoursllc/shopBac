@@ -10,6 +10,7 @@ module.exports.up = (knex) => {
             t.string('title').nullable();
             t.string('caption').nullable();
             t.text('description').nullable();
+            t.text('copyright').nullable();
 
             t.jsonb('metadata').nullable();
             t.boolean('is_good').defaultTo(false); // good / service
@@ -53,7 +54,7 @@ module.exports.up = (knex) => {
             t.timestamp('updated_at', true).nullable();
             t.timestamp('deleted_at', true).nullable();
 
-            // Foreign Keys:
+            // Foreign Key
             t.uuid('product_artist_id')
                 .notNullable()
                 .references('id')

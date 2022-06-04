@@ -26,8 +26,9 @@ class ProductCtrl extends BaseController {
             tenant_id: Joi.string().uuid(),
             published: Joi.boolean().default(false),
             title: Joi.alternatives().try(Joi.string().trim().max(100), Joi.allow(null)),
-            caption: Joi.alternatives().try(Joi.string().trim().max(100), Joi.allow(null)),
-            description: Joi.alternatives().try(Joi.string().trim().max(500), Joi.allow(null)),
+            caption: Joi.alternatives().try(Joi.string().trim().max(200), Joi.allow(null)),
+            description: Joi.alternatives().try(Joi.string().trim().max(2000), Joi.allow(null)),
+            copyright: Joi.alternatives().try(Joi.string().trim().max(200), Joi.allow(null)),
             is_good: Joi.boolean().default(true),
 
             // these should be stringified values in the payload:
