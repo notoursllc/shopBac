@@ -14,6 +14,7 @@ class ProductArtistCtrl extends BaseController {
         return {
             tenant_id: Joi.string().uuid(),
             published: Joi.boolean().default(true),
+            is_global: Joi.boolean().default(true),
             name: Joi.alternatives().try(
                 Joi.string().trim().max(100),
                 Joi.allow(null)

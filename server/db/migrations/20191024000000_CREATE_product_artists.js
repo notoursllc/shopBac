@@ -7,6 +7,7 @@ module.exports.up = (knex) => {
             t.uuid('id').primary();
             t.uuid('tenant_id').nullable();
             t.boolean('published').defaultTo(true);
+            t.boolean('is_global').defaultTo(true);
             t.string('name').notNullable();
             t.text('description').nullable();
             t.string('website').notNullable();
