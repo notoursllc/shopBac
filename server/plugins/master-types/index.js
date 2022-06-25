@@ -14,8 +14,7 @@ const after = function (server) {
                 },
                 validate: {
                     query: Joi.object({
-                        tenant_id: Joi.string().uuid().required(),
-                        object: Joi.string().max(100),
+                        ...MasterTypeCtrl.getSchema(),
                         ...MasterTypeCtrl.getPaginationSchema()
                     })
                 },
@@ -66,7 +65,8 @@ const after = function (server) {
                 description: 'Adds a new master type',
                 validate: {
                     payload: Joi.object({
-                        ...MasterTypeCtrl.getSchema()
+                        ...MasterTypeCtrl.getSchema(),
+                        name: Joi.string().max(100).required()
                     })
                 },
                 handler: (request, h) => {
@@ -82,7 +82,8 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
-                        ...MasterTypeCtrl.getSchema()
+                        ...MasterTypeCtrl.getSchema(),
+                        name: Joi.string().max(100).required()
                     })
                 },
                 handler: (request, h) => {
