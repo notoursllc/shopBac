@@ -309,6 +309,10 @@ class CartCtrl extends BaseController {
             // Create an "Order" in stripe so the tax amount can be set
             const stripeOrder = await this.createStripeOrderForCart(tenantId, Cart.get('id'));
 
+            global.logger.info('STRIPE ORDER', {
+                meta: stripeOrder
+            });
+
             if(!stripeOrder) {
                 throw new Error('Stripe Order returned null');
             }
@@ -407,6 +411,12 @@ class CartCtrl extends BaseController {
                 Cart.toJSON(),
                 PackageTypes.toJSON()
             );
+
+            console.log("PACKING RESULTS", packingResults)
+            packingResults.packed.forEach((obj) => {
+                console.log("PACING RES", obj)
+            })
+            console.log("PACKAGE TYPES", PackageTypes.toJSON())
 
             // in it's own try/catch so any failure saving the rate quote
             // won't affect this operation
@@ -693,6 +703,12 @@ class CartCtrl extends BaseController {
             }
         });
 
+        global.logger.info('REQUEST: CartCtrl.createStripeOrderForCart', {
+            meta: {
+                line_items
+            }
+        });
+
         return stripe.orders.create({
             currency: c.currency || 'usd',
             line_items: line_items,
@@ -767,6 +783,8 @@ class CartCtrl extends BaseController {
                 path: `orders/${Cart.get('stripe_order_id')}/submit`
             })
         });
+
+        console.log("EXPETED TOTAL", Cart.get('grand_total'))
 
         return new resource(stripe).request({
             expected_total: Cart.get('grand_total'),
