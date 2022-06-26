@@ -14,7 +14,7 @@ class MasterTypeCtrl extends BaseController {
         return {
             tenant_id: Joi.string().uuid().required(),
             published: Joi.boolean(),
-            object: Joi.string().max(100).required(),
+            object: Joi.string().max(100),
             name: Joi.string().max(100),
             value: Joi.number().integer().min(0),
             slug: Joi.string().allow('').allow(null),

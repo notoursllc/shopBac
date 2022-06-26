@@ -66,7 +66,8 @@ const after = function (server) {
                 validate: {
                     payload: Joi.object({
                         ...MasterTypeCtrl.getSchema(),
-                        name: Joi.string().max(100).required()
+                        name: Joi.string().max(100).required(),
+                        object: Joi.string().max(100).required()
                     })
                 },
                 handler: (request, h) => {
@@ -83,7 +84,8 @@ const after = function (server) {
                     payload: Joi.object({
                         id: Joi.string().uuid().required(),
                         ...MasterTypeCtrl.getSchema(),
-                        name: Joi.string().max(100).required()
+                        name: Joi.string().max(100).required(),
+                        object: Joi.string().max(100).required()
                     })
                 },
                 handler: (request, h) => {
