@@ -282,7 +282,7 @@ class CartCtrl extends BaseController {
                 // we only submitted one address so we only care about the first response:
                 validationResponse = response[0];
 
-                // Only persisting the cart data if there was no validation error
+                // Return here is there is a validation error
                 // https://www.shipengine.com/docs/addresses/validation/#address-status-meanings
                 if(validationResponse.status === 'error') {
                     return h.apiSuccess({
@@ -302,8 +302,8 @@ class CartCtrl extends BaseController {
                 }
             }
 
-            // createStripeOrderForCart() needs the cart to have shipping address data
-            // so persisting the new address info here:
+            // Persisting the shipping address in the cart now
+            // because createStripeOrderForCart() needs the cart to have shipping address data
             let Cart = await this.upsertCart(request.payload);
 
             // Create an "Order" in stripe so the tax amount can be set
@@ -412,11 +412,11 @@ class CartCtrl extends BaseController {
                 PackageTypes.toJSON()
             );
 
-            console.log("PACKING RESULTS", packingResults)
-            packingResults.packed.forEach((obj) => {
-                console.log("PACING RES", obj)
-            })
-            console.log("PACKAGE TYPES", PackageTypes.toJSON())
+            // console.log("PACKING RESULTS", packingResults)
+            // packingResults.packed.forEach((obj) => {
+            //     console.log("PACING RES", obj)
+            // })
+            // console.log("PACKAGE TYPES", PackageTypes.toJSON())
 
             // in it's own try/catch so any failure saving the rate quote
             // won't affect this operation
@@ -690,33 +690,27 @@ class CartCtrl extends BaseController {
 
         const stripe = await this.StripeCtrl.getStripe(tenantId);
         const c = Cart.toJSON();
-        // console.log("CART", c);
 
-        // https://stripe.com/docs/api/orders_v2/create#create_order_v2-line_items
-        const line_items = c.cart_items.map((item) => {
-            // Note: the Stripe "Price" has the product data included in it,
-            // so there's no need to specify the 'product' in the API request.
-            // In fact, only one 'price' or 'product' argument can be sent but not both
-            return {
-                price: item.product_variant_sku.stripe_price_id,
-                quantity: item.qty
-            }
-        });
-
-        global.logger.info('REQUEST: CartCtrl.createStripeOrderForCart', {
-            meta: {
-                line_items
-            }
-        });
-
-        return stripe.orders.create({
+        const createConfig = {
             currency: c.currency || 'usd',
-            line_items: line_items,
+
+            // https://stripe.com/docs/api/orders_v2/create#create_order_v2-line_items
+            line_items: c.cart_items.map((item) => {
+                // Note: the Stripe "Price" has the product data included in it,
+                // so there's no need to specify the 'product' in the API request.
+                // In fact, only one 'price' or 'product' argument can be sent but not both
+                return {
+                    price: item.product_variant_sku.stripe_price_id,
+                    quantity: item.qty
+                }
+            }),
+
             payment: {
                 settings: {
                     payment_method_types: ['card']
                 }
             },
+
             automatic_tax: {
                 enabled: true
             },
@@ -752,7 +746,16 @@ class CartCtrl extends BaseController {
             },
 
             expand: ['line_items']
+        };
+
+        global.logger.info('REQUEST: CartCtrl.createStripeOrderForCart', {
+            meta: {
+                createConfig,
+                cart: c
+            }
         });
+
+        return stripe.orders.create(createConfig);
     }
 
 
