@@ -180,7 +180,7 @@ class CartCtrl extends BaseController {
 
         // mask plugin:
         // https://github.com/seegno/bookshelf-mask
-        return Cart.mask(`*,cart_items(id,qty,product(*),product_variant(id,currency,display_price,base_price,is_on_sale,sale_price,images,label,swatches),product_variant_sku(id,label,display_price,base_price,is_on_sale,sale_price,sku))`)
+        return Cart.mask(`*,cart_items(id,qty,product(*),product_variant(id,currency,images,label,swatches),product_variant_sku(id,label,display_price,base_price,is_on_sale,sale_price,sku))`)
     }
 
 
@@ -787,7 +787,7 @@ class CartCtrl extends BaseController {
             })
         });
 
-        console.log("EXPETED TOTAL", Cart.get('grand_total'))
+        // console.log("EXPETED TOTAL", Cart.get('grand_total'))
 
         return new resource(stripe).request({
             expected_total: Cart.get('grand_total'),

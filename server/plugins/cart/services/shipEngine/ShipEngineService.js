@@ -116,7 +116,7 @@ function getProductWeight(productId, cart) {
 
                 value: {
                     currency: 'usd',
-                    amount: obj.product_variant_sku.display_price || obj.product_variant.display_price
+                    amount: obj.product_variant_sku.display_price
                 }
             });
         });
