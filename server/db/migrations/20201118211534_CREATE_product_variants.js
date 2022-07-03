@@ -10,14 +10,10 @@ module.exports.up = (knex) => {
             t.integer('ordinal').nullable().defaultTo(1);
             t.string('label').nullable();
             t.integer('basic_color_type').nullable();
+            t.string('sku_label_type').nullable();
 
             // PRICING
             t.string('currency').defaultTo('usd');
-            t.integer('base_price').defaultTo(0);
-            t.integer('cost_price').defaultTo(0);
-            t.integer('compare_at_price').defaultTo(0);
-            t.integer('sale_price').defaultTo(0);
-            t.boolean('is_on_sale').defaultTo(false);
             t.boolean('is_taxable').defaultTo(true);
             t.string('tax_code').nullable();
 

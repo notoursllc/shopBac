@@ -220,20 +220,6 @@ describe('ShipEngineService -> getCustomsConfig()', () => {
     });
 
 
-    it('should use the "display_price" value from the product_variant when the product_variant_sku does not have a display_price', async () => {
-        const cart = getMockCart(1);
-        delete cart.cart_items[0].product_variant_sku.display_price;
-
-        const customsConfig = ShipEngineService.getCustomsConfig(cart);
-
-        expect(
-            customsConfig.customs_items[0].value.amount
-        ).to.equal(
-            cart.cart_items[0].product_variant.display_price
-        );
-    });
-
-
     it('should use the "display_price" value from the product_variant_sku when available', async () => {
         const cart = getMockCart(1);
         const customsConfig = ShipEngineService.getCustomsConfig(cart);

@@ -31,16 +31,11 @@ module.exports = function (baseModel, bookshelf) {
                     let total = null;
 
                     if(qty) {
-                        const product_variant_price = this.related('product_variant').get('display_price');
                         const product_variant_sku_price = this.related('product_variant_sku').get('display_price');
-
 
                         // The SKU price gets prescident if it exists
                         if (product_variant_sku_price !== null) {
                             total = product_variant_sku_price * qty;
-                        }
-                        else if (product_variant_price !== null) {
-                            total = product_variant_price * qty;
                         }
 
                         // if(total !== null) {

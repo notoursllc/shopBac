@@ -1,11 +1,13 @@
 const Joi = require('joi');
 const Boom = require('@hapi/boom');
 const BaseController = require('../../core/controllers/BaseController');
+const StripeCtrl = require('../../cart/controllers/StripeCtrl');
 
 class ProductVariantSkuCtrl extends BaseController {
 
     constructor(server) {
         super(server, 'ProductVariantSku');
+        this.StripeCtrl = new StripeCtrl(server);
     }
 
 
@@ -71,7 +73,7 @@ class ProductVariantSkuCtrl extends BaseController {
 
             // STRIPE
             stripe_price_id: Joi.string(),
-            stripe_product_id: Joi.string().uuid(),
+            stripe_product_id: Joi.string(),
 
             // TIMESTAMPS
             created_at: Joi.date(),
@@ -83,6 +85,71 @@ class ProductVariantSkuCtrl extends BaseController {
         }
 
         return schema;
+    }
+
+
+    async deleteSku(id, tenant_id, options) {
+        global.logger.info('REQUEST: ProductVariantSkuCtrl.deleteSku', {
+            meta: { id, tenant_id }
+        });
+
+        const Sku = await this.modelForgeFetch(
+            { id, tenant_id }
+        );
+
+        if(!Sku) {
+            throw new Error('Unable to find ProductVariantSku');
+        }
+
+        const promises = [];
+
+        if(Sku.get('stripe_price_id')) {
+            promises.push(
+                this.StripeCtrl.archivePrice(
+                    tenant_id,
+                    Sku.get('stripe_price_id')
+                )
+            );
+        }
+
+        if(Sku.get('stripe_product_id')) {
+            promises.push(
+                this.StripeCtrl.archiveProduct(
+                    tenant_id,
+                    Sku.get('stripe_product_id')
+                )
+            );
+        }
+
+        // delete this SKU
+        promises.push(
+            this.deleteModel(
+                id,
+                tenant_id,
+                options
+            )
+        );
+
+        global.logger.info('RESPONSE: ProductVariantSkuCtrl.deleteSku', {});
+
+        return Promise.all(promises);
+    }
+
+
+    async deleteHandler(request, h) {
+        try {
+            await this.deleteSku(
+                request.query.id,
+                this.getTenantIdFromAuth(request)
+            );
+
+            return h.apiSuccess();
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
     }
 
 

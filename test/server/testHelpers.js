@@ -84,7 +84,6 @@ function getMockCart(numItems) {
                 customs_harmonized_system_code: null,
             },
             product_variant: {
-                display_price: 1100,
                 weight_oz: 11
             },
             product_variant_sku: {

@@ -29,6 +29,10 @@ class ProductVariantCtrl extends BaseController {
                 Joi.number().integer().positive(),
                 Joi.allow(null)
             ),
+            sku_label_type: Joi.alternatives().try(
+                Joi.string().max(100),
+                Joi.allow(null)
+            ),
 
             // PRICING
             currency: Joi.alternatives().try(
@@ -36,11 +40,6 @@ class ProductVariantCtrl extends BaseController {
                 Joi.allow(null)
             ),
 
-            base_price: Joi.number().integer().min(0).empty('').default(0),
-            cost_price: Joi.number().integer().min(0).empty('').default(0),
-            compare_at_price: Joi.number().integer().min(0).empty('').default(0),
-            sale_price: Joi.number().integer().min(0).empty('').default(0),
-            is_on_sale: Joi.boolean().empty('').default(false),
             is_taxable: Joi.boolean().empty('').default(false),
             tax_code: Joi.alternatives().try(
                 Joi.number(),
@@ -132,13 +131,21 @@ class ProductVariantCtrl extends BaseController {
 
             const ProductVariant = await this.upsertModel(data, options);
 
-
-            // resize and save variant images
             if(ProductVariant && Array.isArray(skus)) {
                 const tenant_id = ProductVariant.get('tenant_id');
 
                 for(let i=0, l=skus.length; i<l; i++) {
-                    const Sku = await this.ProductVariantSkuCtrl.upsertModel(
+                    let stripePriceAction = 'create';
+                    let OldSKU;
+
+                    if(skus[i].id) {
+                        OldSKU = await this.ProductVariantSkuCtrl.fetchOne({
+                            id: skus[i].id,
+                            tenant_id: tenant_id
+                        });
+                    }
+
+                    const NewSKU = await this.ProductVariantSkuCtrl.upsertModel(
                         {
                             tenant_id,
                             product_variant_id: ProductVariant.get('id'),
@@ -147,23 +154,81 @@ class ProductVariantCtrl extends BaseController {
                         options
                     );
 
-                    // Create the product in Stripe
-                    if(!Sku.get('stripe_product_id')) {
-                        const stripe = await this.StripeCtrl.getStripe(tenant_id);
+                    if(OldSKU) {
+                        // Note that mutating Prices in the API is extremely limited:
+                        // https://stripe.com/docs/api/prices/update
+                        // There was a lively discussion here about the inability to delete a price:
+                        // https://github.com/stripe/stripe-python/issues/658
+                        // The same logic applies that prohibits the ability to mutate prices.... once they have been
+                        // used in a product, they are essentially 'frozen'.
 
-                        const stripePrice = await stripe.prices.create({
-                            currency: 'USD',
-                            unit_amount: Sku.get('display_price') || ProductVariant.get('display_price'),
-                            tax_behavior: 'exclusive', // https://stripe.com/docs/tax/products-prices-tax-codes-tax-behavior#tax-behavior
-                            'product_data[name]': `${Product.get('title')} SKU:${Sku.get('id')}`,  // (required) https://stripe.com/docs/api/prices/create#create_price-product_data-name
-                            'product_data[id]':  Sku.get('id'),  // https://stripe.com/docs/api/prices/create#create_price-product_data-id
-                            'product_data[tax_code]': Product.get('tax_code') // https://stripe.com/docs/api/prices/create#create_price-product_data-tax_code
-                        });
+                        // Therefore, we have to go through a tedious process of
+                        // - fetch the current SKU price
+                        // - compare it to the price being submitted here
+                        // - if different, then archive the current Stripe Price, and create a new one
 
-                        // Update the ProductVariantSku with the stripe product ID
+                        // STRIPE PRICE ACTION CALCULATION
+                        // no changes to Stripe price if the prices are the same
+                        if(OldSKU.get('display_price') === NewSKU.get('display_price')) {
+                            stripePriceAction = null;
+                        }
+                        // archive the current Stripe price if a null value is being sent
+                        else if(OldSKU.get('display_price') && !NewSKU.get('display_price')) {
+                            stripePriceAction = 'archive';
+                        }
+                        // update the current Stripe price if the old and new don't match
+                        else if(OldSKU.get('display_price') !== NewSKU.get('display_price')) {
+                            stripePriceAction = 'update';
+                        }
+                    }
+
+                    let stripePrice;
+
+                    const createPrice = () => {
+                        return this.StripeCtrl.createPrice(
+                            tenant_id,
+                            {
+                                unit_amount: NewSKU.get('display_price'),
+                                'product_data[name]': `${Product.get('title')} SKU:${NewSKU.get('id')}`,  // (required) https://stripe.com/docs/api/prices/create#create_price-product_data-name
+                                // 'product_data[id]':  NewSKU.get('id'),  // https://stripe.com/docs/api/prices/create#create_price-product_data-id
+                                'product_data[metadata]': { sku:  NewSKU.get('id') },
+                                'product_data[tax_code]': Product.get('tax_code') // https://stripe.com/docs/api/prices/create#create_price-product_data-tax_code
+                            }
+                        );
+                    };
+
+                    const archivePrice = () => {
+                        if(NewSKU.get('stripe_price_id')) {
+                            return this.StripeCtrl.archivePrice(
+                                tenant_id,
+                                NewSKU.get('stripe_price_id')
+                            )
+                        }
+                    };
+
+                    switch(stripePriceAction) {
+                        case 'create':
+                            stripePrice = await createPrice();
+                            break;
+
+                        case 'update':
+                            await archivePrice();
+                            stripePrice = await createPrice();
+                            break;
+
+                        case 'archive':
+                            await archivePrice();
+                            break;
+
+                        default:
+                            global.logger.info('ProductVariantCtrl.upsertVariant - Stripe Price - mutation is not needed because display_price has not changed');
+                    }
+
+                    // Update the ProductVariantSku with the stripe product ID
+                    if(stripePrice) {
                         await this.ProductVariantSkuCtrl.upsertModel(
                             {
-                                id: Sku.get('id'),
+                                id: NewSKU.get('id'),
                                 tenant_id,
                                 stripe_price_id: stripePrice.id,
                                 stripe_product_id: stripePrice.product
@@ -194,7 +259,7 @@ class ProductVariantCtrl extends BaseController {
      * @param {*} request
      * @param {*} h
      */
-    async deleteVariant(id, tenant_id, options) {
+     async deleteVariant(id, tenant_id, options) {
         global.logger.info('REQUEST: ProductVariantCtrl.deleteVariant', {
             meta: { id, tenant_id }
         });
@@ -213,54 +278,15 @@ class ProductVariantCtrl extends BaseController {
 
         // Delete skus
         if(Array.isArray(Skus)) {
-            const stripe = await this.StripeCtrl.getStripe(tenant_id);
-
-            try {
-                Skus.forEach((Sku) => {
-                    // Note:
-                    // Prices can not be deleted in Stripe.
-                    // Instead, they should be marked as active=false
-                    // Good explanation about this here:
-                    // https://github.com/stripe/stripe-python/issues/658
-                    if(Sku.get('stripe_price_id')) {
-                        promises.push(
-                            stripe.prices.update(
-                                Sku.get('stripe_price_id'),
-                                {
-                                    active: false
-                                }
-                            )
-                        );
-                    }
-
-                    // Note:
-                    // Products can not be deleted if it has a Price attached to it (which ours do)
-                    // so instead we mark it as active=false
-                    if(Sku.get('stripe_product_id')) {
-                        promises.push(
-                            stripe.products.update(
-                                Sku.get('stripe_product_id'),
-                                {
-                                    active: false
-                                }
-                            )
-                        );
-                    }
-
-                    // delete the SKU
-                    promises.push(
-                        this.ProductVariantSkuCtrl.deleteModel(
-                            Sku.get('id'),
-                            tenant_id,
-                            options
-                        )
-                    );
-                });
-            }
-            catch(err) {
-                global.logger.error('ProductVariantSkuCtrl.deleteModel - ERROR DELETING SKUS: ', err);
-                throw err;
-            }
+            Skus.forEach((Sku) => {
+                promises.push(
+                    this.ProductVariantSkuCtrl.deleteSku(
+                        Sku.get('id'),
+                        tenant_id,
+                        options
+                    )
+                )
+            });
         }
 
         promises.push(
@@ -270,6 +296,8 @@ class ProductVariantCtrl extends BaseController {
                 options
             )
         );
+
+        global.logger.info('RESPONSE: ProductVariantCtrl.deleteVariant', {});
 
         return Promise.all(promises);
     }

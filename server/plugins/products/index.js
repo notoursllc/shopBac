@@ -217,6 +217,22 @@ exports.plugin = {
                             }
                         }
                     },
+                    {
+                        method: 'DELETE',
+                        path: `${routePrefix}/product/variant/sku`,
+                        options: {
+                            description: 'Deletes a variant SKU',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    tenant_id: Joi.string().uuid()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return ProductVariantSkuCtrl.deleteHandler(request, h);
+                            }
+                        }
+                    },
 
 
                     /******************************

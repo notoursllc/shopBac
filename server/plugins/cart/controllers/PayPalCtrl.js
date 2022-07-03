@@ -145,7 +145,7 @@ class PayPalCtrl {
                 // unit_amount: {
                 //     currency_code: 'USD',
                 //     value: this.getUSD(
-                //         CartItem.related('product_variant_sku').get('display_price') || CartItem.related('product_variant').get('display_price')
+                //         CartItem.related('product_variant_sku').get('display_price')
                 //     )
                 // },
                 // tax: {
