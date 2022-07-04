@@ -3,13 +3,22 @@ const ShipEngineAPI = require('./ShipEngineAPI');
 const PackageService = require('../../../package-types/services/PackageService')
 
 
+function getEnvCarriers() {
+    try {
+        return JSON.parse(process.env.SHIPENGINE_CARRIERS);
+    }
+    catch(err) {
+        global.logger.error("ERROR GETTING SHIPENGINE_CARRIERS FROM ENVIRONMENT VARIABLE", {
+            meta: {
+                error: err
+            }
+        });
+        return [];
+    }
+}
+
 function getCarrierIds() {
-    // return [
-    //     // 'se-168142', // fedex
-    //     'se-164967' // usps
-    // ]
-    const ids = process.env.SHIPENGINE_CARRIER_IDS;
-    return ids.split(',');
+    return getEnvCarriers().map((obj) => obj.id);
 }
 
 
@@ -34,11 +43,13 @@ function isDomesticShipment(cart) {
 
 
 function getServiceCodesForCart(cart) {
-    return isDomesticShipment(cart)
-        ? ['usps_priority_mail']
-        : ['usps_priority_mail_international'];
+    const isDomestic = isDomesticShipment(cart);
 
-        // fedex comparible: fedex_standard_overnight / fedex_international_economy
+    return getEnvCarriers().map((obj) => {
+        return obj.service_codes[isDomestic ? 'domestic' : 'international']
+    });
+
+    // fedex comparible: fedex_standard_overnight / fedex_international_economy
 }
 
 
