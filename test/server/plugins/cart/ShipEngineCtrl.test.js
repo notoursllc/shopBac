@@ -5,7 +5,7 @@ const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
 const { getApiPrefix, getRequestHeader, getMockCart } = require('../../testHelpers');
 const { init } = require('../../../../server');
 
-const ShipEngineService = require('../../../../server/plugins/cart/services/shipEngine/ShipEngineService');
+const ShipEngineCtrl = require('../../../../server/plugins/cart/controllers/ShipEngineCtrl');
 const PackageTypeController = require('../../../../server/plugins/package-types/controllers/PackageTypeCtrl');
 
 const testCartId = '3904d7ab-aa81-478f-bd39-ec9129e52785';
@@ -22,19 +22,24 @@ function getMockPackageType(length, width, height, mergeObj) {
     return Object.assign({}, obj, mergeObj);
 }
 
-describe('ShipEngineService -> getProductWeight()', () => {
+
+describe('ShipEngineCtrl -> getProductWeight()', () => {
+    let Ctrl;
+
+    beforeEach(async () => {
+        const server = await init();
+        Ctrl = new ShipEngineCtrl(server);
+    });
 
     it('should return the weight of the * product_variant_sku * when its weight_oz value is a number', async () => {
-        const weight = ShipEngineService.getProductWeight(1, {
+        const weight = Ctrl.getProductWeight(1, {
             cart_items: [
                 {
                     product: { id: 1 },
-                    product_variant: { weight_oz: 2 },
                     product_variant_sku: { weight_oz: 3 },  // <=====
                 },
                 {
                     product: { id: 2 },
-                    product_variant: { weight_oz: 4 },
                     product_variant_sku: { weight_oz: 5 },
                 }
             ]
@@ -43,59 +48,17 @@ describe('ShipEngineService -> getProductWeight()', () => {
         expect(weight).to.equal(3);
     });
 
-    it('should return the weight of the * product_variant * when the product_variant_sku weight_oz value is zero', async () => {
-        const weight = ShipEngineService.getProductWeight(1, {
+
+
+    it('should return zero if weight_oz of product_variant_sku is null', async () => {
+        const weight = Ctrl.getProductWeight(2, {
             cart_items: [
                 {
                     product: { id: 1 },
-                    product_variant: { weight_oz: 2 }, // <=====
-                    product_variant_sku: { weight_oz: 0 },
-                },
-                {
-                    product: { id: 2 },
-                    product_variant: { weight_oz: 4 },
-                    product_variant_sku: { weight_oz: 5 },
-                }
-            ]
-        });
-
-        expect(weight).to.equal(2);
-    });
-
-
-    it('should return the weight of the * product_variant * when the weight_oz of product_variant_sku is null', async () => {
-        const weight = ShipEngineService.getProductWeight(2, {
-            cart_items: [
-                {
-                    product: { id: 1 },
-                    product_variant: { weight_oz: 2 },
                     product_variant_sku: { weight_oz: 3 },
                 },
                 {
                     product: { id: 2 },
-                    product_variant: { weight_oz: 4 }, // <=====
-                    product_variant_sku: { weight_oz: null },
-                }
-            ]
-        });
-
-        // console.log("BUILD PRODUCTS", products)
-
-        expect(weight).to.equal(4);
-    });
-
-
-    it('should return zero if weight_oz of both product_variant_sku and product_variant is null', async () => {
-        const weight = ShipEngineService.getProductWeight(2, {
-            cart_items: [
-                {
-                    product: { id: 1 },
-                    product_variant: { weight_oz: 2 },
-                    product_variant_sku: { weight_oz: 3 },
-                },
-                {
-                    product: { id: 2 },
-                    product_variant: { weight_oz: null },
                     product_variant_sku: { weight_oz: null },
                 }
             ]
@@ -105,12 +68,11 @@ describe('ShipEngineService -> getProductWeight()', () => {
     });
 
 
-    it('should return the weight of product_variant_sku if the value is a string', async () => {
-        const weight = ShipEngineService.getProductWeight(1, {
+    it('should return the weight as a number the value is a string', async () => {
+        const weight = Ctrl.getProductWeight(1, {
             cart_items: [
                 {
                     product: { id: 1 },
-                    product_variant: { weight_oz: '11.11' },
                     product_variant_sku: { weight_oz: '22.22' },
                 }
             ]
@@ -125,42 +87,57 @@ describe('ShipEngineService -> getProductWeight()', () => {
 ///////////////
 
 
-describe('ShipEngineService -> isDomesticShipment()', () => {
+describe('ShipEngineCtrl -> isDomesticShipment()', () => {
+
+    let Ctrl;
+
+    beforeEach(async () => {
+        const server = await init();
+        Ctrl = new ShipEngineCtrl(server);
+    });
 
     it('should return false when "shipping_countryCodeAlpha2" is not US', async () => {
-        expect(
-            ShipEngineService.isDomesticShipment(
-                { shipping_countryCodeAlpha2: 'CA' }
-            )
-        ).to.equal(false);
+        const isDomestic = await Ctrl.isDomesticShipment(
+            process.env.TEST_TENANT_ID,
+            { shipping_countryCodeAlpha2: 'CA' }
+        );
+
+        expect(isDomestic).to.equal(false);
     });
 
     it('should return true when "shipping_countryCodeAlpha2" is US', async () => {
-        expect(
-            ShipEngineService.isDomesticShipment(
-                { shipping_countryCodeAlpha2: 'US' }
-            )
-        ).to.equal(true);
+        const isDomestic = await Ctrl.isDomesticShipment(
+            process.env.TEST_TENANT_ID,
+            { shipping_countryCodeAlpha2: 'US' }
+        );
+
+        expect(isDomestic).to.equal(true);
     });
 
     it('should return true when "shipping_countryCodeAlpha2" is null', async () => {
-        expect(
-            ShipEngineService.isDomesticShipment(
-                { shipping_countryCodeAlpha2: null }
-            )
-        ).to.equal(true);
+        const isDomestic = await Ctrl.isDomesticShipment(
+            process.env.TEST_TENANT_ID,
+            { shipping_countryCodeAlpha2: null }
+        );
+
+        expect(isDomestic).to.equal(true);
     });
 
     it('should return true when no arguments are sent', async () => {
-        expect(
-            ShipEngineService.isDomesticShipment()
-        ).to.equal(true);
+        const isDomestic = await Ctrl.isDomesticShipment(
+            process.env.TEST_TENANT_ID
+        );
+
+        expect(isDomestic).to.equal(true);
     });
 
     it('should return true when the object does not have a "shipping_countryCodeAlpha2" property', async () => {
-        expect(
-            ShipEngineService.isDomesticShipment({})
-        ).to.equal(true);
+        const isDomestic = await Ctrl.isDomesticShipment(
+            process.env.TEST_TENANT_ID,
+            {}
+        );
+
+        expect(isDomestic).to.equal(true);
     });
 
 });
@@ -169,24 +146,33 @@ describe('ShipEngineService -> isDomesticShipment()', () => {
 ///////////////
 
 
-describe('ShipEngineService -> getServiceCodesForCart()', () => {
+describe('ShipEngineCtrl -> getServiceCodesForCart()', () => {
+
+    let Ctrl;
+
+    beforeEach(async () => {
+        const server = await init();
+        Ctrl = new ShipEngineCtrl(server);
+    });
 
     it('should return USPS domestic provider for domestic shipment', async () => {
-        expect(
-            ShipEngineService.getServiceCodesForCart(
-                { shipping_countryCodeAlpha2: 'US' }
-            )
-        ).to.equal(
+        const codes = await Ctrl.getServiceCodesForCart(
+            process.env.TEST_TENANT_ID,
+            { shipping_countryCodeAlpha2: 'US' }
+        );
+
+        expect(codes).to.equal(
             ['usps_priority_mail']
         );
     });
 
     it('should return USPS international for international shipment', async () => {
-        expect(
-            ShipEngineService.getServiceCodesForCart(
-                { shipping_countryCodeAlpha2: 'CA' }
-            )
-        ).to.equal(
+        const codes = await Ctrl.getServiceCodesForCart(
+            process.env.TEST_TENANT_ID,
+            { shipping_countryCodeAlpha2: 'CA' }
+        );
+
+        expect(codes).to.equal(
             ['usps_priority_mail_international']
         );
     });
@@ -197,11 +183,18 @@ describe('ShipEngineService -> getServiceCodesForCart()', () => {
 ///////////////
 
 
-describe('ShipEngineService -> getCustomsConfig()', () => {
+describe('ShipEngineCtrl -> getCustomsConfig()', () => {
+
+    let Ctrl;
+
+    beforeEach(async () => {
+        const server = await init();
+        Ctrl = new ShipEngineCtrl(server);
+    });
 
     it('should return a "customes_items" length that is the same length as the carts "cart_items" array', async () => {
         const cart1 = getMockCart(1);
-        const customsConfig = ShipEngineService.getCustomsConfig(cart1);
+        const customsConfig = Ctrl.getCustomsConfig(cart1);
 
         expect(
             customsConfig.customs_items.length
@@ -210,7 +203,7 @@ describe('ShipEngineService -> getCustomsConfig()', () => {
         );
 
         const cart2 = getMockCart(2);
-        const customsConfig2 = ShipEngineService.getCustomsConfig(cart2);
+        const customsConfig2 = Ctrl.getCustomsConfig(cart2);
 
         expect(
             customsConfig2.customs_items.length
@@ -222,7 +215,7 @@ describe('ShipEngineService -> getCustomsConfig()', () => {
 
     it('should use the "display_price" value from the product_variant_sku when available', async () => {
         const cart = getMockCart(1);
-        const customsConfig = ShipEngineService.getCustomsConfig(cart);
+        const customsConfig = Ctrl.getCustomsConfig(cart);
 
         expect(
             customsConfig.customs_items[0].value.amount
@@ -237,12 +230,14 @@ describe('ShipEngineService -> getCustomsConfig()', () => {
 ///////////////
 
 
-describe('ShipEngineService -> getProductArrayFromCart()', () => {
+describe('ShipEngineCtrl -> getProductArrayFromCart()', () => {
 
     let server;
+    let Ctrl;
 
     beforeEach(async () => {
         server = await init();
+        Ctrl = new ShipEngineCtrl(server);
     });
 
     afterEach(async () => {
@@ -263,7 +258,7 @@ describe('ShipEngineService -> getProductArrayFromCart()', () => {
         });
 
         const cart = res.result.data;
-        const products = ShipEngineService.getProductArrayFromCart(cart);
+        const products = Ctrl.getProductArrayFromCart(cart);
 
         // console.log("BUILD PRODUCTS", products)
 
@@ -276,12 +271,14 @@ describe('ShipEngineService -> getProductArrayFromCart()', () => {
 ///////////////
 
 
-describe('ShipEngineService -> getApiPackageTypes()', () => {
+describe('ShipEngineCtrl -> getApiPackageTypes()', () => {
 
     let server;
+    let Ctrl;
 
     beforeEach(async () => {
         server = await init();
+        Ctrl = new ShipEngineCtrl(server);
     });
 
     afterEach(async () => {
@@ -289,7 +286,8 @@ describe('ShipEngineService -> getApiPackageTypes()', () => {
     });
 
     it('should return all "code_for_carrier" values that have been specified in the PackageType objejcts', async () => {
-        const packageTypes = ShipEngineService.getApiPackageTypes(
+        const packageTypes = await Ctrl.getApiPackageTypes(
+            process.env.TEST_TENANT_ID,
             getMockCart(1),
             [
                 getMockPackageType(11, 6, 6, {
@@ -313,7 +311,8 @@ describe('ShipEngineService -> getApiPackageTypes()', () => {
 
 
     it('should only return the "package" type when the PackageType objects do not specify any "code_for_carrier" values', async () => {
-        const packageTypes = ShipEngineService.getApiPackageTypes(
+        const packageTypes = await Ctrl.getApiPackageTypes(
+            process.env.TEST_TENANT_ID,
             getMockCart(1),
             [
                 getMockPackageType(11, 6, 6, {
@@ -337,11 +336,14 @@ describe('ShipEngineService -> getApiPackageTypes()', () => {
 /////////////////
 
 
-describe('ShipEngineService -> getRatesApiPayload()', () => {
+describe('ShipEngineCtrl -> getRatesApiPayload()', () => {
+
     let server;
+    let Ctrl;
 
     beforeEach(async () => {
         server = await init();
+        Ctrl = new ShipEngineCtrl(server);
     });
 
     afterEach(async () => {
@@ -359,7 +361,8 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
 
         // console.log("getShippingRatesForCart - allPackageTypes", allPackageTypes)
 
-        const { apiArgs }  = ShipEngineService.getRatesApiPayload(
+        const { apiArgs }  = await Ctrl.getRatesApiPayload(
+            process.env.TEST_TENANT_ID,
             getMockCart(1),
             [] // package types dont matter for this test
         );
@@ -377,7 +380,8 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
         const cart = getMockCart(1);
         cart.shipping_countryCodeAlpha2 = 'CA';
 
-        const { apiArgs } = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = await Ctrl.getRatesApiPayload(
+            process.env.TEST_TENANT_ID,
             cart,
             [] // package types dont matter for this test
         );
@@ -392,7 +396,8 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
 
     it('should return a "ship_to" object that matches the shipping props in the cart', async () => {
         const cart = getMockCart(1);
-        const { apiArgs } = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = await Ctrl.getRatesApiPayload(
+            process.env.TEST_TENANT_ID,
             cart,
             [] // package types dont matter for this test
         );
@@ -409,9 +414,9 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
     });
 
 
-
     it('should return one package', async () => {
-        const { apiArgs } = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = await Ctrl.getRatesApiPayload(
+            process.env.TEST_TENANT_ID,
             getMockCart(1),
             [
                 getMockPackageType(40, 25, 3, {
@@ -436,7 +441,8 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
 
 
     it('should return two packages because the the box cant hold both cart products', async () => {
-        const { apiArgs } = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = await Ctrl.getRatesApiPayload(
+            process.env.TEST_TENANT_ID,
             getMockCart(2),
             [
                 getMockPackageType(40, 25, 3, {
@@ -466,7 +472,8 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
 
 
     it('should return no packages because none of the package_types fit the product', async () => {
-        const { apiArgs } = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = await Ctrl.getRatesApiPayload(
+            process.env.TEST_TENANT_ID,
             getMockCart(1),
             [
                 getMockPackageType(9, 4, 4, {
@@ -488,7 +495,8 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
         const cart = getMockCart(2);
         cart.cart_items[1].product.ship_alone = true;
 
-        const { apiArgs } = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = await Ctrl.getRatesApiPayload(
+            process.env.TEST_TENANT_ID,
             cart,
             [
                 getMockPackageType(40, 25, 3, {
@@ -521,7 +529,8 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
         const cart = getMockCart(1);
         cart.shipping_countryCodeAlpha2 = 'CA';
 
-        const { apiArgs } = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = await Ctrl.getRatesApiPayload(
+            process.env.TEST_TENANT_ID,
             cart,
             [] // package types dont matter for this test
         );
@@ -534,7 +543,8 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
 
 
     it('should NOT return a "customs" property when cart.shipping_countryCodeAlpha2 is "US"', async () => {
-        const { apiArgs } = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = await Ctrl.getRatesApiPayload(
+            process.env.TEST_TENANT_ID,
             getMockCart(1),
             [] // package types dont matter for this test
         );
@@ -549,7 +559,8 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
         const cart = getMockCart(2);
         cart.cart_items[1].product.ship_alone = true;
 
-        const { apiArgs } = ShipEngineService.getRatesApiPayload(
+        const { apiArgs } = await Ctrl.getRatesApiPayload(
+            process.env.TEST_TENANT_ID,
             cart,
             [
                 getMockPackageType(40, 25, 3, {
@@ -573,14 +584,17 @@ describe('ShipEngineService -> getRatesApiPayload()', () => {
 });
 
 
-/////////////////
 
 
-describe('ShipEngineService -> getShippingRatesForCart()', () => {
+
+describe('ShipEngineCtrl -> getShippingRatesForCart()', () => {
+
     let server;
+    let Ctrl;
 
     beforeEach(async () => {
         server = await init();
+        Ctrl = new ShipEngineCtrl(server);
     });
 
     afterEach(async () => {
@@ -590,7 +604,8 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
 
     it(`should return rates from ShipEngine that uses "package_type: package"
         because none of the PackageTypes given contain a "code_for_carrier" value`, async () => {
-        const { rates } = await ShipEngineService.getShippingRatesForCart(
+        const { rates } = await Ctrl.getShippingRatesForCart(
+            process.env.TEST_TENANT_ID,
             getMockCart(1),
             [
                 getMockPackageType(40, 25, 3, {
@@ -608,7 +623,8 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
 
     it(`should return rates from ShipEngine that uses "package_type: small_flat_rate_box"
         because the PackageType used has a "code_for_carrier" value of "small_flat_rate_box"`, async () => {
-        const { rates } = await ShipEngineService.getShippingRatesForCart(
+        const { rates } = await Ctrl.getShippingRatesForCart(
+            process.env.TEST_TENANT_ID,
             getMockCart(1),
             [
                 getMockPackageType(40, 25, 3, {
@@ -627,7 +643,8 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
 
     it(`should not return any rates from ShipEngine because we have not provided
         any package types that fit the product"`, async () => {
-        const { rates } = await ShipEngineService.getShippingRatesForCart(
+        const { rates } = await Ctrl.getShippingRatesForCart(
+            process.env.TEST_TENANT_ID,
             getMockCart(1),
             [
                 getMockPackageType(30, 15, 3, {
@@ -650,7 +667,8 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
         cart.shipping_state = null;
         cart.shipping_postalCode = null;
 
-        const { rates } = await ShipEngineService.getShippingRatesForCart(
+        const { rates } = await Ctrl.getShippingRatesForCart(
+            process.env.TEST_TENANT_ID,
             cart,
             [
                 // even though the box fits, the response should still be empty
@@ -669,21 +687,21 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
 
     it(`should not return any rates from ShipEngine because the product and the package dont have any weight defined"`, async () => {
         const cart = getMockCart(1);
-        cart.cart_items[0].product_variant.weight_oz = null;
         cart.cart_items[0].product_variant_sku.weight_oz = null;
+        cart.weight_oz_total = 0;
 
-        const { rates } = await ShipEngineService.getShippingRatesForCart(
+        // even though the box fits, the response should still be empty
+        const package = getMockPackageType(50, 50, 50, {
+            label: 'Mock Package Type 1',
+            // code_for_carrier: 'small_flat_rate_box'
+            code_for_carrier: 'package'
+        });
+
+        const { rates } = await Ctrl.getShippingRatesForCart(
+            process.env.TEST_TENANT_ID,
             cart,
-            [
-                // even though the box fits, the response should still be empty
-                getMockPackageType(50, 50, 50, {
-                    label: 'Mock Package Type 1',
-                    code_for_carrier: 'small_flat_rate_box'
-                })
-            ]
+            [ package ]
         );
-
-        // console.log("SERVICE RESPONSE", rates)
 
         expect(rates.length).to.equal(0);
     });
@@ -701,7 +719,7 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
 
     //     // console.log("getShippingRatesForCart - allPackageTypes", allPackageTypes)
 
-    //     const { rates } = ShipEngineService.getShippingRatesForCart(
+    //     const { rates } = ShipEngineCtrl.getShippingRatesForCart(
     //         mockCart,
     //         allPackageTypes
     //     );
@@ -739,7 +757,7 @@ describe('ShipEngineService -> getShippingRatesForCart()', () => {
         // console.log("getShippingRatesForCart 1", cart)
         // console.log("getShippingRatesForCart 2", packageTypes)
 
-        const { rates } = ShipEngineService.getShippingRatesForCart(
+        const { rates } = Ctrl.getShippingRatesForCart(
             cart,
             packageTypes
         );

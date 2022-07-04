@@ -9,8 +9,7 @@ const TaxNexusCtrl = require('../../tax-nexus/controllers/TaxNexusCtrl');
 
 // third party APIs
 const { emailPurchaseReceiptToBuyer,  emailPurchaseAlertToAdmin, getPurchaseDescription } = require('../services/PostmarkService');
-const ShipEngineService = require('../services/shipEngine/ShipEngineService');
-const ShipEngineAPI = require('../services/shipEngine/ShipEngineAPI');
+const ShipEngineCtrl = require('../controllers/ShipEngineCtrl');
 
 
 function getJoiStringOrNull(strLen) {
@@ -25,6 +24,7 @@ class CartCtrl extends BaseController {
         this.StripeCtrl = new StripeCtrl(server);
         this.PayPalCtrl = new PayPalCtrl(server);
         this.TaxNexusCtrl = new TaxNexusCtrl(server);
+        this.ShipEngineCtrl = new ShipEngineCtrl(server);
     }
 
 
@@ -142,16 +142,6 @@ class CartCtrl extends BaseController {
     }
 
 
-    getTenant(tenantId) {
-        return this.server.app.bookshelf
-            .model('Tenant')
-            .query((qb) => {
-                qb.where('id', '=', tenantId);
-            })
-            .fetch();
-    }
-
-
     upsertCart(data) {
         return this.upsertModel({
             ...data
@@ -261,15 +251,18 @@ class CartCtrl extends BaseController {
 
             if(validate) {
                 // convert the cart shipping params names to respective params for ShipEngine
-                const response = await ShipEngineAPI.validateAddresses([
-                    {
-                        address_line1: request.payload.shipping_streetAddress,
-                        city_locality: request.payload.shipping_city,
-                        state_province: request.payload.shipping_state,
-                        postal_code: request.payload.shipping_postalCode,
-                        country_code: request.payload.shipping_countryCodeAlpha2,
-                    }
-                ]);
+                const response = await this.ShipEngineCtrl.validateAddresses(
+                    tenantId,
+                    [
+                        {
+                            address_line1: request.payload.shipping_streetAddress,
+                            city_locality: request.payload.shipping_city,
+                            state_province: request.payload.shipping_state,
+                            postal_code: request.payload.shipping_postalCode,
+                            country_code: request.payload.shipping_countryCodeAlpha2,
+                        }
+                    ]
+                );
 
                 // Hopefully this never happens
                 if(!Array.isArray(response)) {
@@ -407,7 +400,8 @@ class CartCtrl extends BaseController {
                 throw new Error("Cart not found")
             }
 
-            const { rates, packingResults } = await ShipEngineService.getShippingRatesForCart(
+            const { rates, packingResults } = await this.ShipEngineCtrl.getShippingRatesForCart(
+                tenantId,
                 Cart.toJSON(),
                 PackageTypes.toJSON()
             );
@@ -464,7 +458,8 @@ class CartCtrl extends BaseController {
                 meta: request.payload
             });
 
-            const data = await ShipEngineAPI.getRate(request.payload.rate_id);
+            const tenantId = this.getTenantIdFromAuth(request);
+            const data = await this.ShipEngineCtrl.getRate(tenantId, request.payload.rate_id);
 
             if(!data) {
                 throw new Error('A shipping rate for the given ID was not found')
@@ -472,7 +467,7 @@ class CartCtrl extends BaseController {
 
             const Cart = await this.getActiveCart(
                 request.payload.id,
-                this.getTenantIdFromAuth(request),
+                tenantId,
                 { withRelated: this.getAllCartRelations() }
             );
 
@@ -509,10 +504,12 @@ class CartCtrl extends BaseController {
                 meta: request.query
             });
 
+            const tenantId = this.getTenantIdFromAuth(request);
+
             const Cart = await this.getModel()
                 .query((qb) => {
                     qb.andWhere('id', '=', request.payload.id);
-                    qb.andWhere('tenant_id', '=', this.getTenantIdFromAuth(request));
+                    qb.andWhere('tenant_id', '=', tenantId);
                 })
                 .fetch();
 
@@ -528,7 +525,7 @@ class CartCtrl extends BaseController {
                 );
             }
 
-            const data = await ShipEngineAPI.buyShippingLabel(selectedRate.rate_id);
+            const data = await this.ShipEngineCtrl.buyShippingLabel(tenantId, selectedRate.rate_id);
 
             if(!data) {
                 throw new Error(`An error occurred when creating a shipping label for Rate ${request.payload.rate_id}`);
@@ -590,7 +587,7 @@ class CartCtrl extends BaseController {
 
             let label = null;
             if(Cart.get('shipping_label_id')) {
-                label = await ShipEngineAPI.getShippingLabel(Cart.get('shipping_label_id'));
+                label = await this.ShipEngineCtrl.getShippingLabel(tenantId, Cart.get('shipping_label_id'));
             }
 
             const paymentData = await this.getPayment(
@@ -610,39 +607,6 @@ class CartCtrl extends BaseController {
             throw Boom.badRequest(err);
         }
     }
-
-
-    /**
-     * Fetch a shipping rate from ShipEngine
-     *
-     * @param {*} request
-     * @param {*} h
-     * @returns {*} shipping rate
-     */
-    // async getShippingRateHandler(request, h) {
-    //     try {
-    //         global.logger.info('REQUEST: CartCtrl.getShippingRateHandler', {
-    //             meta: request.query
-    //         });
-
-    //         const data = await ShipEngineAPI.getRate(request.query.rate_id);
-
-    //         if(!data) {
-    //             throw new Error('A shipping rate for the given ID was not found')
-    //         }
-
-    //         global.logger.info('RESPONSE: CartCtrl.getShippingRateHandler', {
-    //             meta: data
-    //         });
-
-    //         return h.apiSuccess(data);
-    //     }
-    //     catch(err) {
-    //         global.logger.error(err);
-    //         global.bugsnag(err);
-    //         throw Boom.badRequest(err);
-    //     }
-    // }
 
 
     /**

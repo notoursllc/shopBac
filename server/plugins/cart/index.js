@@ -284,25 +284,6 @@ exports.plugin = {
                     /******************
                      * SHIPPING
                      ******************/
-                    //  {
-                    //     method: 'GET',
-                    //     path: '/cart/shipping/rate',
-                    //     options: {
-                    //         description: 'Gets the ShipEngine rate by ID',
-                    //         auth: {
-                    //             strategies: ['session']
-                    //         },
-                    //         validate: {
-                    //             query: Joi.object({
-                    //                 rate_id: Joi.string(),
-                    //                 tenant_id: Joi.string().uuid().required()
-                    //             })
-                    //         },
-                    //         handler: (request, h) => {
-                    //             return CartCtrl.getShippingRateHandler(request, h);
-                    //         }
-                    //     }
-                    // },
                     {
                         method: 'POST',
                         path: '/cart/shipping/estimate',

@@ -372,6 +372,16 @@ class BaseController {
             throw Boom.notFound(err);
         }
     }
+
+
+    async getTenant(tenantId) {
+        return this.server.app.bookshelf
+            .model('Tenant')
+            .query((qb) => {
+                qb.where('id', '=', tenantId);
+            })
+            .fetch();
+    }
 }
 
 module.exports = BaseController;

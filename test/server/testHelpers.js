@@ -83,9 +83,7 @@ function getMockCart(numItems) {
                 customs_country_of_origin: null,
                 customs_harmonized_system_code: null,
             },
-            product_variant: {
-                weight_oz: 11
-            },
+            product_variant: {},
             product_variant_sku: {
                 display_price: 1200,
                 weight_oz: 12
