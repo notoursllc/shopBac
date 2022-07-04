@@ -39,7 +39,7 @@ class PayPalCtrl {
             this.payPalEnvironment = new paypalSdk.core.SandboxEnvironment(clientId, clientSecret);
         }
         else {
-            this.payPalEnvironment = new paypalSdk.core.ProductionEnvironment(clientId, clientSecret);
+            this.payPalEnvironment = new paypalSdk.core.LiveEnvironment(clientId, clientSecret);
         }
 
         return this.payPalEnvironment;
