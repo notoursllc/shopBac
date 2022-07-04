@@ -54,7 +54,6 @@ class ProductVariantSkuCtrl extends BaseController {
             is_on_sale: Joi.boolean().empty('').default(false),
 
             // SHIPPING
-            weight_oz: Joi.number().precision(2).min(0).max(99999999.99).empty('').default(null),
             weight_oz: Joi.alternatives().try(
                 Joi.number().precision(2).min(0).max(99999999.99),
                 Joi.allow(null)

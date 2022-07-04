@@ -51,15 +51,10 @@ module.exports = function (baseModel, bookshelf) {
                     let total = null;
 
                     if(qty) {
-                        const product_variant_weight = this.related('product_variant').get('weight_oz');
                         const product_variant_sku_weight = this.related('product_variant_sku').get('weight_oz');
 
-                        // The SKU price gets prescident if it exists
                         if (product_variant_sku_weight !== null) {
                             total = product_variant_sku_weight * qty;
-                        }
-                        else if (product_variant_weight !== null) {
-                            total = product_variant_weight * qty;
                         }
                     }
 

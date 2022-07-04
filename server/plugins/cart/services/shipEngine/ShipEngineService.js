@@ -75,14 +75,9 @@ function getProductWeight(productId, cart) {
         cart.cart_items.forEach((obj) => {
             if(obj.product.id === productId) {
                 const variantSkuWeight = isObject(obj.product_variant_sku) ? parseFloat(obj.product_variant_sku.weight_oz || 0) : 0;
-                const variantWeight = isObject(obj.product_variant) ? parseFloat(obj.product_variant.weight_oz || 0) : 0;
 
-                // product_variant_sku get's first preference
                 if(variantSkuWeight) {
                     weight = variantSkuWeight;
-                }
-                else if(variantWeight) {
-                    weight = variantWeight;
                 }
             }
         })
@@ -292,9 +287,21 @@ async function getShippingRatesForCart(cart, packageTypes) {
         const { rate_response } = await ShipEngineAPI.getRates(apiArgs);
         const response = {};
 
+        // console.log("API ARGE FOR GETRATES", apiArgs)
+        // apiArgs.shipment.packages.forEach((obj) => {
+        //     console.log("package PACKAGE", obj)
+        // })
         // console.log("RATE RESPONSE", rate_response);
         // console.log("RATES", rate_response.rates);
-        // console.log("INVALID RATES", rate_response.invalid_rates);
+
+        // I want to log invalid rates for prod
+        if(rate_response?.invalid_rates?.length) {
+            global.logger.warn('ShipEngineService.getShippingRatesForCart - INVALID RATES', {
+                meta: {
+                    invalid_rates: rate_response.invalid_rates
+                }
+            });
+        }
 
         // TODO: add logic that will not add to the rates obj
         // if the entry's shipping_amount is greater than the shipping_amount of a faster entry
