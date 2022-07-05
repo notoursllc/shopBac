@@ -6,6 +6,14 @@ module.exports = function (baseModel, bookshelf) {
 
         softDelete: false,
 
+        format(attributes) {
+            if (attributes.shipengine_carriers) {
+                attributes.shipengine_carriers = JSON.stringify(attributes.shipengine_carriers);
+            }
+
+            return attributes;
+        },
+
         hidden: []
     });
 };

@@ -217,7 +217,43 @@ exports.plugin = {
                                 return TenantMemberCtrl.logoutHandler(request, h);
                             }
                         }
-                    }
+                    },
+
+                    /*
+                    *  ACCOUNT
+                    */
+                    {
+                        method: 'GET',
+                        path: '/account',
+                        options: {
+                            description: 'GET a tenant in a limited way',
+                            auth: {
+                                strategies: ['session']
+                            },
+                            handler: (request, h) => {
+                                return TenantCtrl.fetchAccountHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'PUT',
+                        path: '/account',
+                        options: {
+                            description: 'Updates a tenant in a limited way',
+                            auth: {
+                                strategies: ['session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    ...TenantCtrl.getAccountSchema(),
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return TenantCtrl.updateHandler(request, h);
+                            }
+                        }
+                    },
                 ]);
 
                 // LOADING BOOKSHELF MODELS:

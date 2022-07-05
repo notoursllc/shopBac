@@ -15,6 +15,10 @@ owasp.config({
 });
 
 
+function getJoiStringOrNull(strLen) {
+    return Joi.alternatives().try(Joi.string().trim().max(strLen || 100), Joi.allow(null));
+}
+
 class TenantCtrl extends TenantBaseCtrl {
 
     constructor(server) {
@@ -30,6 +34,28 @@ class TenantCtrl extends TenantBaseCtrl {
             active: Joi.boolean().default(true),
             created_at: Joi.date(),
             updated_at: Joi.date()
+        };
+    }
+
+    getAccountSchema() {
+        return {
+            application_name: getJoiStringOrNull(),
+            application_url: getJoiStringOrNull(250),
+            // application_logo: getJoiStringOrNull(),
+            stripe_key: getJoiStringOrNull(),
+            paypal_client_id: getJoiStringOrNull(),
+            paypal_client_secret: getJoiStringOrNull(),
+            shipengine_api_key: getJoiStringOrNull(),
+            shipengine_carriers: Joi.array().allow(null),  // IS THIS RIGHT?
+            shipping_from_name: getJoiStringOrNull(),
+            shipping_from_streetAddress: getJoiStringOrNull(),
+            shipping_from_extendedAddress: getJoiStringOrNull(),
+            shipping_from_company: getJoiStringOrNull(),
+            shipping_from_city: getJoiStringOrNull(),
+            shipping_from_state: getJoiStringOrNull(),
+            shipping_from_postalCode: getJoiStringOrNull(),
+            shipping_from_countryCodeAlpha2: getJoiStringOrNull(2),
+            shipping_from_phone: getJoiStringOrNull(),
         };
     }
 
@@ -63,17 +89,35 @@ class TenantCtrl extends TenantBaseCtrl {
     // }
 
 
-    // upsertHandler(request, h) {
-    //     // todo: check if email already exists if creating new tenant
+    updateHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: TenantCtrl:upsertHandler', {
+                meta: {
+                    payload: request.payload
+                }
+            });
 
-    //     const passwordValidation = owasp.test(request.payload.password);
+            if(Array.isArray(request.payload.shipengine_carriers)) {
+                for(let i=request.payload.shipengine_carriers.length-1; i>=0; i--) {
+                    if(!request.payload.shipengine_carriers[i].id
+                        || !request.payload.shipengine_carriers[i].service_codes?.domestic
+                        || !request.payload.shipengine_carriers[i].service_codes?.international) {
+                        request.payload.shipengine_carriers.splice(i, 1);
+                    }
+                }
+            }
 
-    //     // console.log('PWD VALIDATION', request.payload.password, passwordValidation);
+            request.payload.id = request.payload.tenant_id;
+            delete request.payload.tenant_id;
 
-    //     // request.payload.api_key = crypto.randomBytes(32).toString('hex');
-    //     request.payload.password = cryptPassword(request.payload.password);
-    //     return super.upsertHandler(request, h);
-    // }
+            return super.upsertHandler(request, h);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
 
 
     async contactUsHandler(request, h) {
@@ -93,7 +137,6 @@ class TenantCtrl extends TenantBaseCtrl {
             throw Boom.badRequest(err);
         }
     }
-
 
     async storeAuthIsValid2(tenant_id, api_key) {
         global.logger.info('REQUEST: TenantCtrl:storeAuthIsValid', {
@@ -225,6 +268,51 @@ class TenantCtrl extends TenantBaseCtrl {
         catch(err) {
             console.log(err);
         }
+    }
+
+
+    async fetchAccountHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: TenantCtrl.fetchAccountHandler', {
+                meta: {
+                    query: request.query
+                }
+            });
+
+            const Tenant = await this.fetchOne({
+                id: this.getTenantIdFromAuth(request)
+            });
+
+            if(!Tenant) {
+                return h.apiSuccess();
+            }
+
+            const json = Tenant.toJSON();
+            const whitelist = Object.keys(this.getAccountSchema());
+
+            const account = {};
+            for(let key in json) {
+                if(whitelist.includes(key)) {
+                    account[key] = json[key];
+                }
+            }
+
+            global.logger.info(`RESPONSE: TenantCtrl.fetchAccountHandler`, {
+                meta: {
+                    model: account
+                }
+            });
+
+            return h.apiSuccess(
+                account
+            );
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.notFound(err);
+        }
+
     }
 }
 
