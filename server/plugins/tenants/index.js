@@ -27,8 +27,11 @@ exports.plugin = {
                         isSameSite: isProd ? 'None' : false,
                         // domain: 'localhost',
                         path: '/',
-                        // clearInvalid: true
-                        clearInvalid: false
+                        // ttl: 3600000, // one hour
+                        // ttl: 60000, // one minute
+                        ttl: process.env.SESSION_TTL, // 30 seconds
+                        clearInvalid: true
+                        // clearInvalid: false
                     },
                     // redirectTo: '/login',
                     validateFunc: async (request, session) => {
@@ -40,7 +43,10 @@ exports.plugin = {
                             return { valid: false };
                         }
 
-                        return { valid: true, credentials: TenantMember.toJSON() };
+                        return {
+                            valid: true,
+                            credentials: TenantMember.toJSON()
+                        };
                     }
                 });
 
@@ -196,7 +202,7 @@ exports.plugin = {
                         path: '/tenant/member/login',
                         options: {
                             auth: false,
-                            description: 'Authenticates a tenant member and returns a cookie containing JWT',
+                            description: 'Authenticates a tenant member and sets a cookie',
                             validate: {
                                 payload: Joi.object({
                                     ...TenantMemberCtrl.getLoginSchema()
