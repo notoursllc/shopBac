@@ -251,6 +251,13 @@ class CartCtrl extends BaseController {
 
             if(validate) {
                 // convert the cart shipping params names to respective params for ShipEngine
+                // NOTE: Address validation is not 100% reliable.
+                // Therefore we should only continue with this transaction if
+                // the validation response is 'verified'.  Otherwise we should
+                // return the validation error/warning back to the user and let
+                // them decide how to procede.
+                // The comments in this HackerNews article (about Shopify) were enlightening:
+                // https://news.ycombinator.com/item?id=32034643
                 const response = await this.ShipEngineCtrl.validateAddresses(
                     tenantId,
                     [
@@ -277,21 +284,11 @@ class CartCtrl extends BaseController {
 
                 // Return here is there is a validation error
                 // https://www.shipengine.com/docs/addresses/validation/#address-status-meanings
-                if(validationResponse.status === 'error') {
+                if(validationResponse.status !== 'verified') {
                     return h.apiSuccess({
-                        validation_status: validationResponse.status,
+                        validation_response: validationResponse,
                         cart: null
                     });
-                }
-
-                // Adjust the request payload with the address returned from the ShipEngine API
-                if(validationResponse.matched_address) {
-                    request.payload.shipping_streetAddress = validationResponse.matched_address.address_line1;
-                    request.payload.shipping_city = validationResponse.matched_address.city_locality;
-                    request.payload.shipping_postalCode = validationResponse.matched_address.postal_code;
-
-                    // NOTE: not updating shipping_state and shipping_countryCodeAlpha2 because those values
-                    // need to be maintained for UI elements to work properly
                 }
             }
 
@@ -336,7 +333,7 @@ class CartCtrl extends BaseController {
             );
 
             return h.apiSuccess({
-                validation_status: isObject(validationResponse) ? validationResponse.status : null,
+                validation_response: validationResponse,
                 cart: UpdatedCart.toJSON()
             });
         }
@@ -732,6 +729,10 @@ class CartCtrl extends BaseController {
      * @returns
      */
      async submitStripeOrderForCart(tenantId, cartId) {
+        global.logger.info('REQUEST: CartCtrl.submitStripeOrderForCart', {
+            meta: { cartId }
+        });
+
         const Cart = await this.getActiveCart(
             cartId,
             tenantId,
@@ -751,25 +752,32 @@ class CartCtrl extends BaseController {
             })
         });
 
-        // console.log("EXPETED TOTAL", Cart.get('grand_total'))
-
-        return new resource(stripe).request({
+        const stripeArgs = {
             expected_total: Cart.get('grand_total'),
-            expand: ['payment.payment_intent'],
+            expand: ['payment.payment_intent']
+        };
+
+        // Logging this so I can see the 'expected_total' arg being passed to Stripe
+        // because sometimes I get this error:
+        // "The `expected_total` you passed does not match the order's current `amount_total`. This probably means something else concurrently modified the order."
+        global.logger.info('REQUEST: CartCtrl.submitStripeOrderForCart - stripe args', {
+            meta: stripeArgs
         });
+
+        return new resource(stripe).request(stripeArgs);
     }
 
 
-    async getStripeOrderHandler(request, h) {
+    async submitStripeOrderForCartHandler(request, h) {
         try {
-            global.logger.info('REQUEST: CartCtrl.getStripeOrderHandler', {
+            global.logger.info('REQUEST: CartCtrl.submitStripeOrderForCartHandler', {
                 meta: request.payload
             });
 
             const tenantId = this.getTenantIdFromAuth(request);
             const submittedOrder = await this.submitStripeOrderForCart(tenantId, request.payload.id)
 
-            global.logger.info('RESPONSE: CartCtrl.getStripeOrderHandler', {
+            global.logger.info('RESPONSE: CartCtrl.submitStripeOrderForCartHandler - Stripe resposne', {
                 meta: {
                     submittedOrder
                 }

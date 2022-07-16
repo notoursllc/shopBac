@@ -370,18 +370,18 @@ exports.plugin = {
                         method: 'POST',
                         path: '/cart/payment/intent',
                         options: {
-                            description: 'Returns a payment intent ID from Stripe',
+                            description: 'Submits an order to Stripe for a given cart',
                             auth: {
                                 strategies: ['storeauth', 'session']
                             },
                             validate: {
                                 payload: Joi.object({
-                                    id: Joi.string().uuid().required(),
+                                    id: Joi.string().uuid().required(), // cart ID
                                     tenant_id: Joi.string().uuid().required(),
                                 })
                             },
                             handler: (request, h) => {
-                                return CartCtrl.getStripeOrderHandler(request, h);
+                                return CartCtrl.submitStripeOrderForCartHandler(request, h);
                             }
                         }
                     },
