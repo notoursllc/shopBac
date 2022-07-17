@@ -456,6 +456,19 @@ class CartCtrl extends BaseController {
                 }
             }
 
+            // Update the cart with the selected_shipping_rate
+            // so the Cart.shipping_total virtual can return the rate
+            // when creating the Stripe order
+            if(getRateResponse) {
+                await this.updateModelForTenant(
+                    tenantId,
+                    request.payload.id,
+                    {
+                        selected_shipping_rate: getRateResponse
+                    }
+                );
+            }
+
             // We can create an "Order" in Stripe now that the
             // subtotal and shipping amount are known.
             // The Stripe order will set the sales tax amount
@@ -468,19 +481,13 @@ class CartCtrl extends BaseController {
                 throw new Error('Stripe Order returned null');
             }
 
-            const cartUpdateData = {
-                stripe_order_id: stripeOrder.id,
-                sales_tax: stripeOrder.total_details.amount_tax
-            }
-
-            if(getRateResponse) {
-                cartUpdateData.selected_shipping_rate = getRateResponse;
-            }
-
             await this.updateModelForTenant(
                 tenantId,
                 request.payload.id,
-                cartUpdateData
+                {
+                    stripe_order_id: stripeOrder.id,
+                    sales_tax: stripeOrder.total_details.amount_tax
+                }
             );
 
             const UpdatedCart = await this.getActiveCart(
