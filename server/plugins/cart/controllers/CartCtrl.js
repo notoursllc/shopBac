@@ -676,6 +676,8 @@ class CartCtrl extends BaseController {
         const stripe = await this.StripeCtrl.getStripe(tenantId);
         const c = Cart.toJSON();
 
+        // console.log("STRIPE CREATE ORDER- CART", c)
+
         const createConfig = {
             currency: c.currency || 'usd',
 
@@ -711,6 +713,19 @@ class CartCtrl extends BaseController {
                     line2: c.shipping_extendedAddress,
                     postal_code: c.shipping_postalCode,
                     state: c.shipping_state
+                }
+            },
+
+            // https://stripe.com/docs/api/orders_v2/create#create_order_v2-shipping_cost
+            shipping_cost: {
+                shipping_rate_data: {
+                    display_name: 'Shipping rate',
+                    type: 'fixed_amount',
+                    fixed_amount: {
+                        amount: c.shipping_total,
+                        currency: c.currency || 'usd'
+                    },
+                    tax_behavior: 'exclusive'
                 }
             },
 
@@ -788,7 +803,10 @@ class CartCtrl extends BaseController {
         // because sometimes I get this error:
         // "The `expected_total` you passed does not match the order's current `amount_total`. This probably means something else concurrently modified the order."
         global.logger.info('REQUEST: CartCtrl.submitStripeOrderForCart - stripe args', {
-            meta: stripeArgs
+            meta: {
+                stripeArgs: stripeArgs,
+                stripe_order_id: Cart.get('stripe_order_id')
+            }
         });
 
         return new resource(stripe).request(stripeArgs);
