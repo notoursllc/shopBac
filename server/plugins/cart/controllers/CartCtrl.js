@@ -233,85 +233,76 @@ class CartCtrl extends BaseController {
      * by the client?  Some kind of throttling should happen
      * so the user can't call the API over and over.
      */
-    async setShippingAddressHandler(request, h) {
-        global.logger.info('REQUEST: CartCtrl.setShippingAddressHandler', {
-            meta: request.payload
-        });
-
+    async validateShippingAddressHandler(request, h) {
         try {
+            global.logger.info('REQUEST: CartCtrl.validateShippingAddressHandler', {
+                meta: request.payload
+            });
+
             const tenantId = this.getTenantIdFromAuth(request);
 
-            // Save to a variable and then delete because the entire payload
-            // is used to upsert the shipping data, and a DB error will orrur
-            // if this 'validate' property exists
-            const validate = request.payload.validate;
-            delete request.payload.validate;
+            // convert the cart shipping params names to respective params for ShipEngine
+            // NOTE: Address validation is not 100% reliable.
+            // Therefore we should only continue with this transaction if
+            // the validation response is 'verified'.  Otherwise we should
+            // return the validation error/warning back to the user and let
+            // them decide how to procede.
+            // The comments in this HackerNews article (about Shopify) were enlightening:
+            // https://news.ycombinator.com/item?id=32034643
+            const response = await this.ShipEngineCtrl.validateAddresses(
+                tenantId,
+                [
+                    {
+                        address_line1: request.payload.shipping_streetAddress,
+                        city_locality: request.payload.shipping_city,
+                        state_province: request.payload.shipping_state,
+                        postal_code: request.payload.shipping_postalCode,
+                        country_code: request.payload.shipping_countryCodeAlpha2,
+                    }
+                ]
+            );
 
-            let validationResponse;
+            // Hopefully this never happens
+            if(!Array.isArray(response)) {
+                global.logger.error(`CartCtrl.validateShippingAddressHandler - the API resposne was expected to be an array but it is of type: ${typeof data}`, {
+                    meta: { 'API response': data }
+                });
+                throw Boom.badRequest();
+            }
 
-            if(validate) {
-                // convert the cart shipping params names to respective params for ShipEngine
-                // NOTE: Address validation is not 100% reliable.
-                // Therefore we should only continue with this transaction if
-                // the validation response is 'verified'.  Otherwise we should
-                // return the validation error/warning back to the user and let
-                // them decide how to procede.
-                // The comments in this HackerNews article (about Shopify) were enlightening:
-                // https://news.ycombinator.com/item?id=32034643
-                const response = await this.ShipEngineCtrl.validateAddresses(
-                    tenantId,
-                    [
-                        {
-                            address_line1: request.payload.shipping_streetAddress,
-                            city_locality: request.payload.shipping_city,
-                            state_province: request.payload.shipping_state,
-                            postal_code: request.payload.shipping_postalCode,
-                            country_code: request.payload.shipping_countryCodeAlpha2,
-                        }
-                    ]
-                );
-
-                // Hopefully this never happens
-                if(!Array.isArray(response)) {
-                    global.logger.error(`CartCtrl.setShippingAddressHandler - the API resposne was expected to be an array but it is of type: ${typeof data}`, {
-                        meta: { 'API response': data }
-                    });
-                    throw Boom.badRequest();
+            global.logger.info('RESPONSE: CartCtrl.validateShippingAddressHandler', {
+                meta: {
+                    validation_response: response[0]
                 }
+            });
 
+            // https://www.shipengine.com/docs/addresses/validation/#address-status-meanings
+            return h.apiSuccess({
                 // we only submitted one address so we only care about the first response:
-                validationResponse = response[0];
+                validation_response: response[0]
+            });
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
 
-                // Return here is there is a validation error
-                // https://www.shipengine.com/docs/addresses/validation/#address-status-meanings
-                if(validationResponse.status !== 'verified') {
-                    return h.apiSuccess({
-                        validation_response: validationResponse,
-                        cart: null
-                    });
-                }
-            }
 
-            // Persisting the shipping address in the cart now
-            // because createStripeOrderForCart() needs the cart to have shipping address data
-            let Cart = await this.upsertCart(request.payload);
-
-            // Create an "Order" in stripe so the tax amount can be set
-            const stripeOrder = await this.createStripeOrderForCart(tenantId, Cart.get('id'));
-
-            global.logger.info('STRIPE ORDER', {
-                meta: stripeOrder
+    async setShippingAddressHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: CartCtrl.setShippingAddressHandler', {
+                meta: request.payload
             });
 
-            if(!stripeOrder) {
-                throw new Error('Stripe Order returned null');
-            }
+            const tenantId = this.getTenantIdFromAuth(request);
 
-            Cart = await this.upsertCart({
-                id: Cart.get('id'),
-                stripe_order_id: stripeOrder.id,
-                sales_tax: stripeOrder.total_details.amount_tax
-            });
+            const Cart = await this.updateModelForTenant(
+                tenantId,
+                request.payload.id,
+                request.payload
+            );
 
             // const TaxNexus = await this.TaxNexusCtrl.getModel()
             //     .query((qb) => {
@@ -333,7 +324,6 @@ class CartCtrl extends BaseController {
             );
 
             return h.apiSuccess({
-                validation_response: validationResponse,
                 cart: UpdatedCart.toJSON()
             });
         }
@@ -456,21 +446,48 @@ class CartCtrl extends BaseController {
             });
 
             const tenantId = this.getTenantIdFromAuth(request);
-            const data = await this.ShipEngineCtrl.getRate(tenantId, request.payload.rate_id);
+            let getRateResponse;
 
-            if(!data) {
-                throw new Error('A shipping rate for the given ID was not found')
+            if(request.payload.rate_id) {
+                getRateResponse = await this.ShipEngineCtrl.getRate(tenantId, request.payload.rate_id);
+
+                if(!getRateResponse) {
+                    throw new Error('A shipping rate for the given ID was not found')
+                }
             }
 
-            const Cart = await this.getActiveCart(
+            // We can create an "Order" in Stripe now that the
+            // subtotal and shipping amount are known.
+            // The Stripe order will set the sales tax amount
+            const stripeOrder = await this.createStripeOrderForCart(
+                tenantId,
+                request.payload.id
+            );
+
+            if(!stripeOrder) {
+                throw new Error('Stripe Order returned null');
+            }
+
+            const cartUpdateData = {
+                stripe_order_id: stripeOrder.id,
+                sales_tax: stripeOrder.total_details.amount_tax
+            }
+
+            if(getRateResponse) {
+                cartUpdateData.selected_shipping_rate = getRateResponse;
+            }
+
+            await this.updateModelForTenant(
+                tenantId,
+                request.payload.id,
+                cartUpdateData
+            );
+
+            const UpdatedCart = await this.getActiveCart(
                 request.payload.id,
                 tenantId,
                 { withRelated: this.getAllCartRelations() }
             );
-
-            const UpdatedCart = await Cart.save({
-                selected_shipping_rate: data
-            });
 
             const UpdatedCartJson = UpdatedCart.toJSON();
 
@@ -639,6 +656,13 @@ class CartCtrl extends BaseController {
 
 
     async createStripeOrderForCart(tenantId, cartId) {
+        global.logger.info('REQUEST: CartCtrl.createStripeOrderForCart', {
+            meta: {
+                tenantId,
+                cartId
+            }
+        });
+
         const Cart = await this.getActiveCart(
             cartId,
             tenantId,
@@ -709,14 +733,17 @@ class CartCtrl extends BaseController {
             expand: ['line_items']
         };
 
-        global.logger.info('REQUEST: CartCtrl.createStripeOrderForCart', {
-            meta: {
-                createConfig,
-                cart: c
-            }
+        global.logger.info('REQUEST: CartCtrl.createStripeOrderForCart - Stripe args', {
+            meta: createConfig
         });
 
-        return stripe.orders.create(createConfig);
+        const stripeResponse = await stripe.orders.create(createConfig);
+
+        global.logger.info('REQUEST: CartCtrl.createStripeOrderForCart - Stripe response', {
+            meta: stripeResponse
+        });
+
+        return stripeResponse;
     }
 
 

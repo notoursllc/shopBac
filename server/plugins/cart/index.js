@@ -84,14 +84,13 @@ exports.plugin = {
                         method: 'POST',
                         path: '/cart/shippingaddress',
                         options: {
-                            description: 'Sets the shipping address in the cart, and optionally validates it',
+                            description: 'Sets the shipping address in the cart',
                             auth: {
                                 strategies: ['storeauth']
                             },
                             validate: {
                                 payload: Joi.object({
-                                    ...CartCtrl.getSchema(true),
-                                    validate: Joi.boolean().optional()
+                                    ...CartCtrl.getSchema(true)
                                 })
                             },
                             handler: (request, h) => {
@@ -99,6 +98,25 @@ exports.plugin = {
                             }
                         }
                     },
+                    {
+                        method: 'POST',
+                        path: '/cart/shippingaddress/validate',
+                        options: {
+                            description: 'Validates the shipping address for the cart',
+                            auth: {
+                                strategies: ['storeauth']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    ...CartCtrl.getSchema(true)
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.validateShippingAddressHandler(request, h);
+                            }
+                        }
+                    },
+
                     {
                         method: 'GET',
                         path: '/cart/order',
@@ -313,9 +331,9 @@ exports.plugin = {
                             },
                             validate: {
                                 payload: Joi.object({
-                                    id: Joi.string().uuid().required(),
+                                    id: Joi.string().uuid().required(), // cart ID
                                     tenant_id: Joi.string().uuid().required(),
-                                    rate_id: Joi.string().required()
+                                    rate_id: Joi.string().allow(null)
                                 })
                             },
                             handler: (request, h) => {

@@ -100,6 +100,40 @@ class BaseController {
 
 
     /**
+     * Update model for tenant
+     *
+     * @param {*} data
+     */
+    async updateModelForTenant(tenant_id, id, data, options) {
+        global.logger.info(`REQUEST: BaseController.updateModelForTenant (${this.modelName})`, {
+            meta: {
+                tenant_id,
+                data,
+                options
+            }
+        });
+
+        delete data.id;
+        delete data.tenant_id;
+
+        // https://bookshelfjs.org/api.html#Model-instance-save
+        const ModelInstance = await this.getModel()
+            .forge({
+                id,
+                tenant_id
+            })
+            .save(data, options)
+
+        global.logger.info(`RESPONSE: BaseController.updateModelForTenant (${this.modelName})`, {
+            meta: {
+                model: ModelInstance ? ModelInstance.toJSON() : null
+            }
+        });
+
+        return ModelInstance;
+    }
+
+    /**
      * Creates or updates a model
      * Note this method does not add the tenant_id to the payload
      *
