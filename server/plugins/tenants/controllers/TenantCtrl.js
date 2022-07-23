@@ -2,6 +2,7 @@ const Joi = require('joi');
 const Boom = require('@hapi/boom');
 // const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+const uuidV4 = require('uuid/v4');
 const owasp = require('owasp-password-strength-test');
 const TenantBaseCtrl = require('./TenantBaseCtrl');
 const { emailContactUsFormToAdmin } = require('../../cart/services/PostmarkService');
@@ -289,6 +290,7 @@ class TenantCtrl extends TenantBaseCtrl {
 
             const json = Tenant.toJSON();
             const whitelist = Object.keys(this.getAccountSchema());
+            whitelist.push('api_key_public');
 
             const account = {};
             for(let key in json) {
@@ -312,7 +314,99 @@ class TenantCtrl extends TenantBaseCtrl {
             global.bugsnag(err);
             throw Boom.notFound(err);
         }
+    }
 
+
+    async generateToken() {
+        const token = uuidV4().replace(/-/g, '');
+        const salt = bcrypt.genSaltSync(10);
+        const hashedToken = bcrypt.hashSync(token, salt);
+
+        return {
+            token,
+            hashedToken
+        }
+    }
+
+
+    async updateApiKeyHandler(request, h) {
+        try {
+            console.log("UPDATE API HSNDLER")
+            global.logger.info('REQUEST: TenantCtrl.updateApiKeyHandler', {
+                meta: {
+                    payload: request.payload
+                }
+            });
+
+            const tenantId = this.getTenantIdFromAuth(request);
+
+            const Tenant = await this.fetchOne({
+                id: tenantId
+            });
+
+            if(!Tenant) {
+                throw Boom.badRequest('Unable to find tenant');
+            }
+
+            const tokens = await this.generateToken();
+
+            await Tenant.save({
+                api_key: tokens.hashedToken,
+                api_key_public: tokens.token
+            });
+
+            global.logger.info('RESPONSE: TenantCtrl.updateApiKeyHandler', {
+                meta: {
+                    model: tokens.token
+                }
+            });
+
+            return h.apiSuccess({
+                token: tokens.token
+            });
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.notFound(err);
+        }
+    }
+
+
+    async deleteApiKeyHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: TenantCtrl.deleteApiKeyHandler', {
+                meta: {
+                    query: request.query
+                }
+            });
+
+            const tenantId = this.getTenantIdFromAuth(request);
+
+            const Tenant = await this.fetchOne({
+                id: tenantId
+            });
+
+            if(!Tenant) {
+                throw Boom.badRequest('Unable to find tenant');
+            }
+
+            await Tenant.save({
+                api_key: null,
+                api_key_public: null
+            });
+
+            global.logger.info(`RESPONSE: TenantCtrl.deleteApiKeyHandler`, {
+                meta: {}
+            });
+
+            return h.apiSuccess();
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.notFound(err);
+        }
     }
 }
 

@@ -260,6 +260,42 @@ exports.plugin = {
                             }
                         }
                     },
+                    {
+                        method: 'PUT',
+                        path: '/account/api_key',
+                        options: {
+                            description: 'Updates the API key for the Tenant',
+                            auth: {
+                                strategies: ['session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return TenantCtrl.updateApiKeyHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'DELETE',
+                        path: '/account/api_key',
+                        options: {
+                            description: 'Deletes the API key for the Tenant',
+                            auth: {
+                                strategies: ['session']
+                            },
+                            validate: {
+                                query: Joi.object({
+                                    tenant_id: Joi.string().uuid().required()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return TenantCtrl.deleteApiKeyHandler(request, h);
+                            }
+                        }
+                    },
                 ]);
 
                 // LOADING BOOKSHELF MODELS:
