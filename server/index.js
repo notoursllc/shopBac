@@ -103,6 +103,12 @@ function getServer() {
                             prefix: routePrefix
                         }
                     },
+                    {
+                        plugin: './plugins/exchange-rates',
+                        routes: {
+                            prefix: routePrefix
+                        }
+                    },
                 ]
                 // options: {
                 //     once: false

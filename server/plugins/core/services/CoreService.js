@@ -2,6 +2,7 @@ const DB_TABLES = {
     carts: 'carts',
     cart_items: 'cart_items',
     cart_refunds: 'cart_refunds',
+    exchange_rates: 'exchange_rates',
     heros: 'heros',
     payments: 'payments',
     master_types: 'master_types',
