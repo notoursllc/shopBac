@@ -11,6 +11,10 @@ module.exports = function (baseModel, bookshelf) {
                 attributes.shipengine_carriers = JSON.stringify(attributes.shipengine_carriers);
             }
 
+            if (attributes.supported_exchange_rates) {
+                attributes.supported_exchange_rates = JSON.stringify(attributes.supported_exchange_rates);
+            }
+
             return attributes;
         },
 

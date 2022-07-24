@@ -47,7 +47,7 @@ class TenantCtrl extends TenantBaseCtrl {
             paypal_client_id: getJoiStringOrNull(),
             paypal_client_secret: getJoiStringOrNull(),
             shipengine_api_key: getJoiStringOrNull(),
-            shipengine_carriers: Joi.array().allow(null),  // IS THIS RIGHT?
+            shipengine_carriers: Joi.array().allow(null),
             shipping_from_name: getJoiStringOrNull(),
             shipping_from_streetAddress: getJoiStringOrNull(),
             shipping_from_extendedAddress: getJoiStringOrNull(),
@@ -57,6 +57,8 @@ class TenantCtrl extends TenantBaseCtrl {
             shipping_from_postalCode: getJoiStringOrNull(),
             shipping_from_countryCodeAlpha2: getJoiStringOrNull(2),
             shipping_from_phone: getJoiStringOrNull(),
+            supported_exchange_rates: Joi.array().allow(null),
+            default_exchange_rate: getJoiStringOrNull()
         };
     }
 
