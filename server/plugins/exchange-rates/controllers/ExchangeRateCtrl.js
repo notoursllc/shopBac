@@ -72,7 +72,7 @@ class ExchangeRateCtrl extends BaseController {
             const modelJson = ExchangeRate ? ExchangeRate.toJSON() : null;
 
             //test
-            // this.fetchLatestRates
+            // this.fetchLatestRates();
 
             global.logger.info('RESPONSE: ExchangeRateCtrl.fetchRateHandler', {
                 meta: modelJson

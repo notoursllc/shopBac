@@ -57,8 +57,8 @@ class TenantCtrl extends TenantBaseCtrl {
             shipping_from_postalCode: getJoiStringOrNull(),
             shipping_from_countryCodeAlpha2: getJoiStringOrNull(2),
             shipping_from_phone: getJoiStringOrNull(),
-            supported_exchange_rates: Joi.array().allow(null),
-            default_exchange_rate: getJoiStringOrNull()
+            supported_currencies: Joi.array().allow(null),
+            default_currency: getJoiStringOrNull()
         };
     }
 
