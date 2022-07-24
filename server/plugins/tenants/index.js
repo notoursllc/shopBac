@@ -70,27 +70,16 @@ exports.plugin = {
 
                 server.auth.strategy('storeauth', 'basic', { validate: validateStoreAuth });
 
-                // server.auth.strategy('storeauth', 'basic', {
-                //     validate: async (request, tenant_id, api_key) => {
-                //         const tenantData = await TenantCtrl.storeAuthIsValid(tenant_id, api_key);
-                //         let credentials = null;
+                server.auth.strategy('cronauth', 'basic', {
+                    validate: async (request, cronUser, cronPass) => {
+                        const isValid = (cronUser === process.env.CRON_USERNAME && cronPass === process.env.CRON_PASSWORD);
 
-                //         console.log('REQUEST: storeauth1', credentials);
-
-                //         if(isObject(tenantData) && tenantData.id) {
-                //             credentials = {
-                //                 tenant_id: tenantData.id
-                //             };
-                //         }
-
-                //         console.log('REQUEST: storeauth2', credentials);
-
-                //         return {
-                //             isValid: !!tenantData,
-                //             credentials: credentials
-                //         };
-                //     }
-                // });
+                        return {
+                            isValid: isValid,
+                            credentials: isValid ? { user: cronUser } : null
+                        };
+                    }
+                });
 
 
                 // By default the admin can access all routes

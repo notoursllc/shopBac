@@ -29,6 +29,19 @@ exports.plugin = {
                                 return ExchangeRateCtrl.fetchRateHandler(request, h);
                             }
                         }
+                    },
+                    {
+                        method: 'POST',
+                        path: '/exchange-rate',
+                        options: {
+                            description: 'Refreshes the ExchangeRate',
+                            auth: {
+                                strategies: ['cronauth']
+                            },
+                            handler: (request, h) => {
+                                return ExchangeRateCtrl.refreshRateHandler(request, h);
+                            }
+                        }
                     }
                 ]);
 

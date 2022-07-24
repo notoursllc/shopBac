@@ -89,6 +89,32 @@ class ExchangeRateCtrl extends BaseController {
         }
     }
 
+
+    async refreshRateHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: ExchangeRateCtrl.refreshRateHandler', {
+                meta: {}
+            });
+
+            const ExchangeRate = await this.fetchLatestRates();
+
+            global.logger.info('RESPONSE: ExchangeRateCtrl.refreshRateHandler', {
+                meta: {
+                    rate: ExchangeRate ? ExchangeRate.toJSON() : null
+                }
+            });
+
+            return h.apiSuccess(
+                ExchangeRate
+            );
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.notFound(err);
+        }
+    }
+
 }
 
 module.exports = ExchangeRateCtrl;
