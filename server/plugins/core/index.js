@@ -1,12 +1,12 @@
 const Joi = require('joi');
 const isObject = require('lodash.isobject');
-const CoreController = require('./controllers/CoreController');
 
 exports.plugin = {
     once: true,
     pkg: require('./package.json'),
     register: function (server, options) {
-        CoreController.setServer(server);
+
+        const CoreCtrl = new (require('./controllers/CoreCtrl'))(server);
 
         /*
         server.auth.strategy('xCartToken', 'jwt-cookie', {
@@ -99,7 +99,7 @@ exports.plugin = {
                     auth: false,
                     description: 'Returns public app config info',
                     handler: (request, h) => {
-                        return CoreController.appConfigHandler(request, h);
+                        return CoreCtrl.appConfigHandler(request, h);
                     }
                 }
             },
@@ -114,7 +114,9 @@ exports.plugin = {
                             message: Joi.string()
                         })
                     },
-                    handler: CoreController.loggerHandler
+                    handler: (request, h) => {
+                        return CoreCtrl.loggerHandler(request, h);
+                    }
                 }
             },
             {
@@ -123,7 +125,9 @@ exports.plugin = {
                 options: {
                     auth: false,
                     description: 'Simple health check',
-                    handler: CoreController.healthzHandler
+                    handler: (request, h) => {
+                        return CoreCtrl.healthzHandler(h);
+                    }
                 }
             },
             {
@@ -133,7 +137,9 @@ exports.plugin = {
                     auth: false,
                     description: 'For generating robots.txt',
                 },
-                handler: CoreController.robotsHandler
+                handler: (request, h) => {
+                    return CoreCtrl.robotsHandler(h);
+                }
             }
         ]);
     }
