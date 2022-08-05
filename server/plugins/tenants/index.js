@@ -8,7 +8,7 @@ exports.plugin = {
     pkg: require('./package.json'),
     register: function (server, options) {
         server.dependency(
-            ['BookshelfOrm', 'Core'],
+            ['BookshelfOrm'],
             function (server) {
                 const TenantCtrl = new (require('./controllers/TenantCtrl'))(server);
                 const TenantMemberCtrl = new (require('./controllers/TenantMemberCtrl'))(server);
@@ -52,23 +52,23 @@ exports.plugin = {
 
 
                 // Basic auth for store API usage
-                const validateStoreAuth = async (request, tenant_id, api_key) => {
-                    const tenantData = await TenantCtrl.storeAuthIsValid(tenant_id, api_key);
-                    let credentials = null;
+                server.auth.strategy('storeauth', 'basic', {
+                    validate: async (request, tenant_id, api_key) => {
+                        const tenantData = await TenantCtrl.storeAuthIsValid(tenant_id, api_key);
+                        let credentials = null;
 
-                    if(isObject(tenantData) && tenantData.id) {
-                        credentials = {
-                            tenant_id: tenantData.id
+                        if(isObject(tenantData) && tenantData.id) {
+                            credentials = {
+                                tenant_id: tenantData.id
+                            };
+                        }
+
+                        return {
+                            isValid: !!tenantData,
+                            credentials: credentials
                         };
                     }
-
-                    return {
-                        isValid: !!tenantData,
-                        credentials: credentials
-                    };
-                };
-
-                server.auth.strategy('storeauth', 'basic', { validate: validateStoreAuth });
+                });
 
                 server.auth.strategy('cronauth', 'basic', {
                     validate: async (request, cronUser, cronPass) => {
@@ -162,6 +162,19 @@ exports.plugin = {
                             },
                             handler: (request, h) => {
                                 return TenantCtrl.contactUsHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: '/tenant/exchange-rates',
+                        options: {
+                            description: 'GET the tenants supported_currencies mapped to the respective exhange rates',
+                            auth: {
+                                strategies: ['storeauth', 'session']
+                            },
+                            handler: (request, h) => {
+                                return TenantCtrl.exchangeRatesHandler(request, h);
                             }
                         }
                     },

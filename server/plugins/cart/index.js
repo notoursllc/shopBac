@@ -25,8 +25,8 @@ exports.plugin = {
                             },
                             validate: {
                                 query: Joi.object({
-                                    id: Joi.string().uuid(),
-                                    tenant_id: Joi.string().uuid(),
+                                    ...CartCtrl.getTenantIdSchema(),
+                                    ...CartCtrl.getIdSchema(),
                                     ...CartCtrl.getWithRelatedSchema()
                                 })
                             },
@@ -46,7 +46,7 @@ exports.plugin = {
                             },
                             validate: {
                                 query: Joi.object({
-                                    tenant_id: CartCtrl.getSchema().tenant_id,
+                                    ...CartCtrl.getTenantIdSchema(),
                                     ...CartCtrl.getPaginationSchema(),
                                     ...CartCtrl.getWithRelatedSchema()
                                 })
@@ -72,11 +72,33 @@ exports.plugin = {
                             },
                             validate: {
                                 payload: Joi.object({
+                                    // TODO: I think this should be more restrictive.
+                                    // I dont think we want the client to update every Cart property
                                     ...CartCtrl.getSchema(true)
                                 })
                             },
                             handler: (request, h) => {
                                 return CartCtrl.upsertHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'POST',
+                        path: '/cart/currency',
+                        options: {
+                            description: 'Sets the currency in the cart',
+                            auth: {
+                                strategies: ['storeauth']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    ...CartCtrl.getTenantIdSchema(),
+                                    ...CartCtrl.getIdSchema(),
+                                    currency: CartCtrl.getSchema().currency
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.setCurrencyHandler(request, h);
                             }
                         }
                     },
@@ -90,7 +112,9 @@ exports.plugin = {
                             },
                             validate: {
                                 payload: Joi.object({
-                                    ...CartCtrl.getSchema(true)
+                                    ...CartCtrl.getTenantIdSchema(),
+                                    ...CartCtrl.getIdSchema(),
+                                    ...CartCtrl.getShippingAddressSchema()
                                 })
                             },
                             handler: (request, h) => {
@@ -108,7 +132,9 @@ exports.plugin = {
                             },
                             validate: {
                                 payload: Joi.object({
-                                    ...CartCtrl.getSchema(true)
+                                    ...CartCtrl.getTenantIdSchema(),
+                                    ...CartCtrl.getIdSchema(),
+                                    ...CartCtrl.getShippingAddressSchema()
                                 })
                             },
                             handler: (request, h) => {
@@ -127,8 +153,8 @@ exports.plugin = {
                             },
                             validate: {
                                 query: Joi.object({
-                                    id: Joi.string().uuid(),
-                                    tenant_id: Joi.string().uuid()
+                                    ...CartCtrl.getTenantIdSchema(),
+                                    ...CartCtrl.getIdSchema()
                                 })
                             },
                             handler: (request, h) => {
@@ -146,8 +172,8 @@ exports.plugin = {
                             },
                             validate: {
                                 payload: Joi.object({
-                                    id: Joi.string().uuid(),
-                                    tenant_id: Joi.string().uuid()
+                                    ...CartCtrl.getTenantIdSchema(),
+                                    ...CartCtrl.getIdSchema()
                                 })
                             },
                             handler: (request, h) => {
@@ -165,8 +191,8 @@ exports.plugin = {
                             },
                             validate: {
                                 payload: Joi.object({
-                                    id: Joi.string().uuid(),
-                                    tenant_id: Joi.string().uuid(),
+                                    ...CartCtrl.getTenantIdSchema(),
+                                    ...CartCtrl.getIdSchema(),
                                     shipped: Joi.boolean().optional()
                                 })
                             },

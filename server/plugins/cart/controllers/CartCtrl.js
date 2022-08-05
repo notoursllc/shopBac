@@ -6,6 +6,7 @@ const PackageTypeCtrl = require('../../package-types/controllers/PackageTypeCtrl
 const StripeCtrl = require('./StripeCtrl');
 const PayPalCtrl = require('./PayPalCtrl');
 const TaxNexusCtrl = require('../../tax-nexus/controllers/TaxNexusCtrl');
+const TenantCtrl = require('../../tenants/controllers/TenantCtrl');
 
 // third party APIs
 const { emailPurchaseReceiptToBuyer,  emailPurchaseAlertToAdmin, getPurchaseDescription } = require('../services/PostmarkService');
@@ -25,6 +26,38 @@ class CartCtrl extends BaseController {
         this.PayPalCtrl = new PayPalCtrl(server);
         this.TaxNexusCtrl = new TaxNexusCtrl(server);
         this.ShipEngineCtrl = new ShipEngineCtrl(server);
+        this.TenantCtrl = new TenantCtrl(server);
+    }
+
+
+    getIdSchema() {
+        return {
+            id: Joi.string().uuid().required()
+        }
+    }
+
+
+    getTenantIdSchema() {
+        return {
+            tenant_id: Joi.string().uuid()
+        }
+    }
+
+
+    getShippingAddressSchema() {
+        return {
+            shipping_firstName: getJoiStringOrNull(),
+            shipping_lastName: getJoiStringOrNull(),
+            shipping_company: getJoiStringOrNull(),
+            shipping_streetAddress: getJoiStringOrNull(),
+            shipping_extendedAddress: getJoiStringOrNull(),
+            shipping_city: getJoiStringOrNull(),
+            shipping_state: getJoiStringOrNull(),
+            shipping_postalCode: getJoiStringOrNull(),
+            shipping_countryCodeAlpha2: getJoiStringOrNull(2),
+            shipping_phone: getJoiStringOrNull(),
+            shipping_email: Joi.alternatives().try(Joi.string().email().max(50).label('Shipping: Email'), Joi.allow(null)),
+        }
     }
 
 
@@ -45,19 +78,12 @@ class CartCtrl extends BaseController {
             billing_phone: getJoiStringOrNull(),
             billing_same_as_shipping: Joi.boolean().default(true),
 
-            shipping_firstName: getJoiStringOrNull(),
-            shipping_lastName: getJoiStringOrNull(),
-            shipping_company: getJoiStringOrNull(),
-            shipping_streetAddress: getJoiStringOrNull(),
-            shipping_extendedAddress: getJoiStringOrNull(),
-            shipping_city: getJoiStringOrNull(),
-            shipping_state: getJoiStringOrNull(),
-            shipping_postalCode: getJoiStringOrNull(),
-            shipping_countryCodeAlpha2: getJoiStringOrNull(2),
-            shipping_phone: getJoiStringOrNull(),
-            shipping_email: Joi.alternatives().try(Joi.string().email().max(50).label('Shipping: Email'), Joi.allow(null)),
+            ...this.getShippingAddressSchema(),
 
             currency: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
+
+            // This is never set by the client, so commenting it out:
+            // currency_exchange_rate: Joi.alternatives().try(Joi.number().integer().min(0), Joi.allow(null)),
             selected_shipping_rate: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             shipping_rate_quote: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             shipping_label_id: getJoiStringOrNull(),
@@ -325,6 +351,56 @@ class CartCtrl extends BaseController {
 
             return h.apiSuccess({
                 cart: UpdatedCart.toJSON()
+            });
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
+
+    async setCurrencyHandler(request, h) {
+        try {
+            const tenantId = this.getTenantIdFromAuth(request);
+
+            global.logger.info('REQUEST: CartCtrl.setCurrencyHandler', {
+                meta: {
+                    ...request.payload,
+                    tenantId
+                }
+            });
+
+            const currencyRates = await this.TenantCtrl.getSupportedCurrenyRates(tenantId);
+
+            const Cart = await this.updateModelForTenant(
+                tenantId,
+                request.payload.id,
+                {
+                    currency: request.payload.currency,
+                    currency_exchange_rate: currencyRates?.rates?.[request.payload.currency] || null
+                }
+            );
+
+            const UpdatedCart = await this.getActiveCart(
+                Cart.get('id'),
+                tenantId,
+                { withRelated: this.getAllCartRelations() }
+            );
+
+            const cartJson = UpdatedCart.toJSON();
+
+            global.logger.info('RESPONSE: CartCtrl.setCurrencyHandler', {
+                meta: {
+                    cart: cartJson,
+                    exchange_rates: currencyRates
+                }
+            });
+
+            return h.apiSuccess({
+                cart: cartJson,
+                exchange_rates: currencyRates
             });
         }
         catch(err) {
@@ -1321,7 +1397,10 @@ class CartCtrl extends BaseController {
 
     async getPaymentHandler(request, h) {
         try {
-            const Cart = await this.fetchOneForTenant(request);
+            const Cart = await this.fetchOneForTenant(
+                this.getTenantIdFromAuth(request),
+                request.query
+            );
 
             if(!Cart) {
                 throw new Error('Cart does not exist');

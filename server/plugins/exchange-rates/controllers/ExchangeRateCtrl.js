@@ -57,6 +57,13 @@ class ExchangeRateCtrl extends BaseController {
     }
 
 
+    fetchRate(fetchConfig) {
+        return this.getModel()
+            .forge({ id: 1 })
+            .fetch(fetchConfig);
+    }
+
+
     async fetchRateHandler(request, h, fetchConfig) {
         try {
             global.logger.info('REQUEST: ExchangeRateCtrl.fetchRateHandler', {
@@ -65,14 +72,8 @@ class ExchangeRateCtrl extends BaseController {
                 }
             });
 
-            const ExchangeRate = await this.getModel()
-                .forge({ id: 1 })
-                .fetch();
-
+            const ExchangeRate = await this.fetchRate(fetchConfig)
             const modelJson = ExchangeRate ? ExchangeRate.toJSON() : null;
-
-            //test
-            // this.fetchLatestRates();
 
             global.logger.info('RESPONSE: ExchangeRateCtrl.fetchRateHandler', {
                 meta: modelJson

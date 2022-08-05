@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const uuidV4 = require('uuid/v4');
 const owasp = require('owasp-password-strength-test');
 const TenantBaseCtrl = require('./TenantBaseCtrl');
+const ExchangeRateCtrl = require('../../exchange-rates/controllers/ExchangeRateCtrl.js');
 const { emailContactUsFormToAdmin } = require('../../cart/services/PostmarkService');
 
 owasp.config({
@@ -24,6 +25,7 @@ class TenantCtrl extends TenantBaseCtrl {
 
     constructor(server) {
         super(server, 'Tenant');
+        this.ExchangeRateCtrl = new ExchangeRateCtrl(server);
         this.validTenantCache = [];
     }
 
@@ -251,7 +253,7 @@ class TenantCtrl extends TenantBaseCtrl {
                 }
             });
 
-            const isValid = await bcrypt.compare(api_key, tenantApiKey);
+            const isValid = bcrypt.compareSync(api_key, tenantApiKey);
 
             if(!isValid) {
                 global.logger.info('TenantCtrl:storeAuthIsValid - FAILED - api key does not match hash');
@@ -403,6 +405,74 @@ class TenantCtrl extends TenantBaseCtrl {
             });
 
             return h.apiSuccess();
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.notFound(err);
+        }
+    }
+
+
+    /**
+     * For each of the 'supported_currencies' set in the Tenant table,
+     * get the respective exchange rate
+     *
+     * @param UUID tenantId
+     * @returns {*}
+     */
+    async getSupportedCurrenyRates(tenantId) {
+        const result = await Promise.all([
+            this.ExchangeRateCtrl.fetchRate(),
+            this.fetchOne({
+                id: tenantId
+            })
+        ]);
+
+        const ExchangeRate = result[0];
+        const Tenant = result[1];
+        const filteredRates = {
+            base: null,
+            default: null,
+            rates: {}
+        }
+
+        if(ExchangeRate && Tenant) {
+            filteredRates.base = ExchangeRate.get('base');
+            const rates = ExchangeRate.get('rates');
+            const supported_currencies = Tenant.get('supported_currencies');
+
+            if(Array.isArray(supported_currencies)) {
+                supported_currencies.forEach((countryCode) => {
+                    filteredRates.rates[countryCode] = rates[countryCode]
+                });
+            }
+            else {
+                filteredRates.rates = rates;
+            }
+
+            filteredRates.default = Tenant.get('default_currency');
+        }
+
+        return filteredRates;
+    }
+
+
+    async exchangeRatesHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: TenantCtrl.exchangeRatesHandler', {
+                meta: {}
+            });
+
+            const rates = await this.getSupportedCurrenyRates(
+                this.getTenantIdFromAuth(request)
+            );
+
+            global.logger.info(`RESPONSE: TenantCtrl.exchangeRatesHandler`, {
+                meta: { rates }
+            });
+
+            return h.apiSuccess(rates);
         }
         catch(err) {
             global.logger.error(err);

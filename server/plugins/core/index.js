@@ -5,142 +5,153 @@ exports.plugin = {
     once: true,
     pkg: require('./package.json'),
     register: function (server, options) {
+        server.dependency(
+            ['BookshelfOrm', 'Tenants'],
+            function (server) {
+                const CoreCtrl = new (require('./controllers/CoreCtrl'))(server);
 
-        const CoreCtrl = new (require('./controllers/CoreCtrl'))(server);
-
-        /*
-        server.auth.strategy('xCartToken', 'jwt-cookie', {
-            secret: process.env.JWT_TOKEN_SECRET,
-            cookieKey: 'cart-jwt',
-            verifyOptions: {   // https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback
-                ignoreExpiration: true,    // do not reject expired tokens
-                algorithms: [ 'HS256' ]
-            }
-        });
-        server.auth.default('xCartToken');
-        */
-
-
-        server.decorate('toolkit', 'apiSuccess', function (responseData, paginationObj) {
-            const response = {};
-            response.data = responseData;
-
-            if(isObject(paginationObj)) {
-                response.pagination = paginationObj;
-            }
-
-            return this.response(response);
-        });
+                /*
+                server.auth.strategy('xCartToken', 'jwt-cookie', {
+                    secret: process.env.JWT_TOKEN_SECRET,
+                    cookieKey: 'cart-jwt',
+                    verifyOptions: {   // https://github.com/auth0/node-jsonwebtoken#jwtverifytoken-secretorpublickey-options-callback
+                        ignoreExpiration: true,    // do not reject expired tokens
+                        algorithms: [ 'HS256' ]
+                    }
+                });
+                server.auth.default('xCartToken');
+                */
 
 
-        server.ext('onPostAuth', (request, h) => {
-            global.logger.debug('onPostAuth: Adding tenant_id to request', {
-                meta: {
-                    'request.auth': request.auth,
-                    'request.auth.credentials': request.auth.credentials
-                }
-            });
+                server.decorate('toolkit', 'apiSuccess', function (responseData, paginationObj) {
+                    const response = {};
+                    response.data = responseData;
 
-            // https://github.com/BoseCorp/hapi-auth-jwt2#want-to-access-the-jwt-token-after-validation
-            if(isObject(request.auth.credentials) && request.auth.credentials.tenant_id) {
-                const tenantId = request.auth.credentials.tenant_id;
+                    if(isObject(paginationObj)) {
+                        response.pagination = paginationObj;
+                    }
 
-                // query
-                // I don't think query can be an array, right?
-                if(isObject(request.query)) {
-                    request.query.tenant_id = tenantId;
-                }
+                    return this.response(response);
+                });
 
-                // payload
-                // if(isObject(request.payload)) {
-                //     request.payload.tenant_id = tenantId;
-                // }
 
-                if(Array.isArray(request.payload)) {
-                    request.payload.forEach((item) => {
-                        if(isObject(item)) {
-                            item.tenant_id = tenantId;
+                server.ext('onPostAuth', (request, h) => {
+                    global.logger.debug('onPostAuth: Adding tenant_id to request', {
+                        meta: {
+                            'request.auth': request.auth
                         }
                     });
-                }
-                else if(isObject(request.payload)) {
-                    request.payload.tenant_id = tenantId;
-                }
-            }
 
-            return h.continue;
-        });
+                    // https://github.com/BoseCorp/hapi-auth-jwt2#want-to-access-the-jwt-token-after-validation
+                    if(isObject(request.auth.credentials) && request.auth.credentials.tenant_id) {
+                        const tenantId = request.auth.credentials.tenant_id;
 
+                        // query
+                        // I don't think query can be an array, right?
+                        if(isObject(request.query)) {
+                            request.query.tenant_id = tenantId;
+                        }
 
-        // Updates the response output with a 'data' property if a data
-        // property also exists in the Boom error
-        server.ext('onPreResponse', (request, h) => {
-            const response = request.response;
+                        // payload
+                        // if(isObject(request.payload)) {
+                        //     request.payload.tenant_id = tenantId;
+                        // }
 
-            if (!response.isBoom || !response.hasOwnProperty('output')) {
-                return h.continue;
-            }
-
-            const is4xx = response.output.statusCode >= 400 && response.output.statusCode < 500;
-
-            if (is4xx && response.data) {
-                response.output.payload.data = response.data;
-            }
-
-            return h.continue;
-        });
-
-
-        server.route([
-            {
-                method: 'GET',
-                path: '/api/v1/app_config',
-                options: {
-                    auth: false,
-                    description: 'Returns public app config info',
-                    handler: (request, h) => {
-                        return CoreCtrl.appConfigHandler(request, h);
+                        if(Array.isArray(request.payload)) {
+                            request.payload.forEach((item) => {
+                                if(isObject(item)) {
+                                    item.tenant_id = tenantId;
+                                }
+                            });
+                        }
+                        else if(isObject(request.payload)) {
+                            request.payload.tenant_id = tenantId;
+                        }
+                        else {
+                            request.payload = {
+                                tenant_id: tenantId
+                            }
+                        }
                     }
-                }
-            },
-            {
-                method: 'POST',
-                path: '/api/v1/logger',
-                options: {
-                    description: 'Logs stuff',
-                    validate: {
-                        payload: Joi.object({
-                            type: Joi.string(),
-                            message: Joi.string()
-                        })
+
+                    return h.continue;
+                });
+
+
+                // Updates the response output with a 'data' property if a data
+                // property also exists in the Boom error
+                server.ext('onPreResponse', (request, h) => {
+                    const response = request.response;
+
+                    if (!response.isBoom || !response.hasOwnProperty('output')) {
+                        return h.continue;
+                    }
+
+                    const is4xx = response.output.statusCode >= 400 && response.output.statusCode < 500;
+
+                    if (is4xx && response.data) {
+                        response.output.payload.data = response.data;
+                    }
+
+                    return h.continue;
+                });
+
+
+                server.route([
+                    {
+                        method: 'GET',
+                        path: '/api/v1/app_config',
+                        options: {
+                            // auth: false,
+                            auth: {
+                                strategies: ['storeauth'] // TODO: storeauth cant be used here beause its defined in the Tenant plugin, which has not been loaded yet
+                            },
+                            description: 'Returns public app config info',
+                            handler: (request, h) => {
+                                return CoreCtrl.appConfigHandler(request, h);
+                            }
+                        }
                     },
-                    handler: (request, h) => {
-                        return CoreCtrl.loggerHandler(request, h);
+                    {
+                        method: 'POST',
+                        path: '/api/v1/logger',
+                        options: {
+                            description: 'Logs stuff',
+                            validate: {
+                                payload: Joi.object({
+                                    type: Joi.string(),
+                                    message: Joi.string()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CoreCtrl.loggerHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: '/api/v1/healthz',
+                        options: {
+                            auth: false,
+                            description: 'Simple health check',
+                            handler: (request, h) => {
+                                return CoreCtrl.healthzHandler(h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'GET',
+                        path: '/robots.txt', // NOTE: no routePrefix on this one
+                        options: {
+                            auth: false,
+                            description: 'For generating robots.txt',
+                        },
+                        handler: (request, h) => {
+                            return CoreCtrl.robotsHandler(h);
+                        }
                     }
-                }
-            },
-            {
-                method: 'GET',
-                path: '/api/v1/healthz',
-                options: {
-                    auth: false,
-                    description: 'Simple health check',
-                    handler: (request, h) => {
-                        return CoreCtrl.healthzHandler(h);
-                    }
-                }
-            },
-            {
-                method: 'GET',
-                path: '/robots.txt', // NOTE: no routePrefix on this one
-                options: {
-                    auth: false,
-                    description: 'For generating robots.txt',
-                },
-                handler: (request, h) => {
-                    return CoreCtrl.robotsHandler(h);
-                }
+                ]);
             }
-        ]);
+        )
     }
 };

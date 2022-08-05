@@ -322,15 +322,13 @@ class BaseController {
     }
 
 
-    fetchOneForTenant(request, fetchConfig) {
-        const tenantId = this.getTenantIdFromAuth(request);
-
+    fetchOneForTenant(tenantId, params, fetchConfig) {
         if(!tenantId) {
             throw Boom.unauthorized();
         }
 
-        request.query.tenant_id = tenantId;
-        return this.fetchOne(request.query, fetchConfig);
+        params.tenant_id = tenantId;
+        return this.fetchOne(params, fetchConfig);
     }
 
 
@@ -355,7 +353,13 @@ class BaseController {
                 }
             });
 
-            const Model = await this.fetchOneForTenant(request, fetchConfig);
+            const tenantId = this.getTenantIdFromAuth(request);
+
+            const Model = await this.fetchOneForTenant(
+                tenantId,
+                request.query,
+                fetchConfig
+            );
 
             global.logger.info(`RESPONSE: BaseController.fetchOneForTenantHandler (${this.modelName})`, {
                 meta: {

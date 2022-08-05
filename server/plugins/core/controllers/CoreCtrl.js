@@ -1,18 +1,29 @@
 const Boom = require('@hapi/boom');
 const robotstxt = require('generate-robotstxt');
-const ExchangeRateCtrl = require('../../exchange-rates/controllers/ExchangeRateCtrl.js');
+const BaseController = require('./BaseController');
+const TenantCtrl = require('../../tenants/controllers/TenantCtrl.js');
 
-class CoreCtrl {
+
+class CoreCtrl extends BaseController {
 
     constructor(server) {
-        this.ExchangeRateCtrl = new ExchangeRateCtrl(server);
+        super(server);
+        this.TenantCtrl = new TenantCtrl(server);
     }
 
 
-    appConfigHandler(request, h) {
-        // TODO: use ExchangeRateCtrl to fetch/return client-specific exchange rate data
+    async appConfigHandler(request, h) {
+        global.logger.info('REQUEST: CoreCtrl:appConfigHandler', {});
+
+        const tenant_exchange_rates = await this.TenantCtrl.getSupportedCurrenyRates(
+            this.getTenantIdFromAuth(request)
+        );
+
+        global.logger.info('RESPONSE: CoreCtrl:appConfigHandler', {});
+
         return h.apiSuccess({
-            CART_PRODUCT_QUANTITY_LIMIT: parseInt(process.env.CART_PRODUCT_QUANTITY_LIMIT, 10)
+            CART_PRODUCT_QUANTITY_LIMIT: parseInt(process.env.CART_PRODUCT_QUANTITY_LIMIT, 10),
+            exchange_rates: tenant_exchange_rates
         });
     }
 
