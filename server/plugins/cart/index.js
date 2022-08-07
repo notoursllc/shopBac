@@ -114,7 +114,8 @@ exports.plugin = {
                                 payload: Joi.object({
                                     ...CartCtrl.getTenantIdSchema(),
                                     ...CartCtrl.getIdSchema(),
-                                    ...CartCtrl.getShippingAddressSchema()
+                                    ...CartCtrl.getShippingAddressSchema(),
+                                    is_gift: CartCtrl.getSchema().is_gift
                                 })
                             },
                             handler: (request, h) => {

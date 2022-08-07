@@ -759,10 +759,25 @@ class CartCtrl extends BaseController {
         const stripe = await this.StripeCtrl.getStripe(tenantId);
         const c = Cart.toJSON();
 
-        // console.log("STRIPE CREATE ORDER- CART", c)
-
+        /*
+        * NOTES 8/5/22:
+        * The 'currency' values set below must be hard-coded to 'USD'.
+        * Since Prices in stripe must be created ahead of time
+        * it doesn't seem feasable to create a Price object for each
+        * currency type (USD, EUR, GBP, etc), especially since the way
+        * I have designed it will pull the latest exchange rates periodically
+        * (potentially invalidating the Price)
+        * Is this OK, however?  Is it important from a customer perspective that
+        * the price they are billed is their own currency?  I assume it is.
+        *
+        * I am creating Prices in Stripe in order to use Stripe Tax.   I wonder
+        * if this might mean I need to switch to a service like TaxJar or Alavara that will
+        * allow for sales tax calculation on the fly (I think), thus I wouild not need
+        * to pre-create Price objects like this
+        */
         const createConfig = {
-            currency: c.currency || 'usd',
+            // currency: c.currency || 'usd',
+            currency: 'usd',
 
             // https://stripe.com/docs/api/orders_v2/create#create_order_v2-line_items
             line_items: c.cart_items.map((item) => {
@@ -806,7 +821,8 @@ class CartCtrl extends BaseController {
                     type: 'fixed_amount',
                     fixed_amount: {
                         amount: c.shipping_total,
-                        currency: c.currency || 'usd'
+                        // currency: c.currency || 'usd'
+                        currency: 'usd'
                     },
                     tax_behavior: 'exclusive'
                 }
