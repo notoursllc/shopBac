@@ -104,7 +104,7 @@ exports.plugin = {
                         options: {
                             // auth: false,
                             auth: {
-                                strategies: ['storeauth'] // TODO: storeauth cant be used here beause its defined in the Tenant plugin, which has not been loaded yet
+                                strategies: ['storeauth']
                             },
                             description: 'Returns public app config info',
                             handler: (request, h) => {
