@@ -47,7 +47,7 @@ class CoreCtrl extends BaseController {
 
     async healthzHandler(h) {
         try {
-            const result = await server.app.knex.raw('SELECT * FROM products WHERE id != ? LIMIT 1', ['aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa']);
+            const result = await this.server.app.knex.raw('SELECT * FROM products WHERE id != ? LIMIT 1', ['aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa']);
 
             if(!result) {
                 throw new Error('Health check: Error getting product.');
