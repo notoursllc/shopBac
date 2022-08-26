@@ -9,21 +9,11 @@ class ShipEngineCtrl extends BaseController {
     constructor(server) {
         super(server);
         this.server = server;
-        this.tenant = null;
-    }
-
-
-    async fetchTenant(tenantId) {
-        if(!this.tenant || this.tenant.get('id') !== tenantId) {
-            this.tenant = await this.getTenant(tenantId);
-        }
-
-        return this.tenant;
     }
 
 
     async getAxios(tenantId) {
-        const Tenant = await this.fetchTenant(tenantId);
+        const Tenant = await this.getTenant(tenantId);
         const apiKey = Tenant.get('shipengine_api_key');
 
         if(!apiKey) {
@@ -45,13 +35,13 @@ class ShipEngineCtrl extends BaseController {
 
 
     async getCarrierIdsForTenant(tenantId) {
-        const Tenant = await this.fetchTenant(tenantId);
+        const Tenant = await this.getTenant(tenantId);
         return Tenant.get('shipengine_carriers')?.map((obj) => obj.id);
     }
 
 
     async isDomesticShipment(tenantId, cart) {
-        const Tenant = await this.fetchTenant(tenantId);
+        const Tenant = await this.getTenant(tenantId);
         const countryCode = cart?.shipping_countryCodeAlpha2;
 
         if(!countryCode || countryCode === Tenant.get('shipping_from_countryCodeAlpha2')) {
@@ -63,7 +53,7 @@ class ShipEngineCtrl extends BaseController {
 
 
     async getServiceCodesForCart(tenantId, cart) {
-        const Tenant = await this.fetchTenant(tenantId);
+        const Tenant = await this.getTenant(tenantId);
         const isDomestic = await this.isDomesticShipment(tenantId, cart);
 
         return Tenant.get('shipengine_carriers')?.map((obj) => {
@@ -190,7 +180,7 @@ class ShipEngineCtrl extends BaseController {
      * @param {*} cart
      */
     async getRatesApiPayload(tenantId, cart, packageTypes) {
-        const Tenant = await this.fetchTenant(tenantId);
+        const Tenant = await this.getTenant(tenantId);
         const carrierIds = await this.getCarrierIdsForTenant(tenantId);
         const serviceCodes = await this.getServiceCodesForCart(tenantId, cart);
         const shipmentIsDomestic = await this.isDomesticShipment(tenantId, cart);
@@ -470,6 +460,31 @@ class ShipEngineCtrl extends BaseController {
         });
 
         return data;
+    }
+
+
+    async getCarriers(tenantId) {
+        const $axios = await this.getAxios(tenantId);
+        const response = await $axios.get('carriers');
+
+        return response?.data;
+    }
+
+
+    // https://www.shipengine.com/docs/reference/carriers/update-carrier/
+    async updateStampsComAccountOnCarrier(tenantId, carrierId, payload) {
+        const $axios = await this.getAxios(tenantId);
+        const response = await $axios.post(`connections/carriers/stamps_com/${carrierId}`, payload);
+
+        return response?.data;
+    }
+
+
+    async removeStampsComAccountFromCarrier(tenantId, carrierId) {
+        const $axios = await this.getAxios(tenantId);
+        const response = await $axios.delete(`connections/carriers/stamps_com/${carrierId}`);
+
+        return response?.data;
     }
 }
 
