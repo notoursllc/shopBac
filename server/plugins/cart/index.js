@@ -183,6 +183,26 @@ exports.plugin = {
                         }
                     },
                     {
+                        method: 'PUT',
+                        path: '/cart/order/notes',
+                        options: {
+                            description: 'Updates the admin notes for a order',
+                            auth: {
+                                strategies: ['session']
+                            },
+                            validate: {
+                                payload: Joi.object({
+                                    ...CartCtrl.getTenantIdSchema(),
+                                    ...CartCtrl.getIdSchema(),
+                                    ...CartCtrl.getAdminOrderNotesSchema(),
+                                })
+                            },
+                            handler: (request, h) => {
+                                return CartCtrl.updateOrderNotesHandler(request, h);
+                            }
+                        }
+                    },
+                    {
                         method: 'POST',
                         path: '/cart/shipped',
                         options: {

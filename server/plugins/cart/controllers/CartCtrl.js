@@ -61,6 +61,13 @@ class CartCtrl extends BaseController {
     }
 
 
+    getAdminOrderNotesSchema() {
+        return {
+            admin_order_notes: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
+        }
+    }
+
+
     getSchema(isUpdate) {
         const schema = {
             // id: Joi.string().uuid().allow(null),
@@ -96,6 +103,7 @@ class CartCtrl extends BaseController {
                 Joi.allow(null)
             ),
             is_gift: Joi.boolean(),
+            ...this.getAdminOrderNotesSchema(),
 
             created_at: Joi.date(),
             updated_at: Joi.date(),
@@ -656,6 +664,51 @@ class CartCtrl extends BaseController {
         }
     }
 
+
+    /**
+     * Handler for updating the admin order comments
+     *
+     * @param {*} request
+     * @param {*} h
+     * @returns {*} shipping label
+     */
+    async updateOrderNotesHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: CartCtrl.updateOrderNotesHandler', {
+                meta: request.payload
+            });
+
+            const tenantId = this.getTenantIdFromAuth(request);
+
+            const Cart = await this.getClosedCart(
+                request.payload.id,
+                tenantId,
+                { withRelated: this.getAllCartRelations() }
+            );
+
+            if(!Cart) {
+                throw new Error('Cart not found')
+            }
+
+            const UpdatedCart = await this.getModel()
+                .forge({
+                    id: request.payload.id,
+                    tenant_id: tenantId
+                })
+                .save({
+                    admin_order_notes: request.payload.admin_order_notes
+                });
+
+            global.logger.info('RESPONSE: CartCtrl.updateOrderNotesHandler', {});
+
+            return h.apiSuccess(UpdatedCart);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
 
     /**
      * Gets an order (a closed cart) and the related ShipEngine label data

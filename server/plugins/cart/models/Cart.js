@@ -21,6 +21,10 @@ module.exports = function (baseModel, bookshelf, server) {
                     attributes.tax_nexus_applied = JSON.stringify(attributes.tax_nexus_applied)
                 }
 
+                if (attributes.admin_order_notes) {
+                    attributes.admin_order_notes = JSON.stringify(attributes.admin_order_notes)
+                }
+
                 return attributes;
             },
 
