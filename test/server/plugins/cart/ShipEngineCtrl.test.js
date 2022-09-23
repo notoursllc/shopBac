@@ -728,42 +728,89 @@ describe('ShipEngineCtrl -> getShippingRatesForCart()', () => {
     // });
 
 
-    /*
-    it('getShippingRatesForCart() - ???', async () => {
-        const PackageTypeCtrl = new PackageTypeController(server);
+    // it('getShippingRatesForCart() - ???', async () => {
+    //     const PackageTypeCtrl = new PackageTypeController(server);
 
-        const params = queryString.stringify({
-            id: testCartId, //TODO
-            tenant_id: process.env.TEST_TENANT_ID,
-            relations: true
-        });
+    //     const params = queryString.stringify({
+    //         id: testCartId, //TODO
+    //         tenant_id: process.env.TEST_TENANT_ID,
+    //         relations: true
+    //     });
 
-        const results = await Promise.all([
-            server.inject({
-                method: 'GET',
-                url: getApiPrefix(`/cart?${params}`),
-                headers: getRequestHeader()
-            }),
+    //     const results = await Promise.all([
+    //         server.inject({
+    //             method: 'GET',
+    //             url: getApiPrefix(`/cart?${params}`),
+    //             headers: getRequestHeader()
+    //         }),
 
-            PackageTypeCtrl.getAllPackageTypes(
-                process.env.TEST_TENANT_ID,
-                true
-            )
-        ]);
+    //         PackageTypeCtrl.getAllPackageTypes(
+    //             process.env.TEST_TENANT_ID,
+    //             true
+    //         )
+    //     ]);
 
-        const cart = results[0].result.data;
-        const packageTypes = results[1].toJSON();
+    //     const cart = results[0].result.data;
+    //     const packageTypes = results[1].toJSON();
 
-        // console.log("getShippingRatesForCart 1", cart)
-        // console.log("getShippingRatesForCart 2", packageTypes)
+    //     // console.log("getShippingRatesForCart 1", cart)
+    //     // console.log("getShippingRatesForCart 2", packageTypes)
 
-        const { rates } = Ctrl.getShippingRatesForCart(
-            cart,
-            packageTypes
+    //     const { rates } = Ctrl.getShippingRatesForCart(
+    //         cart,
+    //         packageTypes
+    //     );
+
+    //     // expect(cart.num_items).to.equal(products.length);
+    // });
+
+});
+
+
+
+///////////////
+
+
+describe('ShipEngineCtrl -> getCarriers()', () => {
+
+    let server;
+    let Ctrl;
+
+    beforeEach(async () => {
+        server = await init();
+        Ctrl = new ShipEngineCtrl(server);
+    });
+
+    afterEach(async () => {
+        await server.stop();
+    });
+
+    it('should update a carrier', async () => {
+        const data = await Ctrl.updateStampsComAccountOnCarrier(
+            process.env.TEST_TENANT_ID,
+            'se-562090',
+            {
+                nickname: "usps",
+                username: "gbruins-417son",
+                password: "XMVu93g$RXcx"
+            }
         );
+
+        console.log("UPDATE CARRIER RESPONSE", data)
 
         // expect(cart.num_items).to.equal(products.length);
     });
-    */
+
+    it('remove stamps_com account from carrier', async () => {
+        const data = await Ctrl.removeStampsComAccountFromCarrier(process.env.TEST_TENANT_ID, 'se-562090')
+        console.log("removeStampsComAccountFromCarrier response", data)
+    });
+
+    it('result length should equal the total number of cart items', async () => {
+        const data = await Ctrl.getCarriers(process.env.TEST_TENANT_ID)
+        console.log("SHIP ENGINE CARRIERS", data)
+
+        // expect(cart.num_items).to.equal(products.length);
+    });
 
 });
