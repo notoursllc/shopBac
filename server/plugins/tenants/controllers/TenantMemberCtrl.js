@@ -45,24 +45,31 @@ class TenantMemberCtrl extends TenantBaseCtrl {
      * @param {*} h
      */
     async loginHandler(request, h) {
-        try {
-            global.logger.info('REQUEST: TenantMemberCtrl.loginHandler', {
-                meta: {
-                    payload: request.payload
-                }
-            });
+        global.logger.info('REQUEST: TenantMemberCtrl.loginHandler', {
+            meta: {
+                payload: request.payload
+            }
+        });
 
-            const TenantMember = await this.modelForgeFetch(
+        let TenantMember;
+
+        try {
+            TenantMember = await this.modelForgeFetch(
                 { email: request.payload.email }
             );
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
 
-            if(!TenantMember) {
-                throw Boom.unauthorized();
-            }
-            if(!bcrypt.compareSync(request.payload.password, TenantMember.get('password'))) {
-                throw Boom.unauthorized();
-            }
+        if(!TenantMember
+            || !bcrypt.compareSync(request.payload.password, TenantMember.get('password'))) {
+            throw Boom.unauthorized();
+        }
 
+        try {
             // This is the httpOnly cookie that is used by the server that is required for access.
             // cookieAuth is a decoration added by the Hapi "cookie" module to set a session cookie:
             // https://hapi.dev/module/cookie/api/?v=11.0.1
