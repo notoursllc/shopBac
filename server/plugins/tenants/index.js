@@ -2,7 +2,6 @@ const Joi = require('joi');
 const isObject = require('lodash.isobject');
 
 const isProd = process.env.NODE_ENV === 'production';
-console.log("+++++++++++++++++++ IS PROD", isProd)
 
 exports.plugin = {
     once: true,
@@ -25,7 +24,7 @@ exports.plugin = {
                         password: process.env.SESSION_COOKIE_PASSWORD,
                         isSecure: isProd,
                         isHttpOnly: true,
-                        isSameSite: isProd ? 'None' : false,
+                        isSameSite: isProd ? 'None' : false, // not for dev becaue 'None' also requires isSecure=true
                         domain: process.env.SESSION_COOKIE_DOMAIN,
                         path: '/',
                         // ttl: 3600000, // one hour
@@ -33,7 +32,7 @@ exports.plugin = {
                         ttl: process.env.SESSION_TTL,
                         clearInvalid: true
                     },
-                    // keepAlive: true, //TEST
+                    keepAlive: true, //TEST
                     // redirectTo: '/login',
                     validateFunc: async (request, session) => {
                         const TenantMember = await TenantMemberCtrl.modelForgeFetch(
