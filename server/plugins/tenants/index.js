@@ -22,16 +22,20 @@ exports.plugin = {
                     cookie: {
                         name: 'bv_session',
                         password: process.env.SESSION_COOKIE_PASSWORD,
-                        isSecure: isProd,
+                        // isSecure: isProd,
+                        isSecure: false, //TEST
                         isHttpOnly: true,
-                        isSameSite: isProd ? 'None' : false,
+                        // isSameSite: isProd ? 'None' : false,
+                        isSameSite: false, //TEST
                         domain: process.env.SESSION_COOKIE_DOMAIN,
                         path: '/',
                         // ttl: 3600000, // one hour
                         // ttl: 60000, // one minute
                         ttl: process.env.SESSION_TTL,
-                        clearInvalid: true
+                        // clearInvalid: true
+                        clearInvalid: false  //TEST
                     },
+                    keepAlive: true, //TEST
                     // redirectTo: '/login',
                     validateFunc: async (request, session) => {
                         const TenantMember = await TenantMemberCtrl.modelForgeFetch(
