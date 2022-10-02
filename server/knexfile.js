@@ -18,11 +18,11 @@ const common = {
         }
     },
     migrations: {
-        directory: './server/db/migrations',
+        directory: './db/migrations',
         tableName: 'knex_migrations'
     },
     seeds: {
-        directory: './server/db/seeds'
+        directory: './db/seeds'
     },
     connection: {
         host: process.env.DATA_DB_HOST || 'localhost',

@@ -26,7 +26,7 @@ exports.plugin = {
         }
 
         const settings = Hoek.applyToDefaults(
-            { knex: require('../../../knexfile') },
+            { knex: require('../../knexfile') },
             options
         );
 
