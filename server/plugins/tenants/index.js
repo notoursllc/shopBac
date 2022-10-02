@@ -2,6 +2,7 @@ const Joi = require('joi');
 const isObject = require('lodash.isobject');
 
 const isProd = process.env.NODE_ENV === 'production';
+console.log("+++++++++++++++++++ IS PROD", isProd)
 
 exports.plugin = {
     once: true,
@@ -22,8 +23,7 @@ exports.plugin = {
                     cookie: {
                         name: 'bv_session',
                         password: process.env.SESSION_COOKIE_PASSWORD,
-                        // isSecure: isProd,
-                        isSecure: false, //TEST
+                        isSecure: isProd,
                         isHttpOnly: true,
                         // isSameSite: isProd ? 'None' : false,
                         isSameSite: false, //TEST
