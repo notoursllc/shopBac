@@ -31,8 +31,7 @@ exports.plugin = {
                         // ttl: 3600000, // one hour
                         // ttl: 60000, // one minute
                         ttl: process.env.SESSION_TTL,
-                        // clearInvalid: true
-                        clearInvalid: false  //TEST
+                        clearInvalid: true
                     },
                     keepAlive: true, //TEST
                     // redirectTo: '/login',
