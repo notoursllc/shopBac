@@ -33,7 +33,7 @@ exports.plugin = {
                         ttl: process.env.SESSION_TTL,
                         clearInvalid: true
                     },
-                    keepAlive: true, //TEST
+                    // keepAlive: true, //TEST
                     // redirectTo: '/login',
                     validateFunc: async (request, session) => {
                         const TenantMember = await TenantMemberCtrl.modelForgeFetch(
