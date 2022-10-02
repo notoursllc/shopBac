@@ -25,13 +25,12 @@ exports.plugin = {
                         isSecure: isProd,
                         isHttpOnly: true,
                         isSameSite: isProd ? 'None' : false,
-                        // domain: 'localhost',
+                        domain: process.env.SESSION_COOKIE_DOMAIN,
                         path: '/',
                         // ttl: 3600000, // one hour
                         // ttl: 60000, // one minute
-                        ttl: process.env.SESSION_TTL, // 30 seconds
+                        ttl: process.env.SESSION_TTL,
                         clearInvalid: true
-                        // clearInvalid: false
                     },
                     // redirectTo: '/login',
                     validateFunc: async (request, session) => {
