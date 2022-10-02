@@ -1,7 +1,7 @@
 const Lab = require('@hapi/lab');
 const { expect } = require('@hapi/code');
 const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
-const PackageService = require('../../../../server/plugins/package-types/services/PackageService');
+const PackageService = require('./PackageService');
 
 
 function mockProduct(length, width, height, shipAlone) {

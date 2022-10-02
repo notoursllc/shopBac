@@ -1,7 +1,7 @@
 const Lab = require('@hapi/lab');
 const { expect } = require('@hapi/code');
 const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
-const SqlOperatorBuilder = require('../../../../server/plugins/core/services/SqlOperatorBuilder');
+const SqlOperatorBuilder = require('./SqlOperatorBuilder');
 const queryString = require('query-string');
 const qs = require('qs');
 

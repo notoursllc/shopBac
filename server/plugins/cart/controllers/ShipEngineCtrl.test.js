@@ -2,11 +2,11 @@ const queryString = require('query-string');
 const { expect } = require('@hapi/code');
 const Lab = require('@hapi/lab');
 const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
-const { getApiPrefix, getRequestHeader, getMockCart } = require('../../testHelpers');
-const { init } = require('../../../../server');
+const { getApiPrefix, getRequestHeader, getMockCart } = require('../../../testHelpers');
+const { init } = require('../../../index.js');
 
-const ShipEngineCtrl = require('../../../../server/plugins/cart/controllers/ShipEngineCtrl');
-const PackageTypeController = require('../../../../server/plugins/package-types/controllers/PackageTypeCtrl');
+const ShipEngineCtrl = require('./ShipEngineCtrl');
+const PackageTypeController = require('../../package-types/controllers/PackageTypeCtrl');
 
 const testCartId = '3904d7ab-aa81-478f-bd39-ec9129e52785';
 

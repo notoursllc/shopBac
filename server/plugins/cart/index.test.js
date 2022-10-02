@@ -4,7 +4,7 @@ const Hoek = require('@hapi/hoek');
 const queryString = require('query-string');
 const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
 const testHelpers = require('../../testHelpers');
-const { init } = require('../../../../server');
+const { init } = require('../../index.js');
 
 const cartId = '80187e8a-105d-4d00-968b-57f419332337';
 

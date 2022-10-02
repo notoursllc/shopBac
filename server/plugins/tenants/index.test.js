@@ -3,7 +3,7 @@ const Lab = require('@hapi/lab');
 const Hoek = require('@hapi/hoek');
 const { afterEach, beforeEach, describe, it } = exports.lab = Lab.script();
 const testHelpers = require('../../testHelpers');
-const { init } = require('../../../../server');
+const { init } = require('../../index.js');
 
 /*
 describe('ROUTE: POST /tenant/contactus', {timeout: 20000}, () => {
