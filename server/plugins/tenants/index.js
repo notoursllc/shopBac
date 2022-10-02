@@ -26,7 +26,7 @@ exports.plugin = {
                         isSecure: isProd,
                         isHttpOnly: true,
                         isSameSite: isProd ? 'None' : false,
-                        domain: process.env.SESSION_COOKIE_DOMAIN,
+                        // domain: process.env.SESSION_COOKIE_DOMAIN,
                         path: '/',
                         // ttl: 3600000, // one hour
                         // ttl: 60000, // one minute
