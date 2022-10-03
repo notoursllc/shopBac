@@ -20,10 +20,10 @@ exports.plugin = {
                 server.auth.strategy('session', 'cookie', {
                     // https://hapi.dev/module/cookie/api/?v=11.0.1
                     cookie: {
-                        name: 'bv_session',
+                        name: 'bvsession',
                         password: process.env.SESSION_COOKIE_PASSWORD,
                         isSecure: isProd,
-                        isHttpOnly: false,
+                        isHttpOnly: true,
                         isSameSite: isProd ? 'None' : false, // not for dev becaue 'None' also requires isSecure=true
                         domain: process.env.SESSION_COOKIE_DOMAIN,
                         path: '/',
