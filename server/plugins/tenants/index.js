@@ -40,6 +40,12 @@ exports.plugin = {
                         );
 
                         if(!TenantMember) {
+                            global.logger.error('Cookie invalid - no TenantMember', {
+                                meta: {
+                                    TenantMember: TenantMember,
+                                    'session.id': session.id
+                                }
+                            });
                             return { valid: false };
                         }
 
