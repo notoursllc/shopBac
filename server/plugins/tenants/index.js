@@ -32,12 +32,18 @@ exports.plugin = {
                         ttl: process.env.SESSION_TTL,
                         clearInvalid: true
                     },
-                    keepAlive: true, //TEST
-                    // redirectTo: '/login',
+                    keepAlive: true,
                     validateFunc: async (request, session) => {
                         const TenantMember = await TenantMemberCtrl.modelForgeFetch(
                             { id: session.id }
                         );
+
+                        global.logger.info('Cookie validateFunc', {
+                            meta: {
+                                TenantMember: TenantMember,
+                                'session.id': session.id
+                            }
+                        });
 
                         if(!TenantMember) {
                             global.logger.error('Cookie invalid - no TenantMember', {
