@@ -29,10 +29,10 @@ exports.plugin = {
                         path: '/',
                         // ttl: 3600000, // one hour
                         // ttl: 60000, // one minute
-                        ttl: process.env.SESSION_TTL,
+                        // ttl: process.env.SESSION_TTL,
                         clearInvalid: true
                     },
-                    keepAlive: true,
+                    // keepAlive: true,
                     validateFunc: async (request, session) => {
                         const TenantMember = await TenantMemberCtrl.modelForgeFetch(
                             { id: session.id }

@@ -83,8 +83,6 @@
   "devDependencies": {
     "@hapi/code": "^9.0.0",
     "@hapi/lab": "^25.0.1",
-    "@nuxtjs/eslint-config": "^1.0.1",
-    "@nuxtjs/eslint-module": "^1.2.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^6.1.0",
     "faker": "^4.1.0",
