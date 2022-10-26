@@ -42,7 +42,7 @@ class MediaCtrl extends BaseController {
                 }
             });
 
-            const url = await BunnyAPI.uploadFile(
+            const url = await BunnyAPI.storage.upload(
                 'images',
                 `${Date.now()}-${request.payload.file.filename}`,
                 request.payload.file
@@ -62,6 +62,89 @@ class MediaCtrl extends BaseController {
             });
 
             return h.apiSuccess(Media);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    };
+
+
+    async videoUpsertHandler(request, h) {
+        try {
+            const tenant_id = this.getTenantIdFromAuth(request);
+
+            global.logger.info('REQUEST: MediaCtrl.videoUpsertHandler', {
+                meta: {
+                    tenant_id: tenant_id,
+                    // file: request.payload.file ? true : false
+                }
+            });
+
+            const res = await BunnyAPI.video.upload(
+                request.payload.file.path,
+                `${Date.now()}-${request.payload.file.filename}`
+            );
+
+            const Media = await this.upsertModel({
+                tenant_id: tenant_id,
+                resource_type: 'VIDEO',
+                alt_text: null,
+                ordinal: 0,
+                url: res?.directPlayUrl,
+                third_party_id: res?.id
+            });
+
+            const json = {
+                ...(Media ? Media.toJSON() : {}),
+                streamLibraryId: process.env.BUNNY_API_STREAM_LIBRARY_ID
+            }
+
+            global.logger.info('RESONSE: MediaCtrl.videoUpsertHandler', {
+                meta: json
+            });
+
+            return h.apiSuccess(json);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    };
+
+
+    async videoDelete(id, tenant_id, options) {
+        const Video = await this.fetchOneForTenant(
+            tenant_id,
+            { id: id }
+        );
+
+        if(Video) {
+            await BunnyAPI.video.del(Video.get('third_party_id'));
+            return this.deleteModel(id, tenant_id, options)
+        }
+    };
+
+
+    async videoDeleteHandler(request, h) {
+        try {
+            const tenant_id = this.getTenantIdFromAuth(request);
+
+            global.logger.info('REQUEST: MediaCtrl.videoDeleteHandler', {
+                meta: request.query
+            });
+
+            await this.videoDelete(request.query.id, tenant_id)
+
+            global.logger.info('RESONSE: MediaCtrl.videoDeleteHandler', {
+                meta: {
+                    id: request.query.id
+                }
+            });
+
+            return h.apiSuccess(request.query.id);
         }
         catch(err) {
             global.logger.error(err);

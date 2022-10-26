@@ -1,10 +1,14 @@
 const Joi = require('joi');
 const Boom = require('@hapi/boom');
 const cloneDeep = require('lodash.clonedeep');
+const isString = require('lodash.isstring');
+const isObject = require('lodash.isobject');
 const { createSitemap } = require('sitemap');
 const BaseController = require('../../core/controllers/BaseController');
 const ProductVariantCtrl = require('./ProductVariantCtrl');
 const StripeCtrl = require('../../cart/controllers/StripeCtrl');
+const MediaCtrl = require('../../media/controllers/MediaCtrl');
+const BunnyAPI = require('../../core/services/BunnyAPI');
 
 // Using this so many time below, so setting as a variable:
 const joiPositiveNumberOrNull = Joi.alternatives().try(
@@ -18,6 +22,7 @@ class ProductCtrl extends BaseController {
         super(server, 'Product');
         this.ProductVariantCtrl = new ProductVariantCtrl(server);
         this.StripeCtrl = new StripeCtrl(server);
+        this.MediaCtrl = new MediaCtrl(server);
     }
 
 
@@ -62,7 +67,11 @@ class ProductCtrl extends BaseController {
 
             // MEDIA
             // images: Joi.array().allow(null),
-            video_url: Joi.string().trim().max(500).empty('').allow(null).default(null),
+            youtube_video_url: Joi.string().trim().max(500).empty('').allow(null).default(null),
+            video: Joi.alternatives().try(
+                Joi.object(),
+                Joi.allow(null)
+            ),
 
             // SHIPPING
             shippable: Joi.boolean().empty('').default(true),
@@ -86,6 +95,14 @@ class ProductCtrl extends BaseController {
                 Joi.allow(null)
             ),
 
+            // Note that upserting the product data requires the use of FormData,
+            // which means that variants will not be an array but a string that
+            // needs JSON that needs to be parsed
+            // variants: Joi.alternatives().try(
+            //     Joi.string(),
+            //     Joi.allow(null)
+            // ),
+
             variants: Joi.array().items(
                 // Note: should not pass the 'isUpdate' flag to getSchema() in this case.
                 // When creating a product, the user doesn't necessarily have to also create variants,
@@ -94,7 +111,10 @@ class ProductCtrl extends BaseController {
                 Joi.object(this.ProductVariantCtrl.getSchema())
             ),
 
-            product_artist_id: Joi.string().uuid().optional().empty('').allow(null).default(null),
+            product_artist_id: Joi.alternatives().try(
+                Joi.string().uuid(),
+                Joi.allow(null)
+            ),
 
             // TIMESTAMPS
             // created_at: Joi.date().optional(),
@@ -128,12 +148,22 @@ class ProductCtrl extends BaseController {
 
 
     async upsertHandler(request, h) {
+        global.logger.info('REQUEST: ProductCtrl.upsertHandler', {
+            meta: request.payload
+        });
+
         const variants = cloneDeep(request.payload.variants);
+        // const variants = isString(request.payload.variants) ? JSON.parse(request.payload.variants) : [];
         delete request.payload.variants;
 
         return this.server.app.bookshelf.transaction(async (trx) => {
             try {
                 // First upsert the Product
+                if(request.payload.video?.path) {
+                    const uploadResponse = await BunnyAPI.video.upload(request.payload.video.path);
+                    request.payload.video = uploadResponse?.directPlayUrl;
+                }
+
                 const Product = await this.upsertModel(
                     request.payload,
                     { transacting: trx }
@@ -165,6 +195,10 @@ class ProductCtrl extends BaseController {
             }
         })
         .then((Product) => {
+            global.logger.info('RESPONSE: ProductCtrl.upsertHandler', {
+                meta: { Product: Product ? Product.toJSON() : null }
+            });
+
             return h.apiSuccess(Product);
         })
         .catch((err) => {
@@ -220,6 +254,16 @@ class ProductCtrl extends BaseController {
                             )
                         );
                     }
+                }
+
+                // Delete the video
+                const video = Product.get('video');
+                if(video) {
+                    await this.MediaCtrl.videoDelete(
+                        video.id,
+                        tenantId,
+                        { transacting: trx }
+                    );
                 }
 
                 // Delete the product

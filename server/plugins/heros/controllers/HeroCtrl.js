@@ -69,7 +69,7 @@ class HerolCtrl extends BaseController {
             });
 
             if(request.payload.file) {
-                request.payload.url = await BunnyAPI.uploadFile(
+                request.payload.url = await BunnyAPI.storage.upload(
                     'images',
                     `${Date.now()}-${request.payload.file.filename}`,
                     request.payload.file
@@ -114,7 +114,7 @@ class HerolCtrl extends BaseController {
             const image = Hero.get('url');
 
             if(image) {
-                await BunnyAPI.deleteFile(image);
+                await BunnyAPI.storage.del(image);
             }
 
             global.logger.info('RESPONSE: HeroCtrl.deleteImage', {

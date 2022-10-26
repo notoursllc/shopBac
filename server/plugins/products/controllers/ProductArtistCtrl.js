@@ -67,7 +67,7 @@ class ProductArtistCtrl extends BaseController {
             const image = ProductArtist.get('image');
 
             if(image) {
-                await BunnyAPI.deleteFile(image);
+                await BunnyAPI.storage.del(image);
             }
 
             global.logger.info('RESPONSE: ProductArtistCtrl.deleteImage', {
@@ -169,7 +169,7 @@ class ProductArtistCtrl extends BaseController {
             });
 
             if(request.payload.file) {
-                request.payload.image = await BunnyAPI.uploadFile(
+                request.payload.image = await BunnyAPI.storage.upload(
                     'images',
                     `${Date.now()}-${request.payload.file.filename}`,
                     request.payload.file

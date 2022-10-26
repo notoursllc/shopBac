@@ -19,6 +19,7 @@ exports.plugin = {
                 const ProductArtistCtrl = new (require('./controllers/ProductArtistCtrl'))(server);
 
                 const payloadMaxBytes = process.env.ROUTE_PAYLOAD_MAXBYTES || 10485760; // 10MB (1048576 (1 MB) is the default)
+                const productUpsertMaxBytes =1000000000; // 1 gb
 
                 server.route([
                     {
@@ -89,6 +90,14 @@ exports.plugin = {
                         path: `${routePrefix}/product`,
                         options: {
                             description: 'Creates a product',
+                            payload: {
+                            //     // output: 'stream',
+                            //     output: 'file',
+                            //     parse: true,
+                            //     allow: 'multipart/form-data',
+                            //     multipart: true,
+                                maxBytes: productUpsertMaxBytes,
+                            },
                             validate: {
                                 payload: Joi.object({
                                     ...ProductCtrl.getSchema()
@@ -96,9 +105,6 @@ exports.plugin = {
                             },
                             handler: (request, h) => {
                                 return ProductCtrl.upsertHandler(request, h);
-                            },
-                            payload: {
-                                maxBytes: payloadMaxBytes
                             }
                         }
                     },
@@ -107,6 +113,15 @@ exports.plugin = {
                         path: `${routePrefix}/product`,
                         options: {
                             description: 'Updates a product',
+                            payload: {
+                            //     // output: 'stream',
+                            //     output: 'file',
+                            //     parse: true,
+                            //     allow: 'multipart/form-data',
+                            //
+                            //     multipart: true,
+                                maxBytes: productUpsertMaxBytes,
+                            },
                             validate: {
                                 payload: Joi.object({
                                     ...ProductCtrl.getSchema(true)
@@ -114,9 +129,6 @@ exports.plugin = {
                             },
                             handler: (request, h) => {
                                 return ProductCtrl.upsertHandler(request, h);
-                            },
-                            payload: {
-                                maxBytes: payloadMaxBytes
                             }
                         }
                     },
@@ -130,8 +142,8 @@ exports.plugin = {
                             },
                             validate: {
                                 query: Joi.object({
-                                    id: Joi.string().uuid().required(),
-                                    tenant_id: Joi.string().uuid()
+                                    ...ProductCtrl.getTenantIdSchema(),
+                                    ...ProductCtrl.getIdSchema()
                                 })
                             },
                             handler: (request, h) => {

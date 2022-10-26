@@ -59,6 +59,13 @@ class BaseController {
     }
 
 
+    getIdSchema() {
+        return {
+            id: Joi.string().uuid().required()
+        }
+    }
+
+
     getWithRelatedSchema() {
         return {
             _withRelated: Joi.string()

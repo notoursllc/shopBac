@@ -11,6 +11,7 @@ exports.plugin = {
 
                 const MediaCtrl = new (require('./controllers/MediaCtrl'))(server);
                 const payloadMaxBytes = process.env.ROUTE_PAYLOAD_MAXBYTES || 10485760; // 10MB (1048576 (1 MB) is the default)
+                const videoPayloadMaxBytes = process.env.VIDEO_PAYLOAD_MAXBYTES || 1000000000; // 1 gb
 
                 server.route([
                     {
@@ -24,7 +25,7 @@ exports.plugin = {
                             validate: {
                                 query: Joi.object({
                                     id: Joi.string().uuid(),
-                                    tenant_id: Joi.string().uuid()
+                                    ...MediaCtrl.getTenantIdSchema()
                                 })
                             },
                             handler: (request, h) => {
@@ -48,7 +49,7 @@ exports.plugin = {
                             validate: {
                                 payload: Joi.object({
                                     file: Joi.object(),
-                                    tenant_id: Joi.string().uuid()
+                                    ...MediaCtrl.getTenantIdSchema()
                                 })
                             },
                             handler: (request, h) => {
@@ -56,37 +57,45 @@ exports.plugin = {
                             }
                         }
                     },
-                    // {
-                    //     method: 'POST',
-                    //     path: '/media',
-                    //     options: {
-                    //         description: 'Creates/uploads a media resource',
-                    //         validate: {
-                    //             payload: Joi.object({
-                    //                 ...MediaCtrl.getSchema()
-                    //             })
-                    //         },
-                    //         handler: (request, h) => {
-                    //             return MediaCtrl.upsertHandler(request, h);
-                    //         },
-                    //         payload: {
-                    //             maxBytes: payloadMaxBytes
-                    //         }
-                    //     }
-                    // },
+
+                    // VIDEO
                     {
-                        method: 'DELETE',
-                        path: '/media',
+                        method: 'POST',
+                        path: '/media/video',
                         options: {
-                            description: 'Deletes a media resource',
+                            description: 'Adds a new video',
+                            payload: {
+                                // output: 'stream',
+                                output: 'file',
+                                parse: true,
+                                allow: 'multipart/form-data',
+                                maxBytes: videoPayloadMaxBytes,
+                                multipart: true
+                            },
                             validate: {
-                                query: Joi.object({
-                                    id: Joi.string().uuid().required(),
-                                    tenant_id: Joi.string().uuid()
+                                payload: Joi.object({
+                                    file: Joi.object(),
+                                    ...MediaCtrl.getTenantIdSchema()
                                 })
                             },
                             handler: (request, h) => {
-                                return MediaCtrl.deleteHandler(request, h);
+                                return MediaCtrl.videoUpsertHandler(request, h);
+                            }
+                        }
+                    },
+                    {
+                        method: 'DELETE',
+                        path: '/media/video',
+                        options: {
+                            description: 'Deletes a new video',
+                            validate: {
+                                query: Joi.object({
+                                    id: Joi.string().uuid().required(),
+                                    ...MediaCtrl.getTenantIdSchema()
+                                })
+                            },
+                            handler: (request, h) => {
+                                return MediaCtrl.videoDeleteHandler(request, h);
                             }
                         }
                     }

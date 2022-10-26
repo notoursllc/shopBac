@@ -1,24 +1,10 @@
 // https://docs.bunny.net/reference/storage-api
+// https://docs.bunny.net/reference/bunnynet-api-overview
 
 const axios = require('axios');
 const fs = require('fs-extra');
 const isObject = require('lodash.isobject');
-
-
-function getAxios(headerObj) {
-    return axios.create({
-        baseURL: `${process.env.BUNNY_API_BASE_URL}/${process.env.BUNNY_API_STORAGE_ZONE}`,
-        headers: Object.assign(
-            {},
-            (isObject(headerObj) ? headerObj : {}),
-            { 'AccessKey': process.env.BUNNY_API_STORAGE_KEY },
-        ),
-        timeout: 20000, // wait for 20s
-        validateStatus() {
-            return true;
-        }
-    });
-}
+const streamLibraryId = process.env.BUNNY_API_STREAM_LIBRARY_ID;
 
 
 /**
@@ -41,68 +27,170 @@ function getAxios(headerObj) {
     return path;
 }
 
+const api = {
+    storage: {
+        getAxios: (headerObj) => {
+            return axios.create({
+                baseURL: `${process.env.BUNNY_API_BASE_URL}/${process.env.BUNNY_API_STORAGE_ZONE}`,
+                headers: Object.assign(
+                    {},
+                    (isObject(headerObj) ? headerObj : {}),
+                    { 'AccessKey': process.env.BUNNY_API_STORAGE_KEY },
+                ),
+                timeout: 20000, // wait for 20s
+                validateStatus() {
+                    return true;
+                }
+            });
+        },
 
-async function uploadFile(path, fileName, file) {
-    global.logger.info('REQUEST: BunnyAPI.uploadFile', {
-        meta: file
-    });
+        upload: async (path, fileName, file) => {
+            try {
+                const instance = api.storage.getAxios({
+                    'Content-Type': 'application/octet-stream'
+                });
 
+                path = fixSlashes(path);
+                const filePath = `${process.env.BUNNY_API_STORAGE_ZONE}/${path}/${fileName}`;
 
-    try {
-        const instance = getAxios(
-            {'Content-Type': 'application/octet-stream'}
-        );
+                const res = await instance.put(
+                    filePath,
+                    fs.createReadStream(file.path)
+                );
 
-        path = fixSlashes(path);
-        const filePath = `${path}/${fileName}`;
+                if(parseInt(res.data.HttpCode, 10) !== 201) {
+                    throw new Error(res.data.Message || 'An error occured when uploading the file');
+                }
 
-        const res = await instance.put(
-            filePath,
-            fs.createReadStream(file.path)
-        );
+                return filePath;
+            }
+            catch (error) {
+                throw new Error(error)
+            }
+        },
 
-        if(parseInt(res.data.HttpCode, 10) !== 201) {
-            throw new Error(res.data.Message || 'An error occured when uploading the file');
+        del: async (url) => {
+            try {
+                await api.storage.getAxios().delete(`/${url}`);
+                return url;
+            }
+            catch (error) {
+                if(instance.isAxiosError(error)) {
+                    throw new Error(error.response.data.errors)
+                }
+                throw new Error(error)
+            }
         }
+    },
 
-        global.logger.info('RESPONSE: BunnyAPI.uploadFile', {
-            meta: filePath
-        });
+    video: {
+        getAxios: (headerObj) => {
+            return axios.create({
+                baseURL: `https://video.bunnycdn.com/library/${streamLibraryId}/videos`,
+                headers: Object.assign(
+                    {},
+                    (isObject(headerObj) ? headerObj : {}),
+                    {
+                        'accept': 'application/json',
+                        'content-type': 'application/*+json',
+                        'AccessKey': process.env.BUNNY_API_STREAM_API_KEY
+                    },
+                ),
+                timeout: 20000, // wait for 20s
+                validateStatus() {
+                    return true;
+                }
+            });
+        },
 
-        return filePath;
-    }
-    catch (error) {
-        throw new Error(error)
-    }
-}
+        create: async (title) => {
+            try {
+                const res = await api.video.getAxios().post('/', {
+                    title: title || `bv_video_${ new Date().getTime() }`,
+                    collectionId: process.env.BUNNY_API_STREAM_LIBRARY_COLLECTION_ID
+                });
 
+                return res.data;
+            }
+            catch (error) {
+                global.logger?.error('BunnyAPI.video.create', error);
+                throw new Error(error)
+            }
+        },
 
-async function deleteFile(url) {
-    global.logger.info('REQUEST: BunnyAPI.deleteImage', {
-        meta: { url }
-    });
+        del: async (id) => {
+            try {
+                const res = await api.video.getAxios().delete(`/${id}`);
+                return res.data;
+            }
+            catch (error) {
+                global.logger?.error('BunnyAPI.video.del', error);
+                throw new Error(error)
+            }
+        },
 
-    const instance = getAxios();
+        get: async (id) => {
+            try {
+                const res = await api.video.getAxios().get(`/${id}`);
+                return res.data;
+            }
+            catch (error) {
+                global.logger?.error('BunnyAPI.video.get', error);
+                throw new Error(error)
+            }
+        },
 
-    try {
-        const res = await instance.delete(url);
+        list: async (params) => {
+            try {
+                const res = await api.video.getAxios().get('/', {
+                    params: {
+                        page: 1,
+                        itemsPerPage: 100,
+                        orderBy: 'date',
+                        ...params,
+                        collection: process.env.BUNNY_API_STREAM_LIBRARY_COLLECTION_ID
+                    }
+                });
+                return res.data;
+            }
+            catch (error) {
+                global.logger?.error('BunnyAPI.video.list', error);
+                throw new Error(error)
+            }
+        },
 
-        global.logger.info('RESPONSE: BunnyAPI.deleteImage', {
-            meta: res.data
-        });
+        upload: async (path, title) => {
+            try {
+                const createResponse = await api.video.create(title);
 
-        return url;
-    }
-    catch (error) {
-        if(instance.isAxiosError(error)) {
-            throw new Error(error.response.data.errors)
+                if(!createResponse.guid) {
+                    throw new Error('An error occurred when creating the video');
+                    global.logger?.error('BunnyAPI.video.upload - Error creating video', createResponse);
+                }
+
+                const res = await api.video.getAxios({'content-type': 'application/octet-stream'})
+                    .put(
+                        `/${createResponse.guid}`,
+                        fs.createReadStream(path)
+                        // fs.createReadStream(File.path)
+                    );
+
+                if(res.data.success) {
+                    return {
+                        ...res.data,
+                        id: createResponse.guid,
+                        directPlayUrl: `https://video.bunnycdn.com/play/${streamLibraryId}/${createResponse.guid}`
+                    }
+                }
+
+                return res.data;
+            }
+            catch (error) {
+                global.logger?.error('BunnyAPI.video.upload', error);
+                throw new Error(error)
+            }
         }
-        throw new Error(error)
     }
-}
-
-
-module.exports = {
-    uploadFile,
-    deleteFile
 };
+
+module.exports = api;

@@ -354,7 +354,7 @@ class ProductVariantCtrl extends BaseController {
                     // Any errors here should only be logged
                     // so they don't affect the outcome of this operation
                     try {
-                        BunnyAPI.deleteFile(images[matchedIndex].url);
+                        BunnyAPI.storage.del(images[matchedIndex].url);
                     }
                     catch(err) {
                         global.logger.error(err);

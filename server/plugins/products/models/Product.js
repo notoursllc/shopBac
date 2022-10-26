@@ -35,6 +35,10 @@ module.exports = function (baseModel, bookshelf) {
                     attributes.metadata = JSON.stringify(attributes.metadata)
                 }
 
+                if (attributes.video) {
+                    attributes.video = JSON.stringify(attributes.video)
+                }
+
                 return attributes;
             },
 
