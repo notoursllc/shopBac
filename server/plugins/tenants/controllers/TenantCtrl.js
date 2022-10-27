@@ -321,7 +321,7 @@ class TenantCtrl extends TenantBaseCtrl {
     }
 
 
-    async generateToken() {
+    generateToken() {
         const token = uuidV4().replace(/-/g, '');
         const salt = bcrypt.genSaltSync(10);
         const hashedToken = bcrypt.hashSync(token, salt);
@@ -335,7 +335,6 @@ class TenantCtrl extends TenantBaseCtrl {
 
     async updateApiKeyHandler(request, h) {
         try {
-            console.log("UPDATE API HSNDLER")
             global.logger.info('REQUEST: TenantCtrl.updateApiKeyHandler', {
                 meta: {
                     payload: request.payload
@@ -352,7 +351,7 @@ class TenantCtrl extends TenantBaseCtrl {
                 throw Boom.badRequest('Unable to find tenant');
             }
 
-            const tokens = await this.generateToken();
+            const tokens = this.generateToken();
 
             await Tenant.save({
                 api_key: tokens.hashedToken,

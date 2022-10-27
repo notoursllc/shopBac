@@ -266,7 +266,7 @@ exports.plugin = {
                             validate: {
                                 payload: Joi.object({
                                     ...TenantCtrl.getAccountSchema(),
-                                    tenant_id: Joi.string().uuid().required()
+                                    ...TenantCtrl.getTenantIdSchema()
                                 })
                             },
                             handler: (request, h) => {
@@ -284,7 +284,7 @@ exports.plugin = {
                             },
                             validate: {
                                 payload: Joi.object({
-                                    tenant_id: Joi.string().uuid().required()
+                                    ...TenantCtrl.getTenantIdSchema()
                                 })
                             },
                             handler: (request, h) => {
@@ -302,7 +302,7 @@ exports.plugin = {
                             },
                             validate: {
                                 query: Joi.object({
-                                    tenant_id: Joi.string().uuid().required()
+                                    ...TenantCtrl.getTenantIdSchema()
                                 })
                             },
                             handler: (request, h) => {
