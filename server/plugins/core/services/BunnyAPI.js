@@ -70,8 +70,10 @@ const api = {
         },
 
         del: async (url) => {
+            const instance = api.storage.getAxios();
+
             try {
-                await api.storage.getAxios().delete(`/${url}`);
+                await instance.delete(`/${url}`);
                 return url;
             }
             catch (error) {
