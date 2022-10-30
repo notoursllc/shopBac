@@ -70,16 +70,11 @@ const api = {
         },
 
         del: async (url) => {
-            const instance = api.storage.getAxios();
-
             try {
-                await instance.delete(`/${url}`);
+                await api.storage.getAxios().delete(`/${url}`);
                 return url;
             }
             catch (error) {
-                if(instance.isAxiosError(error)) {
-                    throw new Error(error.response.data.errors)
-                }
                 throw new Error(error)
             }
         }
