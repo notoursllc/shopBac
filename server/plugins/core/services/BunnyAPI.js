@@ -44,14 +44,21 @@ const api = {
             });
         },
 
+        /*
+        * Upload a file
+        * https://docs.bunny.net/reference/put_-storagezonename-path-filename
+        */
         upload: async (path, fileName, file) => {
+            global.logger.info(`REQUEST: BunnyAPI.storage.upload`, {
+                meta: { path, fileName }
+            });
+
             try {
                 const instance = api.storage.getAxios({
                     'Content-Type': 'application/octet-stream'
                 });
 
-                path = fixSlashes(path);
-                const filePath = `${process.env.BUNNY_API_STORAGE_ZONE}/${path}/${fileName}`;
+                const filePath = `${fixSlashes(path)}/${fileName}`;
 
                 const res = await instance.put(
                     filePath,
@@ -62,6 +69,10 @@ const api = {
                     throw new Error(res.data.Message || 'An error occured when uploading the file');
                 }
 
+                global.logger.info('RESPONSE: BunnyAPI.storage.upload', {
+                    meta: { filePath }
+                });
+
                 return filePath;
             }
             catch (error) {
@@ -69,9 +80,25 @@ const api = {
             }
         },
 
+        /*
+        * Delete a file
+        * https://docs.bunny.net/reference/delete_-storagezonename-path-filename
+        */
         del: async (url) => {
+            global.logger.info(`REQUEST: BunnyAPI.storage.del`, {
+                meta: { url }
+            });
+
             try {
-                await api.storage.getAxios().delete(`/${url}`);
+                const a = api.storage.getAxios();
+                a.defaults.baseURL += url;
+
+                await a.delete();
+
+                global.logger.info('RESPONSE: BunnyAPI.storage.del', {
+                    meta: { url }
+                });
+
                 return url;
             }
             catch (error) {
@@ -117,7 +144,10 @@ const api = {
 
         del: async (id) => {
             try {
-                const res = await api.video.getAxios().delete(`/${id}`);
+                const a = api.video.getAxios();
+                a.defaults.baseURL += `/${id}`;
+
+                const res = await a.delete();
                 return res.data;
             }
             catch (error) {

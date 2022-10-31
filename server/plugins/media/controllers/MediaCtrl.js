@@ -7,6 +7,7 @@ const BaseController = require('../../core/controllers/BaseController');
 const BunnyAPI = require('../../core/services/BunnyAPI');
 const isObject = require('lodash.isobject');
 const uuidV4 = require('uuid/v4');
+const isDev = process.env.NODE_ENV !== 'production';
 
 class MediaCtrl extends BaseController {
 
@@ -43,7 +44,7 @@ class MediaCtrl extends BaseController {
             });
 
             const url = await BunnyAPI.storage.upload(
-                'images',
+                `${isDev ? 'dev' : 'prod'}/images`,
                 `${Date.now()}-${request.payload.file.filename}`,
                 request.payload.file
             );
