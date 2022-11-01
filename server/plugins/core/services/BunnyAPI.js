@@ -69,11 +69,13 @@ const api = {
                     throw new Error(res.data.Message || 'An error occured when uploading the file');
                 }
 
+                const url = new URL(filePath, process.env.BUNNY_PULLZONE_URL);
+
                 global.logger.info('RESPONSE: BunnyAPI.storage.upload', {
-                    meta: { filePath }
+                    meta: { url: url.href }
                 });
 
-                return filePath;
+                return url.href;
             }
             catch (error) {
                 throw new Error(error)
