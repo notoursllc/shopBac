@@ -169,8 +169,7 @@ class ProductArtistCtrl extends BaseController {
             });
 
             if(request.payload.file) {
-                request.payload.image = await BunnyAPI.storage.upload(
-                    'images',
+                request.payload.image = await BunnyAPI.storage.imageUpload(
                     `${Date.now()}-${request.payload.file.filename}`,
                     request.payload.file
                 );

@@ -43,8 +43,7 @@ class MediaCtrl extends BaseController {
                 }
             });
 
-            const url = await BunnyAPI.storage.upload(
-                `${isDev ? 'dev' : 'prod'}/images`,
+            const url = await BunnyAPI.storage.imageUpload(
                 `${Date.now()}-${request.payload.file.filename}`,
                 request.payload.file
             );

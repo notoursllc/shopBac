@@ -4,6 +4,7 @@ const Joi = require('joi');
 const Boom = require('@hapi/boom');
 const BaseController = require('../../core/controllers/BaseController');
 const BunnyAPI = require('../../core/services/BunnyAPI');
+const { isDev } = require('../../../helpers.service');
 
 class HerolCtrl extends BaseController {
 
@@ -69,8 +70,7 @@ class HerolCtrl extends BaseController {
             });
 
             if(request.payload.file) {
-                request.payload.url = await BunnyAPI.storage.upload(
-                    'images',
+                request.payload.url = await BunnyAPI.storage.imageUpload(
                     `${Date.now()}-${request.payload.file.filename}`,
                     request.payload.file
                 );
