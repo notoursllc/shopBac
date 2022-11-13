@@ -150,10 +150,7 @@ class CartCtrl extends BaseController {
         return {
             'cart_items': (query) => {
                 query.orderBy('created_at', 'ASC');
-            },
-            'cart_items.product': null,
-            'cart_items.product_variant': null,
-            'cart_items.product_variant_sku': null
+            }
         }
     }
 
@@ -204,7 +201,8 @@ class CartCtrl extends BaseController {
 
         // mask plugin:
         // https://github.com/seegno/bookshelf-mask
-        return Cart.mask(`*,cart_items(id,qty,product(*),product_variant(id,currency,images,label,swatches),product_variant_sku(id,label,display_price,base_price,is_on_sale,sale_price,sku))`)
+        // return Cart.mask(`*,cart_items(id,qty,product(*),product_variant(id,currency,images,label,swatches),product_variant_sku(id,label,display_price,base_price,is_on_sale,sale_price,sku))`)
+        return Cart.mask(`*,cart_items(id,qty,product,product_variant,product_variant_sku)`)
     }
 
 
@@ -1021,19 +1019,13 @@ class CartCtrl extends BaseController {
         // to re-do the purchase.
 
         try {
-            this.decrementInventoryCount(cartId, tenantId);
-        }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-        }
-
-        try {
             const Cart = await this.getClosedCart(
                 cartId,
                 tenantId,
                 { withRelated: this.getAllCartRelations() }
             );
+
+            this.decrementInventoryCountInCart(tenantId, Cart);
 
             const Tenant = await this.getTenant(tenantId);
             const orderTitle = getPurchaseDescription(Cart);
@@ -1535,60 +1527,57 @@ class CartCtrl extends BaseController {
     }
 
 
+    async decrementInventoryCountInCart(tenantId, Cart) {
+        if(!Cart) {
+            return;
+        }
 
-    async decrementInventoryCount(cartId, tenantId) {
-        try {
-            global.logger.info(`REQUEST: CartCtrl.decrementInventoryCount`, {
-                meta: {
-                    cart_id: cartId
-                }
-            });
+        global.logger.info(`REQUEST: CartCtrl.decrementInventoryCountInCart`, {
+            meta: {
+                cart_id: Cart.get('id')
+            }
+        });
 
-            const Cart = await this.getModel()
-                .query((qb) => {
-                    qb.where('id', '=', cartId);
-                    qb.andWhere('tenant_id', '=', tenantId);
-                })
-                .fetch(
-                    { withRelated: {
-                        'cart_items': (query) => {
-                            query.orderBy('created_at', 'ASC');
-                        },
-                        'cart_items.product_variant_sku': null
-                    } }
-                );
+        const promises = [];
+        const ProductVariantSkuModel = this.server.app.bookshelf.model('ProductVariantSku');
+        const cartItemModels = Cart.related('cart_items').models;
 
-            const promises = [];
+        for(let i=0, l=cartItemModels.length; i<l; i++) {
+            const CartItem = cartItemModels[i];
+            const product_variant_sku = CartItem.get('product_variant_sku');
 
-            Cart.related('cart_items').forEach(async (CartItem) => {
-                const ProductVariantSku = CartItem.related('product_variant_sku');
+            if(product_variant_sku && product_variant_sku.id) {
+                const ProductVariantSku = await ProductVariantSkuModel
+                    .forge({
+                        id: product_variant_sku.id,
+                        tenant_id: tenantId
+                    })
+                    .fetch();
 
                 if(ProductVariantSku) {
                     let newInventoryCount = ProductVariantSku.get('inventory_count') - CartItem.get('qty');
+                    if(!newInventoryCount) {
+                        newInventoryCount = 0;
+                    }
                     if(newInventoryCount < 0) {
                         newInventoryCount = 0;
                     }
 
                     promises.push(
-                        this.server.app.bookshelf.model('ProductVariantSku').update(
+                        ProductVariantSkuModel.update(
                             { inventory_count: newInventoryCount },
                             { id: ProductVariantSku.get('id') }
                         )
                     );
                 }
-            });
-
-            await Promise.all(promises);
-
-            global.logger.info(`RESPONSE: ProductVariantSkuCtrl.decrementInventoryCount`, {
-                meta: {}
-            });
+            }
         }
-        catch(err) {
-            global.logger.error(err);
-            global.bugsnag(err);
-            throw err;
-        }
+
+        await Promise.all(promises);
+
+        global.logger.info(`RESPONSE: ProductVariantSkuCtrl.decrementInventoryCountInCart`, {
+            meta: {}
+        });
     }
 
 

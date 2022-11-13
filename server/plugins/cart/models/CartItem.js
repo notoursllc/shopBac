@@ -13,25 +13,13 @@ module.exports = function (baseModel, bookshelf) {
                 return this.belongsTo('Cart', 'cart_id');
             },
 
-            product: function() {
-                return this.belongsTo('Product', 'product_id');
-            },
-
-            product_variant: function() {
-                return this.belongsTo('ProductVariant', 'product_variant_id');
-            },
-
-            product_variant_sku: function() {
-                return this.belongsTo('ProductVariantSku', 'product_variant_sku_id');
-            },
-
             virtuals: {
                 item_price_total: function() {
                     const qty = this.get('qty');
                     let total = null;
 
                     if(qty) {
-                        const product_variant_sku_price = this.related('product_variant_sku').get('display_price');
+                        const product_variant_sku_price = this.get('product_variant_sku')?.display_price;
 
                         // The SKU price gets prescident if it exists
                         if (product_variant_sku_price !== null) {
@@ -51,7 +39,7 @@ module.exports = function (baseModel, bookshelf) {
                     let total = null;
 
                     if(qty) {
-                        const product_variant_sku_weight = this.related('product_variant_sku').get('weight_oz');
+                        const product_variant_sku_weight = this.get('product_variant_sku')?.weight_oz;
 
                         if (product_variant_sku_weight !== null) {
                             total = product_variant_sku_weight * qty;
@@ -64,9 +52,6 @@ module.exports = function (baseModel, bookshelf) {
 
             hidden: [
                 'tenant_id',
-                'product_id',
-                'product_variant_id',
-                'product_variant_sku_id',
                 'deleted_at'
             ]
         },

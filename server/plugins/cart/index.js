@@ -294,8 +294,7 @@ exports.plugin = {
                             },
                             validate: {
                                 payload: Joi.object({
-                                    ...CartItemCtrl.getSchema(),
-                                    clear_shipping_rate: Joi.boolean().optional()
+                                    ...CartItemCtrl.getSchema()
                                 })
                             },
                             handler: (request, h) => {
@@ -333,8 +332,7 @@ exports.plugin = {
                             validate: {
                                 query: Joi.object({
                                     id: Joi.string().uuid().required(),
-                                    tenant_id: Joi.string().uuid().required(),
-                                    clear_shipping_rate: Joi.boolean().optional()
+                                    tenant_id: Joi.string().uuid().required()
                                 })
                             },
                             handler: (request, h) => {
