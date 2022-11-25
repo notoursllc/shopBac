@@ -43,6 +43,10 @@ class ProductArtistCtrl extends BaseController {
                 Joi.string().trim().max(100),
                 Joi.allow(null)
             ),
+            alt_text: Joi.alternatives().try(
+                Joi.string().trim().max(100),
+                Joi.allow(null)
+            ),
             created_at: Joi.date(),
             updated_at: Joi.date()
         };
