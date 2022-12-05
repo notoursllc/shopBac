@@ -7,9 +7,16 @@ const StripeCtrl = require('./StripeCtrl');
 const PayPalCtrl = require('./PayPalCtrl');
 const TaxNexusCtrl = require('../../tax-nexus/controllers/TaxNexusCtrl');
 const TenantCtrl = require('../../tenants/controllers/TenantCtrl');
+const { DB_TABLES } = require('../../core/services/CoreService');
+const helpers = require('../../../helpers.service');
 
 // third party APIs
-const { emailPurchaseReceiptToBuyer,  emailPurchaseAlertToAdmin, getPurchaseDescription } = require('../services/PostmarkService');
+const {
+    emailPurchaseReceiptToBuyer,
+    emailPurchaseAlertToAdmin,
+    getPurchaseDescription,
+    emailPackageTrackingOrderShipped
+} = require('../services/PostmarkService');
 const ShipEngineCtrl = require('../controllers/ShipEngineCtrl');
 
 
@@ -93,7 +100,6 @@ class CartCtrl extends BaseController {
             // currency_exchange_rate: Joi.alternatives().try(Joi.number().integer().min(0), Joi.allow(null)),
             selected_shipping_rate: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             shipping_rate_quote: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
-            shipping_label_id: getJoiStringOrNull(),
             tax_nexus_applied: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             stripe_payment_intent_id: getJoiStringOrNull(),
             stripe_order_id: getJoiStringOrNull(),
@@ -646,7 +652,7 @@ class CartCtrl extends BaseController {
             }
 
             await Cart.save({
-                shipping_label_id: data.label_id || null
+                shipping_label: data || null
             });
 
             global.logger.info('RESPONSE: CartCtrl.buyShippingLabelHandler', {
@@ -733,11 +739,6 @@ class CartCtrl extends BaseController {
                 throw new Error('Cart not found')
             }
 
-            let label = null;
-            if(Cart.get('shipping_label_id')) {
-                label = await this.ShipEngineCtrl.getShippingLabel(tenantId, Cart.get('shipping_label_id'));
-            }
-
             const paymentData = await this.getPayment(
                 Cart,
                 tenantId
@@ -745,7 +746,6 @@ class CartCtrl extends BaseController {
 
             return h.apiSuccess({
                 cart: Cart.toJSON(),
-                label: label,
                 payment: paymentData
             });
         }
@@ -1581,6 +1581,131 @@ class CartCtrl extends BaseController {
     }
 
 
+    async trackingWebhookHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: CartCtrl.trackingStatusWebhookHandler', {
+                meta: request.payload
+            });
+
+            if(!request.payload.data.tracking_number) {
+                return;
+            }
+
+            // const tenantId = this.getTenantIdFromAuth(request);
+
+            // TODO:
+            // - find the tenant that this tracking number belongs to, right?
+            // - search carts for this tracking number in the "shipping_label" column json
+            // - email the buyer with the status update if the package has shipped
+
+            // const labels = await this.ShipEngineCtrl.listShippingLabels(
+            //     tenantId,
+            //     {
+            //         tracking_number: request.payload.data.tracking_number,
+            //         // get the most recent label:
+            //         page_size: 1,
+            //         sort_by: 'created_at',
+            //         sort_dir: 'desc'
+            //     }
+            // );
+
+            // console.log("SHIP ENGING LABELS", labels)
+
+            const results = await this.server.app.knex
+                .select(
+                    'id',
+                    'tenant_id',
+                    'shipping_email',
+                    'shipping_firstName',
+                    'shipping_lastName',
+                    'shipping_streetAddress',
+                    'shipping_extendedAddress',
+                    'shipping_company',
+                    'shipping_city',
+                    'shipping_state',
+                    'shipping_postalCode',
+                    'shipping_countryCodeAlpha2',
+                    'closed_at',
+                )
+                .from(DB_TABLES.carts)
+                .whereRaw(`?? @> ?::jsonb`, [
+                    'shipping_label',
+                    JSON.stringify({tracking_number: request.payload.data.tracking_number})
+                ]);
+
+            if(Array.isArray(results)) {
+                const cart = results[0];
+                console.log("FOUND CART WITH TRACKING NUMBER", request.payload.data.tracking_number, cart)
+
+                const Tenant = await this.TenantCtrl.fetchOne({
+                    id: cart.tenant_id
+                });
+
+                if(!Tenant) {
+                    throw new Error('Tenant can not be found');
+                }
+
+                if(cart.shipping_email) {
+                    // TODO: if request.payload.data.status_code === 'IT'
+                    const pugConfig = {
+                        //TODO: add template variables here
+                        tenantLogo: '',
+                        baseUrl: helpers.getSiteUrl(true),
+                        brandName: Tenant.get('application_name'),
+                        websiteUrl: Tenant.get('application_url'),
+                        trackingNumber: request.payload.data.tracking_number,
+                        trackingUrl: '', // TODO: need a tracking page!
+                        orderNumber: cart.id,
+                        orderDate: cart.closed_at, // TODO: date format
+                        id: cart.id,
+                        shipping_firstName: cart.shipping_firstName,
+                        shipping_lastName: cart.shipping_lastName,
+                        shipping_streetAddress: cart.shipping_streetAddress,
+                        shipping_extendedAddress: cart.shipping_extendedAddress,
+                        shipping_company: cart.shipping_company,
+                        shipping_city: cart.shipping_city,
+                        shipping_state: cart.shipping_state,
+                        shipping_postalCode: cart.shipping_postalCode,
+                        shipping_countryCodeAlpha2: cart.shipping_countryCodeAlpha2,
+                        shipping_email: cart.shipping_email,
+                        trackingEvents: request.payload.data.events
+                    };
+
+                    emailPackageTrackingOrderShipped(pugConfig)
+                }
+            }
+
+
+            // // You should only be allowed so set the 'shipped_at' value of a closed cart
+            // const Cart = await this.getClosedCart(
+            //     request.payload.id,
+            //     this.getTenantIdFromAuth(request)
+            // );
+
+            // if(!Cart) {
+            //     throw new Error('Cart not found');
+            // }
+
+            // const UpdatedCart = await Cart.save({
+            //     shipped_at: request.payload.shipped ? new Date() : null
+            // });
+
+            // const updatedCartJson = UpdatedCart.toJSON();
+
+            // global.logger.info('RESPONSE: CartCtrl.trackingStatusWebhookHandler', {
+            //     meta: {
+            //         updatedCart: updatedCartJson
+            //     }
+            // });
+            return h.apiSuccess();
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
 
     // async getPageHandler(request, h) {
     //     const Models = await this.getPage(
@@ -1598,10 +1723,12 @@ class CartCtrl extends BaseController {
     //         pagination
     //     );
     // }
+
+
     /*******************
      * PAYPAL related
      ********************/
-
+    /*
      async createPaypalPaymentHandler(request, h) {
         try {
             global.logger.info('REQUEST: PaypalCartCtrl:createPaymentHandler', {
@@ -1667,6 +1794,7 @@ class CartCtrl extends BaseController {
             throw Boom.badData(err);
         }
     }
+    */
 
 }
 

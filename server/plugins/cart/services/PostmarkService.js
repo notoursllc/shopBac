@@ -69,7 +69,7 @@ function substringOnWords(str, maxLen, suffix) {
 
 
 function getShippingName(Cart) {
-     const firstName = Cart.get('shipping_firstName');
+    const firstName = Cart.get('shipping_firstName');
     const lastName = Cart.get('shipping_lastName');
     let val = [];
 
@@ -222,7 +222,7 @@ async function emailContactUsFormToAdmin(pugConfig) {
 
         const response = await send({
             to: process.env.EMAIL_ADMIN,
-            subject: `CONTACT US form submission (${process.env.BRAND_NAME})`,
+            subject: `CONTACT US form submission (${pugConfig.brandName})`,
             html: html
         });
 
@@ -241,11 +241,42 @@ async function emailContactUsFormToAdmin(pugConfig) {
 }
 
 
+async function emailPackageTrackingOrderShipped(pugConfig) {
+    try {
+        global.logger.info('REQUEST: PostmarkService -> emailPackageTrackingOrderShipped()', {
+            meta: {
+                pugConfig
+            }
+        });
+
+        const response = await send({
+            to: pugConfig.shipping_email,
+            subject: `${pugConfig.brandName}: Your order has shipped!`,
+            html: pug.renderFile(
+                path.join(__dirname, '../email-templates', 'package-tracking-order-shipped.pug'),
+                pugConfig
+            )
+        });
+
+        global.logger.info('RESPONSE: PostmarkService -> emailPackageTrackingOrderShipped()', {
+            meta: {
+                response
+            }
+        });
+
+        return response;
+    }
+    catch(err) {
+        global.logger.error(err);
+        global.bugsnag(err);
+    }
+}
 
 
 module.exports = {
     getPurchaseDescription,
     emailPurchaseReceiptToBuyer,
     emailPurchaseAlertToAdmin,
-    emailContactUsFormToAdmin
+    emailContactUsFormToAdmin,
+    emailPackageTrackingOrderShipped
 }

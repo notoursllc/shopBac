@@ -10,19 +10,23 @@ module.exports = function (baseModel, bookshelf, server) {
 
             format(attributes) {
                 if (attributes.selected_shipping_rate) {
-                    attributes.selected_shipping_rate = JSON.stringify(attributes.selected_shipping_rate)
+                    attributes.selected_shipping_rate = JSON.stringify(attributes.selected_shipping_rate);
                 }
 
                 if (attributes.shipping_rate_quote) {
-                    attributes.shipping_rate_quote = JSON.stringify(attributes.shipping_rate_quote)
+                    attributes.shipping_rate_quote = JSON.stringify(attributes.shipping_rate_quote);
+                }
+
+                if (attributes.shipping_label) {
+                    attributes.shipping_label = JSON.stringify(attributes.shipping_label);
                 }
 
                 if (attributes.tax_nexus_applied) {
-                    attributes.tax_nexus_applied = JSON.stringify(attributes.tax_nexus_applied)
+                    attributes.tax_nexus_applied = JSON.stringify(attributes.tax_nexus_applied);
                 }
 
                 if (attributes.admin_order_notes) {
-                    attributes.admin_order_notes = JSON.stringify(attributes.admin_order_notes)
+                    attributes.admin_order_notes = JSON.stringify(attributes.admin_order_notes);
                 }
 
                 return attributes;

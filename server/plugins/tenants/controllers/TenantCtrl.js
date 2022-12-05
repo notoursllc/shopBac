@@ -127,7 +127,16 @@ class TenantCtrl extends TenantBaseCtrl {
 
     async contactUsHandler(request, h) {
         try {
+            const Tenant = await this.TenantCtrl.fetchOne({
+                id: this.getTenantIdFromAuth(request)
+            });
+
+            if(!Tenant) {
+                throw new Error('Tenant can not be found');
+            }
+
             await emailContactUsFormToAdmin({
+                brandName: Tenant.get('application_name'),
                 name: request.payload.name,
                 company: request.payload.company,
                 email: request.payload.email,

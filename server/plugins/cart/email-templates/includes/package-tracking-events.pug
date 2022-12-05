@@ -1,0 +1,13 @@
+div(style="font-size:16px; padding-bottom:10px") Shipping updates:
+table(cellspacing="0" cellpadding="2" border="0" width="100%")
+    each obj in trackingEvents
+        tr
+            td(style="padding:5px 10px; vertical-align:top;") #{obj.occurred_at}
+            td(style="padding:5px 10px;")
+                span #{obj.description}.&nbsp;
+                span #{obj.city_locality}
+                if obj.city_locality && obj.state_province
+                    span ,&nbsp;
+                span #{obj.state_province}
+
+
