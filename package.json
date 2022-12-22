@@ -50,7 +50,7 @@
     "cross-env": "^5.2.0",
     "date-fns": "^2.29.3",
     "dotenv": "^8.1.0",
-    "file-type": "^14.6.1",
+    "file-type": "^16.5.4",
     "form-data": "^4.0.0",
     "fs-extra": "^10.0.0",
     "generate-robotstxt": "^7.1.0",
