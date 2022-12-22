@@ -34,7 +34,7 @@
     "@hapi/statehood": "^8.0.0",
     "@paypal/checkout-server-sdk": "^1.0.1",
     "accounting": "^0.4.1",
-    "aws-sdk": "^2.683.0",
+    "aws-sdk": "^2.814.0",
     "axios": "^0.19.0",
     "bcrypt": "^5.0.1",
     "bcryptjs": "^2.4.3",
