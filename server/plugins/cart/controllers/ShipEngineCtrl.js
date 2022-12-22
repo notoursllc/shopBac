@@ -446,6 +446,27 @@ class ShipEngineCtrl extends BaseController {
     }
 
 
+    /*
+    * https://www.shipengine.com/docs/reference/list-labels/
+    */
+    async listShippingLabels(tenantId, params) {
+        global.logger.info('REQUEST: ShipEngineCtrl.listShippingLabels', {
+            meta: { tenantId }
+        });
+
+        const $axios = await this.getAxios(tenantId);
+        const { data } = await $axios.get('labels', {
+            params: params
+        });
+
+        global.logger.info('RESPONSE: ShipEngineCtrl.listShippingLabels', {
+            meta: { data }
+        });
+
+        return data;
+    }
+
+
     async validateAddresses(tenantId, payload) {
         global.logger.info('REQUEST: ShipEngineCtrl.validateAddresses', {
             meta: { payload }
@@ -485,6 +506,40 @@ class ShipEngineCtrl extends BaseController {
         const response = await $axios.delete(`connections/carriers/stamps_com/${carrierId}`);
 
         return response?.data;
+    }
+
+
+    /*
+    * https://www.shipengine.com/docs/tracking/#tracking-status-codes
+    */
+    getTrackingStatusCodes() {
+        return {
+            AC:	{ description: 'Accepted', tracking_status: 'N/A' },
+            IT: { description: 'In Transit', tracking_status: 'in_transit' },
+            DE:	{ description: 'Delivered', tracking_status: 'delivered' },
+            EX:	{ description: 'Exception', tracking_status: 'error' },
+            UN:	{ description: 'Unknown', tracking_status: 'unknown' },
+            AT:	{ description: 'Delivery Attempt', tracking_status: 'N/A' },
+            NY:	{ description: 'Not Yet In System', tracking_status: 'in_transit' }
+        }
+    }
+
+
+    // https://www.shipengine.com/docs/tracking/#supported-carriers
+    getTrackingUrl(carrierCode, trackingNumber) {
+        const cc = carrierCode ? carrierCode.toLowerCase() : null;
+
+        switch(cc) {
+            case 'usps':
+            case 'stamps_com':
+                return `https://tools.usps.com/go/TrackConfirmAction_input?strOrigTrackNum=${trackingNumber} `;
+
+            case 'ups':
+                return `https://www.ups.com/track?tracknum=${trackingNumber}`;
+
+            case 'fedex':
+                return `https://www.fedex.com/fedextrack/?action=track&trackingnumber=${trackingNumber}`
+        }
     }
 }
 

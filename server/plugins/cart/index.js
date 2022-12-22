@@ -405,6 +405,17 @@ exports.plugin = {
                             }
                         }
                     },
+                    {
+                        method: 'POST',
+                        path: '/cart/shipping/label/tracking_status',
+                        options: {
+                            description: 'Webhook to receive a tracking status update',
+                            auth: false,
+                            handler: (request, h) => {
+                                return CartCtrl.trackingWebhookHandler(request, h);
+                            }
+                        }
+                    },
 
 
                     /******************
@@ -473,6 +484,7 @@ exports.plugin = {
                     /******************
                      * PAYPAL
                      ******************/
+                    /*
                     {
                         method: 'POST',
                         path: '/cart/payment/paypal',
@@ -512,6 +524,8 @@ exports.plugin = {
                             }
                         }
                     },
+                    */
+
                     {
                         method: 'GET',
                         path: '/cart/{param*}',

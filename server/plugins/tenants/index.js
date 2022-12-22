@@ -12,6 +12,8 @@ exports.plugin = {
             function (server) {
                 const TenantCtrl = new (require('./controllers/TenantCtrl'))(server);
                 const TenantMemberCtrl = new (require('./controllers/TenantMemberCtrl'))(server);
+                const payloadMaxBytes = process.env.ROUTE_PAYLOAD_MAXBYTES || 10485760; // 10MB (1048576 (1 MB) is the default)
+
 
                 // Session auth
                 // CORS cookie notes:
@@ -262,6 +264,14 @@ exports.plugin = {
                             description: 'Updates a tenant in a limited way',
                             auth: {
                                 strategies: ['session']
+                            },
+                            payload: {
+                                // output: 'stream',
+                                output: 'file',
+                                parse: true,
+                                allow: 'multipart/form-data',
+                                maxBytes: payloadMaxBytes,
+                                multipart: true
                             },
                             validate: {
                                 payload: Joi.object({

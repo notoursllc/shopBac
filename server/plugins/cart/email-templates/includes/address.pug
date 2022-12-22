@@ -1,0 +1,10 @@
+div(style="text-align:center") #{shipping_company}
+div(style="text-align:center") #{shipping_firstName} #{shipping_lastName}
+div(style="text-align:center") #{shipping_streetAddress}
+div(style="text-align:center") #{shipping_extendedAddress}
+div(style="text-align:center")
+    span #{shipping_city}
+    if shipping_city && shipping_state
+        span ,&nbsp;
+    span #{shipping_state} #{shipping_postalCode}
+div(style="text-align:center") #{shipping_countryCodeAlpha2}

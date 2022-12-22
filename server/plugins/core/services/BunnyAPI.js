@@ -54,6 +54,16 @@ const api = {
             );
         },
 
+        tenantLogoUpload: (fileName, file) => {
+            const isProd = process.env.NODE_ENV === 'production';
+
+            return api.storage.upload(
+                `${isProd ? 'prod' : 'dev'}/images/logos`,
+                fileName,
+                file
+            );
+        },
+
         /*
         * Upload a file
         * https://docs.bunny.net/reference/put_-storagezonename-path-filename

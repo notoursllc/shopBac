@@ -1,15 +1,24 @@
 const Joi = require('joi');
 const Boom = require('@hapi/boom');
 const isObject = require('lodash.isobject');
+const DateFns = require('date-fns');
+const url = require('node:url');
 const BaseController = require('../../core/controllers/BaseController');
 const PackageTypeCtrl = require('../../package-types/controllers/PackageTypeCtrl');
 const StripeCtrl = require('./StripeCtrl');
 const PayPalCtrl = require('./PayPalCtrl');
 const TaxNexusCtrl = require('../../tax-nexus/controllers/TaxNexusCtrl');
 const TenantCtrl = require('../../tenants/controllers/TenantCtrl');
+const { DB_TABLES } = require('../../core/services/CoreService');
+const helpers = require('../../../helpers.service');
 
 // third party APIs
-const { emailPurchaseReceiptToBuyer,  emailPurchaseAlertToAdmin, getPurchaseDescription } = require('../services/PostmarkService');
+const {
+    emailPurchaseReceiptToBuyer,
+    emailPurchaseAlertToAdmin,
+    getPurchaseDescription,
+    emailPackageTrackingOrderShipped
+} = require('../services/PostmarkService');
 const ShipEngineCtrl = require('../controllers/ShipEngineCtrl');
 
 
@@ -93,7 +102,6 @@ class CartCtrl extends BaseController {
             // currency_exchange_rate: Joi.alternatives().try(Joi.number().integer().min(0), Joi.allow(null)),
             selected_shipping_rate: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             shipping_rate_quote: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
-            shipping_label_id: getJoiStringOrNull(),
             tax_nexus_applied: Joi.alternatives().try(Joi.string().empty(''), Joi.allow(null)),
             stripe_payment_intent_id: getJoiStringOrNull(),
             stripe_order_id: getJoiStringOrNull(),
@@ -646,7 +654,7 @@ class CartCtrl extends BaseController {
             }
 
             await Cart.save({
-                shipping_label_id: data.label_id || null
+                shipping_label: data || null
             });
 
             global.logger.info('RESPONSE: CartCtrl.buyShippingLabelHandler', {
@@ -733,11 +741,6 @@ class CartCtrl extends BaseController {
                 throw new Error('Cart not found')
             }
 
-            let label = null;
-            if(Cart.get('shipping_label_id')) {
-                label = await this.ShipEngineCtrl.getShippingLabel(tenantId, Cart.get('shipping_label_id'));
-            }
-
             const paymentData = await this.getPayment(
                 Cart,
                 tenantId
@@ -745,7 +748,6 @@ class CartCtrl extends BaseController {
 
             return h.apiSuccess({
                 cart: Cart.toJSON(),
-                label: label,
                 payment: paymentData
             });
         }
@@ -1581,6 +1583,122 @@ class CartCtrl extends BaseController {
     }
 
 
+    async trackingWebhookHandler(request, h) {
+        try {
+            global.logger.info('REQUEST: CartCtrl.trackingStatusWebhookHandler', {
+                meta: request.payload
+            });
+
+            const myUrl = new url.URL(request.payload.resource_url);
+            const carrier_code = myUrl.searchParams.get('carrier_code');
+
+            // the 'user-agent' value in the request header must be from ShipEngine
+            // https://www.shipengine.com/docs/tracking/webhooks/#validation
+            if(request.headers['user-agent'] !== 'ShipEngine/v1') {
+                throw Boom.badRequest();
+            }
+
+            // not all webhook status codes should be handled
+            // https://www.shipengine.com/docs/tracking/#tracking-status-codes
+            if(!request.payload.data.tracking_number
+                || !Array.isArray(request.payload.data.events)
+                || !['IT', 'DE', 'AT'].includes(request.payload.data.status_code)) {
+                return;
+            }
+
+            const Cart = await this.getModel()
+                .query((qb) => {
+                    qb.where('closed_at', 'is not', null);
+                    qb.whereRaw(`?? @> ?::jsonb`, [
+                        'shipping_label',
+                        JSON.stringify({tracking_number: request.payload.data.tracking_number})
+                    ])
+                })
+                .fetch(
+                    { withRelated: this.getAllCartRelations() }
+                );
+
+            if(Cart) {
+                const Tenant = await this.TenantCtrl.fetchOne({
+                    id: Cart.get('tenant_id')
+                });
+
+                if(!Tenant) {
+                    throw new Error('Tenant can not be found');
+                }
+
+                if(Cart.get('shipping_email')) {
+                    const pugConfig = {
+                        status_code: request.payload.data.status_code,
+                        application_logo: Tenant.get('application_logo') ? `${Tenant.get('application_logo')}?class=w150` : null,
+                        baseUrl: helpers.getSiteUrl(true),
+                        brandName: Tenant.get('application_name'),
+                        copyright: `© ${new Date().getFullYear()} ${Tenant.get('application_name')}. All rights reserved.`,
+                        websiteUrl: Tenant.get('application_url'),
+                        trackingNumber: request.payload.data.tracking_number,
+                        trackingUrl: this.ShipEngineCtrl.getTrackingUrl(carrier_code, request.payload.data.tracking_number),
+                        orderNumber: Cart.get('id'),
+                        orderDate: Cart.get('closed_at') ? DateFns.format(new Date(Cart.get('closed_at')), 'MM/dd/yyyy') : '',
+                        orderDetailsUrl: Tenant.get('order_details_page_url') ? Tenant.get('order_details_page_url').replace('$ORDER_ID', Cart.get('id')) : null,
+                        id: Cart.get('id'),
+                        // shipping_firstName: cart.shipping_firstName,
+                        // shipping_lastName: cart.shipping_lastName,
+                        // shipping_streetAddress: cart.shipping_streetAddress,
+                        // shipping_extendedAddress: cart.shipping_extendedAddress,
+                        // shipping_company: cart.shipping_company,
+                        // shipping_city: cart.shipping_city,
+                        // shipping_state: cart.shipping_state,
+                        // shipping_postalCode: cart.shipping_postalCode,
+                        // shipping_countryCodeAlpha2: cart.shipping_countryCodeAlpha2,
+                        shipping_email: Cart.get('shipping_email'),
+                        shipping_phone: Cart.get('shipping_phone'),
+                        cartItems: Cart.related('cart_items').toJSON().map((item) => {
+                            return {
+                                title: item.product.title,
+                                qty: item.qty,
+                                variant: item.product_variant_sku?.label,
+                                imageUrl: item.product_variant?.images?.[0]?.url // TODO: does ?class=150 need to be appended for Bunny to deliver it?
+                            }
+                        }),
+                        trackingEvents: request.payload.data.events.map((obj) => {
+                            obj.occurred_at = obj.occurred_at ? DateFns.format(new Date(obj.occurred_at), 'MM/dd/yyyy') : null;
+                            obj.carrier_occurred_at = obj.carrier_occurred_at ? DateFns.format(new Date(obj.carrier_occurred_at), 'MM/dd/yyyy') : null;
+                            return obj;
+                        })
+                    };
+
+                    let emailTitle = null;
+                    switch(pugConfig.status_code) {
+                        case 'DE':
+                            emailTitle = `${pugConfig.brandName}: Your order has been delivered!`;
+                            break;
+
+                        case 'AT':
+                            emailTitle = `${pugConfig.brandName}: A delivery attempt has been made for your order!`;
+                            break;
+
+                        default:
+                            emailTitle = `${pugConfig.brandName}: Your order has shipped!`;
+                    }
+
+                    emailPackageTrackingOrderShipped({
+                        ...pugConfig,
+                        emailTitle
+                    });
+                }
+            }
+
+            global.logger.info('RESPONSE: CartCtrl.trackingStatusWebhookHandler', {});
+
+            return h.apiSuccess();
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
+    }
+
 
     // async getPageHandler(request, h) {
     //     const Models = await this.getPage(
@@ -1598,10 +1716,12 @@ class CartCtrl extends BaseController {
     //         pagination
     //     );
     // }
+
+
     /*******************
      * PAYPAL related
      ********************/
-
+    /*
      async createPaypalPaymentHandler(request, h) {
         try {
             global.logger.info('REQUEST: PaypalCartCtrl:createPaymentHandler', {
@@ -1667,6 +1787,7 @@ class CartCtrl extends BaseController {
             throw Boom.badData(err);
         }
     }
+    */
 
 }
 

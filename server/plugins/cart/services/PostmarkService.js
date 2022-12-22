@@ -1,9 +1,12 @@
 const path = require('path');
+const fs = require('fs');
 const pug = require('pug');
 const isObject = require('lodash.isobject');
 const accounting = require('accounting');
 const helpers = require('../../../helpers.service');
-const postmark = require("postmark");
+const postmark = require('postmark');
+const mjml2html = require('mjml');
+const Handlebars = require('handlebars');
 
 const postmarkClient = new postmark.ServerClient(process.env.POSTMARK_API_KEY);
 
@@ -69,7 +72,7 @@ function substringOnWords(str, maxLen, suffix) {
 
 
 function getShippingName(Cart) {
-     const firstName = Cart.get('shipping_firstName');
+    const firstName = Cart.get('shipping_firstName');
     const lastName = Cart.get('shipping_lastName');
     let val = [];
 
@@ -222,7 +225,7 @@ async function emailContactUsFormToAdmin(pugConfig) {
 
         const response = await send({
             to: process.env.EMAIL_ADMIN,
-            subject: `CONTACT US form submission (${process.env.BRAND_NAME})`,
+            subject: `CONTACT US form submission (${pugConfig.brandName})`,
             html: html
         });
 
@@ -241,11 +244,52 @@ async function emailContactUsFormToAdmin(pugConfig) {
 }
 
 
+async function emailPackageTrackingOrderShipped(data) {
+    try {
+        global.logger.info('REQUEST: PostmarkService -> emailPackageTrackingOrderShipped()', {
+            meta: {
+                data
+            }
+        });
+
+        const response = await send({
+            to: data.shipping_email,
+            subject: data.emailTitle,
+            html: compileMjmlTemplate('order-shipped.mjml', data)
+        });
+
+        global.logger.info('RESPONSE: PostmarkService -> emailPackageTrackingOrderShipped()', {
+            meta: {
+                response
+            }
+        });
+
+        return response;
+    }
+    catch(err) {
+        global.logger.error(err);
+        global.bugsnag(err);
+    }
+}
+
+
+function compileMjmlTemplate(file, data) {
+    const mjml = fs.readFileSync(path.resolve(__dirname, '../email-templates/mjml', file), 'utf8')
+
+    Handlebars.registerHelper('compareStrings', function(p, q, options) {
+        return (p == q) ? options.fn(this) : options.inverse(this);
+    });
+
+    const template = Handlebars.compile(mjml)
+    const { html } = mjml2html(template(data || {}))
+    return html
+}
 
 
 module.exports = {
     getPurchaseDescription,
     emailPurchaseReceiptToBuyer,
     emailPurchaseAlertToAdmin,
-    emailContactUsFormToAdmin
+    emailContactUsFormToAdmin,
+    emailPackageTrackingOrderShipped
 }

@@ -3,9 +3,11 @@ const Boom = require('@hapi/boom');
 // const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const uuidV4 = require('uuid/v4');
+const isObject = require('lodash.isobject');
 const owasp = require('owasp-password-strength-test');
 const TenantBaseCtrl = require('./TenantBaseCtrl');
 const ExchangeRateCtrl = require('../../exchange-rates/controllers/ExchangeRateCtrl.js');
+const BunnyAPI = require('../../core/services/BunnyAPI');
 const { emailContactUsFormToAdmin } = require('../../cart/services/PostmarkService');
 
 owasp.config({
@@ -44,12 +46,21 @@ class TenantCtrl extends TenantBaseCtrl {
         return {
             application_name: getJoiStringOrNull(),
             application_url: getJoiStringOrNull(250),
-            // application_logo: getJoiStringOrNull(),
+            application_logo: Joi.alternatives().try(
+                Joi.string().trim().max(100),
+                Joi.object(),
+                Joi.allow(null)
+            ),
+            order_details_page_url: getJoiStringOrNull(250),
             stripe_key: getJoiStringOrNull(),
             paypal_client_id: getJoiStringOrNull(),
             paypal_client_secret: getJoiStringOrNull(),
             shipengine_api_key: getJoiStringOrNull(),
-            shipengine_carriers: Joi.array().allow(null),
+            shipengine_carriers: Joi.alternatives().try(
+                Joi.string().trim(),
+                Joi.allow(null)
+            ),
+            // shipengine_carriers: Joi.array().allow(null),
             shipping_from_name: getJoiStringOrNull(),
             shipping_from_streetAddress: getJoiStringOrNull(),
             shipping_from_extendedAddress: getJoiStringOrNull(),
@@ -59,7 +70,11 @@ class TenantCtrl extends TenantBaseCtrl {
             shipping_from_postalCode: getJoiStringOrNull(),
             shipping_from_countryCodeAlpha2: getJoiStringOrNull(2),
             shipping_from_phone: getJoiStringOrNull(),
-            supported_currencies: Joi.array().allow(null),
+            // supported_currencies: Joi.array().allow(null),
+            supported_currencies: Joi.alternatives().try(
+                Joi.string().trim(),
+                Joi.allow(null)
+            ),
             default_currency: getJoiStringOrNull()
         };
     }
@@ -94,13 +109,36 @@ class TenantCtrl extends TenantBaseCtrl {
     // }
 
 
-    updateHandler(request, h) {
+    async updateHandler(request, h) {
         try {
             global.logger.info('REQUEST: TenantCtrl:upsertHandler', {
                 meta: {
                     payload: request.payload
                 }
             });
+
+            const tenantId = this.getTenantIdFromAuth(request);
+
+            const Tenant = await this.fetchOne({
+                id: tenantId
+            });
+
+            if(!Tenant) {
+                throw new Error('Tenant can not be found');
+            }
+
+            if(isObject(request.payload.application_logo)) {
+                request.payload.application_logo = await BunnyAPI.storage.tenantLogoUpload(
+                    `${Date.now()}-${request.payload.application_logo.filename}`,
+                    request.payload.application_logo
+                );
+
+                // delete the previous image
+                // No need for 'await' here right?
+                if(Tenant.get('application_logo')) {
+                    BunnyAPI.storage.del(Tenant.get('application_logo'));
+                }
+            }
 
             if(Array.isArray(request.payload.shipengine_carriers)) {
                 for(let i=request.payload.shipengine_carriers.length-1; i>=0; i--) {
@@ -112,7 +150,7 @@ class TenantCtrl extends TenantBaseCtrl {
                 }
             }
 
-            request.payload.id = request.payload.tenant_id;
+            request.payload.id = tenantId;
             delete request.payload.tenant_id;
 
             return super.upsertHandler(request, h);
@@ -127,7 +165,16 @@ class TenantCtrl extends TenantBaseCtrl {
 
     async contactUsHandler(request, h) {
         try {
+            const Tenant = await this.TenantCtrl.fetchOne({
+                id: this.getTenantIdFromAuth(request)
+            });
+
+            if(!Tenant) {
+                throw new Error('Tenant can not be found');
+            }
+
             await emailContactUsFormToAdmin({
+                brandName: Tenant.get('application_name'),
                 name: request.payload.name,
                 company: request.payload.company,
                 email: request.payload.email,
