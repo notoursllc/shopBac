@@ -523,6 +523,24 @@ class ShipEngineCtrl extends BaseController {
             NY:	{ description: 'Not Yet In System', tracking_status: 'in_transit' }
         }
     }
+
+
+    // https://www.shipengine.com/docs/tracking/#supported-carriers
+    getTrackingUrl(carrierCode, trackingNumber) {
+        const cc = carrierCode ? carrierCode.toLowerCase() : null;
+
+        switch(cc) {
+            case 'usps':
+            case 'stamps_com':
+                return `https://tools.usps.com/go/TrackConfirmAction_input?strOrigTrackNum=${trackingNumber} `;
+
+            case 'ups':
+                return `https://www.ups.com/track?tracknum=${trackingNumber}`;
+
+            case 'fedex':
+                return `https://www.fedex.com/fedextrack/?action=track&trackingnumber=${trackingNumber}`
+        }
+    }
 }
 
 

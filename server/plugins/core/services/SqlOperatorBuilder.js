@@ -155,6 +155,13 @@ function parseQuery(query) {
                     // qb.whereRaw(`${prop} & ? > 0`, [propValue])
                     qb.whereRaw(`${prop} & ? > ${parseFloat(propValue.right)}`, [propValue.left])
                     break;
+
+                case operators.jsonb:
+                    qb.whereRaw(`?? @> ?::jsonb`, [
+                        prop,
+                        (isObject(propValue) || Array.isArray(propValue) ? JSON.stringify(propValue) : propValue)
+                    ])
+                    break;
             }
         }
     }

@@ -411,12 +411,6 @@ exports.plugin = {
                         options: {
                             description: 'Webhook to receive a tracking status update',
                             auth: false,
-                            // validate: {
-                            //     payload: Joi.object({
-                            //         id: Joi.string().uuid().required(), // the cart id
-                            //         tenant_id: Joi.string().uuid().required(),
-                            //     })
-                            // },
                             handler: (request, h) => {
                                 return CartCtrl.trackingWebhookHandler(request, h);
                             }

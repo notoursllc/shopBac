@@ -1,6 +1,8 @@
 const Joi = require('joi');
 const Boom = require('@hapi/boom');
 const isObject = require('lodash.isobject');
+const DateFns = require('date-fns');
+const url = require('node:url');
 const BaseController = require('../../core/controllers/BaseController');
 const PackageTypeCtrl = require('../../package-types/controllers/PackageTypeCtrl');
 const StripeCtrl = require('./StripeCtrl');
@@ -1587,116 +1589,107 @@ class CartCtrl extends BaseController {
                 meta: request.payload
             });
 
-            if(!request.payload.data.tracking_number) {
+            const myUrl = new url.URL(request.payload.resource_url);
+            const carrier_code = myUrl.searchParams.get('carrier_code');
+
+            // the 'user-agent' value in the request header must be from ShipEngine
+            // https://www.shipengine.com/docs/tracking/webhooks/#validation
+            if(request.headers['user-agent'] !== 'ShipEngine/v1') {
+                throw Boom.badRequest();
+            }
+
+            // not all webhook status codes should be handled
+            // https://www.shipengine.com/docs/tracking/#tracking-status-codes
+            if(!request.payload.data.tracking_number
+                || !Array.isArray(request.payload.data.events)
+                || !['IT', 'DE', 'AT'].includes(request.payload.data.status_code)) {
                 return;
             }
 
-            // const tenantId = this.getTenantIdFromAuth(request);
+            const Cart = await this.getModel()
+                .query((qb) => {
+                    qb.where('closed_at', 'is not', null);
+                    qb.whereRaw(`?? @> ?::jsonb`, [
+                        'shipping_label',
+                        JSON.stringify({tracking_number: request.payload.data.tracking_number})
+                    ])
+                })
+                .fetch(
+                    { withRelated: this.getAllCartRelations() }
+                );
 
-            // TODO:
-            // - find the tenant that this tracking number belongs to, right?
-            // - search carts for this tracking number in the "shipping_label" column json
-            // - email the buyer with the status update if the package has shipped
-
-            // const labels = await this.ShipEngineCtrl.listShippingLabels(
-            //     tenantId,
-            //     {
-            //         tracking_number: request.payload.data.tracking_number,
-            //         // get the most recent label:
-            //         page_size: 1,
-            //         sort_by: 'created_at',
-            //         sort_dir: 'desc'
-            //     }
-            // );
-
-            // console.log("SHIP ENGING LABELS", labels)
-
-            const results = await this.server.app.knex
-                .select(
-                    'id',
-                    'tenant_id',
-                    'shipping_email',
-                    'shipping_firstName',
-                    'shipping_lastName',
-                    'shipping_streetAddress',
-                    'shipping_extendedAddress',
-                    'shipping_company',
-                    'shipping_city',
-                    'shipping_state',
-                    'shipping_postalCode',
-                    'shipping_countryCodeAlpha2',
-                    'closed_at',
-                )
-                .from(DB_TABLES.carts)
-                .whereRaw(`?? @> ?::jsonb`, [
-                    'shipping_label',
-                    JSON.stringify({tracking_number: request.payload.data.tracking_number})
-                ]);
-
-            if(Array.isArray(results)) {
-                const cart = results[0];
-                console.log("FOUND CART WITH TRACKING NUMBER", request.payload.data.tracking_number, cart)
-
+            if(Cart) {
                 const Tenant = await this.TenantCtrl.fetchOne({
-                    id: cart.tenant_id
+                    id: Cart.get('tenant_id')
                 });
 
                 if(!Tenant) {
                     throw new Error('Tenant can not be found');
                 }
 
-                if(cart.shipping_email) {
-                    // TODO: if request.payload.data.status_code === 'IT'
+                if(Cart.get('shipping_email')) {
                     const pugConfig = {
-                        //TODO: add template variables here
-                        tenantLogo: '',
+                        status_code: request.payload.data.status_code,
+                        application_logo: Tenant.get('application_logo') ? `${Tenant.get('application_logo')}?class=w150` : null,
                         baseUrl: helpers.getSiteUrl(true),
                         brandName: Tenant.get('application_name'),
+                        copyright: `© ${new Date().getFullYear()} ${Tenant.get('application_name')}. All rights reserved.`,
                         websiteUrl: Tenant.get('application_url'),
                         trackingNumber: request.payload.data.tracking_number,
-                        trackingUrl: '', // TODO: need a tracking page!
-                        orderNumber: cart.id,
-                        orderDate: cart.closed_at, // TODO: date format
-                        id: cart.id,
-                        shipping_firstName: cart.shipping_firstName,
-                        shipping_lastName: cart.shipping_lastName,
-                        shipping_streetAddress: cart.shipping_streetAddress,
-                        shipping_extendedAddress: cart.shipping_extendedAddress,
-                        shipping_company: cart.shipping_company,
-                        shipping_city: cart.shipping_city,
-                        shipping_state: cart.shipping_state,
-                        shipping_postalCode: cart.shipping_postalCode,
-                        shipping_countryCodeAlpha2: cart.shipping_countryCodeAlpha2,
-                        shipping_email: cart.shipping_email,
-                        trackingEvents: request.payload.data.events
+                        trackingUrl: this.ShipEngineCtrl.getTrackingUrl(carrier_code, request.payload.data.tracking_number),
+                        orderNumber: Cart.get('id'),
+                        orderDate: Cart.get('closed_at') ? DateFns.format(new Date(Cart.get('closed_at')), 'MM/dd/yyyy') : '',
+                        orderDetailsUrl: Tenant.get('order_details_page_url') ? Tenant.get('order_details_page_url').replace('$ORDER_ID', Cart.get('id')) : null,
+                        id: Cart.get('id'),
+                        // shipping_firstName: cart.shipping_firstName,
+                        // shipping_lastName: cart.shipping_lastName,
+                        // shipping_streetAddress: cart.shipping_streetAddress,
+                        // shipping_extendedAddress: cart.shipping_extendedAddress,
+                        // shipping_company: cart.shipping_company,
+                        // shipping_city: cart.shipping_city,
+                        // shipping_state: cart.shipping_state,
+                        // shipping_postalCode: cart.shipping_postalCode,
+                        // shipping_countryCodeAlpha2: cart.shipping_countryCodeAlpha2,
+                        shipping_email: Cart.get('shipping_email'),
+                        shipping_phone: Cart.get('shipping_phone'),
+                        cartItems: Cart.related('cart_items').toJSON().map((item) => {
+                            return {
+                                title: item.product.title,
+                                qty: item.qty,
+                                variant: item.product_variant_sku?.label,
+                                imageUrl: item.product_variant?.images?.[0]?.url // TODO: does ?class=150 need to be appended for Bunny to deliver it?
+                            }
+                        }),
+                        trackingEvents: request.payload.data.events.map((obj) => {
+                            obj.occurred_at = obj.occurred_at ? DateFns.format(new Date(obj.occurred_at), 'MM/dd/yyyy') : null;
+                            obj.carrier_occurred_at = obj.carrier_occurred_at ? DateFns.format(new Date(obj.carrier_occurred_at), 'MM/dd/yyyy') : null;
+                            return obj;
+                        })
                     };
 
-                    emailPackageTrackingOrderShipped(pugConfig)
+                    let emailTitle = null;
+                    switch(pugConfig.status_code) {
+                        case 'DE':
+                            emailTitle = `${pugConfig.brandName}: Your order has been delivered!`;
+                            break;
+
+                        case 'AT':
+                            emailTitle = `${pugConfig.brandName}: A delivery attempt has been made for your order!`;
+                            break;
+
+                        default:
+                            emailTitle = `${pugConfig.brandName}: Your order has shipped!`;
+                    }
+
+                    emailPackageTrackingOrderShipped({
+                        ...pugConfig,
+                        emailTitle
+                    });
                 }
             }
 
+            global.logger.info('RESPONSE: CartCtrl.trackingStatusWebhookHandler', {});
 
-            // // You should only be allowed so set the 'shipped_at' value of a closed cart
-            // const Cart = await this.getClosedCart(
-            //     request.payload.id,
-            //     this.getTenantIdFromAuth(request)
-            // );
-
-            // if(!Cart) {
-            //     throw new Error('Cart not found');
-            // }
-
-            // const UpdatedCart = await Cart.save({
-            //     shipped_at: request.payload.shipped ? new Date() : null
-            // });
-
-            // const updatedCartJson = UpdatedCart.toJSON();
-
-            // global.logger.info('RESPONSE: CartCtrl.trackingStatusWebhookHandler', {
-            //     meta: {
-            //         updatedCart: updatedCartJson
-            //     }
-            // });
             return h.apiSuccess();
         }
         catch(err) {
