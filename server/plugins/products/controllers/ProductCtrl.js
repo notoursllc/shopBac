@@ -337,6 +337,15 @@ class ProductCtrl extends BaseController {
         );
     }
 
+    //test
+    fetchOneForTenantHandler2(request, h) {
+        return super.fetchOneForTenantHandler(
+            request,
+            h,
+            { withRelated: this.getWithRelatedFetchConfig(request.query, this.getWithRelated()) }
+        );
+    }
+
 
     // TODO: need to get product subtypes from DB, but globals file
     // TODO: uses productPicController
