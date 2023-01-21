@@ -47,6 +47,8 @@ exports.plugin = {
                             }
                         }
                     },
+
+                    // DAO
                     {
                         method: 'GET',
                         path: `${routePrefix}/product`,
@@ -59,37 +61,15 @@ exports.plugin = {
                                 query: Joi.object({
                                     id: Joi.string().uuid(),
                                     tenant_id: Joi.string().uuid(),
-                                    ...ProductCtrl.getWithRelatedSchema()
                                 })
                             },
                             handler: (request, h) => {
-                                return ProductCtrl.fetchOneForTenantHandler(request, h);
+                                return ProductCtrl.getProductHandler(request, h);
                             }
                         }
                     },
 
-                    // test
-                    {
-                        method: 'GET',
-                        path: `${routePrefix}/product2`,
-                        options: {
-                            description: 'Finds a product by ID',
-                            auth: {
-                                strategies: ['storeauth', 'session']
-                            },
-                            validate: {
-                                query: Joi.object({
-                                    id: Joi.string().uuid(),
-                                    tenant_id: Joi.string().uuid(),
-                                    ...ProductCtrl.getWithRelatedSchema()
-                                })
-                            },
-                            handler: (request, h) => {
-                                return ProductCtrl.fetchOneForTenantHandler2(request, h);
-                            }
-                        }
-                    },
-
+                    // DAO refactor not needed
                     {
                         method: 'GET',
                         path: `${routePrefix}/product/tax_codes`,

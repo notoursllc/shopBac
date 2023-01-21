@@ -9,6 +9,7 @@ const ProductVariantCtrl = require('./ProductVariantCtrl');
 const StripeCtrl = require('../../cart/controllers/StripeCtrl');
 const MediaCtrl = require('../../media/controllers/MediaCtrl');
 const BunnyAPI = require('../../core/services/BunnyAPI');
+const ProductDao = require('../dao/ProductDao.js');
 
 // Using this so many time below, so setting as a variable:
 const joiPositiveNumberOrNull = Joi.alternatives().try(
@@ -328,22 +329,19 @@ class ProductCtrl extends BaseController {
         );
     }
 
+    //DAO
+    async getProductHandler(request, h) {
+        try {
+            const PD = new ProductDao(this.server);
+            const data = await PD.getProduct(request.query.id);
 
-    fetchOneForTenantHandler(request, h) {
-        return super.fetchOneForTenantHandler(
-            request,
-            h,
-            { withRelated: this.getWithRelatedFetchConfig(request.query, this.getWithRelated()) }
-        );
-    }
-
-    //test
-    fetchOneForTenantHandler2(request, h) {
-        return super.fetchOneForTenantHandler(
-            request,
-            h,
-            { withRelated: this.getWithRelatedFetchConfig(request.query, this.getWithRelated()) }
-        );
+            return h.apiSuccess(data);
+        }
+        catch(err) {
+            global.logger.error(err);
+            global.bugsnag(err);
+            throw Boom.badRequest(err);
+        }
     }
 
 
